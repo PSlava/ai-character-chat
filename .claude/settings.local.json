@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:wetdreams.io)",
+      "WebSearch",
+      "Bash(npm create:*)",
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(./venv/bin/python:*)",
+      "Bash(./venv/bin/uvicorn:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs:*)",
+      "Bash(./venv/bin/pip install:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWZhZmIyMS00MGZiLTQ4YjctYTY3Zi1jYWI4NzZkZDg0ZjkiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NzMwODgxNDF9.7cl9RyYUrIvLlUP6pj8bkEuSuAd4YvN8y59k2hi9PTM\")",
+      "Bash(__NEW_LINE_8708af8928db749d__ echo \"=== CREATE CHARACTER ===\")",
+      "Bash(__NEW_LINE_8708af8928db749d__ echo \"\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0YzE1NmI1Yy0zMTI2LTQ2OTgtYTg0OS0yYmQwNDlmOWRjZDYiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NzMwODgyODd9.tfyirKig67y9ExQOA5q1Lq0XRoKFv6-M6cE0j84bkU4\")",
+      "Bash(T=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMmRmMTFhOS0yMmZhLTQyMTAtOGI4MS0xYzE3MTQwNzYzMDciLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3NzMwODgzNTZ9.59OuFQ20JENN_YkLtPPLboMvpsXTedFECjpMVkVIN1E\")",
+      "Bash(npm install:*)",
+      "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(gh auth:*)",
+      "Bash(git config:*)",
+      "Bash(ssh:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(ssh-keyscan:*)",
+      "Bash(~/.ssh/known_hosts)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
