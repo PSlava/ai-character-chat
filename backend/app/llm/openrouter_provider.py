@@ -1,16 +1,17 @@
+import asyncio
 from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 
+# Max 3 fallbacks to stay within Vercel 60s proxy timeout
 FALLBACK_MODELS = [
     "meta-llama/llama-3.3-70b-instruct:free",
     "qwen/qwen3-next-80b-a3b-instruct:free",
-    "deepseek/deepseek-r1-0528:free",
-    "nousresearch/hermes-3-llama-3.1-405b:free",
     "mistralai/mistral-small-3.1-24b-instruct:free",
-    "google/gemma-3-27b-it:free",
 ]
+
+PER_MODEL_TIMEOUT = 15  # seconds per model attempt
 
 
 class OpenRouterProvider(BaseLLMProvider):
@@ -18,9 +19,10 @@ class OpenRouterProvider(BaseLLMProvider):
         kwargs: dict = {
             "api_key": api_key,
             "base_url": "https://openrouter.ai/api/v1",
+            "timeout": PER_MODEL_TIMEOUT,
         }
         if proxy_url:
-            kwargs["http_client"] = httpx.AsyncClient(proxy=proxy_url)
+            kwargs["http_client"] = httpx.AsyncClient(proxy=proxy_url, timeout=PER_MODEL_TIMEOUT)
         self.client = AsyncOpenAI(**kwargs)
 
     async def generate_stream(
@@ -66,17 +68,23 @@ class OpenRouterProvider(BaseLLMProvider):
 
         for model in models_to_try:
             try:
-                response = await self.client.chat.completions.create(
-                    model=model,
-                    messages=api_messages,
-                    max_tokens=config.max_tokens,
-                    temperature=config.temperature,
-                    top_p=config.top_p,
+                response = await asyncio.wait_for(
+                    self.client.chat.completions.create(
+                        model=model,
+                        messages=api_messages,
+                        max_tokens=config.max_tokens,
+                        temperature=config.temperature,
+                        top_p=config.top_p,
+                    ),
+                    timeout=PER_MODEL_TIMEOUT,
                 )
                 content = response.choices[0].message.content if response.choices else None
                 if not content:
                     raise RuntimeError("Модель вернула пустой ответ")
                 return content
+            except asyncio.TimeoutError:
+                errors.append((model.split("/")[-1].replace(":free", ""), "таймаут"))
+                continue
             except Exception as e:
                 reason = self._extract_reason(e)
                 errors.append((model.split("/")[-1].replace(":free", ""), reason))
@@ -89,45 +97,38 @@ class OpenRouterProvider(BaseLLMProvider):
     @staticmethod
     def _extract_reason(e: Exception) -> str:
         """Extract human-readable reason from OpenRouter error."""
-        err = str(e)
-        # Try to find the 'message' field in the error JSON
-        import json
         try:
-            # OpenAI SDK errors have .body with parsed JSON
             body = getattr(e, "body", None)
             if body and isinstance(body, dict):
                 error_obj = body.get("error", body)
                 msg = error_obj.get("message", "")
-                # Also check metadata.raw for provider-specific errors
                 meta = error_obj.get("metadata", {})
                 raw = meta.get("raw", "")
                 provider = meta.get("provider_name", "")
                 if raw and provider:
-                    return f"{msg} (провайдер: {provider})"
+                    return f"{msg} ({provider})"
                 if msg:
                     return msg
         except Exception:
             pass
-        # Fallback: trim long error strings
-        if len(err) > 200:
-            err = err[:200] + "..."
+        err = str(e)
+        if len(err) > 150:
+            err = err[:150] + "..."
         return err
 
     @staticmethod
     def _is_retryable(e: Exception) -> bool:
         err = str(e)
-        return "429" in err or "402" in err or "rate" in err.lower() or "404" in err or "No endpoints" in err or "spend limit" in err.lower()
+        return any(s in err for s in ("429", "402", "404", "No endpoints", "пустой")) or "rate" in err.lower() or "spend limit" in err.lower()
 
     @staticmethod
     def _format_errors(errors: list[tuple[str, str]]) -> str:
-        """Format per-model errors into a readable message."""
         lines = ["Все модели недоступны:"]
         for model, reason in errors:
             lines.append(f"  • {model}: {reason}")
         return "\n".join(lines)
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
-        """Return preferred model first, then fallbacks."""
         model = preferred or FALLBACK_MODELS[0]
         models = [model]
         for fb in FALLBACK_MODELS:
