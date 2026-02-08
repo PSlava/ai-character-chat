@@ -76,7 +76,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **`chat/prompt_builder.py`** — System prompt from character fields.
 - **`chat/service.py`** — Context window (sliding window ~12k tokens).
 - **`chat/router.py`** — SSE streaming via `StreamingResponse`. Events: `{type: "token"}`, `{type: "done"}`, `{type: "error"}`.
-- **`characters/`** — CRUD + AI generation from text. Tags as comma-separated string. `serializers.py` for ORM→dict.
+- **`characters/`** — CRUD + AI generation from text (with content rating, model choice, extra instructions). Tags as comma-separated string. `serializers.py` for ORM→dict.
 
 ### Frontend (`frontend/src/`)
 
