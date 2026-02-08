@@ -5,13 +5,18 @@ from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 
 # Max 3 fallbacks to stay within Vercel 60s proxy timeout
+# Verified working: Google AI Studio + Nvidia providers (avoid Venice)
 FALLBACK_MODELS = [
+    "google/gemma-3-27b-it:free",
     "nvidia/nemotron-nano-9b-v2:free",
     "google/gemma-3-12b-it:free",
-    "meta-llama/llama-3.2-3b-instruct:free",
 ]
 
 PER_MODEL_TIMEOUT = 20  # seconds per model attempt
+
+
+# Models that don't support system role — merge into first user message
+NO_SYSTEM_ROLE = {"google/gemma-3-27b-it:free", "google/gemma-3-12b-it:free", "google/gemma-3-4b-it:free"}
 
 
 class OpenRouterProvider(BaseLLMProvider):
@@ -25,16 +30,28 @@ class OpenRouterProvider(BaseLLMProvider):
             kwargs["http_client"] = httpx.AsyncClient(proxy=proxy_url, timeout=PER_MODEL_TIMEOUT)
         self.client = AsyncOpenAI(**kwargs)
 
+    @staticmethod
+    def _prepare_messages(messages: list[LLMMessage], model: str) -> list[dict]:
+        api_messages = [{"role": m.role, "content": m.content} for m in messages]
+        if model in NO_SYSTEM_ROLE:
+            # Merge system messages into first user message
+            system_parts = [m["content"] for m in api_messages if m["role"] == "system"]
+            api_messages = [m for m in api_messages if m["role"] != "system"]
+            if system_parts and api_messages:
+                prefix = "\n\n".join(system_parts)
+                api_messages[0]["content"] = f"{prefix}\n\n{api_messages[0]['content']}"
+        return api_messages
+
     async def generate_stream(
         self,
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> AsyncIterator[str]:
-        api_messages = [{"role": m.role, "content": m.content} for m in messages]
         models_to_try = self._get_models_to_try(config.model)
         errors: list[tuple[str, str]] = []
 
         for model in models_to_try:
+            api_messages = self._prepare_messages(messages, model)
             try:
                 stream = await self.client.chat.completions.create(
                     model=model,
@@ -62,11 +79,11 @@ class OpenRouterProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
-        api_messages = [{"role": m.role, "content": m.content} for m in messages]
         models_to_try = self._get_models_to_try(config.model)
         errors: list[tuple[str, str]] = []
 
         for model in models_to_try:
+            api_messages = self._prepare_messages(messages, model)
             try:
                 response = await asyncio.wait_for(
                     self.client.chat.completions.create(
@@ -119,7 +136,7 @@ class OpenRouterProvider(BaseLLMProvider):
     @staticmethod
     def _is_retryable(e: Exception) -> bool:
         err = str(e)
-        return any(s in err for s in ("429", "402", "404", "No endpoints", "пустой", "Provider returned error")) or "rate" in err.lower() or "spend limit" in err.lower()
+        return any(s in err for s in ("429", "402", "404", "No endpoints", "пустой", "Provider returned error", "INVALID_ARGUMENT", "not enabled")) or "rate" in err.lower() or "spend limit" in err.lower()
 
     @staticmethod
     def _format_errors(errors: list[tuple[str, str]]) -> str:
