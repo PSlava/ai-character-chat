@@ -108,7 +108,7 @@ async def save_message(db: AsyncSession, chat_id: str, role: str, content: str):
     return msg
 
 
-async def build_conversation_messages(db: AsyncSession, chat_id: str, character: Character) -> list[LLMMessage]:
+async def build_conversation_messages(db: AsyncSession, chat_id: str, character: Character, user_name: str | None = None) -> list[LLMMessage]:
     char_dict = {
         "name": character.name,
         "personality": character.personality,
@@ -118,7 +118,7 @@ async def build_conversation_messages(db: AsyncSession, chat_id: str, character:
         "content_rating": character.content_rating.value if character.content_rating else "sfw",
         "system_prompt_suffix": character.system_prompt_suffix,
     }
-    system_prompt = build_system_prompt(char_dict)
+    system_prompt = build_system_prompt(char_dict, user_name=user_name)
     messages_data = await get_chat_messages(db, chat_id)
 
     # Sliding window

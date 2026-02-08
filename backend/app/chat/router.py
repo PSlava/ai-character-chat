@@ -2,10 +2,12 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from app.chat.schemas import CreateChatRequest, SendMessageRequest
 from app.chat import service
+from app.db.models import User
 from app.llm.base import LLMConfig
 from app.llm.registry import get_provider
 from app.config import settings
@@ -113,8 +115,13 @@ async def send_message(
     # Save user message
     await service.save_message(db, chat_id, "user", body.content)
 
+    # Get user display name for system prompt
+    user_result = await db.execute(select(User).where(User.id == user["id"]))
+    user_obj = user_result.scalar_one_or_none()
+    user_name = user_obj.display_name if user_obj else None
+
     # Build context
-    messages = await service.build_conversation_messages(db, chat_id, character)
+    messages = await service.build_conversation_messages(db, chat_id, character, user_name=user_name)
 
     # Resolve provider and model ID
     PROVIDER_MODELS = {

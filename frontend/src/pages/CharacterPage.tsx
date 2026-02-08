@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCharacter } from '@/api/characters';
+import { getCharacter, deleteCharacter } from '@/api/characters';
 import { createChat } from '@/api/chat';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatStore } from '@/store/chatStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { MessageCircle, Heart, User } from 'lucide-react';
+import { MessageCircle, Heart, User, Pencil, Trash2 } from 'lucide-react';
 import type { Character } from '@/types';
 
 export function CharacterPage() {
   const { id } = useParams<{ id: string }>();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { fetchChats } = useChatStore();
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const isOwner = isAuthenticated && character && user?.id === character.creator_id;
 
   useEffect(() => {
     if (id) {
@@ -35,6 +38,17 @@ export function CharacterPage() {
       navigate(`/chat/${chat.id}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!character || !confirm('Удалить персонажа? Это действие нельзя отменить.')) return;
+    setDeleting(true);
+    try {
+      await deleteCharacter(character.id);
+      navigate('/');
+    } catch {
+      setDeleting(false);
     }
   };
 
@@ -72,6 +86,26 @@ export function CharacterPage() {
             )}
           </div>
         </div>
+
+        {isOwner && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate(`/character/${character.id}/edit`)}
+              className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
+              title="Редактировать"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="p-2 rounded-lg bg-neutral-800 hover:bg-red-900/50 text-neutral-400 hover:text-red-400 transition-colors"
+              title="Удалить"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {character.tags.length > 0 && (

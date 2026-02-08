@@ -5,6 +5,7 @@ import { AuthPage } from '@/pages/AuthPage';
 import { CharacterPage } from '@/pages/CharacterPage';
 import { ChatPage } from '@/pages/ChatPage';
 import { CreateCharacterPage } from '@/pages/CreateCharacterPage';
+import { EditCharacterPage } from '@/pages/EditCharacterPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/character/:id" element={<CharacterPage />} />
+          <Route path="/character/:id/edit" element={<EditCharacterPage />} />
           <Route path="/chat/:chatId" element={<ChatPage />} />
           <Route path="/create" element={<CreateCharacterPage />} />
           <Route path="/profile" element={<ProfilePage />} />

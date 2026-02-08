@@ -1,4 +1,4 @@
-def build_system_prompt(character: dict) -> str:
+def build_system_prompt(character: dict, user_name: str | None = None) -> str:
     parts = []
 
     parts.append(f"You are {character['name']}.")
@@ -21,6 +21,9 @@ def build_system_prompt(character: dict) -> str:
 
     if character.get("system_prompt_suffix"):
         parts.append(f"\n## Additional instructions\n{character['system_prompt_suffix']}")
+
+    if user_name:
+        parts.append(f"\n## User\nThe user's name is {user_name}. You may address them by name when appropriate.")
 
     parts.append(
         "\n## Rules"
