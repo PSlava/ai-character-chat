@@ -30,8 +30,8 @@ class OpenRouterProvider(BaseLLMProvider):
     ) -> AsyncIterator[str]:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         models_to_try = self._get_models_to_try(config.model)
+        errors: list[tuple[str, str]] = []
 
-        last_error = None
         for model in models_to_try:
             try:
                 stream = await self.client.chat.completions.create(
@@ -47,13 +47,13 @@ class OpenRouterProvider(BaseLLMProvider):
                         yield chunk.choices[0].delta.content
                 return
             except Exception as e:
-                last_error = e
+                reason = self._extract_reason(e)
+                errors.append((model.split("/")[-1].replace(":free", ""), reason))
                 if self._is_retryable(e):
                     continue
-                raise
+                raise RuntimeError(self._format_errors(errors))
 
-        if last_error:
-            raise last_error
+        raise RuntimeError(self._format_errors(errors))
 
     async def generate(
         self,
@@ -62,8 +62,8 @@ class OpenRouterProvider(BaseLLMProvider):
     ) -> str:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         models_to_try = self._get_models_to_try(config.model)
+        errors: list[tuple[str, str]] = []
 
-        last_error = None
         for model in models_to_try:
             try:
                 response = await self.client.chat.completions.create(
@@ -75,17 +75,53 @@ class OpenRouterProvider(BaseLLMProvider):
                 )
                 return response.choices[0].message.content
             except Exception as e:
-                last_error = e
+                reason = self._extract_reason(e)
+                errors.append((model.split("/")[-1].replace(":free", ""), reason))
                 if self._is_retryable(e):
                     continue
-                raise
+                raise RuntimeError(self._format_errors(errors))
 
-        raise last_error
+        raise RuntimeError(self._format_errors(errors))
+
+    @staticmethod
+    def _extract_reason(e: Exception) -> str:
+        """Extract human-readable reason from OpenRouter error."""
+        err = str(e)
+        # Try to find the 'message' field in the error JSON
+        import json
+        try:
+            # OpenAI SDK errors have .body with parsed JSON
+            body = getattr(e, "body", None)
+            if body and isinstance(body, dict):
+                error_obj = body.get("error", body)
+                msg = error_obj.get("message", "")
+                # Also check metadata.raw for provider-specific errors
+                meta = error_obj.get("metadata", {})
+                raw = meta.get("raw", "")
+                provider = meta.get("provider_name", "")
+                if raw and provider:
+                    return f"{msg} (провайдер: {provider})"
+                if msg:
+                    return msg
+        except Exception:
+            pass
+        # Fallback: trim long error strings
+        if len(err) > 200:
+            err = err[:200] + "..."
+        return err
 
     @staticmethod
     def _is_retryable(e: Exception) -> bool:
         err = str(e)
         return "429" in err or "402" in err or "rate" in err.lower() or "404" in err or "No endpoints" in err or "spend limit" in err.lower()
+
+    @staticmethod
+    def _format_errors(errors: list[tuple[str, str]]) -> str:
+        """Format per-model errors into a readable message."""
+        lines = ["Все модели недоступны:"]
+        for model, reason in errors:
+            lines.append(f"  • {model}: {reason}")
+        return "\n".join(lines)
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
         """Return preferred model first, then fallbacks."""

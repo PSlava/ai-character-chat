@@ -32,7 +32,13 @@ export function CreateCharacterPage() {
       setGenerated(data);
       setTab('manual');
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Ошибка генерации';
+      let msg = 'Ошибка генерации';
+      if (e && typeof e === 'object' && 'response' in e) {
+        const resp = (e as { response?: { data?: { detail?: string } } }).response;
+        msg = resp?.data?.detail || msg;
+      } else if (e instanceof Error) {
+        msg = e.message;
+      }
       setError(msg);
     } finally {
       setGenerating(false);
