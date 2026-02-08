@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getChat } from '@/api/chat';
+import { getOpenRouterModels } from '@/api/characters';
+import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -11,10 +13,15 @@ export function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
   const [chatDetail, setChatDetail] = useState<ChatDetail | null>(null);
   const [error, setError] = useState('');
+  const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
 
   const { messages, setMessages, sendMessage, isStreaming, stopStreaming } = useChat(
     chatId || ''
   );
+
+  useEffect(() => {
+    getOpenRouterModels().then(setOrModels).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!chatId) return;
@@ -56,7 +63,13 @@ export function ChatPage() {
         <div>
           <h2 className="font-semibold">{character?.name}</h2>
           <p className="text-xs text-neutral-500">
-            {{ claude: 'Claude', openai: 'GPT-4o', gemini: 'Gemini', openrouter: 'OpenRouter', qwen3: 'Nemotron 9B' }[chatDetail.chat.model_used || ''] || chatDetail.chat.model_used}
+            {(() => {
+              const m = chatDetail.chat.model_used || '';
+              const alias: Record<string, string> = { claude: 'Claude', openai: 'GPT-4o', gemini: 'Gemini', openrouter: 'OpenRouter Auto' };
+              if (alias[m]) return alias[m];
+              const found = orModels.find((om) => om.id === m);
+              return found ? found.name : m;
+            })()}
           </p>
         </div>
       </div>

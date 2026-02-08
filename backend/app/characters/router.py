@@ -39,12 +39,16 @@ async def generate_from_story(
     body: GenerateFromStoryRequest,
     user=Depends(get_current_user),
 ):
-    MODEL_MAP = {
-        "openrouter": "google/gemma-3-27b-it:free",
-        "qwen3": "google/gemma-3-27b-it:free",
-    }
-    OPENROUTER_ALIASES = {"qwen3"}
-    provider_name = "openrouter" if body.preferred_model in OPENROUTER_ALIASES else body.preferred_model
+    # Direct OpenRouter model ID (contains "/") or alias
+    if "/" in body.preferred_model:
+        provider_name = "openrouter"
+        model_id = body.preferred_model
+    elif body.preferred_model in ("openrouter", "qwen3"):
+        provider_name = "openrouter"
+        model_id = ""  # auto — provider will pick best from fallback chain
+    else:
+        provider_name = body.preferred_model
+        model_id = {"claude": "claude-sonnet-4-5-20250929", "openai": "gpt-4o", "gemini": "gemini-2.0-flash"}.get(body.preferred_model, "")
 
     try:
         provider = get_provider(provider_name)
@@ -65,7 +69,7 @@ async def generate_from_story(
         LLMMessage(role="system", content=GENERATE_SYSTEM_PROMPT),
         LLMMessage(role="user", content=user_msg),
     ]
-    config = LLMConfig(model=MODEL_MAP.get(body.preferred_model, ""), temperature=0.7, max_tokens=2048)
+    config = LLMConfig(model=model_id, temperature=0.7, max_tokens=2048)
 
     try:
         raw = await provider.generate(messages, config)

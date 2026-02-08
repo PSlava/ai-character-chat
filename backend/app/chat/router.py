@@ -116,20 +116,21 @@ async def send_message(
     # Build context
     messages = await service.build_conversation_messages(db, chat_id, character)
 
-    # Models that run through OpenRouter provider
-    MODEL_MAP = {
-        "claude": "claude-sonnet-4-5-20250929",
-        "openai": "gpt-4o",
-        "gemini": "gemini-2.0-flash",
-        "openrouter": "google/gemma-3-27b-it:free",
-        "qwen3": "google/gemma-3-27b-it:free",
-    }
-    OPENROUTER_ALIASES = {"qwen3"}
-    provider_name = "openrouter" if model_name in OPENROUTER_ALIASES else model_name
+    # Resolve provider and model ID
+    PAID_MODELS = {"claude": "claude-sonnet-4-5-20250929", "openai": "gpt-4o", "gemini": "gemini-2.0-flash"}
+    if "/" in model_name:
+        provider_name = "openrouter"
+        model_id = model_name
+    elif model_name in ("openrouter", "qwen3"):
+        provider_name = "openrouter"
+        model_id = ""
+    else:
+        provider_name = model_name
+        model_id = PAID_MODELS.get(model_name, "")
 
     provider = get_provider(provider_name)
     config = LLMConfig(
-        model=MODEL_MAP.get(model_name, ""),
+        model=model_id,
         temperature=0.8,
         max_tokens=1024,
     )

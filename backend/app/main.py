@@ -45,8 +45,10 @@ from app.auth.router import router as auth_router  # noqa: E402
 from app.characters.router import router as characters_router  # noqa: E402
 from app.chat.router import router as chat_router  # noqa: E402
 from app.users.router import router as users_router  # noqa: E402
+from app.llm.router import router as models_router  # noqa: E402
 
 app.include_router(auth_router)
 app.include_router(characters_router)
 app.include_router(chat_router)
 app.include_router(users_router)
+app.include_router(models_router)

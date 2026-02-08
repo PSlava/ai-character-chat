@@ -1,6 +1,13 @@
 import api from './client';
 import type { Character } from '@/types';
 
+export interface OpenRouterModel {
+  id: string;
+  name: string;
+  quality: number;
+  note: string;
+}
+
 export async function getCharacters(params?: {
   search?: string;
   tag?: string;
@@ -35,12 +42,35 @@ export async function deleteCharacter(id: string) {
   await api.delete(`/characters/${id}`);
 }
 
+export async function getOpenRouterModels(): Promise<OpenRouterModel[]> {
+  const { data } = await api.get<OpenRouterModel[]>('/models/openrouter');
+  return data;
+}
+
+/** Wake up Render backend if sleeping. Retries every 3s for up to 3 minutes. */
+export async function wakeUpServer(
+  onStatus?: (status: string) => void,
+): Promise<void> {
+  const maxAttempts = 60; // 3 min / 3s
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      await api.get('/health', { timeout: 5000 });
+      return;
+    } catch {
+      onStatus?.(`Ожидание сервера... (${i * 3}с)`);
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+  throw new Error('Сервер не отвечает');
+}
+
 export async function generateFromStory(
   storyText: string,
   characterName?: string,
   preferredModel: string = 'claude',
   contentRating: string = 'sfw',
 ) {
+  await wakeUpServer();
   const { data } = await api.post<Partial<Character>>('/characters/generate-from-story', {
     story_text: storyText,
     character_name: characterName || undefined,

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { getOpenRouterModels } from '@/api/characters';
+import type { OpenRouterModel } from '@/api/characters';
 import type { Character } from '@/types';
 
 interface Props {
@@ -21,9 +23,14 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
     system_prompt_suffix: initial?.system_prompt_suffix || '',
     tags: initial?.tags?.join(', ') || '',
     is_public: initial?.is_public ?? true,
-    preferred_model: initial?.preferred_model || 'qwen3',
+    preferred_model: initial?.preferred_model || 'openrouter',
   });
   const [loading, setLoading] = useState(false);
+  const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
+
+  useEffect(() => {
+    getOpenRouterModels().then(setOrModels).catch(() => {});
+  }, []);
 
   const update = (field: string, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -119,7 +126,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
         placeholder="детектив, классика, Англия"
       />
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 flex-wrap">
         <div>
           <label className="block text-sm text-neutral-400 mb-1">
             Рейтинг контента
@@ -135,17 +142,22 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
           </select>
         </div>
 
-        <div>
+        <div className="flex-1 min-w-[200px]">
           <label className="block text-sm text-neutral-400 mb-1">
-            AI Модель
+            AI Модель (для чата)
           </label>
           <select
             value={form.preferred_model}
             onChange={(e) => update('preferred_model', e.target.value)}
-            className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
+            className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white w-full"
           >
-            <option value="qwen3">Nemotron 9B (Free)</option>
             <option value="openrouter">OpenRouter Auto (Free)</option>
+            {orModels.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name} ({m.quality}/10)
+              </option>
+            ))}
+            <option disabled>───────────</option>
             <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>
             <option value="openai">GPT-4o</option>

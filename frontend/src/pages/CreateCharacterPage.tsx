@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createCharacter, generateFromStory } from '@/api/characters';
+import { createCharacter, generateFromStory, getOpenRouterModels, wakeUpServer } from '@/api/characters';
+import type { OpenRouterModel } from '@/api/characters';
 import { CharacterForm } from '@/components/characters/CharacterForm';
 import { Button } from '@/components/ui/Button';
-import { Input, Textarea } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Input';
+import { Input } from '@/components/ui/Input';
 import type { Character } from '@/types';
 
 type Tab = 'manual' | 'from-story';
@@ -13,11 +15,25 @@ export function CreateCharacterPage() {
   const [tab, setTab] = useState<Tab>('manual');
   const [storyText, setStoryText] = useState('');
   const [characterName, setCharacterName] = useState('');
-  const [model, setModel] = useState('qwen3');
+  const [model, setModel] = useState('openrouter');
   const [contentRating, setContentRating] = useState('sfw');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [statusText, setStatusText] = useState('');
   const [generated, setGenerated] = useState<Partial<Character> | null>(null);
+  const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
+
+  useEffect(() => {
+    getOpenRouterModels()
+      .then(setOrModels)
+      .catch(() => {
+        // Server might be sleeping — try waking it up
+        wakeUpServer()
+          .then(() => getOpenRouterModels())
+          .then(setOrModels)
+          .catch(() => {});
+      });
+  }, []);
 
   const handleSubmit = async (data: Partial<Character>) => {
     const character = await createCharacter(data);
@@ -28,7 +44,11 @@ export function CreateCharacterPage() {
     if (!storyText.trim()) return;
     setGenerating(true);
     setError('');
+    setStatusText('');
     try {
+      setStatusText('Проверка сервера...');
+      await wakeUpServer((s) => setStatusText(s));
+      setStatusText('Генерация... (может занять 10-30 сек)');
       const data = await generateFromStory(storyText, characterName, model, contentRating);
       setGenerated(data);
       setTab('manual');
@@ -41,6 +61,7 @@ export function CreateCharacterPage() {
       setError(msg);
     } finally {
       setGenerating(false);
+      setStatusText('');
     }
   };
 
@@ -96,13 +117,18 @@ export function CreateCharacterPage() {
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
-              className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
+              className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white w-full"
             >
-              <option value="qwen3">Nemotron 9B (Free)</option>
-              <option value="openrouter">OpenRouter Auto (Free)</option>
-              <option value="gemini">Gemini</option>
-              <option value="claude">Claude</option>
-              <option value="openai">GPT-4o</option>
+              <option value="openrouter">OpenRouter Auto (Free) — автовыбор лучшей</option>
+              {orModels.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} ({m.quality}/10) — {m.note}
+                </option>
+              ))}
+              <option disabled>───────────</option>
+              <option value="gemini">Gemini (платная)</option>
+              <option value="claude">Claude (платная)</option>
+              <option value="openai">GPT-4o (платная)</option>
             </select>
           </div>
 
@@ -132,7 +158,7 @@ export function CreateCharacterPage() {
             disabled={generating || !storyText.trim()}
             className="w-full"
           >
-            {generating ? 'Генерация... (может занять 10-20 сек)' : 'Сгенерировать персонажа'}
+            {generating ? (statusText || 'Генерация...') : 'Сгенерировать персонажа'}
           </Button>
         </div>
       )}

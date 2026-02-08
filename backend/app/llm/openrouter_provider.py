@@ -3,17 +3,9 @@ from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
-
-# Max 3 fallbacks to stay within Vercel 60s proxy timeout
-# Verified working: Google AI Studio + Nvidia providers (avoid Venice)
-FALLBACK_MODELS = [
-    "google/gemma-3-27b-it:free",
-    "nvidia/nemotron-nano-9b-v2:free",
-    "google/gemma-3-12b-it:free",
-]
+from app.llm.openrouter_models import get_fallback_models
 
 PER_MODEL_TIMEOUT = 20  # seconds per model attempt
-
 
 # Models that don't support system role — merge into first user message
 NO_SYSTEM_ROLE = {"google/gemma-3-27b-it:free", "google/gemma-3-12b-it:free", "google/gemma-3-4b-it:free"}
@@ -34,7 +26,6 @@ class OpenRouterProvider(BaseLLMProvider):
     def _prepare_messages(messages: list[LLMMessage], model: str) -> list[dict]:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         if model in NO_SYSTEM_ROLE:
-            # Merge system messages into first user message
             system_parts = [m["content"] for m in api_messages if m["role"] == "system"]
             api_messages = [m for m in api_messages if m["role"] != "system"]
             if system_parts and api_messages:
@@ -146,9 +137,11 @@ class OpenRouterProvider(BaseLLMProvider):
         return "\n".join(lines)
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
-        model = preferred or FALLBACK_MODELS[0]
-        models = [model]
-        for fb in FALLBACK_MODELS:
-            if fb != model:
+        fallbacks = get_fallback_models(limit=3)
+        if not preferred:
+            return fallbacks
+        models = [preferred]
+        for fb in fallbacks:
+            if fb != preferred and len(models) < 3:
                 models.append(fb)
         return models
