@@ -85,7 +85,7 @@ class OpenRouterProvider(BaseLLMProvider):
     @staticmethod
     def _is_retryable(e: Exception) -> bool:
         err = str(e)
-        return "429" in err or "rate" in err.lower() or "404" in err or "No endpoints" in err
+        return "429" in err or "402" in err or "rate" in err.lower() or "404" in err or "No endpoints" in err or "spend limit" in err.lower()
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
         """Return preferred model first, then fallbacks."""
