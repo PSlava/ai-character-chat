@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,6 +9,11 @@ from app.db.session import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Set proxy env vars so all httpx clients (Gemini, etc.) pick them up
+    if settings.proxy_url:
+        os.environ["HTTP_PROXY"] = settings.proxy_url
+        os.environ["HTTPS_PROXY"] = settings.proxy_url
+
     await init_db()
     init_providers(
         anthropic_key=settings.anthropic_api_key,

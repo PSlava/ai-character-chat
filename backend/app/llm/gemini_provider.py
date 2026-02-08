@@ -6,13 +6,7 @@ from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 
 class GeminiProvider(BaseLLMProvider):
     def __init__(self, api_key: str, proxy_url: str | None = None):
-        kwargs: dict = {"api_key": api_key}
-        if proxy_url:
-            kwargs["http_options"] = types.HttpOptions(
-                api_version="v1beta",
-                proxy=proxy_url,
-            )
-        self.client = genai.Client(**kwargs)
+        self.client = genai.Client(api_key=api_key)
 
     async def generate_stream(
         self,
