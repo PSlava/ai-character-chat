@@ -1,12 +1,77 @@
+import json
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
-from app.characters.schemas import CharacterCreate, CharacterUpdate
+from app.characters.schemas import CharacterCreate, CharacterUpdate, GenerateFromStoryRequest
 from app.characters import service
 from app.characters.serializers import character_to_dict
+from app.llm.base import LLMMessage, LLMConfig
+from app.llm.registry import get_provider
 
 router = APIRouter(prefix="/api/characters", tags=["characters"])
+
+GENERATE_SYSTEM_PROMPT = """Ты — эксперт по созданию персонажей для ролевых чатов.
+Проанализируй предоставленный текст и создай профиль персонажа в формате JSON.
+
+Верни строго JSON-объект со следующими полями:
+{
+  "name": "Имя персонажа",
+  "tagline": "Краткое описание в 5-10 слов",
+  "personality": "Детальное описание характера, манеры речи, привычек, особенностей поведения. Пиши от второго лица: 'Ты — ...'",
+  "scenario": "Описание мира, ситуации и контекста для начала диалога",
+  "greeting_message": "Первое сообщение персонажа в начале чата. Используй *звёздочки* для описания действий. Сообщение должно быть атмосферным и приглашать к диалогу.",
+  "example_dialogues": "2-3 примера коротких реплик в формате:\\nUser: ...\\nCharacter: ...",
+  "tags": ["тег1", "тег2", "тег3"],
+  "content_rating": "sfw"
+}
+
+Правила:
+- personality должен быть подробным (минимум 3-4 предложения)
+- greeting_message должно быть от лица персонажа, атмосферным
+- content_rating: "sfw" для обычного контента, "moderate" если есть насилие/мрачные темы, "nsfw" если явный взрослый контент
+- Если указано имя конкретного персонажа — создай профиль для него. Иначе — выбери самого яркого/интересного персонажа из текста.
+- Верни ТОЛЬКО JSON, без markdown-обёртки, без пояснений."""
+
+
+@router.post("/generate-from-story")
+async def generate_from_story(
+    body: GenerateFromStoryRequest,
+    user=Depends(get_current_user),
+):
+    try:
+        provider = get_provider(body.preferred_model)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Model not available")
+
+    user_msg = body.story_text
+    if body.character_name:
+        user_msg += f"\n\nСоздай профиль для персонажа: {body.character_name}"
+
+    messages = [
+        LLMMessage(role="system", content=GENERATE_SYSTEM_PROMPT),
+        LLMMessage(role="user", content=user_msg),
+    ]
+    config = LLMConfig(model="", temperature=0.7, max_tokens=2048)
+
+    try:
+        raw = await provider.generate(messages, config)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM error: {str(e)}")
+
+    # Strip markdown code fences if present
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+        if text.endswith("```"):
+            text = text[:-3].strip()
+
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=502, detail="Failed to parse LLM response as JSON")
+
+    return data
 
 
 @router.get("")

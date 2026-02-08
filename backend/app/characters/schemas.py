@@ -16,6 +16,12 @@ class CharacterCreate(BaseModel):
     preferred_model: str = "claude"
 
 
+class GenerateFromStoryRequest(BaseModel):
+    story_text: str
+    character_name: str | None = None
+    preferred_model: str = "claude"
+
+
 class CharacterUpdate(BaseModel):
     name: str | None = None
     tagline: str | None = None

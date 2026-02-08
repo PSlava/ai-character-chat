@@ -34,3 +34,16 @@ export async function updateCharacter(id: string, body: Partial<Character>) {
 export async function deleteCharacter(id: string) {
   await api.delete(`/characters/${id}`);
 }
+
+export async function generateFromStory(
+  storyText: string,
+  characterName?: string,
+  preferredModel: string = 'claude',
+) {
+  const { data } = await api.post<Partial<Character>>('/characters/generate-from-story', {
+    story_text: storyText,
+    character_name: characterName || undefined,
+    preferred_model: preferredModel,
+  });
+  return data;
+}
