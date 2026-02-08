@@ -39,11 +39,13 @@ export async function generateFromStory(
   storyText: string,
   characterName?: string,
   preferredModel: string = 'claude',
+  contentRating: string = 'sfw',
 ) {
   const { data } = await api.post<Partial<Character>>('/characters/generate-from-story', {
     story_text: storyText,
     character_name: characterName || undefined,
     preferred_model: preferredModel,
+    content_rating: contentRating,
   });
   return data;
 }

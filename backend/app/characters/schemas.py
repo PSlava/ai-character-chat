@@ -20,6 +20,7 @@ class GenerateFromStoryRequest(BaseModel):
     story_text: str
     character_name: str | None = None
     preferred_model: str = "claude"
+    content_rating: str = "sfw"
 
 
 class CharacterUpdate(BaseModel):

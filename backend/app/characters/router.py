@@ -51,9 +51,15 @@ async def generate_from_story(
     except ValueError:
         raise HTTPException(status_code=400, detail="Model not available")
 
+    rating_instructions = {
+        "sfw": "Контент должен быть полностью безопасным (SFW). Никакого насилия, откровенного контента или мрачных тем.",
+        "moderate": "Допускается умеренный контент: лёгкое насилие, мрачные темы, конфликты. Без откровенного взрослого контента.",
+        "nsfw": "Допускается взрослый контент (NSFW): откровенные сцены, насилие, тёмные темы.",
+    }
     user_msg = body.story_text
     if body.character_name:
         user_msg += f"\n\nСоздай профиль для персонажа: {body.character_name}"
+    user_msg += f"\n\nРейтинг контента: {body.content_rating}. {rating_instructions.get(body.content_rating, '')}"
 
     messages = [
         LLMMessage(role="system", content=GENERATE_SYSTEM_PROMPT),

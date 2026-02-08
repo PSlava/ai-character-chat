@@ -14,6 +14,7 @@ export function CreateCharacterPage() {
   const [storyText, setStoryText] = useState('');
   const [characterName, setCharacterName] = useState('');
   const [model, setModel] = useState('qwen3');
+  const [contentRating, setContentRating] = useState('sfw');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [generated, setGenerated] = useState<Partial<Character> | null>(null);
@@ -28,7 +29,7 @@ export function CreateCharacterPage() {
     setGenerating(true);
     setError('');
     try {
-      const data = await generateFromStory(storyText, characterName, model);
+      const data = await generateFromStory(storyText, characterName, model, contentRating);
       setGenerated(data);
       setTab('manual');
     } catch (e: unknown) {
@@ -102,6 +103,21 @@ export function CreateCharacterPage() {
               <option value="gemini">Gemini</option>
               <option value="claude">Claude</option>
               <option value="openai">GPT-4o</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm text-neutral-400 mb-1">
+              Рейтинг контента
+            </label>
+            <select
+              value={contentRating}
+              onChange={(e) => setContentRating(e.target.value)}
+              className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
+            >
+              <option value="sfw">SFW — безопасный контент</option>
+              <option value="moderate">Moderate — умеренный (насилие, мрачные темы)</option>
+              <option value="nsfw">NSFW — взрослый контент</option>
             </select>
           </div>
 
