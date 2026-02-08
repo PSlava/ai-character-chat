@@ -122,7 +122,7 @@ async def send_message(
         "openai": "gpt-4o",
         "gemini": "gemini-2.0-flash",
         "openrouter": "google/gemini-2.0-flash-exp:free",
-        "qwen3": "qwen/qwen3-235b-a22b:free",
+        "qwen3": "qwen/qwen3-next-80b-a3b-instruct:free",
     }
     OPENROUTER_ALIASES = {"qwen3"}
     provider_name = "openrouter" if model_name in OPENROUTER_ALIASES else model_name
