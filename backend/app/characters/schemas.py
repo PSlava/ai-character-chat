@@ -21,6 +21,7 @@ class GenerateFromStoryRequest(BaseModel):
     character_name: str | None = None
     preferred_model: str = "claude"
     content_rating: str = "sfw"
+    extra_instructions: str | None = None
 
 
 class CharacterUpdate(BaseModel):

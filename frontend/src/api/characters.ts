@@ -69,6 +69,7 @@ export async function generateFromStory(
   characterName?: string,
   preferredModel: string = 'claude',
   contentRating: string = 'sfw',
+  extraInstructions?: string,
 ) {
   await wakeUpServer();
   const { data } = await api.post<Partial<Character>>('/characters/generate-from-story', {
@@ -76,6 +77,7 @@ export async function generateFromStory(
     character_name: characterName || undefined,
     preferred_model: preferredModel,
     content_rating: contentRating,
+    extra_instructions: extraInstructions || undefined,
   });
   return data;
 }

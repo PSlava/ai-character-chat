@@ -17,6 +17,7 @@ export function CreateCharacterPage() {
   const [characterName, setCharacterName] = useState('');
   const [model, setModel] = useState('openrouter');
   const [contentRating, setContentRating] = useState('sfw');
+  const [extraInstructions, setExtraInstructions] = useState('');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [statusText, setStatusText] = useState('');
@@ -49,7 +50,7 @@ export function CreateCharacterPage() {
       setStatusText('Проверка сервера...');
       await wakeUpServer((s) => setStatusText(s));
       setStatusText('Генерация... (может занять 10-30 сек)');
-      const data = await generateFromStory(storyText, characterName, model, contentRating);
+      const data = await generateFromStory(storyText, characterName, model, contentRating, extraInstructions);
       setGenerated(data);
       setTab('manual');
     } catch (e: unknown) {
@@ -149,6 +150,14 @@ export function CreateCharacterPage() {
               <option value="nsfw">NSFW — взрослый контент</option>
             </select>
           </div>
+
+          <Textarea
+            label="Дополнительные пожелания (необязательно)"
+            value={extraInstructions}
+            onChange={(e) => setExtraInstructions(e.target.value)}
+            placeholder="Например: сделай персонажа более саркастичным, добавь акцент, пусть говорит на ты..."
+            rows={3}
+          />
 
           {error && (
             <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg">

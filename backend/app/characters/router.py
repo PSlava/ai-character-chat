@@ -71,6 +71,8 @@ async def generate_from_story(
     if body.character_name:
         user_msg += f"\n\nСоздай профиль для персонажа: {body.character_name}"
     user_msg += f"\n\nРейтинг контента: {body.content_rating}. {rating_instructions.get(body.content_rating, '')}"
+    if body.extra_instructions:
+        user_msg += f"\n\nДополнительные пожелания: {body.extra_instructions}"
 
     messages = [
         LLMMessage(role="system", content=GENERATE_SYSTEM_PROMPT),
