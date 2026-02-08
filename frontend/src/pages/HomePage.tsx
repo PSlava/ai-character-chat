@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getCharacters } from '@/api/characters';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
-import { Input } from '@/components/ui/Input';
 import { Search } from 'lucide-react';
 import type { Character } from '@/types';
 
