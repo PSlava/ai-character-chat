@@ -150,11 +150,6 @@ class OpenRouterProvider(BaseLLMProvider):
         return "\n".join(lines)
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
-        fallbacks = get_fallback_models(limit=3)
         if not preferred:
-            return fallbacks
-        models = [preferred]
-        for fb in fallbacks:
-            if fb != preferred and len(models) < 3:
-                models.append(fb)
-        return models
+            return get_fallback_models(limit=3)
+        return [preferred]
