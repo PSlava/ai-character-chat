@@ -19,6 +19,8 @@
 | OPENAI_API_KEY | Да | Нет (нет кредитов) |
 | GEMINI_API_KEY | Да | Нет (квота = 0) |
 | OPENROUTER_API_KEY | Да | **Да** |
+| DEEPSEEK_API_KEY | Нужно задать | Прямой API (обходит лимиты OpenRouter) |
+| QWEN_API_KEY | Нужно задать | Прямой API через DashScope |
 | DEFAULT_MODEL | openrouter | Работает (Auto — перебор по качеству) |
 | PROXY_URL | Да | Да |
 | CORS_ORIGINS | Да | Да |
@@ -50,12 +52,14 @@
 - История сообщений сохраняется в БД
 - Удаление чатов
 
-### LLM-провайдеры (4 штуки)
+### LLM-провайдеры (6 штук)
 | Провайдер | Модель по умолчанию | Ключ в Render | Работает |
 |-----------|---------------------|---------------|----------|
 | OpenRouter | google/gemma-3-27b-it:free | Да | **Да** |
+| DeepSeek | deepseek-chat | Нужен | Прямой API (api.deepseek.com) |
+| Qwen (DashScope) | qwen3-32b | Нужен | Прямой API (dashscope-intl) |
 | Gemini | gemini-2.0-flash | Да | Нет (квота = 0, регион заблокирован) |
-| Claude (Anthropic) | claude-sonnet-4-5 | Да | Нет (нет кредитов) |
+| Claude (Anthropic) | claude-sonnet-4-5 | Да | Нет (нет API-кредитов) |
 | OpenAI | gpt-4o | Да | Нет (нет кредитов) |
 
 **Рабочие бесплатные модели через OpenRouter:**

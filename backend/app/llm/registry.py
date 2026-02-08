@@ -3,6 +3,8 @@ from app.llm.anthropic_provider import AnthropicProvider
 from app.llm.openai_provider import OpenAIProvider
 from app.llm.gemini_provider import GeminiProvider
 from app.llm.openrouter_provider import OpenRouterProvider
+from app.llm.deepseek_provider import DeepSeekProvider
+from app.llm.qwen_provider import QwenProvider
 
 _providers: dict[str, BaseLLMProvider] = {}
 
@@ -12,6 +14,8 @@ def init_providers(
     openai_key: str | None,
     gemini_key: str | None = None,
     openrouter_key: str | None = None,
+    deepseek_key: str | None = None,
+    qwen_key: str | None = None,
     proxy_url: str | None = None,
 ):
     if anthropic_key:
@@ -22,6 +26,10 @@ def init_providers(
         _providers["gemini"] = GeminiProvider(api_key=gemini_key, proxy_url=proxy_url)
     if openrouter_key:
         _providers["openrouter"] = OpenRouterProvider(api_key=openrouter_key, proxy_url=proxy_url)
+    if deepseek_key:
+        _providers["deepseek"] = DeepSeekProvider(api_key=deepseek_key, proxy_url=proxy_url)
+    if qwen_key:
+        _providers["qwen"] = QwenProvider(api_key=qwen_key, proxy_url=proxy_url)
 
 
 def get_provider(name: str) -> BaseLLMProvider:

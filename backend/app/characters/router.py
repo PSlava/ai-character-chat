@@ -40,6 +40,13 @@ async def generate_from_story(
     user=Depends(get_current_user),
 ):
     # Direct OpenRouter model ID (contains "/") or alias
+    PROVIDER_MODELS = {
+        "claude": "claude-sonnet-4-5-20250929",
+        "openai": "gpt-4o",
+        "gemini": "gemini-2.0-flash",
+        "deepseek": "deepseek-chat",
+        "qwen": "qwen3-32b",
+    }
     if "/" in body.preferred_model:
         provider_name = "openrouter"
         model_id = body.preferred_model
@@ -48,7 +55,7 @@ async def generate_from_story(
         model_id = ""  # auto — provider will pick best from fallback chain
     else:
         provider_name = body.preferred_model
-        model_id = {"claude": "claude-sonnet-4-5-20250929", "openai": "gpt-4o", "gemini": "gemini-2.0-flash"}.get(body.preferred_model, "")
+        model_id = PROVIDER_MODELS.get(body.preferred_model, "")
 
     try:
         provider = get_provider(provider_name)

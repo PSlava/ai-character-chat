@@ -158,6 +158,9 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
               </option>
             ))}
             <option disabled>───────────</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="qwen">Qwen</option>
+            <option disabled>───────────</option>
             <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>
             <option value="openai">GPT-4o</option>

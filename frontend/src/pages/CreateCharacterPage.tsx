@@ -126,6 +126,9 @@ export function CreateCharacterPage() {
                 </option>
               ))}
               <option disabled>───────────</option>
+              <option value="deepseek">DeepSeek (deepseek-chat)</option>
+              <option value="qwen">Qwen (qwen3-32b)</option>
+              <option disabled>───────────</option>
               <option value="gemini">Gemini (платная)</option>
               <option value="claude">Claude (платная)</option>
               <option value="openai">GPT-4o (платная)</option>

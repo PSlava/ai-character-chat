@@ -65,7 +65,7 @@ export function ChatPage() {
           <p className="text-xs text-neutral-500">
             {(() => {
               const m = chatDetail.chat.model_used || '';
-              const alias: Record<string, string> = { claude: 'Claude', openai: 'GPT-4o', gemini: 'Gemini', openrouter: 'OpenRouter Auto' };
+              const alias: Record<string, string> = { claude: 'Claude', openai: 'GPT-4o', gemini: 'Gemini', openrouter: 'OpenRouter Auto', deepseek: 'DeepSeek', qwen: 'Qwen' };
               if (alias[m]) return alias[m];
               const found = orModels.find((om) => om.id === m);
               return found ? found.name : m;
