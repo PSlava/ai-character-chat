@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 from app.llm.openrouter_models import get_fallback_models
 
-PER_MODEL_TIMEOUT = 20  # seconds per model attempt
+PER_MODEL_TIMEOUT = 25  # seconds per model attempt
 
 # Models that don't support system role — merge into first user message
 NO_SYSTEM_ROLE = {"google/gemma-3-27b-it:free", "google/gemma-3-12b-it:free", "google/gemma-3-4b-it:free"}

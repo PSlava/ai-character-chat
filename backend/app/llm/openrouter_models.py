@@ -62,8 +62,32 @@ def get_models_sorted() -> list[dict]:
 
 
 def get_fallback_models(limit: int = 3) -> list[str]:
-    """Return top-N model IDs sorted by quality for fallback chain."""
-    return [m["id"] for m in get_models_sorted()[:limit]]
+    """Return top-N model IDs, diversified by provider to avoid shared rate limits.
+
+    Google AI Studio models share a rate limit, so we pick one Google model
+    then fill remaining slots from other providers before adding more Google models.
+    """
+    sorted_models = get_models_sorted()
+    result: list[str] = []
+    seen_providers: set[str] = set()
+
+    # First pass: best model from each provider
+    for m in sorted_models:
+        provider = m["id"].split("/")[0]  # google, nvidia, deepseek, etc.
+        if provider not in seen_providers:
+            result.append(m["id"])
+            seen_providers.add(provider)
+            if len(result) >= limit:
+                return result
+
+    # Second pass: fill remaining with best available
+    for m in sorted_models:
+        if m["id"] not in result:
+            result.append(m["id"])
+            if len(result) >= limit:
+                return result
+
+    return result
 
 
 def find_model_by_id(model_id: str) -> dict | None:
