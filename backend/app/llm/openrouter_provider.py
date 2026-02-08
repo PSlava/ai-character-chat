@@ -6,9 +6,9 @@ from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 
 # Max 3 fallbacks to stay within Vercel 60s proxy timeout
 FALLBACK_MODELS = [
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "mistralai/mistral-small-3.1-24b-instruct:free",
+    "google/gemma-3-27b-it:free",
+    "nousresearch/hermes-3-llama-3.1-405b:free",
+    "deepseek/deepseek-r1-0528:free",
 ]
 
 PER_MODEL_TIMEOUT = 15  # seconds per model attempt
@@ -119,7 +119,7 @@ class OpenRouterProvider(BaseLLMProvider):
     @staticmethod
     def _is_retryable(e: Exception) -> bool:
         err = str(e)
-        return any(s in err for s in ("429", "402", "404", "No endpoints", "пустой")) or "rate" in err.lower() or "spend limit" in err.lower()
+        return any(s in err for s in ("429", "402", "404", "No endpoints", "пустой", "Provider returned error")) or "rate" in err.lower() or "spend limit" in err.lower()
 
     @staticmethod
     def _format_errors(errors: list[tuple[str, str]]) -> str:
