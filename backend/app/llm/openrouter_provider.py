@@ -73,7 +73,10 @@ class OpenRouterProvider(BaseLLMProvider):
                     temperature=config.temperature,
                     top_p=config.top_p,
                 )
-                return response.choices[0].message.content
+                content = response.choices[0].message.content if response.choices else None
+                if not content:
+                    raise RuntimeError("Модель вернула пустой ответ")
+                return content
             except Exception as e:
                 reason = self._extract_reason(e)
                 errors.append((model.split("/")[-1].replace(":free", ""), reason))

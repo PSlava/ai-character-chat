@@ -32,13 +32,11 @@ export function CreateCharacterPage() {
       setGenerated(data);
       setTab('manual');
     } catch (e: unknown) {
-      let msg = 'Ошибка генерации';
-      if (e && typeof e === 'object' && 'response' in e) {
-        const resp = (e as { response?: { data?: { detail?: string } } }).response;
-        msg = resp?.data?.detail || msg;
-      } else if (e instanceof Error) {
-        msg = e.message;
-      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ax = e as any;
+      const msg = ax?.response?.data?.detail
+        || ax?.message
+        || 'Ошибка генерации';
       setError(msg);
     } finally {
       setGenerating(false);
