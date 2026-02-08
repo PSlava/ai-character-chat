@@ -12,6 +12,7 @@ async def lifespan(app: FastAPI):
     init_providers(
         anthropic_key=settings.anthropic_api_key,
         openai_key=settings.openai_api_key,
+        gemini_key=settings.gemini_api_key,
     )
     yield
 

@@ -117,7 +117,7 @@ async def send_message(
     messages = await service.build_conversation_messages(db, chat_id, character)
     provider = get_provider(model_name)
     config = LLMConfig(
-        model="claude-sonnet-4-5-20250929" if model_name == "claude" else "gpt-4o",
+        model={"claude": "claude-sonnet-4-5-20250929", "openai": "gpt-4o", "gemini": "gemini-2.0-flash"}.get(model_name, ""),
         temperature=0.8,
         max_tokens=1024,
     )

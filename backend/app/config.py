@@ -6,7 +6,8 @@ class Settings(BaseSettings):
     jwt_secret: str = "dev-secret-change-in-production"
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
-    default_model: str = "claude"
+    gemini_api_key: str | None = None
+    default_model: str = "gemini"
     cors_origins: str = "http://localhost:5173"
     environment: str = "development"  # development | production
 

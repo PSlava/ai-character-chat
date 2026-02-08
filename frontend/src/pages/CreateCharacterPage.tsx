@@ -13,7 +13,7 @@ export function CreateCharacterPage() {
   const [tab, setTab] = useState<Tab>('manual');
   const [storyText, setStoryText] = useState('');
   const [characterName, setCharacterName] = useState('');
-  const [model, setModel] = useState('claude');
+  const [model, setModel] = useState('gemini');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [generated, setGenerated] = useState<Partial<Character> | null>(null);
@@ -93,6 +93,7 @@ export function CreateCharacterPage() {
               onChange={(e) => setModel(e.target.value)}
               className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
             >
+              <option value="gemini">Gemini</option>
               <option value="claude">Claude</option>
               <option value="openai">GPT-4o</option>
             </select>

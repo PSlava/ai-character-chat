@@ -21,7 +21,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
     system_prompt_suffix: initial?.system_prompt_suffix || '',
     tags: initial?.tags?.join(', ') || '',
     is_public: initial?.is_public ?? true,
-    preferred_model: initial?.preferred_model || 'claude',
+    preferred_model: initial?.preferred_model || 'gemini',
   });
   const [loading, setLoading] = useState(false);
 
@@ -144,6 +144,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
             onChange={(e) => update('preferred_model', e.target.value)}
             className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
           >
+            <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>
             <option value="openai">GPT-4o</option>
           </select>

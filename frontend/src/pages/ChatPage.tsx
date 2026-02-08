@@ -56,7 +56,7 @@ export function ChatPage() {
         <div>
           <h2 className="font-semibold">{character?.name}</h2>
           <p className="text-xs text-neutral-500">
-            {chatDetail.chat.model_used === 'claude' ? 'Claude' : 'GPT-4o'}
+            {{ claude: 'Claude', openai: 'GPT-4o', gemini: 'Gemini' }[chatDetail.chat.model_used || ''] || chatDetail.chat.model_used}
           </p>
         </div>
       </div>
