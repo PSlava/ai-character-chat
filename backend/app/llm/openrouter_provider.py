@@ -52,9 +52,16 @@ class OpenRouterProvider(BaseLLMProvider):
                     top_p=config.top_p,
                     stream=True,
                 )
+                has_content = False
                 async for chunk in stream:
-                    if chunk.choices and chunk.choices[0].delta.content:
-                        yield chunk.choices[0].delta.content
+                    delta = chunk.choices[0].delta if chunk.choices else None
+                    if delta:
+                        text = delta.content or getattr(delta, "reasoning", None)
+                        if text:
+                            has_content = True
+                            yield text
+                if not has_content:
+                    raise RuntimeError("Модель вернула пустой ответ")
                 return
             except Exception as e:
                 reason = self._extract_reason(e)
@@ -86,7 +93,13 @@ class OpenRouterProvider(BaseLLMProvider):
                     ),
                     timeout=PER_MODEL_TIMEOUT,
                 )
-                content = response.choices[0].message.content if response.choices else None
+                msg = response.choices[0].message if response.choices else None
+                content = msg.content if msg else None
+                # Thinking models (Nemotron) put response in reasoning field
+                if not content and msg:
+                    reasoning = getattr(msg, "reasoning", None)
+                    if reasoning:
+                        content = reasoning
                 if not content:
                     raise RuntimeError("Модель вернула пустой ответ")
                 return content
