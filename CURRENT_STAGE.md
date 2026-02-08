@@ -9,12 +9,6 @@
 | Database (Supabase) | PostgreSQL через connection pooler | Работает |
 | GitHub | https://github.com/PSlava/ai-character-chat | main branch |
 
-## Текущие данные в БД
-
-- **Пользователи**: 1 (test@example.com / testuser)
-- **Персонажи**: 1 (Шерлок Холмс, модель: claude)
-- **Чаты**: 0
-
 ## Env-переменные в Render
 
 | Переменная | Задана | Работает |
@@ -24,8 +18,8 @@
 | ANTHROPIC_API_KEY | Да | Нет (нет кредитов) |
 | OPENAI_API_KEY | Да | Нет (нет кредитов) |
 | GEMINI_API_KEY | Да | Нет (квота = 0) |
-| OPENROUTER_API_KEY | **НЕТ** | — |
-| DEFAULT_MODEL | gemini | Нужно сменить на openrouter |
+| OPENROUTER_API_KEY | Да | **Да** |
+| DEFAULT_MODEL | qwen3 | Работает через OpenRouter |
 | PROXY_URL | Да | Да |
 | CORS_ORIGINS | Да | Да |
 | ENVIRONMENT | production | Да |
@@ -55,16 +49,16 @@
 - Удаление чатов
 
 ### LLM-провайдеры (4 штуки)
-| Провайдер | Модель | Ключ в Render | Работает |
-|-----------|--------|---------------|----------|
-| OpenRouter | google/gemini-2.0-flash-exp:free | НЕТ — нужно добавить `OPENROUTER_API_KEY` | Нет |
-| Gemini | gemini-2.0-flash | Есть | Нет (квота = 0, регион заблокирован) |
-| Claude (Anthropic) | claude-sonnet-4-5 | Есть | Нет (нет кредитов) |
-| OpenAI | gpt-4o | Есть | Нет (нет кредитов) |
+| Провайдер | Модель по умолчанию | Ключ в Render | Работает |
+|-----------|---------------------|---------------|----------|
+| OpenRouter | nvidia/nemotron-nano-9b-v2:free | Да | **Да** |
+| Gemini | gemini-2.0-flash | Да | Нет (квота = 0, регион заблокирован) |
+| Claude (Anthropic) | claude-sonnet-4-5 | Да | Нет (нет кредитов) |
+| OpenAI | gpt-4o | Да | Нет (нет кредитов) |
 
-**Блокер: ни один LLM-провайдер сейчас не работает.** Чат и генерация персонажей из текста недоступны.
+**Рабочая модель: Nemotron Nano 9B (бесплатная через OpenRouter).**
 
-Решение: добавить `OPENROUTER_API_KEY` в Render → Environment. Ключ берётся бесплатно на https://openrouter.ai/keys
+Автоматический фолбэк при ошибках: Nemotron 9B → Gemma 12B → Llama 3.2 3B. Подробный вывод ошибок по каждой модели.
 
 - Все провайдеры поддерживают HTTP-прокси с авторизацией (настроен)
 - Абстракция провайдеров — легко добавить новый
@@ -86,13 +80,9 @@
 
 ## Что нужно доработать
 
-### Критический (без этого не работает чат)
-- [ ] **Добавить `OPENROUTER_API_KEY` в Render** — зарегистрироваться на https://openrouter.ai, создать ключ, добавить в Environment
-- [ ] Установить `DEFAULT_MODEL=openrouter` в Render Environment
-
 ### Высокий приоритет
 - [ ] Загрузка аватаров персонажей (сейчас только URL, нет загрузки файлов)
-- [ ] Обработка ошибок на фронтенде (сейчас минимальная)
+- [ ] Улучшить обработку ошибок на фронтенде
 - [ ] Валидация форм (минимальная длина, обязательные поля)
 
 ### Средний приоритет

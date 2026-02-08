@@ -97,7 +97,7 @@ export function CreateCharacterPage() {
               onChange={(e) => setModel(e.target.value)}
               className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
             >
-              <option value="qwen3">Gemma 3 27B (Free)</option>
+              <option value="qwen3">Nemotron 9B (Free)</option>
               <option value="openrouter">OpenRouter Auto (Free)</option>
               <option value="gemini">Gemini</option>
               <option value="claude">Claude</option>
