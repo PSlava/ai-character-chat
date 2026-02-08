@@ -56,7 +56,7 @@ export function ChatPage() {
         <div>
           <h2 className="font-semibold">{character?.name}</h2>
           <p className="text-xs text-neutral-500">
-            {{ claude: 'Claude', openai: 'GPT-4o', gemini: 'Gemini', openrouter: 'OpenRouter', qwen3: 'Gemma 3 27B' }[chatDetail.chat.model_used || ''] || chatDetail.chat.model_used}
+            {{ claude: 'Claude', openai: 'GPT-4o', gemini: 'Gemini', openrouter: 'OpenRouter', qwen3: 'DeepSeek R1' }[chatDetail.chat.model_used || ''] || chatDetail.chat.model_used}
           </p>
         </div>
       </div>

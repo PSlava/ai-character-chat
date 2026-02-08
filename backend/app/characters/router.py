@@ -40,8 +40,8 @@ async def generate_from_story(
     user=Depends(get_current_user),
 ):
     MODEL_MAP = {
-        "openrouter": "google/gemma-3-27b-it:free",
-        "qwen3": "google/gemma-3-27b-it:free",
+        "openrouter": "deepseek/deepseek-r1-0528:free",
+        "qwen3": "deepseek/deepseek-r1-0528:free",
     }
     OPENROUTER_ALIASES = {"qwen3"}
     provider_name = "openrouter" if body.preferred_model in OPENROUTER_ALIASES else body.preferred_model

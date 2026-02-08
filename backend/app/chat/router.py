@@ -121,8 +121,8 @@ async def send_message(
         "claude": "claude-sonnet-4-5-20250929",
         "openai": "gpt-4o",
         "gemini": "gemini-2.0-flash",
-        "openrouter": "google/gemma-3-27b-it:free",
-        "qwen3": "google/gemma-3-27b-it:free",
+        "openrouter": "deepseek/deepseek-r1-0528:free",
+        "qwen3": "deepseek/deepseek-r1-0528:free",
     }
     OPENROUTER_ALIASES = {"qwen3"}
     provider_name = "openrouter" if model_name in OPENROUTER_ALIASES else model_name

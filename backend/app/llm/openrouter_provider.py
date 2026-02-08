@@ -6,12 +6,12 @@ from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 
 # Max 3 fallbacks to stay within Vercel 60s proxy timeout
 FALLBACK_MODELS = [
-    "google/gemma-3-27b-it:free",
-    "nousresearch/hermes-3-llama-3.1-405b:free",
     "deepseek/deepseek-r1-0528:free",
+    "google/gemma-3-27b-it:free",
+    "openai/gpt-oss-120b:free",
 ]
 
-PER_MODEL_TIMEOUT = 15  # seconds per model attempt
+PER_MODEL_TIMEOUT = 25  # seconds per model attempt
 
 
 class OpenRouterProvider(BaseLLMProvider):

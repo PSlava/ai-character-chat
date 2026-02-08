@@ -144,7 +144,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
             onChange={(e) => update('preferred_model', e.target.value)}
             className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
           >
-            <option value="qwen3">Gemma 3 27B (Free)</option>
+            <option value="qwen3">DeepSeek R1 (Free)</option>
             <option value="openrouter">OpenRouter Auto (Free)</option>
             <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>
