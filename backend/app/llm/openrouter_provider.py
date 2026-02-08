@@ -6,7 +6,8 @@ from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 FALLBACK_MODELS = [
     "meta-llama/llama-3.3-70b-instruct:free",
     "qwen/qwen3-next-80b-a3b-instruct:free",
-    "google/gemini-2.0-flash-exp:free",
+    "deepseek/deepseek-r1-0528:free",
+    "nousresearch/hermes-3-llama-3.1-405b:free",
     "mistralai/mistral-small-3.1-24b-instruct:free",
     "google/gemma-3-27b-it:free",
 ]
@@ -47,7 +48,7 @@ class OpenRouterProvider(BaseLLMProvider):
                 return
             except Exception as e:
                 last_error = e
-                if "429" in str(e) or "rate" in str(e).lower():
+                if self._is_retryable(e):
                     continue
                 raise
 
@@ -75,11 +76,16 @@ class OpenRouterProvider(BaseLLMProvider):
                 return response.choices[0].message.content
             except Exception as e:
                 last_error = e
-                if "429" in str(e) or "rate" in str(e).lower():
+                if self._is_retryable(e):
                     continue
                 raise
 
         raise last_error
+
+    @staticmethod
+    def _is_retryable(e: Exception) -> bool:
+        err = str(e)
+        return "429" in err or "rate" in err.lower() or "404" in err or "No endpoints" in err
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
         """Return preferred model first, then fallbacks."""

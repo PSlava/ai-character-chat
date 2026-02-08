@@ -121,7 +121,7 @@ async def send_message(
         "claude": "claude-sonnet-4-5-20250929",
         "openai": "gpt-4o",
         "gemini": "gemini-2.0-flash",
-        "openrouter": "google/gemini-2.0-flash-exp:free",
+        "openrouter": "meta-llama/llama-3.3-70b-instruct:free",
         "qwen3": "qwen/qwen3-next-80b-a3b-instruct:free",
     }
     OPENROUTER_ALIASES = {"qwen3"}
