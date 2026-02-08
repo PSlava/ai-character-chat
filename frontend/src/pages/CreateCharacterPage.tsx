@@ -13,7 +13,7 @@ export function CreateCharacterPage() {
   const [tab, setTab] = useState<Tab>('manual');
   const [storyText, setStoryText] = useState('');
   const [characterName, setCharacterName] = useState('');
-  const [model, setModel] = useState('openrouter');
+  const [model, setModel] = useState('qwen3');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [generated, setGenerated] = useState<Partial<Character> | null>(null);
@@ -93,6 +93,7 @@ export function CreateCharacterPage() {
               onChange={(e) => setModel(e.target.value)}
               className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
             >
+              <option value="qwen3">Qwen3 235B (Free)</option>
               <option value="openrouter">OpenRouter (Free)</option>
               <option value="gemini">Gemini</option>
               <option value="claude">Claude</option>

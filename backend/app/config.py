@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     gemini_api_key: str | None = None
     openrouter_api_key: str | None = None
-    default_model: str = "openrouter"
+    default_model: str = "qwen3"
     proxy_url: str | None = None  # e.g. http://user:pass@host:port
     cors_origins: str = "http://localhost:5173"
     environment: str = "development"  # development | production

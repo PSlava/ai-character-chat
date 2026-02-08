@@ -115,9 +115,21 @@ async def send_message(
 
     # Build context
     messages = await service.build_conversation_messages(db, chat_id, character)
-    provider = get_provider(model_name)
+
+    # Models that run through OpenRouter provider
+    MODEL_MAP = {
+        "claude": "claude-sonnet-4-5-20250929",
+        "openai": "gpt-4o",
+        "gemini": "gemini-2.0-flash",
+        "openrouter": "google/gemini-2.0-flash-exp:free",
+        "qwen3": "qwen/qwen3-235b-a22b:free",
+    }
+    OPENROUTER_ALIASES = {"qwen3"}
+    provider_name = "openrouter" if model_name in OPENROUTER_ALIASES else model_name
+
+    provider = get_provider(provider_name)
     config = LLMConfig(
-        model={"claude": "claude-sonnet-4-5-20250929", "openai": "gpt-4o", "gemini": "gemini-2.0-flash", "openrouter": "google/gemini-2.0-flash-exp:free"}.get(model_name, ""),
+        model=MODEL_MAP.get(model_name, ""),
         temperature=0.8,
         max_tokens=1024,
     )

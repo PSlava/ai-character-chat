@@ -39,8 +39,15 @@ async def generate_from_story(
     body: GenerateFromStoryRequest,
     user=Depends(get_current_user),
 ):
+    MODEL_MAP = {
+        "openrouter": "google/gemini-2.0-flash-exp:free",
+        "qwen3": "qwen/qwen3-235b-a22b:free",
+    }
+    OPENROUTER_ALIASES = {"qwen3"}
+    provider_name = "openrouter" if body.preferred_model in OPENROUTER_ALIASES else body.preferred_model
+
     try:
-        provider = get_provider(body.preferred_model)
+        provider = get_provider(provider_name)
     except ValueError:
         raise HTTPException(status_code=400, detail="Model not available")
 
@@ -52,7 +59,7 @@ async def generate_from_story(
         LLMMessage(role="system", content=GENERATE_SYSTEM_PROMPT),
         LLMMessage(role="user", content=user_msg),
     ]
-    config = LLMConfig(model="", temperature=0.7, max_tokens=2048)
+    config = LLMConfig(model=MODEL_MAP.get(body.preferred_model, ""), temperature=0.7, max_tokens=2048)
 
     try:
         raw = await provider.generate(messages, config)
