@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     openai_api_key: str | None = None
     gemini_api_key: str | None = None
-    default_model: str = "gemini"
+    openrouter_api_key: str | None = None
+    default_model: str = "openrouter"
     proxy_url: str | None = None  # e.g. http://user:pass@host:port
     cors_origins: str = "http://localhost:5173"
     environment: str = "development"  # development | production

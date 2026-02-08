@@ -19,6 +19,7 @@ async def lifespan(app: FastAPI):
         anthropic_key=settings.anthropic_api_key,
         openai_key=settings.openai_api_key,
         gemini_key=settings.gemini_api_key,
+        openrouter_key=settings.openrouter_api_key,
         proxy_url=settings.proxy_url,
     )
     yield
