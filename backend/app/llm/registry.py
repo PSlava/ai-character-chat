@@ -10,13 +10,14 @@ def init_providers(
     anthropic_key: str | None,
     openai_key: str | None,
     gemini_key: str | None = None,
+    proxy_url: str | None = None,
 ):
     if anthropic_key:
-        _providers["claude"] = AnthropicProvider(api_key=anthropic_key)
+        _providers["claude"] = AnthropicProvider(api_key=anthropic_key, proxy_url=proxy_url)
     if openai_key:
-        _providers["openai"] = OpenAIProvider(api_key=openai_key)
+        _providers["openai"] = OpenAIProvider(api_key=openai_key, proxy_url=proxy_url)
     if gemini_key:
-        _providers["gemini"] = GeminiProvider(api_key=gemini_key)
+        _providers["gemini"] = GeminiProvider(api_key=gemini_key, proxy_url=proxy_url)
 
 
 def get_provider(name: str) -> BaseLLMProvider:

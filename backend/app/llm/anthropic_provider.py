@@ -1,11 +1,15 @@
 from typing import AsyncIterator
+import httpx
 import anthropic
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 
 
 class AnthropicProvider(BaseLLMProvider):
-    def __init__(self, api_key: str):
-        self.client = anthropic.AsyncAnthropic(api_key=api_key)
+    def __init__(self, api_key: str, proxy_url: str | None = None):
+        kwargs: dict = {"api_key": api_key}
+        if proxy_url:
+            kwargs["http_client"] = httpx.AsyncClient(proxy=proxy_url)
+        self.client = anthropic.AsyncAnthropic(**kwargs)
 
     async def generate_stream(
         self,
