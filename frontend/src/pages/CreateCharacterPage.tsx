@@ -15,7 +15,7 @@ export function CreateCharacterPage() {
   const [tab, setTab] = useState<Tab>('manual');
   const [storyText, setStoryText] = useState('');
   const [characterName, setCharacterName] = useState('');
-  const [model, setModel] = useState('openrouter');
+  const [model, setModel] = useState('qwen');
   const [contentRating, setContentRating] = useState('sfw');
   const [extraInstructions, setExtraInstructions] = useState('');
   const [generating, setGenerating] = useState(false);

@@ -13,13 +13,13 @@ class CharacterCreate(BaseModel):
     system_prompt_suffix: str | None = None
     tags: list[str] = []
     is_public: bool = True
-    preferred_model: str = "claude"
+    preferred_model: str = "qwen"
 
 
 class GenerateFromStoryRequest(BaseModel):
     story_text: str
     character_name: str | None = None
-    preferred_model: str = "claude"
+    preferred_model: str = "qwen"
     content_rating: str = "sfw"
     extra_instructions: str | None = None
 

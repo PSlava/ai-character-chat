@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     openrouter_api_key: str | None = None
     deepseek_api_key: str | None = None
     qwen_api_key: str | None = None
-    default_model: str = "qwen3"
+    default_model: str = "qwen"
     proxy_url: str | None = None  # e.g. http://user:pass@host:port
     cors_origins: str = "http://localhost:5173"
     environment: str = "development"  # development | production

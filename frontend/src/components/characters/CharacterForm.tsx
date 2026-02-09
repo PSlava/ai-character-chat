@@ -27,7 +27,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
     system_prompt_suffix: str(initial?.system_prompt_suffix),
     tags: Array.isArray(initial?.tags) ? initial.tags.join(', ') : '',
     is_public: initial?.is_public ?? true,
-    preferred_model: initial?.preferred_model || 'openrouter',
+    preferred_model: initial?.preferred_model || 'qwen',
   });
   const [loading, setLoading] = useState(false);
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
