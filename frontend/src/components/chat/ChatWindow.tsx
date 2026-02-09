@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { RefreshCw, Pencil, Send } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageBubble } from './MessageBubble';
 
@@ -10,10 +10,13 @@ interface Props {
   isStreaming: boolean;
   onDeleteMessage?: (messageId: string) => void;
   onRegenerate?: (messageId: string) => void;
+  onResendLast?: (editedContent?: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, onDeleteMessage, onRegenerate }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, onDeleteMessage, onRegenerate, onResendLast }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState('');
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -21,6 +24,9 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
 
   const visible = messages.filter((m) => m.role !== 'system');
   const lastAssistant = visible.length > 1 && visible[visible.length - 1].role === 'assistant'
+    ? visible[visible.length - 1]
+    : null;
+  const lastUserNoReply = visible.length > 1 && visible[visible.length - 1].role === 'user'
     ? visible[visible.length - 1]
     : null;
 
@@ -49,6 +55,65 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
               <RefreshCw size={13} />
               Перегенерировать
             </button>
+          </div>
+        )}
+
+        {!isStreaming && lastUserNoReply && onResendLast && (
+          <div className="flex justify-end pr-11">
+            {editing ? (
+              <div className="w-full max-w-[75%] space-y-2">
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-purple-500"
+                  rows={3}
+                  autoFocus
+                />
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setEditing(false)}
+                    className="px-3 py-1.5 text-xs text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (editText.trim()) {
+                        onResendLast(editText.trim());
+                        setEditing(false);
+                      }
+                    }}
+                    disabled={!editText.trim()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Send size={13} />
+                    Отправить
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex gap-1">
+                <button
+                  onClick={() => onResendLast()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
+                  title="Повторить отправку"
+                >
+                  <RefreshCw size={13} />
+                  Повторить
+                </button>
+                <button
+                  onClick={() => {
+                    setEditText(lastUserNoReply.content);
+                    setEditing(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
+                  title="Редактировать и отправить"
+                >
+                  <Pencil size={13} />
+                  Редактировать
+                </button>
+              </div>
+            )}
           </div>
         )}
 

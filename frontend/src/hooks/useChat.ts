@@ -180,10 +180,36 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     [chatId, sendMessage]
   );
 
+  const resendLast = useCallback(
+    async (editedContent?: string) => {
+      // Find the last user message (no assistant reply after it)
+      setMessages((prev) => {
+        const visible = prev.filter((m) => m.role !== 'system');
+        const last = visible[visible.length - 1];
+        if (!last || last.role !== 'user') return prev;
+
+        const content = editedContent ?? last.content;
+        const msgId = last.id;
+
+        // Remove from state
+        const updated = prev.filter((m) => m.id !== msgId);
+
+        // Delete from DB then resend
+        (async () => {
+          await deleteChatMessage(chatId, msgId).catch(() => {});
+          sendMessage(content);
+        })();
+
+        return updated;
+      });
+    },
+    [chatId, sendMessage]
+  );
+
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast };
 }

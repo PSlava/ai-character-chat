@@ -30,7 +30,7 @@ export function ChatPage() {
   const [chatSettings, setChatSettings] = useState<ChatSettings>({});
   const [activeModel, setActiveModel] = useState('');
 
-  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate } = useChat(
+  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast } = useChat(
     chatId || ''
   );
 
@@ -142,6 +142,7 @@ export function ChatPage() {
         isStreaming={isStreaming}
         onDeleteMessage={handleDeleteMessage}
         onRegenerate={!isStreaming ? regenerate : undefined}
+        onResendLast={!isStreaming ? resendLast : undefined}
       />
 
       <ChatInput
