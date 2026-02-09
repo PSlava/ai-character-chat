@@ -9,6 +9,7 @@ export interface GenerationSettings {
   top_p?: number;
   top_k?: number;
   frequency_penalty?: number;
+  max_tokens?: number;
 }
 
 export function useChat(chatId: string, initialMessages: Message[] = []) {
@@ -64,6 +65,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
           ...(s.top_p !== undefined && { top_p: s.top_p }),
           ...(s.top_k !== undefined && { top_k: s.top_k }),
           ...(s.frequency_penalty !== undefined && { frequency_penalty: s.frequency_penalty }),
+          ...(s.max_tokens !== undefined && { max_tokens: s.max_tokens }),
         }),
         signal: ctrl.signal,
         onmessage(event) {

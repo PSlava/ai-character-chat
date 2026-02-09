@@ -69,6 +69,7 @@ const GEN_DEFAULTS = {
   top_p: 0.95,
   top_k: 0,
   frequency_penalty: 0,
+  max_tokens: 2048,
 };
 
 interface ModelOption {
@@ -93,6 +94,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
     top_p: settings.top_p ?? GEN_DEFAULTS.top_p,
     top_k: settings.top_k ?? GEN_DEFAULTS.top_k,
     frequency_penalty: settings.frequency_penalty ?? GEN_DEFAULTS.frequency_penalty,
+    max_tokens: settings.max_tokens ?? GEN_DEFAULTS.max_tokens,
   });
 
   const update = <K extends keyof typeof GEN_DEFAULTS>(key: K, value: number) =>
@@ -181,6 +183,15 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
             min={0}
             max={2}
             step={0.01}
+          />
+          <Slider
+            label="Макс. токенов"
+            tooltip="Максимальная длина ответа в токенах. 1 токен ≈ 3-4 символа. 2048 = ~6000 символов."
+            value={local.max_tokens}
+            onChange={(v) => update('max_tokens', Math.round(v))}
+            min={256}
+            max={4096}
+            step={128}
           />
         </div>
 
