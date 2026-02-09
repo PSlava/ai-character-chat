@@ -5,6 +5,7 @@ from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 from app.llm.openrouter_models import get_fallback_models
 from app.llm.thinking_filter import ThinkingFilter, strip_thinking
+from app.llm import model_cooldown
 
 PER_MODEL_TIMEOUT = 25  # seconds per model attempt
 
@@ -71,6 +72,7 @@ class OpenRouterProvider(BaseLLMProvider):
                     raise RuntimeError("Модель вернула пустой ответ")
                 return
             except Exception as e:
+                model_cooldown.mark_failed("openrouter", model)
                 reason = self._extract_reason(e)
                 errors.append((model.split("/")[-1].replace(":free", ""), reason))
                 if self._is_retryable(e):
@@ -116,9 +118,11 @@ class OpenRouterProvider(BaseLLMProvider):
                     raise RuntimeError("Модель вернула пустой ответ")
                 return strip_thinking(content)
             except asyncio.TimeoutError:
+                model_cooldown.mark_failed("openrouter", model)
                 errors.append((model.split("/")[-1].replace(":free", ""), "таймаут"))
                 continue
             except Exception as e:
+                model_cooldown.mark_failed("openrouter", model)
                 reason = self._extract_reason(e)
                 errors.append((model.split("/")[-1].replace(":free", ""), reason))
                 if self._is_retryable(e):
@@ -162,6 +166,8 @@ class OpenRouterProvider(BaseLLMProvider):
         return "\n".join(lines)
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
-        if not preferred:
-            return get_fallback_models(limit=3)
-        return [preferred]
+        if preferred:
+            return [preferred]
+        models = get_fallback_models(limit=3)
+        available = model_cooldown.filter_available("openrouter", models)
+        return available or models[:1]

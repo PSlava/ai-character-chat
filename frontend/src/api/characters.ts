@@ -47,6 +47,16 @@ export async function getOpenRouterModels(): Promise<OpenRouterModel[]> {
   return data;
 }
 
+export async function getGroqModels(): Promise<OpenRouterModel[]> {
+  const { data } = await api.get<OpenRouterModel[]>('/models/groq');
+  return data;
+}
+
+export async function getCerebrasModels(): Promise<OpenRouterModel[]> {
+  const { data } = await api.get<OpenRouterModel[]>('/models/cerebras');
+  return data;
+}
+
 /** Wake up Render backend if sleeping. Retries every 3s for up to 3 minutes. */
 export async function wakeUpServer(
   onStatus?: (status: string) => void,

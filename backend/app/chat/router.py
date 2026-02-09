@@ -161,14 +161,24 @@ async def send_message(
         "gemini": "gemini-2.0-flash",
         "deepseek": "deepseek-chat",
         "qwen": "qwen3-32b",
-        "groq": "qwen-qwq-32b",
-        "cerebras": "qwen-3-32b",
     }
-    if "/" in model_name:
+    if model_name.startswith("groq:"):
+        provider_name = "groq"
+        model_id = model_name[5:]
+    elif model_name.startswith("cerebras:"):
+        provider_name = "cerebras"
+        model_id = model_name[9:]
+    elif "/" in model_name:
         provider_name = "openrouter"
         model_id = model_name
-    elif model_name in ("openrouter", "qwen3"):
+    elif model_name in ("openrouter",):
         provider_name = "openrouter"
+        model_id = ""
+    elif model_name in ("groq",):
+        provider_name = "groq"
+        model_id = ""
+    elif model_name in ("cerebras",):
+        provider_name = "cerebras"
         model_id = ""
     else:
         provider_name = model_name

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Trash2, Settings } from 'lucide-react';
 import { getChat, clearChatMessages, deleteChatMessage } from '@/api/chat';
-import { getOpenRouterModels } from '@/api/characters';
+import { getOpenRouterModels, getGroqModels, getCerebrasModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
@@ -28,6 +28,8 @@ export function ChatPage() {
   const [chatDetail, setChatDetail] = useState<ChatDetail | null>(null);
   const [error, setError] = useState('');
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
+  const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
+  const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [chatSettings, setChatSettings] = useState<ChatSettings>({});
   const [activeModel, setActiveModel] = useState('');
@@ -38,6 +40,8 @@ export function ChatPage() {
 
   useEffect(() => {
     getOpenRouterModels().then(setOrModels).catch(() => {});
+    getGroqModels().then(setGroqModels).catch(() => {});
+    getCerebrasModels().then(setCerebrasModels).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -61,6 +65,16 @@ export function ChatPage() {
 
   const getModelLabel = (m: string) => {
     if (MODEL_ALIASES[m]) return MODEL_ALIASES[m];
+    if (m.startsWith('groq:')) {
+      const id = m.slice(5);
+      const found = groqModels.find((gm) => gm.id === id);
+      return found ? `Groq: ${found.name}` : `Groq: ${id}`;
+    }
+    if (m.startsWith('cerebras:')) {
+      const id = m.slice(9);
+      const found = cerebrasModels.find((cm) => cm.id === id);
+      return found ? `Cerebras: ${found.name}` : `Cerebras: ${id}`;
+    }
     const found = orModels.find((om) => om.id === m);
     return found ? found.name : m;
   };
@@ -158,6 +172,8 @@ export function ChatPage() {
           settings={chatSettings}
           currentModel={activeModel}
           orModels={orModels}
+          groqModels={groqModels}
+          cerebrasModels={cerebrasModels}
           onApply={handleApplySettings}
           onClose={() => setShowSettings(false)}
         />

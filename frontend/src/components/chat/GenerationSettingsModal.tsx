@@ -11,6 +11,8 @@ interface Props {
   settings: ChatSettings;
   currentModel: string;
   orModels: OpenRouterModel[];
+  groqModels: OpenRouterModel[];
+  cerebrasModels: OpenRouterModel[];
   onApply: (settings: ChatSettings) => void;
   onClose: () => void;
 }
@@ -95,21 +97,18 @@ const GEN_DEFAULTS = {
 interface ModelOption {
   id: string;
   label: string;
-  group: 'free' | 'direct' | 'paid';
+  group: 'openrouter' | 'groq' | 'cerebras' | 'direct' | 'paid';
 }
 
-const BUILTIN_MODELS: ModelOption[] = [
-  { id: 'openrouter', label: 'OpenRouter Auto (Free)', group: 'free' },
-  { id: 'groq', label: 'Groq (Qwen 32B)', group: 'direct' },
-  { id: 'cerebras', label: 'Cerebras (Qwen 32B)', group: 'direct' },
-  { id: 'deepseek', label: 'DeepSeek', group: 'direct' },
-  { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct' },
-  { id: 'gemini', label: 'Gemini', group: 'paid' },
-  { id: 'claude', label: 'Claude', group: 'paid' },
-  { id: 'openai', label: 'GPT-4o', group: 'paid' },
-];
+const GROUP_LABELS: Record<string, string> = {
+  openrouter: 'OpenRouter',
+  groq: 'Groq',
+  cerebras: 'Cerebras',
+  direct: 'Прямой API',
+  paid: 'Платные',
+};
 
-export function GenerationSettingsModal({ settings, currentModel, orModels, onApply, onClose }: Props) {
+export function GenerationSettingsModal({ settings, currentModel, orModels, groqModels, cerebrasModels, onApply, onClose }: Props) {
   const [model, setModel] = useState(settings.model || currentModel);
   const [local, setLocal] = useState({
     temperature: settings.temperature ?? GEN_DEFAULTS.temperature,
@@ -122,15 +121,30 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
   const update = <K extends keyof typeof GEN_DEFAULTS>(key: K, value: number) =>
     setLocal((prev) => ({ ...prev, [key]: value }));
 
-  // Build full model list: OpenRouter models grouped with builtins
+  // Build full model list with groups
   const allModels: ModelOption[] = [
-    ...BUILTIN_MODELS.filter((m) => m.group === 'free'),
-    ...orModels.map((m) => ({ id: m.id, label: `${m.name} (${m.quality}/10)`, group: 'free' as const })),
-    ...BUILTIN_MODELS.filter((m) => m.group === 'direct'),
-    ...BUILTIN_MODELS.filter((m) => m.group === 'paid'),
+    // OpenRouter
+    { id: 'openrouter', label: 'OpenRouter Auto', group: 'openrouter' },
+    ...orModels.map((m) => ({ id: m.id, label: `${m.name} (${m.quality}/10)`, group: 'openrouter' as const })),
+    // Groq
+    { id: 'groq', label: 'Groq Auto', group: 'groq' },
+    ...groqModels.map((m) => ({ id: `groq:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'groq' as const })),
+    // Cerebras
+    { id: 'cerebras', label: 'Cerebras Auto', group: 'cerebras' },
+    ...cerebrasModels.map((m) => ({ id: `cerebras:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'cerebras' as const })),
+    // Direct
+    { id: 'deepseek', label: 'DeepSeek', group: 'direct' },
+    { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct' },
+    // Paid
+    { id: 'gemini', label: 'Gemini', group: 'paid' },
+    { id: 'claude', label: 'Claude', group: 'paid' },
+    { id: 'openai', label: 'GPT-4o', group: 'paid' },
   ];
 
   const isSelected = (id: string) => model === id;
+
+  // Group models for rendering with headers
+  const groups = ['openrouter', 'groq', 'cerebras', 'direct', 'paid'] as const;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
@@ -148,24 +162,30 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
         {/* Model selection */}
         <div className="mb-6">
           <p className="text-sm text-neutral-400 mb-3">Выбор модели для генерации ответа</p>
-          <div className="grid grid-cols-2 gap-2">
-            {allModels.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setModel(m.id)}
-                className={`text-left px-3 py-2.5 rounded-lg border text-sm transition-colors ${
-                  isSelected(m.id)
-                    ? 'border-purple-500 bg-purple-500/10 text-white'
-                    : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
-                }`}
-              >
-                <span className="block font-medium truncate">{m.label}</span>
-                <span className="block text-xs text-neutral-500 mt-0.5">
-                  {m.group === 'free' ? 'Бесплатно' : m.group === 'direct' ? 'Прямой API' : 'Платная'}
-                </span>
-              </button>
-            ))}
-          </div>
+          {groups.map((group) => {
+            const items = allModels.filter((m) => m.group === group);
+            if (items.length === 0) return null;
+            return (
+              <div key={group} className="mb-3">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1.5">{GROUP_LABELS[group]}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {items.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => setModel(m.id)}
+                      className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                        isSelected(m.id)
+                          ? 'border-purple-500 bg-purple-500/10 text-white'
+                          : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                      }`}
+                    >
+                      <span className="block font-medium truncate text-xs">{m.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Generation params */}

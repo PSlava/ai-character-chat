@@ -2,9 +2,12 @@ from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
-from app.llm.thinking_filter import strip_thinking
+from app.llm.thinking_filter import ThinkingFilter, strip_thinking
+from app.llm.groq_models import get_fallback_models
+from app.llm import model_cooldown
 
-TIMEOUT = 30
+TIMEOUT = 25
+PROVIDER = "groq"
 
 
 class GroqProvider(BaseLLMProvider):
@@ -23,36 +26,105 @@ class GroqProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> AsyncIterator[str]:
+        models = self._get_models_to_try(config.model)
+        errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
-        stream = await self.client.chat.completions.create(
-            model=config.model or "qwen-qwq-32b",
-            messages=api_messages,
-            max_tokens=config.max_tokens,
-            temperature=config.temperature,
-            top_p=config.top_p,
-            frequency_penalty=config.frequency_penalty,
-            stream=True,
-        )
-        async for chunk in stream:
-            delta = chunk.choices[0].delta if chunk.choices else None
-            if delta and delta.content:
-                yield delta.content
+
+        for model in models:
+            try:
+                stream = await self.client.chat.completions.create(
+                    model=model,
+                    messages=api_messages,
+                    max_tokens=config.max_tokens,
+                    temperature=config.temperature,
+                    top_p=config.top_p,
+                    frequency_penalty=config.frequency_penalty,
+                    stream=True,
+                )
+                has_content = False
+                thinking_filter = ThinkingFilter()
+                async for chunk in stream:
+                    delta = chunk.choices[0].delta if chunk.choices else None
+                    if delta and delta.content:
+                        clean = thinking_filter.process(delta.content)
+                        if clean:
+                            has_content = True
+                            yield clean
+                if not has_content:
+                    raise RuntimeError("Модель вернула пустой ответ")
+                return
+            except Exception as e:
+                model_cooldown.mark_failed(PROVIDER, model)
+                reason = self._extract_reason(e)
+                errors.append((model, reason))
+                if self._is_retryable(e):
+                    continue
+                raise RuntimeError(self._format_errors(errors))
+
+        raise RuntimeError(self._format_errors(errors))
 
     async def generate(
         self,
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        models = self._get_models_to_try(config.model)
+        errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
-        response = await self.client.chat.completions.create(
-            model=config.model or "qwen-qwq-32b",
-            messages=api_messages,
-            max_tokens=config.max_tokens,
-            temperature=config.temperature,
-            top_p=config.top_p,
-            frequency_penalty=config.frequency_penalty,
-        )
-        content = response.choices[0].message.content if response.choices else None
-        if not content:
-            raise RuntimeError("Groq returned empty response")
-        return strip_thinking(content)
+
+        for model in models:
+            try:
+                response = await self.client.chat.completions.create(
+                    model=model,
+                    messages=api_messages,
+                    max_tokens=config.max_tokens,
+                    temperature=config.temperature,
+                    top_p=config.top_p,
+                    frequency_penalty=config.frequency_penalty,
+                )
+                content = response.choices[0].message.content if response.choices else None
+                if not content:
+                    raise RuntimeError("Модель вернула пустой ответ")
+                return strip_thinking(content)
+            except Exception as e:
+                model_cooldown.mark_failed(PROVIDER, model)
+                reason = self._extract_reason(e)
+                errors.append((model, reason))
+                if self._is_retryable(e):
+                    continue
+                raise RuntimeError(self._format_errors(errors))
+
+        raise RuntimeError(self._format_errors(errors))
+
+    def _get_models_to_try(self, preferred: str) -> list[str]:
+        if preferred:
+            return [preferred]
+        models = get_fallback_models(limit=3)
+        available = model_cooldown.filter_available(PROVIDER, models)
+        return available or models[:1]  # at least try one
+
+    @staticmethod
+    def _extract_reason(e: Exception) -> str:
+        try:
+            body = getattr(e, "body", None)
+            if body and isinstance(body, dict):
+                msg = body.get("error", body).get("message", "")
+                if msg:
+                    return msg[:150]
+        except Exception:
+            pass
+        err = str(e)
+        return err[:150] + "..." if len(err) > 150 else err
+
+    @staticmethod
+    def _is_retryable(e: Exception) -> bool:
+        err = str(e)
+        return any(s in err for s in ("429", "402", "404", "пустой", "rate")) or "limit" in err.lower()
+
+    @staticmethod
+    def _format_errors(errors: list[tuple[str, str]]) -> str:
+        lines = ["Groq — все модели недоступны:"]
+        for model, reason in errors:
+            short = model.split("/")[-1] if "/" in model else model
+            lines.append(f"  • {short}: {reason}")
+        return "\n".join(lines)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { getOpenRouterModels } from '@/api/characters';
+import { getOpenRouterModels, getGroqModels, getCerebrasModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import type { Character } from '@/types';
 
@@ -33,9 +33,13 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
   });
   const [loading, setLoading] = useState(false);
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
+  const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
+  const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
 
   useEffect(() => {
     getOpenRouterModels().then(setOrModels).catch(() => {});
+    getGroqModels().then(setGroqModels).catch(() => {});
+    getCerebrasModels().then(setCerebrasModels).catch(() => {});
   }, []);
 
   const update = (field: string, value: string | boolean | number) =>
@@ -181,12 +185,24 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
                 {m.name} ({m.quality}/10)
               </option>
             ))}
-            <option disabled>───────────</option>
-            <option value="groq">Groq (Qwen 32B)</option>
-            <option value="cerebras">Cerebras (Qwen 32B)</option>
+            <option disabled>─── Groq ───</option>
+            <option value="groq">Groq Auto</option>
+            {groqModels.map((m) => (
+              <option key={`groq:${m.id}`} value={`groq:${m.id}`}>
+                {m.name} ({m.quality}/10)
+              </option>
+            ))}
+            <option disabled>─── Cerebras ───</option>
+            <option value="cerebras">Cerebras Auto</option>
+            {cerebrasModels.map((m) => (
+              <option key={`cerebras:${m.id}`} value={`cerebras:${m.id}`}>
+                {m.name} ({m.quality}/10)
+              </option>
+            ))}
+            <option disabled>─── Прямой API ───</option>
             <option value="deepseek">DeepSeek</option>
             <option value="qwen">Qwen (DashScope)</option>
-            <option disabled>───────────</option>
+            <option disabled>─── Платные ───</option>
             <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>
             <option value="openai">GPT-4o</option>
