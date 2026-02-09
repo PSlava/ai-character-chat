@@ -95,6 +95,12 @@ export function ChatPage() {
 
   const handleDeleteMessage = async (messageId: string) => {
     if (!chatId || isStreaming) return;
+    // Check if it's an error message (local only, not in DB)
+    const msg = messages.find((m) => m.id === messageId);
+    if (msg?.isError) {
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      return;
+    }
     try {
       await deleteChatMessage(chatId, messageId);
       setMessages((prev) => prev.filter((m) => m.id !== messageId));

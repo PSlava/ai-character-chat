@@ -23,12 +23,25 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
   }, [messages, isStreaming]);
 
   const visible = messages.filter((m) => m.role !== 'system');
-  const lastAssistant = visible.length > 1 && visible[visible.length - 1].role === 'assistant'
-    ? visible[visible.length - 1]
-    : null;
-  const lastUserNoReply = visible.length > 1 && visible[visible.length - 1].role === 'user'
-    ? visible[visible.length - 1]
-    : null;
+  const lastMsg = visible.length > 1 ? visible[visible.length - 1] : null;
+  const lastIsError = !!(lastMsg?.role === 'assistant' && lastMsg?.isError);
+
+  // Show regenerate under last assistant (including errors)
+  const lastAssistant = lastMsg?.role === 'assistant' ? lastMsg : null;
+
+  // Show resend/edit when last is user, OR last is error (treat as no reply)
+  let lastUserNoReply: Message | null = null;
+  if (lastMsg?.role === 'user') {
+    lastUserNoReply = lastMsg;
+  } else if (lastIsError) {
+    // Find the user message before the error
+    for (let i = visible.length - 2; i >= 1; i--) {
+      if (visible[i].role === 'user') {
+        lastUserNoReply = visible[i];
+        break;
+      }
+    }
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-4">

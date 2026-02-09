@@ -33,7 +33,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       DEFAULT_MODEL: ${DEFAULT_MODEL:-groq}
       PROXY_URL: ${PROXY_URL:-}
-      CORS_ORIGINS: http://localhost,https://${DOMAIN:-localhost}
+      CORS_ORIGINS: "*"
       ENVIRONMENT: production
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]

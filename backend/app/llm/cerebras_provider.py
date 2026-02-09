@@ -3,7 +3,7 @@ import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 from app.llm.thinking_filter import ThinkingFilter, strip_thinking
-from app.llm.cerebras_models import get_fallback_models
+from app.llm.cerebras_models import get_fallback_models, refresh_models, is_cache_stale
 from app.llm import model_cooldown
 
 TIMEOUT = 25
@@ -21,11 +21,17 @@ class CerebrasProvider(BaseLLMProvider):
             kwargs["http_client"] = httpx.AsyncClient(proxy=proxy_url, timeout=TIMEOUT)
         self.client = AsyncOpenAI(**kwargs)
 
+    async def ensure_models_loaded(self):
+        """Refresh model list from API if cache is stale."""
+        if is_cache_stale():
+            await refresh_models(self.client)
+
     async def generate_stream(
         self,
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> AsyncIterator[str]:
+        await self.ensure_models_loaded()
         models = self._get_models_to_try(config.model)
         errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
@@ -67,6 +73,7 @@ class CerebrasProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        await self.ensure_models_loaded()
         models = self._get_models_to_try(config.model)
         errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
@@ -95,11 +102,13 @@ class CerebrasProvider(BaseLLMProvider):
         raise RuntimeError(self._format_errors(errors))
 
     def _get_models_to_try(self, preferred: str) -> list[str]:
+        fallbacks = get_fallback_models(limit=3)
         if preferred:
-            return [preferred]
-        models = get_fallback_models(limit=3)
-        available = model_cooldown.filter_available(PROVIDER, models)
-        return available or models[:1]
+            # Preferred first, then fallbacks (in case preferred is deprecated)
+            others = [m for m in fallbacks if m != preferred]
+            return [preferred] + others
+        available = model_cooldown.filter_available(PROVIDER, fallbacks)
+        return available or fallbacks[:1]
 
     @staticmethod
     def _extract_reason(e: Exception) -> str:

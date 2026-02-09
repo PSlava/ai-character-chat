@@ -191,21 +191,39 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
 
   const resendLast = useCallback(
     async (editedContent?: string) => {
-      // Find the last user message (no assistant reply after it)
       setMessages((prev) => {
         const visible = prev.filter((m) => m.role !== 'system');
         const last = visible[visible.length - 1];
-        if (!last || last.role !== 'user') return prev;
+        if (!last) return prev;
 
-        const content = editedContent ?? last.content;
-        const msgId = last.id;
+        // If last is error assistant — find user message before it
+        let userMsg: Message | null = null;
+        let errorMsg: Message | null = null;
 
-        // Remove from state
-        const updated = prev.filter((m) => m.id !== msgId);
+        if (last.role === 'user') {
+          userMsg = last;
+        } else if (last.role === 'assistant' && last.isError) {
+          errorMsg = last;
+          // Find the user message before the error
+          for (let i = visible.length - 2; i >= 0; i--) {
+            if (visible[i].role === 'user') {
+              userMsg = visible[i];
+              break;
+            }
+          }
+        }
 
-        // Delete from DB then resend
+        if (!userMsg) return prev;
+
+        const content = editedContent ?? userMsg.content;
+        const idsToRemove = new Set([userMsg.id]);
+        if (errorMsg) idsToRemove.add(errorMsg.id);
+
+        const updated = prev.filter((m) => !idsToRemove.has(m.id));
+
+        // Delete user message from DB (error message is local-only), then resend
         (async () => {
-          await deleteChatMessage(chatId, msgId).catch(() => {});
+          await deleteChatMessage(chatId, userMsg!.id).catch(() => {});
           sendMessage(content);
         })();
 
