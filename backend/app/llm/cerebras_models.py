@@ -6,11 +6,12 @@ import time
 logger = logging.getLogger(__name__)
 
 # Static quality scores for known models (higher = better for roleplay)
+# Llama/Qwen preferred — GPT-OSS has strict content moderation
 QUALITY_SCORES: dict[str, int] = {
-    "gpt-oss-120b": 9,
-    "llama-3.3-70b": 8,
+    "llama-3.3-70b": 9,
     "qwen-3-32b": 8,
     "zai-glm-4.7": 7,
+    "gpt-oss-120b": 6,
 }
 
 # Models to exclude (too small for roleplay)
@@ -26,9 +27,9 @@ CACHE_TTL = 3600  # 1 hour
 
 # Fallback if API unavailable
 FALLBACK_MODELS = [
-    {"id": "gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 9, "note": ""},
-    {"id": "llama-3.3-70b", "name": "Llama 3.3 70B", "quality": 8, "note": ""},
+    {"id": "llama-3.3-70b", "name": "Llama 3.3 70B", "quality": 9, "note": ""},
     {"id": "qwen-3-32b", "name": "Qwen 3 32B", "quality": 8, "note": ""},
+    {"id": "gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "note": ""},
 ]
 
 

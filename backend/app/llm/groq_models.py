@@ -7,14 +7,15 @@ import time
 logger = logging.getLogger(__name__)
 
 # Static quality scores for known models (higher = better for roleplay)
+# Llama models are preferred — GPT-OSS has strict content moderation
 QUALITY_SCORES: dict[str, int] = {
-    "openai/gpt-oss-120b": 9,
-    "llama-3.3-70b-versatile": 8,
-    "openai/gpt-oss-20b": 6,
+    "llama-3.3-70b-versatile": 9,
     "qwen/qwen3-32b": 8,
     "meta-llama/llama-4-scout-17b-16e-instruct": 7,
     "meta-llama/llama-4-maverick-17b-128e-instruct": 7,
     "deepseek-r1-distill-llama-70b": 7,
+    "openai/gpt-oss-120b": 6,
+    "openai/gpt-oss-20b": 5,
 }
 
 # Models to exclude (not useful for chat)
@@ -31,9 +32,9 @@ CACHE_TTL = 3600  # 1 hour
 
 # Fallback if API unavailable
 FALLBACK_MODELS = [
-    {"id": "openai/gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 9, "note": ""},
-    {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B", "quality": 8, "note": ""},
-    {"id": "openai/gpt-oss-20b", "name": "GPT-OSS 20B", "quality": 6, "note": ""},
+    {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B", "quality": 9, "note": ""},
+    {"id": "openai/gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "note": ""},
+    {"id": "openai/gpt-oss-20b", "name": "GPT-OSS 20B", "quality": 5, "note": ""},
 ]
 
 
