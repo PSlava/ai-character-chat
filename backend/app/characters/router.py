@@ -1,7 +1,7 @@
 import json
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.middleware import get_current_user
+from app.auth.middleware import get_current_user, get_current_user_optional
 from app.db.session import get_db
 from app.characters.schemas import CharacterCreate, CharacterUpdate, GenerateFromStoryRequest
 from app.characters import service
@@ -116,9 +116,11 @@ async def browse_characters(
     offset: int = Query(0, ge=0),
     search: str | None = None,
     tag: str | None = None,
+    user=Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    characters = await service.list_public_characters(db, limit, offset, search, tag)
+    user_id = user["id"] if user else None
+    characters = await service.list_public_characters(db, limit, offset, search, tag, user_id=user_id)
     return [character_to_dict(c) for c in characters]
 
 

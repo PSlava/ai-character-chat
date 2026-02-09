@@ -11,11 +11,20 @@ async def list_public_characters(
     offset: int = 0,
     search: str | None = None,
     tag: str | None = None,
+    user_id: str | None = None,
 ):
+    from sqlalchemy import or_
+
+    # Show public characters + user's own private ones
+    if user_id:
+        visibility = or_(Character.is_public == True, Character.creator_id == user_id)
+    else:
+        visibility = Character.is_public == True
+
     query = (
         select(Character)
         .options(selectinload(Character.creator))
-        .where(Character.is_public == True)
+        .where(visibility)
         .order_by(Character.created_at.desc())
         .offset(offset)
         .limit(limit)
