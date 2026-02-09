@@ -8,3 +8,8 @@ class CreateChatRequest(BaseModel):
 
 class SendMessageRequest(BaseModel):
     content: str
+    model: str | None = None  # override model for this chat
+    temperature: float | None = None
+    top_p: float | None = None
+    top_k: int | None = None
+    frequency_penalty: float | None = None

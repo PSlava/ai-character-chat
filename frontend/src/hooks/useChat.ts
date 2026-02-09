@@ -3,10 +3,23 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getAuthToken } from '@/api/chat';
 import type { Message } from '@/types';
 
+export interface GenerationSettings {
+  model?: string;
+  temperature?: number;
+  top_p?: number;
+  top_k?: number;
+  frequency_penalty?: number;
+}
+
 export function useChat(chatId: string, initialMessages: Message[] = []) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const settingsRef = useRef<GenerationSettings>({});
+
+  const setGenerationSettings = useCallback((s: GenerationSettings) => {
+    settingsRef.current = s;
+  }, []);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -37,13 +50,21 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
 
+      const s = settingsRef.current;
       await fetchEventSource(`/api/chats/${chatId}/message`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({
+          content,
+          ...(s.model && { model: s.model }),
+          ...(s.temperature !== undefined && { temperature: s.temperature }),
+          ...(s.top_p !== undefined && { top_p: s.top_p }),
+          ...(s.top_k !== undefined && { top_k: s.top_k }),
+          ...(s.frequency_penalty !== undefined && { frequency_penalty: s.frequency_penalty }),
+        }),
         signal: ctrl.signal,
         onmessage(event) {
           const data = JSON.parse(event.data);
@@ -88,5 +109,5 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings };
 }

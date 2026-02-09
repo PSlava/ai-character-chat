@@ -1,36 +1,38 @@
 def build_system_prompt(character: dict, user_name: str | None = None) -> str:
     parts = []
 
-    parts.append(f"You are {character['name']}.")
+    parts.append(f"Ты — {character['name']}. Ты полностью вживаешься в этого персонажа.")
 
-    parts.append(f"\n## Personality\n{character['personality']}")
+    parts.append(f"\n## Характер и личность\n{character['personality']}")
 
     if character.get("scenario"):
-        parts.append(f"\n## Scenario\n{character['scenario']}")
+        parts.append(f"\n## Сценарий и контекст\n{character['scenario']}")
 
     if character.get("example_dialogues"):
-        parts.append(f"\n## Example conversation style\n{character['example_dialogues']}")
+        parts.append(f"\n## Примеры стиля общения\n{character['example_dialogues']}")
 
     content_rules = {
-        "sfw": "Keep all responses safe for work. No explicit, violent, or sexual content.",
-        "moderate": "Mild romantic or dramatic themes are allowed, but avoid explicitly graphic content.",
-        "nsfw": "You may engage with mature themes as appropriate to the character and scenario.",
+        "sfw": "Контент должен быть безопасным. Никакого откровенного, жестокого или сексуального контента.",
+        "moderate": "Допустимы лёгкие романтические или драматические темы, но без откровенного контента.",
+        "nsfw": "Допустим взрослый контент, соответствующий персонажу и сценарию.",
     }
     rating = character.get("content_rating", "sfw")
-    parts.append(f"\n## Content guidelines\n{content_rules.get(rating, content_rules['sfw'])}")
+    parts.append(f"\n## Ограничения контента\n{content_rules.get(rating, content_rules['sfw'])}")
 
     if character.get("system_prompt_suffix"):
-        parts.append(f"\n## Additional instructions\n{character['system_prompt_suffix']}")
+        parts.append(f"\n## Дополнительные инструкции\n{character['system_prompt_suffix']}")
 
     if user_name:
-        parts.append(f"\n## User\nThe user's name is {user_name}. You may address them by name when appropriate.")
+        parts.append(f"\n## Пользователь\nИмя пользователя — {user_name}. Можешь обращаться к нему по имени.")
 
     parts.append(
-        "\n## Rules"
-        "\n- Always stay in character."
-        "\n- Never break character or refer to yourself as an AI."
-        "\n- Respond in the language the user writes to you in."
-        "\n- Be creative and engaging in your responses."
+        "\n## Правила"
+        "\n- Всегда оставайся в роли персонажа."
+        "\n- Никогда не выходи из роли и не упоминай, что ты ИИ."
+        "\n- Отвечай на том языке, на котором пишет пользователь."
+        "\n- Не пересказывай сценарий и не описывай ситуацию заново — сразу отвечай как персонаж."
+        "\n- Используй *звёздочки* для описания действий и эмоций персонажа."
+        "\n- Будь креативным и вовлечённым в диалог."
     )
 
     return "\n".join(parts)

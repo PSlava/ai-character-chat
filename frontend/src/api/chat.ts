@@ -24,6 +24,14 @@ export async function deleteChat(chatId: string) {
   await api.delete(`/chats/${chatId}`);
 }
 
+export async function clearChatMessages(chatId: string) {
+  await api.delete(`/chats/${chatId}/messages`);
+}
+
+export async function deleteChatMessage(chatId: string, messageId: string) {
+  await api.delete(`/chats/${chatId}/messages/${messageId}`);
+}
+
 export async function getAuthToken(): Promise<string | null> {
   return getToken();
 }

@@ -7,26 +7,29 @@ interface Props {
   characterName?: string;
   characterAvatar?: string | null;
   isStreaming: boolean;
+  onDeleteMessage?: (messageId: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, isStreaming }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, onDeleteMessage }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
 
+  const visible = messages.filter((m) => m.role !== 'system');
+
   return (
     <div className="flex-1 overflow-y-auto p-4">
       <div className="max-w-3xl mx-auto space-y-4">
-        {messages
-          .filter((m) => m.role !== 'system')
-          .map((message) => (
+        {visible.map((message, index) => (
             <MessageBubble
               key={message.id}
               message={message}
               characterName={characterName}
               characterAvatar={characterAvatar}
+              isFirstMessage={index === 0}
+              onDelete={onDeleteMessage}
             />
           ))}
 

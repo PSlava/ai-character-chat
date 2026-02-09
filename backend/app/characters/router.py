@@ -97,6 +97,16 @@ async def generate_from_story(
     except json.JSONDecodeError:
         raise HTTPException(status_code=502, detail="Failed to parse LLM response as JSON")
 
+    # Normalize: LLM sometimes returns arrays instead of strings
+    for field in ("name", "tagline", "personality", "scenario",
+                  "greeting_message", "example_dialogues"):
+        if isinstance(data.get(field), list):
+            data[field] = "\n".join(str(x) for x in data[field])
+
+    # Ensure tags is a list of strings
+    if "tags" in data and not isinstance(data["tags"], list):
+        data["tags"] = []
+
     return data
 
 

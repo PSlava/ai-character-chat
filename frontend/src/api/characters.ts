@@ -72,12 +72,20 @@ export async function generateFromStory(
   extraInstructions?: string,
 ) {
   await wakeUpServer();
-  const { data } = await api.post<Partial<Character>>('/characters/generate-from-story', {
+
+  // Call Render backend directly to avoid Vercel proxy timeout (~60s).
+  // In dev, falls back to /api (proxied by Vite).
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const url = backendUrl
+    ? `${backendUrl}/api/characters/generate-from-story`
+    : '/api/characters/generate-from-story';
+
+  const { data } = await api.post<Partial<Character>>(url, {
     story_text: storyText,
     character_name: characterName || undefined,
     preferred_model: preferredModel,
     content_rating: contentRating,
     extra_instructions: extraInstructions || undefined,
-  });
+  }, { timeout: 120_000 });
   return data;
 }

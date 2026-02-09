@@ -108,6 +108,67 @@ async def save_message(db: AsyncSession, chat_id: str, role: str, content: str):
     return msg
 
 
+async def clear_chat_messages(db: AsyncSession, chat_id: str, user_id: str):
+    """Delete all messages except the first one (greeting)."""
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id)
+    )
+    chat = result.scalar_one_or_none()
+    if not chat:
+        return False
+
+    # Get first message (greeting) to keep it
+    msgs = await db.execute(
+        select(Message)
+        .where(Message.chat_id == chat_id)
+        .order_by(Message.created_at.asc())
+    )
+    all_msgs = msgs.scalars().all()
+    if len(all_msgs) <= 1:
+        return True  # nothing to clear
+
+    for msg in all_msgs[1:]:
+        await db.delete(msg)
+
+    chat.updated_at = datetime.utcnow()
+    await db.commit()
+    return True
+
+
+async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_id: str):
+    """Delete a single message. Cannot delete the first (greeting) message."""
+    # Verify chat ownership
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id)
+    )
+    chat = result.scalar_one_or_none()
+    if not chat:
+        return False
+
+    # Get the first message to protect it
+    first_msg = await db.execute(
+        select(Message)
+        .where(Message.chat_id == chat_id)
+        .order_by(Message.created_at.asc())
+        .limit(1)
+    )
+    first = first_msg.scalar_one_or_none()
+    if first and first.id == message_id:
+        return False  # can't delete greeting
+
+    # Delete the message
+    msg_result = await db.execute(
+        select(Message).where(Message.id == message_id, Message.chat_id == chat_id)
+    )
+    msg = msg_result.scalar_one_or_none()
+    if not msg:
+        return False
+
+    await db.delete(msg)
+    await db.commit()
+    return True
+
+
 async def build_conversation_messages(db: AsyncSession, chat_id: str, character: Character, user_name: str | None = None) -> list[LLMMessage]:
     char_dict = {
         "name": character.name,

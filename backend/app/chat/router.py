@@ -98,6 +98,31 @@ async def delete_chat(
         raise HTTPException(status_code=404, detail="Chat not found")
 
 
+@router.delete("/{chat_id}/messages", status_code=204)
+async def clear_messages(
+    chat_id: str,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Clear all messages except the greeting."""
+    cleared = await service.clear_chat_messages(db, chat_id, user["id"])
+    if not cleared:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+
+@router.delete("/{chat_id}/messages/{message_id}", status_code=204)
+async def delete_message(
+    chat_id: str,
+    message_id: str,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete a single message (cannot delete greeting)."""
+    deleted = await service.delete_message(db, chat_id, message_id, user["id"])
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Message not found or cannot be deleted")
+
+
 @router.post("/{chat_id}/message")
 async def send_message(
     chat_id: str,
@@ -110,6 +135,12 @@ async def send_message(
         raise HTTPException(status_code=404, detail="Chat not found")
 
     character = chat.character
+
+    # If model override requested, persist it on the chat
+    if body.model and body.model != chat.model_used:
+        chat.model_used = body.model
+        await db.commit()
+
     model_name = chat.model_used or settings.default_model
 
     # Save user message
@@ -144,8 +175,11 @@ async def send_message(
     provider = get_provider(provider_name)
     config = LLMConfig(
         model=model_id,
-        temperature=0.8,
+        temperature=body.temperature if body.temperature is not None else 0.8,
         max_tokens=1024,
+        top_p=body.top_p if body.top_p is not None else 0.95,
+        top_k=body.top_k if body.top_k is not None else 0,
+        frequency_penalty=body.frequency_penalty if body.frequency_penalty is not None else 0.0,
     )
 
     async def event_stream():
