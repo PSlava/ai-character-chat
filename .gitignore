@@ -11,6 +11,9 @@ node_modules/
 dist/
 .env.local
 
+# Deploy
+deploy/nginx/certs/
+
 # IDE
 .idea/
 .vscode/
