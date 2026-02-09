@@ -100,6 +100,7 @@ async def delete_character(db: AsyncSession, character_id: str, creator_id: str)
 async def list_my_characters(db: AsyncSession, creator_id: str):
     result = await db.execute(
         select(Character)
+        .options(selectinload(Character.creator))
         .where(Character.creator_id == creator_id)
         .order_by(Character.created_at.desc())
     )
