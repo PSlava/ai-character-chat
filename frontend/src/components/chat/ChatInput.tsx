@@ -33,10 +33,9 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Напишите сообщение..."
-          rows={1}
+          rows={5}
           disabled={disabled}
-          className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 resize-none max-h-32"
-          style={{ minHeight: '48px' }}
+          className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 resize-none max-h-48"
         />
         {isStreaming ? (
           <button
