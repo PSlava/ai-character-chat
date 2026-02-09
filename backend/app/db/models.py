@@ -66,7 +66,7 @@ class Character(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     creator: Mapped["User"] = relationship(back_populates="characters")
-    chats: Mapped[list["Chat"]] = relationship(back_populates="character")
+    chats: Mapped[list["Chat"]] = relationship(back_populates="character", cascade="all, delete-orphan")
 
 
 class Chat(Base):

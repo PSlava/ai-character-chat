@@ -42,12 +42,14 @@ export function CharacterPage() {
   };
 
   const handleDelete = async () => {
-    if (!character || !confirm('Удалить персонажа? Это действие нельзя отменить.')) return;
+    if (!character || !confirm('Удалить персонажа? Все чаты с ним тоже будут удалены.')) return;
     setDeleting(true);
     try {
       await deleteCharacter(character.id);
       navigate('/');
-    } catch {
+    } catch (e: unknown) {
+      const ax = e as { response?: { data?: { detail?: string } }; message?: string };
+      alert(ax?.response?.data?.detail || ax?.message || 'Ошибка удаления');
       setDeleting(false);
     }
   };
