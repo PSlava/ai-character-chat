@@ -182,8 +182,10 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
               </option>
             ))}
             <option disabled>───────────</option>
+            <option value="groq">Groq (Qwen 32B)</option>
+            <option value="cerebras">Cerebras (Qwen 32B)</option>
             <option value="deepseek">DeepSeek</option>
-            <option value="qwen">Qwen</option>
+            <option value="qwen">Qwen (DashScope)</option>
             <option disabled>───────────</option>
             <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>

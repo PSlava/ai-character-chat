@@ -161,6 +161,8 @@ async def send_message(
         "gemini": "gemini-2.0-flash",
         "deepseek": "deepseek-chat",
         "qwen": "qwen3-32b",
+        "groq": "qwen-qwq-32b",
+        "cerebras": "qwen-3-32b",
     }
     if "/" in model_name:
         provider_name = "openrouter"

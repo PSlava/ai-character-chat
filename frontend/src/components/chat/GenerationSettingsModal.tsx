@@ -100,8 +100,10 @@ interface ModelOption {
 
 const BUILTIN_MODELS: ModelOption[] = [
   { id: 'openrouter', label: 'OpenRouter Auto (Free)', group: 'free' },
+  { id: 'groq', label: 'Groq (Qwen 32B)', group: 'direct' },
+  { id: 'cerebras', label: 'Cerebras (Qwen 32B)', group: 'direct' },
   { id: 'deepseek', label: 'DeepSeek', group: 'direct' },
-  { id: 'qwen', label: 'Qwen', group: 'direct' },
+  { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct' },
   { id: 'gemini', label: 'Gemini', group: 'paid' },
   { id: 'claude', label: 'Claude', group: 'paid' },
   { id: 'openai', label: 'GPT-4o', group: 'paid' },

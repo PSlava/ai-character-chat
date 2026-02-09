@@ -19,6 +19,8 @@ const MODEL_ALIASES: Record<string, string> = {
   openrouter: 'OpenRouter Auto',
   deepseek: 'DeepSeek',
   qwen: 'Qwen',
+  groq: 'Groq',
+  cerebras: 'Cerebras',
 };
 
 export function ChatPage() {
