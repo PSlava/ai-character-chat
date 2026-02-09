@@ -86,9 +86,19 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
           if (data.type === 'done') {
             setMessages((prev) => {
               const updated = [...prev];
+              // Update assistant message with real DB id
               const last = updated[updated.length - 1];
               if (last.role === 'assistant') {
                 updated[updated.length - 1] = { ...last, id: data.message_id };
+              }
+              // Update user message with real DB id
+              if (data.user_message_id) {
+                for (let i = updated.length - 2; i >= 0; i--) {
+                  if (updated[i].role === 'user' && updated[i].id === userMsg.id) {
+                    updated[i] = { ...updated[i], id: data.user_message_id };
+                    break;
+                  }
+                }
               }
               return updated;
             });

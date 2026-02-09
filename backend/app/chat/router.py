@@ -144,7 +144,7 @@ async def send_message(
     model_name = chat.model_used or settings.default_model
 
     # Save user message
-    await service.save_message(db, chat_id, "user", body.content)
+    user_msg = await service.save_message(db, chat_id, "user", body.content)
 
     # Get user display name for system prompt
     user_result = await db.execute(select(User).where(User.id == user["id"]))
@@ -191,7 +191,7 @@ async def send_message(
 
             complete_text = "".join(full_response)
             saved_msg = await service.save_message(db, chat_id, "assistant", complete_text)
-            yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id})}\n\n"
+            yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
 
