@@ -37,8 +37,21 @@ export function CreateCharacterPage() {
   }, []);
 
   const handleSubmit = async (data: Partial<Character>) => {
-    const character = await createCharacter(data);
-    navigate(`/character/${character.id}`);
+    setError('');
+    try {
+      setStatusText('Проверка сервера...');
+      await wakeUpServer((s) => setStatusText(s));
+      setStatusText('');
+      const character = await createCharacter(data);
+      navigate(`/character/${character.id}`);
+    } catch (e: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ax = e as any;
+      const msg = ax?.response?.data?.detail
+        || ax?.message
+        || 'Ошибка сохранения';
+      setError(msg);
+    }
   };
 
   const handleGenerate = async () => {
@@ -92,6 +105,12 @@ export function CreateCharacterPage() {
           Из текста
         </button>
       </div>
+
+      {error && (
+        <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg mb-4 max-w-2xl">
+          {error}
+        </div>
+      )}
 
       {tab === 'from-story' && (
         <div className="space-y-4 max-w-2xl">
@@ -159,12 +178,6 @@ export function CreateCharacterPage() {
             rows={3}
           />
 
-          {error && (
-            <div className="text-red-400 text-sm bg-red-900/20 p-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
           <Button
             onClick={handleGenerate}
             disabled={generating || !storyText.trim()}
@@ -176,12 +189,17 @@ export function CreateCharacterPage() {
       )}
 
       {tab === 'manual' && (
-        <CharacterForm
-          key={generated ? 'generated' : 'empty'}
-          initial={generated || undefined}
-          onSubmit={handleSubmit}
-          submitLabel="Создать персонажа"
-        />
+        <>
+          {statusText && (
+            <div className="text-neutral-400 text-sm mb-4">{statusText}</div>
+          )}
+          <CharacterForm
+            key={generated ? 'generated' : 'empty'}
+            initial={generated || undefined}
+            onSubmit={handleSubmit}
+            submitLabel="Создать персонажа"
+          />
+        </>
       )}
     </div>
   );
