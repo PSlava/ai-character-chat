@@ -28,20 +28,23 @@ async def init_db():
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-            # Add new columns to existing tables (safe: IF NOT EXISTS / catch errors)
-            migrations = [
-                "ALTER TABLE characters ADD COLUMN max_tokens INTEGER DEFAULT 2048",
-                "ALTER TABLE characters ADD COLUMN response_length VARCHAR DEFAULT 'long'",
-            ]
-            for sql in migrations:
-                try:
-                    await conn.execute(text(sql))
-                except Exception:
-                    pass  # column already exists
         print("Database tables initialized successfully")
     except Exception as e:
         print(f"Warning: Could not initialize DB tables: {e}")
         print("The app will still start — tables may already exist.")
+
+    # Run migrations in separate transactions (PostgreSQL aborts entire
+    # transaction on error, so each ALTER needs its own transaction)
+    migrations = [
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS max_tokens INTEGER DEFAULT 2048",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS response_length VARCHAR DEFAULT 'long'",
+    ]
+    for sql in migrations:
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(text(sql))
+        except Exception:
+            pass  # column already exists or DB doesn't support IF NOT EXISTS
 
 
 async def get_db() -> AsyncSession:
