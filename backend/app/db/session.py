@@ -1,4 +1,5 @@
 import ssl
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.config import settings
 from app.db.models import Base
@@ -27,6 +28,15 @@ async def init_db():
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            # Add new columns to existing tables (safe: IF NOT EXISTS / catch errors)
+            migrations = [
+                "ALTER TABLE characters ADD COLUMN max_tokens INTEGER DEFAULT 2048",
+            ]
+            for sql in migrations:
+                try:
+                    await conn.execute(text(sql))
+                except Exception:
+                    pass  # column already exists
         print("Database tables initialized successfully")
     except Exception as e:
         print(f"Warning: Could not initialize DB tables: {e}")

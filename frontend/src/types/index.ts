@@ -23,6 +23,7 @@ export interface Character {
   chat_count: number;
   like_count: number;
   preferred_model: string;
+  max_tokens: number;
   created_at: string;
   profiles?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'>;
 }

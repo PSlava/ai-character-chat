@@ -62,6 +62,7 @@ class Character(Base):
     chat_count: Mapped[int] = mapped_column(Integer, default=0)
     like_count: Mapped[int] = mapped_column(Integer, default=0)
     preferred_model: Mapped[str] = mapped_column(String, default="claude")
+    max_tokens: Mapped[int] = mapped_column(Integer, default=2048)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

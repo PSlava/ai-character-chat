@@ -14,6 +14,7 @@ class CharacterCreate(BaseModel):
     tags: list[str] = []
     is_public: bool = True
     preferred_model: str = "qwen"
+    max_tokens: int = 2048
 
 
 class GenerateFromStoryRequest(BaseModel):
@@ -37,3 +38,4 @@ class CharacterUpdate(BaseModel):
     tags: list[str] | None = None
     is_public: bool | None = None
     preferred_model: str | None = None
+    max_tokens: int | None = None

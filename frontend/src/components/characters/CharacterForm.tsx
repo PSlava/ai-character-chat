@@ -28,6 +28,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
     tags: Array.isArray(initial?.tags) ? initial.tags.join(', ') : '',
     is_public: initial?.is_public ?? true,
     preferred_model: initial?.preferred_model || 'qwen',
+    max_tokens: initial?.max_tokens ?? 2048,
   });
   const [loading, setLoading] = useState(false);
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
@@ -36,7 +37,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
     getOpenRouterModels().then(setOrModels).catch(() => {});
   }, []);
 
-  const update = (field: string, value: string | boolean) =>
+  const update = (field: string, value: string | boolean | number) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,6 +59,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
           .filter(Boolean),
         is_public: form.is_public,
         preferred_model: form.preferred_model,
+        max_tokens: form.max_tokens,
       });
     } finally {
       setLoading(false);
@@ -182,6 +184,27 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
             <span className="text-sm text-neutral-300">Публичный</span>
           </label>
         </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-sm text-neutral-400">
+            Макс. токенов ответа
+          </label>
+          <span className="text-sm text-neutral-300">{form.max_tokens}</span>
+        </div>
+        <input
+          type="range"
+          value={form.max_tokens}
+          onChange={(e) => update('max_tokens', Number(e.target.value))}
+          min={256}
+          max={4096}
+          step={128}
+          className="w-full accent-purple-500"
+        />
+        <p className="text-xs text-neutral-500 mt-1">
+          Максимальная длина ответа. 1 токен ≈ 3-4 символа. По умолчанию: 2048.
+        </p>
       </div>
 
       <Button type="submit" disabled={loading} className="w-full">
