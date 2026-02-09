@@ -19,8 +19,8 @@ def character_to_dict(c: Character) -> dict:
         "chat_count": c.chat_count,
         "like_count": c.like_count,
         "preferred_model": c.preferred_model,
-        "max_tokens": c.max_tokens,
-        "response_length": c.response_length or "long",
+        "max_tokens": getattr(c, 'max_tokens', None) or 2048,
+        "response_length": getattr(c, 'response_length', None) or "long",
         "created_at": c.created_at.isoformat() if c.created_at else None,
         "updated_at": c.updated_at.isoformat() if c.updated_at else None,
     }

@@ -178,7 +178,7 @@ async def build_conversation_messages(db: AsyncSession, chat_id: str, character:
         "example_dialogues": character.example_dialogues,
         "content_rating": character.content_rating.value if character.content_rating else "sfw",
         "system_prompt_suffix": character.system_prompt_suffix,
-        "response_length": character.response_length or "long",
+        "response_length": getattr(character, 'response_length', None) or "long",
     }
     system_prompt = build_system_prompt(char_dict, user_name=user_name)
     messages_data = await get_chat_messages(db, chat_id)
