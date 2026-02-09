@@ -116,6 +116,15 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
                   isError: true,
                 };
               }
+              // Sync user message ID even on error (so regenerate can delete it)
+              if (data.user_message_id) {
+                for (let i = updated.length - 2; i >= 0; i--) {
+                  if (updated[i].role === 'user' && updated[i].id === userMsg.id) {
+                    updated[i] = { ...updated[i], id: data.user_message_id };
+                    break;
+                  }
+                }
+              }
               return updated;
             });
             setIsStreaming(false);

@@ -193,6 +193,6 @@ async def send_message(
             saved_msg = await service.save_message(db, chat_id, "assistant", complete_text)
             yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id})}\n\n"
         except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+            yield f"data: {json.dumps({'type': 'error', 'content': str(e), 'user_message_id': user_msg.id})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
