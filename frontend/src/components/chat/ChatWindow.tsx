@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { RefreshCw } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageBubble } from './MessageBubble';
 
@@ -19,6 +20,9 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
   }, [messages, isStreaming]);
 
   const visible = messages.filter((m) => m.role !== 'system');
+  const lastAssistant = visible.length > 1 && visible[visible.length - 1].role === 'assistant'
+    ? visible[visible.length - 1]
+    : null;
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
@@ -34,6 +38,19 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
               onRegenerate={onRegenerate}
             />
           ))}
+
+        {!isStreaming && lastAssistant && onRegenerate && (
+          <div className="flex justify-start pl-11">
+            <button
+              onClick={() => onRegenerate(lastAssistant.id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
+              title="Перегенерировать ответ"
+            >
+              <RefreshCw size={13} />
+              Перегенерировать
+            </button>
+          </div>
+        )}
 
         {isStreaming && (
           <div className="flex gap-2 items-center text-neutral-500 text-sm">
