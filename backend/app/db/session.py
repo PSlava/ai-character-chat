@@ -9,8 +9,9 @@ def _build_engine():
     url = settings.async_database_url
     kwargs: dict = {"echo": False}
 
-    # PostgreSQL (Supabase) needs SSL
-    if "postgresql" in url and "localhost" not in url and "127.0.0.1" not in url:
+    # PostgreSQL (Supabase) needs SSL — but not Docker-internal connections
+    is_local = any(h in url for h in ("localhost", "127.0.0.1", "postgres:"))
+    if "postgresql" in url and not is_local:
         ssl_ctx = ssl.create_default_context()
         ssl_ctx.check_hostname = False
         ssl_ctx.verify_mode = ssl.CERT_NONE
