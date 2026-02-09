@@ -2,6 +2,7 @@ from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.thinking_filter import strip_thinking
 
 TIMEOUT = 60
 
@@ -31,6 +32,7 @@ class QwenProvider(BaseLLMProvider):
             top_p=config.top_p,
             frequency_penalty=config.frequency_penalty,
             stream=True,
+            extra_body={"enable_thinking": False},
         )
         async for chunk in stream:
             delta = chunk.choices[0].delta if chunk.choices else None
@@ -50,8 +52,11 @@ class QwenProvider(BaseLLMProvider):
             temperature=config.temperature,
             top_p=config.top_p,
             frequency_penalty=config.frequency_penalty,
+            extra_body={"enable_thinking": False},
         )
         content = response.choices[0].message.content if response.choices else None
         if not content:
             raise RuntimeError("Qwen returned empty response")
+        # Safety fallback: strip thinking tags if they still appear
+        content = strip_thinking(content)
         return content

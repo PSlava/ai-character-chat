@@ -4,6 +4,7 @@ import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
 from app.llm.openrouter_models import get_fallback_models
+from app.llm.thinking_filter import ThinkingFilter, strip_thinking
 
 PER_MODEL_TIMEOUT = 25  # seconds per model attempt
 
@@ -58,13 +59,14 @@ class OpenRouterProvider(BaseLLMProvider):
                     extra_body=extra or None,
                 )
                 has_content = False
+                thinking_filter = ThinkingFilter()
                 async for chunk in stream:
                     delta = chunk.choices[0].delta if chunk.choices else None
-                    if delta:
-                        text = delta.content or getattr(delta, "reasoning", None)
-                        if text:
+                    if delta and delta.content:
+                        clean = thinking_filter.process(delta.content)
+                        if clean:
                             has_content = True
-                            yield text
+                            yield clean
                 if not has_content:
                     raise RuntimeError("Модель вернула пустой ответ")
                 return
@@ -112,7 +114,7 @@ class OpenRouterProvider(BaseLLMProvider):
                         content = reasoning
                 if not content:
                     raise RuntimeError("Модель вернула пустой ответ")
-                return content
+                return strip_thinking(content)
             except asyncio.TimeoutError:
                 errors.append((model.split("/")[-1].replace(":free", ""), "таймаут"))
                 continue
