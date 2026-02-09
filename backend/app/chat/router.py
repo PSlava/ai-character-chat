@@ -175,7 +175,7 @@ async def send_message(
     provider = get_provider(provider_name)
     config = LLMConfig(
         model=model_id,
-        temperature=body.temperature if body.temperature is not None else 0.8,
+        temperature=body.temperature if body.temperature is not None else 0.7,
         max_tokens=body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048),
         top_p=body.top_p if body.top_p is not None else 0.95,
         top_k=body.top_k if body.top_k is not None else 0,
