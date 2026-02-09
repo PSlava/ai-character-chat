@@ -31,6 +31,7 @@ async def init_db():
             # Add new columns to existing tables (safe: IF NOT EXISTS / catch errors)
             migrations = [
                 "ALTER TABLE characters ADD COLUMN max_tokens INTEGER DEFAULT 2048",
+                "ALTER TABLE characters ADD COLUMN response_length VARCHAR DEFAULT 'long'",
             ]
             for sql in migrations:
                 try:

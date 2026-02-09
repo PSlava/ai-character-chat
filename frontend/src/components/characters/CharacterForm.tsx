@@ -29,6 +29,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
     is_public: initial?.is_public ?? true,
     preferred_model: initial?.preferred_model || 'qwen',
     max_tokens: initial?.max_tokens ?? 2048,
+    response_length: initial?.response_length || 'long',
   });
   const [loading, setLoading] = useState(false);
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
@@ -60,6 +61,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
         is_public: form.is_public,
         preferred_model: form.preferred_model,
         max_tokens: form.max_tokens,
+        response_length: form.response_length as Character['response_length'],
       });
     } finally {
       setLoading(false);
@@ -145,6 +147,22 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
             <option value="sfw">SFW</option>
             <option value="moderate">Moderate</option>
             <option value="nsfw">NSFW</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm text-neutral-400 mb-1">
+            Длина ответа
+          </label>
+          <select
+            value={form.response_length}
+            onChange={(e) => update('response_length', e.target.value)}
+            className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
+          >
+            <option value="short">Короткий (1-3 предложения)</option>
+            <option value="medium">Средний (1-2 абзаца)</option>
+            <option value="long">Длинный (2-4 абзаца)</option>
+            <option value="very_long">Очень длинный (4-6 абзацев)</option>
           </select>
         </div>
 

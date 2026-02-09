@@ -15,6 +15,7 @@ class CharacterCreate(BaseModel):
     is_public: bool = True
     preferred_model: str = "qwen"
     max_tokens: int = 2048
+    response_length: str = "long"
 
 
 class GenerateFromStoryRequest(BaseModel):
@@ -39,3 +40,4 @@ class CharacterUpdate(BaseModel):
     is_public: bool | None = None
     preferred_model: str | None = None
     max_tokens: int | None = None
+    response_length: str | None = None

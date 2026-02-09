@@ -24,6 +24,7 @@ export interface Character {
   like_count: number;
   preferred_model: string;
   max_tokens: number;
+  response_length: 'short' | 'medium' | 'long' | 'very_long';
   created_at: string;
   profiles?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'>;
 }
