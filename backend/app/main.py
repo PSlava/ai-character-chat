@@ -40,9 +40,25 @@ app.add_middleware(
 )
 
 
+def _git_commit() -> str:
+    import subprocess
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"], text=True, timeout=5
+        ).strip()
+    except Exception:
+        return "unknown"
+
+
+_COMMIT = _git_commit()
+_STARTED_AT = __import__("datetime").datetime.now(
+    __import__("datetime").timezone.utc
+).isoformat()
+
+
 @app.get("/api/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "commit": _COMMIT, "started_at": _STARTED_AT}
 
 
 from app.auth.router import router as auth_router  # noqa: E402
