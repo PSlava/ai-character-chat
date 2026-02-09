@@ -11,17 +11,21 @@ interface Props {
   submitLabel?: string;
 }
 
+// AI may return arrays instead of strings — normalize to string
+const str = (v: unknown): string =>
+  Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : '';
+
 export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать' }: Props) {
   const [form, setForm] = useState({
-    name: initial?.name || '',
-    tagline: initial?.tagline || '',
-    personality: initial?.personality || '',
-    scenario: initial?.scenario || '',
-    greeting_message: initial?.greeting_message || '',
-    example_dialogues: initial?.example_dialogues || '',
+    name: str(initial?.name),
+    tagline: str(initial?.tagline),
+    personality: str(initial?.personality),
+    scenario: str(initial?.scenario),
+    greeting_message: str(initial?.greeting_message),
+    example_dialogues: str(initial?.example_dialogues),
     content_rating: initial?.content_rating || 'sfw',
-    system_prompt_suffix: initial?.system_prompt_suffix || '',
-    tags: initial?.tags?.join(', ') || '',
+    system_prompt_suffix: str(initial?.system_prompt_suffix),
+    tags: Array.isArray(initial?.tags) ? initial.tags.join(', ') : '',
     is_public: initial?.is_public ?? true,
     preferred_model: initial?.preferred_model || 'openrouter',
   });
