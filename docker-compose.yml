@@ -66,7 +66,7 @@ services:
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - .:/app/repo:ro
+      - .:/app/repo
 
 volumes:
   pgdata:
