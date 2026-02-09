@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { X } from 'lucide-react';
 import type { GenerationSettings } from '@/hooks/useChat';
 import type { OpenRouterModel } from '@/api/characters';
@@ -13,6 +13,28 @@ interface Props {
   orModels: OpenRouterModel[];
   onApply: (settings: ChatSettings) => void;
   onClose: () => void;
+}
+
+function TooltipIcon({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+
+  return (
+    <span
+      ref={ref}
+      className="relative text-neutral-500 cursor-help"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      onClick={() => setShow((v) => !v)}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      {show && (
+        <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 p-3 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-neutral-300 leading-relaxed shadow-xl whitespace-pre-line">
+          {text}
+        </span>
+      )}
+    </span>
+  );
 }
 
 function Slider({
@@ -37,9 +59,7 @@ function Slider({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <span className="text-sm text-neutral-200">{label}</span>
-          <span className="text-neutral-500 cursor-help" title={tooltip}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </span>
+          <TooltipIcon text={tooltip} />
         </div>
         <input
           type="number"
@@ -150,7 +170,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
         <div className="space-y-5">
           <Slider
             label="Температура"
-            tooltip="Чем выше — тем более творческие и разнообразные ответы. Чем ниже — тем более предсказуемые."
+            tooltip={"Контролирует случайность ответов.\n\n0.0 — строго предсказуемый текст, модель всегда выбирает самое вероятное слово.\n0.3–0.5 — сдержанный стиль, мало неожиданностей.\n0.7 — баланс между точностью и творчеством (по умолчанию).\n1.0+ — более творческие, непредсказуемые ответы.\n2.0 — максимальная случайность, текст может стать бессвязным.\n\nПо умолчанию: 0.7"}
             value={local.temperature}
             onChange={(v) => update('temperature', v)}
             min={0}
@@ -159,7 +179,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
           />
           <Slider
             label="Top-P"
-            tooltip="Nucleus sampling. Модель выбирает из токенов, суммарная вероятность которых не превышает это значение."
+            tooltip={"Ограничивает выбор слов по суммарной вероятности (nucleus sampling).\n\nМодель рассматривает только самые вероятные слова, пока их суммарная вероятность не достигнет этого порога.\n\n0.5 — только топ-50% вероятных слов, текст сдержаннее.\n0.9 — широкий выбор, текст разнообразнее.\n1.0 — все слова доступны.\n\nРаботает вместе с температурой. Обычно достаточно менять что-то одно.\n\nПо умолчанию: 0.95"}
             value={local.top_p}
             onChange={(v) => update('top_p', v)}
             min={0}
@@ -168,7 +188,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
           />
           <Slider
             label="Top-K"
-            tooltip="Модель выбирает из K наиболее вероятных токенов. 0 = отключено."
+            tooltip={"Ограничивает выбор слов количеством: модель выбирает только из K самых вероятных вариантов.\n\n0 — отключено, модель выбирает из всех слов.\n10 — только топ-10 слов, текст очень предсказуемый.\n40–50 — хороший баланс.\n100 — почти без ограничений.\n\nПо умолчанию: 0 (отключено)"}
             value={local.top_k}
             onChange={(v) => update('top_k', Math.round(v))}
             min={0}
@@ -177,7 +197,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
           />
           <Slider
             label="Штраф за повторения"
-            tooltip="Frequency penalty. Чем выше — тем реже модель повторяет одни и те же фразы."
+            tooltip={"Снижает вероятность повторения одних и тех же слов и фраз (frequency penalty).\n\n0.0 — без штрафа, модель может повторяться.\n0.3–0.5 — лёгкий штраф, убирает навязчивые повторы.\n1.0 — заметный штраф, текст более разнообразный.\n2.0 — сильный штраф, модель избегает любых повторов (может ухудшить связность).\n\nПо умолчанию: 0"}
             value={local.frequency_penalty}
             onChange={(v) => update('frequency_penalty', v)}
             min={0}
@@ -186,7 +206,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, onAp
           />
           <Slider
             label="Макс. токенов"
-            tooltip="Максимальная длина ответа в токенах. 1 токен ≈ 3-4 символа. 2048 = ~6000 символов."
+            tooltip={"Максимальная длина ответа. 1 токен — примерно 3-4 символа или 1 слог на русском.\n\n256 — очень короткий ответ (~750 символов).\n1024 — короткий ответ (~3000 символов).\n2048 — средний ответ (~6000 символов).\n4096 — длинный ответ (~12000 символов).\n\nЭто жёсткий лимит: ответ обрежется, если превысит. Реальная длина зависит от настройки «Длина ответа» на персонаже.\n\nПо умолчанию: 2048"}
             value={local.max_tokens}
             onChange={(v) => update('max_tokens', Math.round(v))}
             min={256}
