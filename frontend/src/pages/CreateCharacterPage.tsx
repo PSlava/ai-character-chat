@@ -47,9 +47,16 @@ export function CreateCharacterPage() {
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ax = e as any;
-      const msg = ax?.response?.data?.detail
-        || ax?.message
-        || 'Ошибка сохранения';
+      const detail = ax?.response?.data?.detail;
+      let msg: string;
+      if (typeof detail === 'string') {
+        msg = detail;
+      } else if (Array.isArray(detail)) {
+        msg = detail.map((d: { msg?: string }) => d.msg || JSON.stringify(d)).join('; ');
+      } else {
+        msg = ax?.message || 'Ошибка сохранения';
+      }
+      console.error('Save error:', ax?.response?.status, detail || ax?.message);
       setError(msg);
     }
   };
@@ -69,9 +76,15 @@ export function CreateCharacterPage() {
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ax = e as any;
-      const msg = ax?.response?.data?.detail
-        || ax?.message
-        || 'Ошибка генерации';
+      const detail = ax?.response?.data?.detail;
+      let msg: string;
+      if (typeof detail === 'string') {
+        msg = detail;
+      } else if (Array.isArray(detail)) {
+        msg = detail.map((d: { msg?: string }) => d.msg || JSON.stringify(d)).join('; ');
+      } else {
+        msg = ax?.message || 'Ошибка генерации';
+      }
       setError(msg);
     } finally {
       setGenerating(false);
