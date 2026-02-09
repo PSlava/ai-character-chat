@@ -7,7 +7,7 @@ from app.chat.prompt_builder import build_system_prompt
 from app.llm.base import LLMMessage
 
 MAX_CONTEXT_MESSAGES = 50
-MAX_CONTEXT_TOKENS = 12000
+MAX_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/token
 
 
 async def create_chat(db: AsyncSession, user_id: str, character_id: str, model: str | None = None):
