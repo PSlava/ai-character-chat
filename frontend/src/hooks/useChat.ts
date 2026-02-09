@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { getAuthToken } from '@/api/chat';
+import { getAuthToken, deleteChatMessage } from '@/api/chat';
 import type { Message } from '@/types';
 
 export interface GenerationSettings {
@@ -93,10 +93,35 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
             setIsStreaming(false);
           }
           if (data.type === 'error') {
+            // Show error in the assistant message bubble
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last.role === 'assistant') {
+                updated[updated.length - 1] = {
+                  ...last,
+                  content: data.content || 'Ошибка генерации',
+                  isError: true,
+                };
+              }
+              return updated;
+            });
             setIsStreaming(false);
           }
         },
         onerror() {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const last = updated[updated.length - 1];
+            if (last.role === 'assistant' && !last.content) {
+              updated[updated.length - 1] = {
+                ...last,
+                content: 'Ошибка соединения с сервером',
+                isError: true,
+              };
+            }
+            return updated;
+          });
           setIsStreaming(false);
         },
       });
@@ -104,10 +129,49 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     [chatId]
   );
 
+  const regenerate = useCallback(
+    async (messageId: string) => {
+      // Find the assistant message and the user message before it
+      setMessages((prev) => {
+        const idx = prev.findIndex((m) => m.id === messageId);
+        if (idx === -1) return prev;
+
+        const assistantMsg = prev[idx];
+        if (assistantMsg.role !== 'assistant') return prev;
+
+        // Find the user message right before it
+        let userIdx = idx - 1;
+        while (userIdx >= 0 && prev[userIdx].role !== 'user') userIdx--;
+        if (userIdx < 0) return prev;
+
+        const userContent = prev[userIdx].content;
+        const userMsgId = prev[userIdx].id;
+
+        // Remove both messages from state
+        const updated = prev.filter((_, i) => i !== idx && i !== userIdx);
+
+        // Delete from DB in background, then resend
+        (async () => {
+          try {
+            // Delete saved messages from DB (ignore errors for optimistic messages)
+            await deleteChatMessage(chatId, messageId).catch(() => {});
+            await deleteChatMessage(chatId, userMsgId).catch(() => {});
+          } finally {
+            // Resend the user message
+            sendMessage(userContent);
+          }
+        })();
+
+        return updated;
+      });
+    },
+    [chatId, sendMessage]
+  );
+
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate };
 }

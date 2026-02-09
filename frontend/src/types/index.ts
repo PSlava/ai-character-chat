@@ -44,6 +44,7 @@ export interface Message {
   role: 'system' | 'user' | 'assistant';
   content: string;
   created_at: string;
+  isError?: boolean;
 }
 
 export interface ChatDetail {

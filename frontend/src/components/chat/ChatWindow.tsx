@@ -8,9 +8,10 @@ interface Props {
   characterAvatar?: string | null;
   isStreaming: boolean;
   onDeleteMessage?: (messageId: string) => void;
+  onRegenerate?: (messageId: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, onDeleteMessage }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, onDeleteMessage, onRegenerate }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
               characterAvatar={characterAvatar}
               isFirstMessage={index === 0}
               onDelete={onDeleteMessage}
+              onRegenerate={onRegenerate}
             />
           ))}
 
