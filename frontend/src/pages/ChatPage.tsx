@@ -31,7 +31,12 @@ export function ChatPage() {
   const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
   const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
   const [showSettings, setShowSettings] = useState(false);
-  const [chatSettings, setChatSettings] = useState<ChatSettings>({});
+  const [chatSettings, setChatSettings] = useState<ChatSettings>(() => {
+    if (!chatId) return {};
+    try {
+      return JSON.parse(localStorage.getItem(`chat-settings:${chatId}`) || '{}');
+    } catch { return {}; }
+  });
   const [activeModel, setActiveModel] = useState('');
 
   const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast } = useChat(
@@ -50,16 +55,26 @@ export function ChatPage() {
       .then((data) => {
         setChatDetail(data);
         setMessages(data.messages);
-        setActiveModel(data.chat.model_used || 'openrouter');
+        // Restore saved settings or use server default
+        const saved = chatSettings;
+        if (saved.model) {
+          setActiveModel(saved.model);
+          setGenerationSettings(saved);
+        } else {
+          setActiveModel(data.chat.model_used || 'openrouter');
+        }
       })
       .catch(() => setError('Чат не найден'));
-  }, [chatId, setMessages]);
+  }, [chatId, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleApplySettings = (s: ChatSettings) => {
     setChatSettings(s);
     setGenerationSettings(s);
     if (s.model) {
       setActiveModel(s.model);
+    }
+    if (chatId) {
+      try { localStorage.setItem(`chat-settings:${chatId}`, JSON.stringify(s)); } catch {}
     }
   };
 
