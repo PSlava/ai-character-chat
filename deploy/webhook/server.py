@@ -67,7 +67,7 @@ def webhook():
 
 
 def _get_git_info() -> dict:
-    """Read current commit from repo."""
+    """Read current commit and commit date from repo."""
     try:
         commit = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"],
@@ -77,14 +77,21 @@ def _get_git_info() -> dict:
             ["git", "log", "-1", "--format=%s"],
             cwd=REPO_DIR, text=True, timeout=5
         ).strip()
-        return {"commit": commit, "message": message}
+        commit_date = subprocess.check_output(
+            ["git", "log", "-1", "--format=%cI"],
+            cwd=REPO_DIR, text=True, timeout=5
+        ).strip()
+        return {"commit": commit, "message": message, "commit_date": commit_date}
     except Exception:
         return {}
 
 
+_STARTED_AT = datetime.now(timezone.utc).isoformat()
+
+
 @app.route("/health")
 def health():
-    info = {"status": "ok", **_get_git_info()}
+    info = {"status": "ok", "started_at": _STARTED_AT, **_get_git_info()}
     if _last_deploy:
         info["last_deploy"] = _last_deploy
     return jsonify(info)
