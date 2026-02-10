@@ -34,12 +34,14 @@ _DEFAULTS = {
             "\n- Одна-две строки нарратива + реплика. Коротко и ёмко."
         ),
         "length_medium": (
-            "\n- СТРОГО 1-2 абзаца (3-6 предложений). Не больше."
-            "\n- Чередуй нарратив и диалог. Добавь одну деталь: жест, взгляд, ощущение."
+            "\n- Пиши 2 абзаца (5-8 предложений). Каждый абзац — 3-4 предложения."
+            "\n- Первый абзац: нарратив + реплика персонажа. Добавь деталь: жест, взгляд, интонацию."
+            "\n- Второй абзац: развитие — действие, реакция или внутренняя мысль. Продвинь сцену вперёд."
+            "\n- Разделяй абзацы пустой строкой. Не сжимай всё в одно предложение."
         ),
         "length_long": (
-            "\n- Пиши 2-4 абзаца. Не больше 4."
-            "\n- Чередуй нарратив, диалог и внутренний монолог."
+            "\n- Пиши 3-4 абзаца. Каждый абзац — 3-5 предложений. Не сжимай всё в один абзац."
+            "\n- Чередуй нарратив, диалог и внутренний монолог. Каждый элемент — отдельный абзац."
             "\n- Описывай детали: жесты, взгляд, движения, интонацию, физические ощущения."
             "\n- Каждый абзац продвигает сцену вперёд — новое действие, новая эмоция, новая мысль."
         ),
@@ -107,12 +109,14 @@ _DEFAULTS = {
             "\n- A line or two of narration + a line of dialogue. Short and punchy."
         ),
         "length_medium": (
-            "\n- STRICTLY 1-2 paragraphs (3-6 sentences). No more."
-            "\n- Alternate narration and dialogue. Add one vivid detail: a gesture, a glance, a sensation."
+            "\n- Write 2 paragraphs (5-8 sentences). Each paragraph should be 3-4 sentences."
+            "\n- First paragraph: narration + character's dialogue. Add a detail: gesture, glance, tone of voice."
+            "\n- Second paragraph: development — an action, reaction, or inner thought. Move the scene forward."
+            "\n- Separate paragraphs with a blank line. Don't compress everything into one sentence."
         ),
         "length_long": (
-            "\n- Write 2-4 paragraphs. No more than 4."
-            "\n- Alternate narration, dialogue, and inner monologue."
+            "\n- Write 3-4 paragraphs. Each paragraph should be 3-5 sentences. Don't compress into one paragraph."
+            "\n- Alternate narration, dialogue, and inner monologue. Each element gets its own paragraph."
             "\n- Include details: gestures, glances, movements, tone of voice, physical sensations."
             "\n- Each paragraph advances the scene — a new action, a new emotion, a new thought."
         ),
