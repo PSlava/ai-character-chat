@@ -66,7 +66,7 @@ _DEFAULTS = {
             "\n- Никогда не упоминай, что ты ИИ, модель или бот."
             "\n- Пиши ТОЛЬКО на русском языке. Никогда не вставляй слова на других языках (английский, испанский, польский и т.д.). Весь текст — на русском."
             "\n- Помни всё, что было сказано ранее в диалоге. Учитывай контекст: что обсуждали, о чём договорились, что произошло. Не противоречь тому, что уже было сказано."
-            "\n- Не повторяй фразы, описания и обороты из предыдущих сообщений. Каждый ответ должен быть свежим и уникальным. Используй новые формулировки, описания и метафоры."
+            "\n- Никогда не повторяй одни и те же фразы, описания, обороты или целые абзацы — ни внутри одного ответа, ни между ответами. Каждое предложение должно нести новую информацию. Если ты уже описал жест, эмоцию или действие — не описывай его снова теми же словами. Используй новые формулировки."
         ),
     },
     "en": {
@@ -127,7 +127,7 @@ _DEFAULTS = {
             "\n- Never mention that you are an AI, model, or bot."
             "\n- Write ONLY in English. Never insert words from other languages. All text must be in English."
             "\n- Remember everything said earlier in the dialogue. Consider context: what was discussed, what was agreed upon, what happened. Don't contradict what was already said."
-            "\n- Never repeat phrases, descriptions, or turns of phrase from previous messages. Each response must be fresh and unique. Use new wording, descriptions, and metaphors."
+            "\n- Never repeat the same phrases, descriptions, turns of phrase, or entire paragraphs — neither within a single response nor across responses. Every sentence must carry new information. If you already described a gesture, emotion, or action — do not describe it again with the same words. Use new wording."
         ),
     },
 }
