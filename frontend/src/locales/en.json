@@ -129,6 +129,7 @@
   "form.lengthLong": "Long (2-4 paragraphs)",
   "form.lengthVeryLong": "Very long (4-6 paragraphs)",
   "form.preferredModel": "AI Model (for chat)",
+  "form.autoAll": "Auto (All Providers)",
   "form.openrouterAuto": "OpenRouter Auto (Free)",
   "form.groqSeparator": "─── Groq ───",
   "form.groqAuto": "Groq Auto",
@@ -140,6 +141,8 @@
   "form.maxTokens": "Max response tokens",
   "form.maxTokensHelp": "Maximum response length. 1 token ≈ 3-4 characters. Default: 2048.",
 
+  "settings.groupAuto": "Auto",
+  "settings.autoAll": "All Providers (Auto)",
   "settings.title": "Model & Settings",
   "settings.modelLabel": "Choose model for response generation",
   "settings.groupOpenrouter": "OpenRouter",

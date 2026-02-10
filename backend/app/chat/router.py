@@ -169,7 +169,12 @@ async def send_message(
         "deepseek": "deepseek-chat",
         "qwen": "qwen3-32b",
     }
-    if model_name.startswith("groq:"):
+    is_auto = model_name == "auto"
+
+    if is_auto:
+        provider_name = "auto"
+        model_id = ""
+    elif model_name.startswith("groq:"):
         provider_name = "groq"
         model_id = model_name[5:]
     elif model_name.startswith("cerebras:"):
@@ -191,30 +196,57 @@ async def send_message(
         provider_name = model_name
         model_id = PROVIDER_MODELS.get(model_name, "")
 
-    provider = get_provider(provider_name)
-    config = LLMConfig(
-        model=model_id,
-        temperature=body.temperature if body.temperature is not None else 0.7,
-        max_tokens=body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048),
-        top_p=body.top_p if body.top_p is not None else 0.95,
-        top_k=body.top_k if body.top_k is not None else 0,
-        frequency_penalty=body.frequency_penalty if body.frequency_penalty is not None else 0.0,
-        presence_penalty=body.presence_penalty if body.presence_penalty is not None else 0.3,
-        content_rating=content_rating,
-    )
+    base_config = {
+        "temperature": body.temperature if body.temperature is not None else 0.7,
+        "max_tokens": body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048),
+        "top_p": body.top_p if body.top_p is not None else 0.95,
+        "top_k": body.top_k if body.top_k is not None else 0,
+        "frequency_penalty": body.frequency_penalty if body.frequency_penalty is not None else 0.0,
+        "presence_penalty": body.presence_penalty if body.presence_penalty is not None else 0.3,
+        "content_rating": content_rating,
+    }
 
-    async def event_stream():
-        full_response = []
-        try:
-            async for chunk in provider.generate_stream(messages, config):
-                full_response.append(chunk)
-                yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+    if is_auto:
+        auto_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip()]
 
-            complete_text = "".join(full_response)
-            actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
-            saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
-            yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
-        except Exception as e:
-            yield f"data: {json.dumps({'type': 'error', 'content': str(e), 'user_message_id': user_msg.id})}\n\n"
+        async def event_stream():
+            errors: list[str] = []
+            for pname in auto_order:
+                try:
+                    prov = get_provider(pname)
+                except ValueError:
+                    continue  # provider not configured
+                config = LLMConfig(model="", **base_config)
+                full_response: list[str] = []
+                try:
+                    async for chunk in prov.generate_stream(messages, config):
+                        full_response.append(chunk)
+                        yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+                    complete_text = "".join(full_response)
+                    actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
+                    saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
+                    yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
+                    return
+                except Exception as e:
+                    errors.append(f"{pname}: {e}")
+                    continue
+            yield f"data: {json.dumps({'type': 'error', 'content': 'Все провайдеры недоступны:\\n' + '\\n'.join(errors), 'user_message_id': user_msg.id})}\n\n"
+    else:
+        provider = get_provider(provider_name)
+        config = LLMConfig(model=model_id, **base_config)
+
+        async def event_stream():
+            full_response = []
+            try:
+                async for chunk in provider.generate_stream(messages, config):
+                    full_response.append(chunk)
+                    yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+
+                complete_text = "".join(full_response)
+                actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
+                saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
+                yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'type': 'error', 'content': str(e), 'user_message_id': user_msg.id})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

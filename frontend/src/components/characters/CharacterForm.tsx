@@ -181,6 +181,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
             onChange={(e) => update('preferred_model', e.target.value)}
             className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white w-full"
           >
+            <option value="auto">{t('form.autoAll')}</option>
             <option value="openrouter">{t('form.openrouterAuto')}</option>
             {orModels.map((m) => (
               <option key={m.id} value={m.id} disabled={form.content_rating === 'nsfw' && m.nsfw === false}>

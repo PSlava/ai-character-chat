@@ -129,6 +129,7 @@
   "form.lengthLong": "Длинный (2-4 абзаца)",
   "form.lengthVeryLong": "Очень длинный (4-6 абзацев)",
   "form.preferredModel": "AI Модель (для чата)",
+  "form.autoAll": "Авто (все провайдеры)",
   "form.openrouterAuto": "OpenRouter Auto (Free)",
   "form.groqSeparator": "─── Groq ───",
   "form.groqAuto": "Groq Auto",
@@ -140,6 +141,8 @@
   "form.maxTokens": "Макс. токенов ответа",
   "form.maxTokensHelp": "Максимальная длина ответа. 1 токен ≈ 3-4 символа. По умолчанию: 2048.",
 
+  "settings.groupAuto": "Авто",
+  "settings.autoAll": "Все провайдеры (авто)",
   "settings.title": "Модель и настройки",
   "settings.modelLabel": "Выбор модели для генерации ответа",
   "settings.groupOpenrouter": "OpenRouter",

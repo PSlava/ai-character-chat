@@ -12,7 +12,8 @@ class Settings(BaseSettings):
     qwen_api_key: str | None = None
     groq_api_key: str | None = None
     cerebras_api_key: str | None = None
-    default_model: str = "qwen"
+    default_model: str = "auto"
+    auto_provider_order: str = "groq,cerebras,openrouter"
     proxy_url: str | None = None  # e.g. http://user:pass@host:port
     admin_emails: str = ""  # comma-separated list of admin emails
     cors_origins: str = "http://localhost:5173"

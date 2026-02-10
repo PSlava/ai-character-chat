@@ -124,7 +124,7 @@ const CONTEXT_OPTIONS = [
 interface ModelOption {
   id: string;
   label: string;
-  group: 'openrouter' | 'groq' | 'cerebras' | 'direct' | 'paid';
+  group: 'auto' | 'openrouter' | 'groq' | 'cerebras' | 'direct' | 'paid';
   nsfwOk?: boolean;
 }
 
@@ -150,6 +150,8 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
 
   // Build full model list with groups
   const allModels: ModelOption[] = [
+    // Auto (all providers)
+    { id: 'auto', label: t('settings.autoAll'), group: 'auto', nsfwOk: true },
     // OpenRouter
     { id: 'openrouter', label: 'OpenRouter Auto', group: 'openrouter', nsfwOk: true },
     ...orModels.map((m) => ({ id: m.id, label: `${m.name} (${m.quality}/10)`, group: 'openrouter' as const, nsfwOk: m.nsfw !== false })),
@@ -171,7 +173,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
   const isSelected = (id: string) => model === id;
 
   // Group models for rendering with headers
-  const groups = ['openrouter', 'groq', 'cerebras', 'direct', 'paid'] as const;
+  const groups = ['auto', 'openrouter', 'groq', 'cerebras', 'direct', 'paid'] as const;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
