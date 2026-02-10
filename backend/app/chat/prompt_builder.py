@@ -222,8 +222,14 @@ async def build_system_prompt(
     lang = language if language in _DEFAULTS else "en"
     parts = []
 
-    parts.append(_get(lang, "intro").format(name=character["name"]))
-    parts.append(f"\n{_get(lang, 'personality')}\n{character['personality']}")
+    # Template variable replacement for all character text fields
+    char_name = character["name"]
+    u_name = user_name or "User"
+    def tpl(text: str) -> str:
+        return text.replace("{{char}}", char_name).replace("{{user}}", u_name)
+
+    parts.append(_get(lang, "intro").format(name=char_name))
+    parts.append(f"\n{_get(lang, 'personality')}\n{tpl(character['personality'])}")
 
     if character.get("structured_tags"):
         from app.characters.structured_tags import get_snippets_for_ids
@@ -232,18 +238,13 @@ async def build_system_prompt(
             parts.append(f"\n{_get(lang, 'structured_tags_header')}\n" + "\n".join(f"- {s}" for s in snippets))
 
     if character.get("appearance"):
-        parts.append(f"\n{_get(lang, 'appearance')}\n{character['appearance']}")
+        parts.append(f"\n{_get(lang, 'appearance')}\n{tpl(character['appearance'])}")
 
     if character.get("scenario"):
-        parts.append(f"\n{_get(lang, 'scenario')}\n{character['scenario']}")
+        parts.append(f"\n{_get(lang, 'scenario')}\n{tpl(character['scenario'])}")
 
     if character.get("example_dialogues"):
-        # Support {{char}}/{{user}} template variables
-        examples = character['example_dialogues']
-        char_name = character["name"]
-        u_name = user_name or "User"
-        examples = examples.replace("{{char}}", char_name).replace("{{user}}", u_name)
-        parts.append(f"\n{_get(lang, 'examples')}\n{examples}")
+        parts.append(f"\n{_get(lang, 'examples')}\n{tpl(character['example_dialogues'])}")
 
     content_rules = {
         "sfw": _get(lang, "content_sfw"),
@@ -258,7 +259,7 @@ async def build_system_prompt(
     parts.append(f"\n{header}\n{content_rules.get(rating, content_rules['sfw'])}")
 
     if character.get("system_prompt_suffix"):
-        parts.append(f"\n{_get(lang, 'extra_instructions')}\n{character['system_prompt_suffix']}")
+        parts.append(f"\n{_get(lang, 'extra_instructions')}\n{tpl(character['system_prompt_suffix'])}")
 
     if user_name:
         parts.append(f"\n{_get(lang, 'user_section')}\n{_get(lang, 'user_name_line').format(user_name=user_name)}")

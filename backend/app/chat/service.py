@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.db.models import Chat, Message, Character, MessageRole
+from app.db.models import Chat, Message, Character, User, MessageRole
 from app.chat.prompt_builder import build_system_prompt
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage
@@ -39,11 +39,19 @@ async def get_or_create_chat(db: AsyncSession, user_id: str, character_id: str, 
     db.add(chat)
     await db.flush()
 
+    # Apply {{char}}/{{user}} template variables in greeting
+    greeting_text = character.greeting_message
+    if "{{char}}" in greeting_text or "{{user}}" in greeting_text:
+        user_result = await db.execute(select(User).where(User.id == user_id))
+        user_obj = user_result.scalar_one_or_none()
+        u_name = user_obj.display_name if user_obj and user_obj.display_name else "User"
+        greeting_text = greeting_text.replace("{{char}}", character.name).replace("{{user}}", u_name)
+
     greeting = Message(
         chat_id=chat.id,
         role=MessageRole.assistant,
-        content=character.greeting_message,
-        token_count=len(character.greeting_message) // 4,
+        content=greeting_text,
+        token_count=len(greeting_text) // 4,
     )
     db.add(greeting)
 
