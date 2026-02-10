@@ -26,23 +26,27 @@ _STRINGS = {
             "\n- Основа — прямая речь персонажа."
         ),
         "length_medium": (
-            "\n- Пиши 1-2 абзаца."
-            "\n- Чередуй прямую речь с короткими описаниями действий."
+            "\n- Пиши 1-2 абзаца от первого лица персонажа."
+            "\n- Действия описывай в *звёздочках*, речь — без."
+            "\n- Не дублируй одно и то же в описании действий и в речи."
             "\n- Описывай ключевые жесты и эмоции, но не перегружай деталями."
         ),
         "length_long": (
-            "\n- Пиши от третьего лица, описывая действия, эмоции, мимику и окружение персонажа."
-            "\n- Чередуй описание действий с прямой речью (через тире — )."
-            "\n- Описывай детали: жесты, взгляд, движения рук, интонацию, мелкие действия."
-            "\n- Можешь включать внутренние мысли персонажа — курсивом или отдельным абзацем."
-            "\n- Ответ должен быть развёрнутым: 2-4 абзаца. Не отвечай одной фразой."
+            "\n- Пиши от первого лица персонажа."
+            "\n- Действия, жесты, эмоции и окружение описывай в *звёздочках*."
+            "\n- Прямую речь персонажа пиши без звёздочек."
+            "\n- Чередуй действия и речь. Не дублируй одно и то же в описании действий и в речи."
+            "\n- Описывай детали: жесты, взгляд, движения, интонацию."
+            "\n- Ответ: 2-4 абзаца. Не отвечай одной фразой."
         ),
         "length_very_long": (
-            "\n- Пиши от третьего лица, подробно описывая действия, эмоции, мимику, окружение и атмосферу."
-            "\n- Чередуй описание действий с прямой речью (через тире — )."
+            "\n- Пиши от первого лица персонажа."
+            "\n- Действия, жесты, эмоции, окружение и атмосферу описывай в *звёздочках*."
+            "\n- Прямую речь персонажа пиши без звёздочек."
+            "\n- Чередуй действия и речь. Не дублируй одно и то же в описании действий и в речи."
             "\n- Описывай много деталей: жесты, взгляд, движения, интонацию, запахи, звуки, свет."
-            "\n- Включай внутренние мысли и переживания персонажа — курсивом или отдельным абзацем."
-            "\n- Ответ должен быть очень развёрнутым: 4-6 абзацев. Максимум деталей и погружения."
+            "\n- Внутренние мысли и переживания тоже в *звёздочках*."
+            "\n- Ответ: 4-6 абзацев. Максимум деталей и погружения."
         ),
         "format_rules": (
             "\n- Не анализируй запрос пользователя. Не пиши мета-комментарии. Сразу пиши от лица персонажа."
@@ -84,23 +88,27 @@ _STRINGS = {
             "\n- Focus on the character's direct speech."
         ),
         "length_medium": (
-            "\n- Write 1-2 paragraphs."
-            "\n- Alternate direct speech with short action descriptions."
+            "\n- Write 1-2 paragraphs in first person as the character."
+            "\n- Describe actions in *asterisks*, speech without."
+            "\n- Never duplicate the same content in both action descriptions and dialogue."
             "\n- Describe key gestures and emotions without overloading details."
         ),
         "length_long": (
-            "\n- Write in third person, describing actions, emotions, expressions, and surroundings."
-            "\n- Alternate action descriptions with direct speech (using em-dash — )."
-            "\n- Include details: gestures, glances, hand movements, tone of voice, small actions."
-            "\n- You may include the character's inner thoughts — in italics or a separate paragraph."
-            "\n- Responses should be detailed: 2-4 paragraphs. Don't answer with a single phrase."
+            "\n- Write in first person as the character."
+            "\n- Describe actions, gestures, emotions, and surroundings in *asterisks*."
+            "\n- Write the character's speech without asterisks."
+            "\n- Alternate actions and speech. Never duplicate the same content in both action descriptions and dialogue."
+            "\n- Include details: gestures, glances, movements, tone of voice."
+            "\n- Responses: 2-4 paragraphs. Don't answer with a single phrase."
         ),
         "length_very_long": (
-            "\n- Write in third person with rich detail: actions, emotions, expressions, surroundings, and atmosphere."
-            "\n- Alternate action descriptions with direct speech (using em-dash — )."
+            "\n- Write in first person as the character."
+            "\n- Describe actions, gestures, emotions, surroundings, and atmosphere in *asterisks*."
+            "\n- Write the character's speech without asterisks."
+            "\n- Alternate actions and speech. Never duplicate the same content in both action descriptions and dialogue."
             "\n- Describe many details: gestures, glances, movements, tone, smells, sounds, light."
-            "\n- Include inner thoughts and feelings — in italics or a separate paragraph."
-            "\n- Responses should be very detailed: 4-6 paragraphs. Maximum immersion."
+            "\n- Inner thoughts and feelings also go in *asterisks*."
+            "\n- Responses: 4-6 paragraphs. Maximum immersion."
         ),
         "format_rules": (
             "\n- Don't analyze the user's request. Don't write meta-comments. Write directly in character."

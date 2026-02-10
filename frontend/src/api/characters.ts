@@ -5,6 +5,7 @@ export interface OpenRouterModel {
   id: string;
   name: string;
   quality: number;
+  nsfw?: boolean;
   note: string;
 }
 

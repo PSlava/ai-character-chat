@@ -14,6 +14,7 @@ interface Props {
   orModels: OpenRouterModel[];
   groqModels: OpenRouterModel[];
   cerebrasModels: OpenRouterModel[];
+  contentRating?: string;
   onApply: (settings: ChatSettings) => void;
   onClose: () => void;
 }
@@ -110,17 +111,26 @@ const GEN_DEFAULTS = {
   frequency_penalty: 0,
   presence_penalty: 0.3,
   max_tokens: 2048,
+  context_limit: 0,
 };
+
+const CONTEXT_OPTIONS = [
+  { value: 4000, label: '4K' },
+  { value: 8000, label: '8K' },
+  { value: 16000, label: '16K' },
+  { value: 0, label: '\u221E' }, // ∞
+];
 
 interface ModelOption {
   id: string;
   label: string;
   group: 'openrouter' | 'groq' | 'cerebras' | 'direct' | 'paid';
+  nsfwOk?: boolean;
 }
 
 // GROUP_LABELS are now resolved via t() inside the component
 
-export function GenerationSettingsModal({ settings, currentModel, orModels, groqModels, cerebrasModels, onApply, onClose }: Props) {
+export function GenerationSettingsModal({ settings, currentModel, orModels, groqModels, cerebrasModels, contentRating, onApply, onClose }: Props) {
   const { t } = useTranslation();
   const [model, setModel] = useState(settings.model || currentModel);
   const [local, setLocal] = useState({
@@ -130,29 +140,32 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
     frequency_penalty: settings.frequency_penalty ?? GEN_DEFAULTS.frequency_penalty,
     presence_penalty: settings.presence_penalty ?? GEN_DEFAULTS.presence_penalty,
     max_tokens: settings.max_tokens ?? GEN_DEFAULTS.max_tokens,
+    context_limit: settings.context_limit ?? GEN_DEFAULTS.context_limit,
   });
 
   const update = <K extends keyof typeof GEN_DEFAULTS>(key: K, value: number) =>
     setLocal((prev) => ({ ...prev, [key]: value }));
 
+  const isNsfw = contentRating === 'nsfw';
+
   // Build full model list with groups
   const allModels: ModelOption[] = [
     // OpenRouter
-    { id: 'openrouter', label: 'OpenRouter Auto', group: 'openrouter' },
-    ...orModels.map((m) => ({ id: m.id, label: `${m.name} (${m.quality}/10)`, group: 'openrouter' as const })),
+    { id: 'openrouter', label: 'OpenRouter Auto', group: 'openrouter', nsfwOk: true },
+    ...orModels.map((m) => ({ id: m.id, label: `${m.name} (${m.quality}/10)`, group: 'openrouter' as const, nsfwOk: m.nsfw !== false })),
     // Groq
-    { id: 'groq', label: 'Groq Auto', group: 'groq' },
-    ...groqModels.map((m) => ({ id: `groq:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'groq' as const })),
+    { id: 'groq', label: 'Groq Auto', group: 'groq', nsfwOk: true },
+    ...groqModels.map((m) => ({ id: `groq:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'groq' as const, nsfwOk: m.nsfw !== false })),
     // Cerebras
-    { id: 'cerebras', label: 'Cerebras Auto', group: 'cerebras' },
-    ...cerebrasModels.map((m) => ({ id: `cerebras:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'cerebras' as const })),
+    { id: 'cerebras', label: 'Cerebras Auto', group: 'cerebras', nsfwOk: true },
+    ...cerebrasModels.map((m) => ({ id: `cerebras:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'cerebras' as const, nsfwOk: m.nsfw !== false })),
     // Direct
-    { id: 'deepseek', label: 'DeepSeek', group: 'direct' },
-    { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct' },
+    { id: 'deepseek', label: 'DeepSeek', group: 'direct', nsfwOk: true },
+    { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct', nsfwOk: false },
     // Paid
-    { id: 'gemini', label: 'Gemini', group: 'paid' },
-    { id: 'claude', label: 'Claude', group: 'paid' },
-    { id: 'openai', label: 'GPT-4o', group: 'paid' },
+    { id: 'gemini', label: 'Gemini', group: 'paid', nsfwOk: true },
+    { id: 'claude', label: 'Claude', group: 'paid', nsfwOk: true },
+    { id: 'openai', label: 'GPT-4o', group: 'paid', nsfwOk: true },
   ];
 
   const isSelected = (id: string) => model === id;
@@ -183,23 +196,54 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
               <div key={group} className="mb-3">
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1.5">{t(`settings.group${group.charAt(0).toUpperCase()}${group.slice(1)}` as any)}</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {items.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => setModel(m.id)}
-                      className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
-                        isSelected(m.id)
-                          ? 'border-purple-500 bg-purple-500/10 text-white'
-                          : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
-                      }`}
-                    >
-                      <span className="block font-medium truncate text-xs">{m.label}</span>
-                    </button>
-                  ))}
+                  {items.map((m) => {
+                    const disabled = isNsfw && !m.nsfwOk;
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => !disabled && setModel(m.id)}
+                        disabled={disabled}
+                        className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                          disabled
+                            ? 'border-neutral-800 bg-neutral-800/50 text-neutral-600 cursor-not-allowed'
+                            : isSelected(m.id)
+                              ? 'border-purple-500 bg-purple-500/10 text-white'
+                              : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                        }`}
+                        title={disabled ? t('settings.nsfwBlocked') : undefined}
+                      >
+                        <span className="block font-medium truncate text-xs">{m.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Context memory */}
+        <div className="mb-6">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-sm text-neutral-200">{t('settings.contextLimit')}</span>
+            <TooltipIcon text={t('settings.contextLimitTooltip')} />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {CONTEXT_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => update('context_limit', opt.value)}
+                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  local.context_limit === opt.value
+                    ? 'border-purple-500 bg-purple-500/10 text-white'
+                    : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Generation params */}

@@ -197,6 +197,7 @@ export function ChatPage() {
           orModels={orModels}
           groqModels={groqModels}
           cerebrasModels={cerebrasModels}
+          contentRating={character?.content_rating}
           onApply={handleApplySettings}
           onClose={() => setShowSettings(false)}
         />

@@ -18,6 +18,7 @@ class LLMConfig:
     top_k: int = 0  # 0 = disabled
     frequency_penalty: float = 0.0
     presence_penalty: float = 0.0
+    content_rating: str = "sfw"  # "sfw" | "moderate" | "nsfw"
 
 
 class BaseLLMProvider(ABC):

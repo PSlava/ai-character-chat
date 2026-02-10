@@ -32,7 +32,7 @@ class CerebrasProvider(BaseLLMProvider):
         config: LLMConfig,
     ) -> AsyncIterator[str]:
         await self.ensure_models_loaded()
-        models = self._get_models_to_try(config.model)
+        models = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
 
@@ -74,7 +74,7 @@ class CerebrasProvider(BaseLLMProvider):
         config: LLMConfig,
     ) -> str:
         await self.ensure_models_loaded()
-        models = self._get_models_to_try(config.model)
+        models = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
 
@@ -101,8 +101,8 @@ class CerebrasProvider(BaseLLMProvider):
 
         raise RuntimeError(self._format_errors(errors))
 
-    def _get_models_to_try(self, preferred: str) -> list[str]:
-        fallbacks = get_fallback_models(limit=3)
+    def _get_models_to_try(self, preferred: str, nsfw: bool = False) -> list[str]:
+        fallbacks = get_fallback_models(limit=3, nsfw=nsfw)
         if preferred:
             # Preferred first, then fallbacks (in case preferred is deprecated)
             others = [m for m in fallbacks if m != preferred]

@@ -14,6 +14,9 @@ QUALITY_SCORES: dict[str, int] = {
     "gpt-oss-120b": 6,
 }
 
+# Models that refuse NSFW content (strict content moderation)
+NSFW_BLOCKED: set[str] = {"gpt-oss-120b"}
+
 # Models to exclude (too small for roleplay)
 EXCLUDE_IDS = {"llama3.1-8b"}
 
@@ -27,16 +30,16 @@ CACHE_TTL = 3600  # 1 hour
 
 # Fallback if API unavailable
 FALLBACK_MODELS = [
-    {"id": "llama-3.3-70b", "name": "Llama 3.3 70B", "quality": 9, "note": ""},
-    {"id": "qwen-3-32b", "name": "Qwen 3 32B", "quality": 8, "note": ""},
-    {"id": "gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "note": ""},
+    {"id": "llama-3.3-70b", "name": "Llama 3.3 70B", "quality": 9, "nsfw": True, "note": ""},
+    {"id": "qwen-3-32b", "name": "Qwen 3 32B", "quality": 8, "nsfw": True, "note": ""},
+    {"id": "gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "nsfw": False, "note": ""},
 ]
 
 
 def _build_model_entry(model_id: str, owned_by: str = "") -> dict:
     quality = QUALITY_SCORES.get(model_id, 5)
     name = model_id.replace("-", " ").title()
-    return {"id": model_id, "name": name, "quality": quality, "note": owned_by}
+    return {"id": model_id, "name": name, "quality": quality, "nsfw": model_id not in NSFW_BLOCKED, "note": owned_by}
 
 
 async def refresh_models(client) -> list[dict]:
@@ -62,10 +65,15 @@ def get_models_sorted() -> list[dict]:
     return _cached_models if _cached_models else FALLBACK_MODELS
 
 
-def get_fallback_models(limit: int = 3) -> list[str]:
-    """Return top-N model IDs for auto-fallback (quality >= MIN_QUALITY_FOR_FALLBACK)."""
+def get_fallback_models(limit: int = 3, nsfw: bool = False) -> list[str]:
+    """Return top-N model IDs for auto-fallback (quality >= MIN_QUALITY_FOR_FALLBACK).
+
+    If nsfw=True, exclude models with strict content moderation.
+    """
     models = get_models_sorted()
     good = [m["id"] for m in models if m["quality"] >= MIN_QUALITY_FOR_FALLBACK]
+    if nsfw:
+        good = [mid for mid in good if mid not in NSFW_BLOCKED]
     return good[:limit] if good else [models[0]["id"]]
 
 

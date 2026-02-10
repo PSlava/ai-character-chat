@@ -7,7 +7,7 @@ from app.chat.prompt_builder import build_system_prompt
 from app.llm.base import LLMMessage
 
 MAX_CONTEXT_MESSAGES = 50
-MAX_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/token
+DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/token
 
 
 async def create_chat(db: AsyncSession, user_id: str, character_id: str, model: str | None = None):
@@ -169,7 +169,14 @@ async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_i
     return True
 
 
-async def build_conversation_messages(db: AsyncSession, chat_id: str, character: Character, user_name: str | None = None, language: str = "ru") -> list[LLMMessage]:
+async def build_conversation_messages(
+    db: AsyncSession,
+    chat_id: str,
+    character: Character,
+    user_name: str | None = None,
+    language: str = "ru",
+    context_limit: int | None = None,
+) -> list[LLMMessage]:
     char_dict = {
         "name": character.name,
         "personality": character.personality,
@@ -183,12 +190,15 @@ async def build_conversation_messages(db: AsyncSession, chat_id: str, character:
     system_prompt = build_system_prompt(char_dict, user_name=user_name, language=language)
     messages_data = await get_chat_messages(db, chat_id)
 
+    # context_limit is in "real" tokens; multiply by ~4 for char-based estimation
+    max_tokens = (context_limit * 4) if context_limit else DEFAULT_CONTEXT_TOKENS
+
     # Sliding window
     messages: list[LLMMessage] = []
     total_tokens = 0
     for msg in reversed(messages_data):
         est_tokens = msg.token_count or len(msg.content) // 4
-        if total_tokens + est_tokens > MAX_CONTEXT_TOKENS:
+        if total_tokens + est_tokens > max_tokens:
             break
         messages.insert(0, LLMMessage(role=msg.role.value if hasattr(msg.role, 'value') else msg.role, content=msg.content))
         total_tokens += est_tokens

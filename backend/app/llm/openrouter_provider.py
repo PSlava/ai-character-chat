@@ -40,7 +40,7 @@ class OpenRouterProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> AsyncIterator[str]:
-        models_to_try = self._get_models_to_try(config.model)
+        models_to_try = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
 
         for model in models_to_try:
@@ -87,7 +87,7 @@ class OpenRouterProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
-        models_to_try = self._get_models_to_try(config.model)
+        models_to_try = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
 
         for model in models_to_try:
@@ -167,9 +167,9 @@ class OpenRouterProvider(BaseLLMProvider):
             lines.append(f"  • {model}: {reason}")
         return "\n".join(lines)
 
-    def _get_models_to_try(self, preferred: str) -> list[str]:
+    def _get_models_to_try(self, preferred: str, nsfw: bool = False) -> list[str]:
         if preferred:
             return [preferred]
-        models = get_fallback_models(limit=3)
+        models = get_fallback_models(limit=3, nsfw=nsfw)
         available = model_cooldown.filter_available("openrouter", models)
         return available or models[:1]

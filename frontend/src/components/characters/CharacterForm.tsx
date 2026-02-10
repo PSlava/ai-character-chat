@@ -183,27 +183,27 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
           >
             <option value="openrouter">{t('form.openrouterAuto')}</option>
             {orModels.map((m) => (
-              <option key={m.id} value={m.id}>
+              <option key={m.id} value={m.id} disabled={form.content_rating === 'nsfw' && m.nsfw === false}>
                 {m.name} ({m.quality}/10)
               </option>
             ))}
             <option disabled>{t('form.groqSeparator')}</option>
             <option value="groq">{t('form.groqAuto')}</option>
             {groqModels.map((m) => (
-              <option key={`groq:${m.id}`} value={`groq:${m.id}`}>
+              <option key={`groq:${m.id}`} value={`groq:${m.id}`} disabled={form.content_rating === 'nsfw' && m.nsfw === false}>
                 {m.name} ({m.quality}/10)
               </option>
             ))}
             <option disabled>{t('form.cerebrasSeparator')}</option>
             <option value="cerebras">{t('form.cerebrasAuto')}</option>
             {cerebrasModels.map((m) => (
-              <option key={`cerebras:${m.id}`} value={`cerebras:${m.id}`}>
+              <option key={`cerebras:${m.id}`} value={`cerebras:${m.id}`} disabled={form.content_rating === 'nsfw' && m.nsfw === false}>
                 {m.name} ({m.quality}/10)
               </option>
             ))}
             <option disabled>{t('form.directApiSeparator')}</option>
             <option value="deepseek">DeepSeek</option>
-            <option value="qwen">Qwen (DashScope)</option>
+            <option value="qwen" disabled={form.content_rating === 'nsfw'}>Qwen (DashScope)</option>
             <option disabled>{t('form.paidSeparator')}</option>
             <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>

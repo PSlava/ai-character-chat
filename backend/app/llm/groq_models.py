@@ -18,6 +18,9 @@ QUALITY_SCORES: dict[str, int] = {
     "openai/gpt-oss-20b": 5,
 }
 
+# Models that refuse NSFW content (strict content moderation)
+NSFW_BLOCKED: set[str] = {"openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/gpt-oss-safeguard-20b"}
+
 # Models to exclude (not useful for chat)
 EXCLUDE_PREFIXES = ("whisper", "meta-llama/llama-guard", "meta-llama/llama-prompt-guard")
 EXCLUDE_IDS = {"groq/compound", "groq/compound-mini", "openai/gpt-oss-safeguard-20b"}
@@ -32,9 +35,9 @@ CACHE_TTL = 3600  # 1 hour
 
 # Fallback if API unavailable
 FALLBACK_MODELS = [
-    {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B", "quality": 9, "note": ""},
-    {"id": "openai/gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "note": ""},
-    {"id": "openai/gpt-oss-20b", "name": "GPT-OSS 20B", "quality": 5, "note": ""},
+    {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B", "quality": 9, "nsfw": True, "note": ""},
+    {"id": "openai/gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "nsfw": False, "note": ""},
+    {"id": "openai/gpt-oss-20b", "name": "GPT-OSS 20B", "quality": 5, "nsfw": False, "note": ""},
 ]
 
 
@@ -51,7 +54,7 @@ def _build_model_entry(model_id: str, owned_by: str = "") -> dict:
     # Pretty name: "openai/gpt-oss-120b" → "GPT-OSS 120B"
     short = model_id.split("/")[-1] if "/" in model_id else model_id
     name = short.replace("-", " ").title()
-    return {"id": model_id, "name": name, "quality": quality, "note": owned_by}
+    return {"id": model_id, "name": name, "quality": quality, "nsfw": model_id not in NSFW_BLOCKED, "note": owned_by}
 
 
 async def refresh_models(client) -> list[dict]:
@@ -77,10 +80,15 @@ def get_models_sorted() -> list[dict]:
     return _cached_models if _cached_models else FALLBACK_MODELS
 
 
-def get_fallback_models(limit: int = 3) -> list[str]:
-    """Return top-N model IDs for auto-fallback (quality >= MIN_QUALITY_FOR_FALLBACK)."""
+def get_fallback_models(limit: int = 3, nsfw: bool = False) -> list[str]:
+    """Return top-N model IDs for auto-fallback (quality >= MIN_QUALITY_FOR_FALLBACK).
+
+    If nsfw=True, exclude models with strict content moderation.
+    """
     models = get_models_sorted()
     good = [m["id"] for m in models if m["quality"] >= MIN_QUALITY_FOR_FALLBACK]
+    if nsfw:
+        good = [mid for mid in good if mid not in NSFW_BLOCKED]
     return good[:limit] if good else [models[0]["id"]]
 
 

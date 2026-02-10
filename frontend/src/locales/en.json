@@ -154,6 +154,9 @@
   "settings.presencePenalty": "Presence Penalty",
   "settings.presencePenaltyTooltip": "Penalizes words and phrases that already appeared in the dialogue context. Helps avoid repeating the same descriptions from message to message.\n\n0.0 — no penalty.\n0.3 — light penalty, fewer cross-message repeats (recommended).\n0.6 — noticeable penalty, more diverse responses.\n1.0+ — strong penalty, model actively avoids previously mentioned topics.\n\nDefault: 0.3",
   "settings.maxTokens": "Max Tokens",
+  "settings.contextLimit": "Memory",
+  "settings.contextLimitTooltip": "How much conversation history the model sees.\n\n4K — ~10-15 messages, fast responses.\n8K — ~25-35 messages, good balance.\n16K — ~50-70 messages, deep context.\n\u221E — no limit, all history (may hit model limits).\n\nOlder messages beyond the limit are \"forgotten\" by the model.\n\nDefault: \u221E (no limit)",
+  "settings.nsfwBlocked": "This model doesn't support NSFW content",
   "settings.maxTokensTooltip": "Maximum response length. 1 token ≈ 3-4 characters.\n\n256 — very short (~750 chars).\n1024 — short (~3000 chars).\n2048 — medium (~6000 chars).\n4096 — long (~12000 chars).\n\nHard limit: response will be cut off if exceeded.\n\nDefault: 2048",
 
   "lang.ru": "Русский",
