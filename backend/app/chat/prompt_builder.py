@@ -21,34 +21,33 @@ _STRINGS = {
         "format_header": "## Формат ответа",
         "rules_header": "## Правила",
         "length_short": (
-            "\n- Пиши коротко: 1-3 предложения, как в реальном чате."
+            "\n- СТРОГО 1-3 предложения. Не больше."
             "\n- Можешь добавить одно короткое действие в *звёздочках*."
             "\n- Основа — прямая речь персонажа."
         ),
         "length_medium": (
-            "\n- Пиши 1-2 абзаца от первого лица персонажа."
+            "\n- СТРОГО 1-2 абзаца (3-6 предложений). Не больше."
             "\n- Действия описывай в *звёздочках*, речь — без."
             "\n- Не дублируй одно и то же в описании действий и в речи."
             "\n- Описывай ключевые жесты и эмоции, но не перегружай деталями."
         ),
         "length_long": (
-            "\n- Пиши от первого лица персонажа."
+            "\n- Пиши 2-4 абзаца. Не больше 4."
             "\n- Действия, жесты, эмоции и окружение описывай в *звёздочках*."
             "\n- Прямую речь персонажа пиши без звёздочек."
             "\n- Чередуй действия и речь. Не дублируй одно и то же в описании действий и в речи."
             "\n- Описывай детали: жесты, взгляд, движения, интонацию."
-            "\n- Ответ: 2-4 абзаца. Не отвечай одной фразой."
         ),
         "length_very_long": (
-            "\n- Пиши от первого лица персонажа."
+            "\n- Пиши 4-6 абзацев. Не больше 6."
             "\n- Действия, жесты, эмоции, окружение и атмосферу описывай в *звёздочках*."
             "\n- Прямую речь персонажа пиши без звёздочек."
             "\n- Чередуй действия и речь. Не дублируй одно и то же в описании действий и в речи."
             "\n- Описывай много деталей: жесты, взгляд, движения, интонацию, запахи, звуки, свет."
             "\n- Внутренние мысли и переживания тоже в *звёздочках*."
-            "\n- Ответ: 4-6 абзацев. Максимум деталей и погружения."
         ),
         "format_rules": (
+            "\n- Соблюдай указанный лимит абзацев. Это жёсткое ограничение."
             "\n- Не анализируй запрос пользователя. Не пиши мета-комментарии. Сразу пиши от лица персонажа."
             "\n- Не пересказывай сценарий заново. Продвигай историю вперёд."
             "\n- Пиши живым, естественным языком, без пафоса и литературных штампов."
@@ -83,34 +82,33 @@ _STRINGS = {
         "format_header": "## Response Format",
         "rules_header": "## Rules",
         "length_short": (
-            "\n- Write briefly: 1-3 sentences, like a real chat."
+            "\n- STRICTLY 1-3 sentences. No more."
             "\n- You may add one short action in *asterisks*."
             "\n- Focus on the character's direct speech."
         ),
         "length_medium": (
-            "\n- Write 1-2 paragraphs in first person as the character."
+            "\n- STRICTLY 1-2 paragraphs (3-6 sentences). No more."
             "\n- Describe actions in *asterisks*, speech without."
             "\n- Never duplicate the same content in both action descriptions and dialogue."
             "\n- Describe key gestures and emotions without overloading details."
         ),
         "length_long": (
-            "\n- Write in first person as the character."
+            "\n- Write 2-4 paragraphs. No more than 4."
             "\n- Describe actions, gestures, emotions, and surroundings in *asterisks*."
             "\n- Write the character's speech without asterisks."
             "\n- Alternate actions and speech. Never duplicate the same content in both action descriptions and dialogue."
             "\n- Include details: gestures, glances, movements, tone of voice."
-            "\n- Responses: 2-4 paragraphs. Don't answer with a single phrase."
         ),
         "length_very_long": (
-            "\n- Write in first person as the character."
+            "\n- Write 4-6 paragraphs. No more than 6."
             "\n- Describe actions, gestures, emotions, surroundings, and atmosphere in *asterisks*."
             "\n- Write the character's speech without asterisks."
             "\n- Alternate actions and speech. Never duplicate the same content in both action descriptions and dialogue."
             "\n- Describe many details: gestures, glances, movements, tone, smells, sounds, light."
             "\n- Inner thoughts and feelings also go in *asterisks*."
-            "\n- Responses: 4-6 paragraphs. Maximum immersion."
         ),
         "format_rules": (
+            "\n- Respect the paragraph limit above. This is a hard constraint."
             "\n- Don't analyze the user's request. Don't write meta-comments. Write directly in character."
             "\n- Don't retell the scenario. Move the story forward."
             "\n- Write in a natural, vivid style without pompous or clichéd language."
