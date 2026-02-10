@@ -23,6 +23,9 @@ export function CharacterPage() {
   const isAdmin = user?.role === 'admin';
   const isOwner = isAuthenticated && character && (user?.id === character.creator_id || isAdmin);
 
+  const tpl = (text: string) =>
+    text.replace(/\{\{char\}\}/g, character?.name || '').replace(/\{\{user\}\}/g, user?.username || 'User');
+
   useEffect(() => {
     if (id) {
       getCharacter(id).then(setCharacter);
@@ -132,7 +135,7 @@ export function CharacterPage() {
             {t('character.scenario')}
           </h2>
           <p className="text-neutral-200 bg-neutral-800/50 rounded-xl p-4">
-            {character.scenario}
+            {tpl(character.scenario)}
           </p>
         </div>
       )}
@@ -143,7 +146,7 @@ export function CharacterPage() {
             {t('character.appearance')}
           </h2>
           <p className="text-neutral-200 bg-neutral-800/50 rounded-xl p-4">
-            {character.appearance}
+            {tpl(character.appearance)}
           </p>
         </div>
       )}
@@ -153,7 +156,7 @@ export function CharacterPage() {
           {t('character.greeting')}
         </h2>
         <div className="bg-neutral-800/50 rounded-xl p-4 text-neutral-200">
-          {character.greeting_message}
+          {tpl(character.greeting_message)}
         </div>
       </div>
 
