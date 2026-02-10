@@ -20,6 +20,7 @@ export interface Character {
   content_rating: 'sfw' | 'moderate' | 'nsfw';
   system_prompt_suffix: string | null;
   tags: string[];
+  structured_tags: string[];
   is_public: boolean;
   chat_count: number;
   like_count: number;

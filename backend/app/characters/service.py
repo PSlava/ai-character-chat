@@ -50,10 +50,12 @@ async def get_character(db: AsyncSession, character_id: str):
 async def create_character(db: AsyncSession, creator_id: str, data: dict):
     # Convert tags list to comma-separated string
     tags = data.pop("tags", [])
+    structured_tags = data.pop("structured_tags", [])
     character = Character(
         **data,
         creator_id=creator_id,
         tags=",".join(tags) if isinstance(tags, list) else tags,
+        structured_tags=",".join(structured_tags) if isinstance(structured_tags, list) else structured_tags,
     )
     db.add(character)
     await db.commit()
@@ -75,11 +77,14 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
         return None
 
     tags = data.pop("tags", None)
+    structured_tags = data.pop("structured_tags", None)
     for key, value in data.items():
         if value is not None:
             setattr(character, key, value)
     if tags is not None:
         character.tags = ",".join(tags) if isinstance(tags, list) else tags
+    if structured_tags is not None:
+        character.structured_tags = ",".join(structured_tags) if isinstance(structured_tags, list) else structured_tags
     character.updated_at = datetime.utcnow()
 
     await db.commit()

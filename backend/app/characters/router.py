@@ -133,6 +133,12 @@ async def my_characters(
     return [character_to_dict(c) for c in characters]
 
 
+@router.get("/structured-tags")
+async def list_structured_tags():
+    from app.characters.structured_tags import CATEGORIES, get_tags_by_category
+    return {"categories": CATEGORIES, "tags": get_tags_by_category()}
+
+
 @router.get("/{character_id}")
 async def get_character(character_id: str, db: AsyncSession = Depends(get_db)):
     character = await service.get_character(db, character_id)

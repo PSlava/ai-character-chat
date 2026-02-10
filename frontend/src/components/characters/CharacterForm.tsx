@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { getOpenRouterModels, getGroqModels, getCerebrasModels } from '@/api/characters';
-import type { OpenRouterModel } from '@/api/characters';
+import { getOpenRouterModels, getGroqModels, getCerebrasModels, getStructuredTags } from '@/api/characters';
+import type { OpenRouterModel, StructuredTagsResponse } from '@/api/characters';
 import type { Character } from '@/types';
 
 interface Props {
@@ -17,7 +17,8 @@ const str = (v: unknown): string =>
   Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : '';
 
 export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
   const [form, setForm] = useState({
     name: str(initial?.name),
     tagline: str(initial?.tagline),
@@ -29,6 +30,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
     content_rating: initial?.content_rating || 'sfw',
     system_prompt_suffix: str(initial?.system_prompt_suffix),
     tags: Array.isArray(initial?.tags) ? initial.tags.join(', ') : '',
+    structured_tags: initial?.structured_tags || [] as string[],
     is_public: initial?.is_public ?? true,
     preferred_model: initial?.preferred_model || 'qwen',
     max_tokens: initial?.max_tokens ?? 2048,
@@ -38,15 +40,25 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
   const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
   const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
+  const [tagRegistry, setTagRegistry] = useState<StructuredTagsResponse | null>(null);
 
   useEffect(() => {
     getOpenRouterModels().then(setOrModels).catch(() => {});
     getGroqModels().then(setGroqModels).catch(() => {});
     getCerebrasModels().then(setCerebrasModels).catch(() => {});
+    getStructuredTags().then(setTagRegistry).catch(() => {});
   }, []);
 
   const update = (field: string, value: string | boolean | number) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  const toggleTag = (tagId: string) =>
+    setForm((prev) => ({
+      ...prev,
+      structured_tags: prev.structured_tags.includes(tagId)
+        ? prev.structured_tags.filter((t) => t !== tagId)
+        : [...prev.structured_tags, tagId],
+    }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +78,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
           .split(',')
           .map((tag) => tag.trim())
           .filter(Boolean),
+        structured_tags: form.structured_tags,
         is_public: form.is_public,
         preferred_model: form.preferred_model,
         max_tokens: form.max_tokens,
@@ -101,6 +114,41 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
         rows={4}
         required
       />
+
+      {tagRegistry && tagRegistry.categories.length > 0 && (
+        <div>
+          <label className="block text-sm text-neutral-400 mb-1">
+            {t('form.structuredTags')}
+          </label>
+          <p className="text-xs text-neutral-500 mb-3">{t('form.structuredTagsHint')}</p>
+          {tagRegistry.categories.map((cat) => (
+            <div key={cat.id} className="mb-3">
+              <div className="text-xs text-neutral-500 mb-1.5 uppercase tracking-wider">
+                {lang === 'ru' ? cat.label_ru : cat.label_en}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {tagRegistry.tags[cat.id]?.map((tag) => {
+                  const selected = form.structured_tags.includes(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => toggleTag(tag.id)}
+                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                        selected
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
+                      }`}
+                    >
+                      {lang === 'ru' ? tag.label_ru : tag.label_en}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Textarea
         label={t('form.appearance')}

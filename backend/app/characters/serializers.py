@@ -16,6 +16,7 @@ def character_to_dict(c: Character) -> dict:
         "content_rating": c.content_rating.value if hasattr(c.content_rating, 'value') else (c.content_rating or "sfw"),
         "system_prompt_suffix": c.system_prompt_suffix,
         "tags": [t for t in c.tags.split(",") if t] if c.tags else [],
+        "structured_tags": [t for t in (getattr(c, 'structured_tags', '') or '').split(",") if t],
         "is_public": c.is_public,
         "chat_count": c.chat_count,
         "like_count": c.like_count,

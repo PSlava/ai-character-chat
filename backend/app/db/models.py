@@ -61,6 +61,7 @@ class Character(Base):
     )
     system_prompt_suffix: Mapped[str | None] = mapped_column(Text, nullable=True)
     tags: Mapped[str] = mapped_column(String, default="")  # comma-separated
+    structured_tags: Mapped[str] = mapped_column(String, default="")  # comma-separated tag IDs
     is_public: Mapped[bool] = mapped_column(Boolean, default=True)
     chat_count: Mapped[int] = mapped_column(Integer, default=0)
     like_count: Mapped[int] = mapped_column(Integer, default=0)

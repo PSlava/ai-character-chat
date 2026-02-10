@@ -43,6 +43,7 @@ async def init_db():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR DEFAULT 'user'",
         "ALTER TABLE messages ADD COLUMN IF NOT EXISTS model_used VARCHAR",
         "ALTER TABLE characters ADD COLUMN IF NOT EXISTS appearance TEXT",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS structured_tags VARCHAR DEFAULT ''",
     ]
     for sql in migrations:
         try:

@@ -219,6 +219,8 @@ async def build_conversation_messages(
         "content_rating": character.content_rating.value if character.content_rating else "sfw",
         "system_prompt_suffix": character.system_prompt_suffix,
         "response_length": getattr(character, 'response_length', None) or "long",
+        "appearance": getattr(character, 'appearance', None),
+        "structured_tags": [t for t in (getattr(character, 'structured_tags', '') or '').split(",") if t],
     }
     system_prompt = await build_system_prompt(char_dict, user_name=user_name, language=language, engine=db_engine)
     messages_data, _ = await get_chat_messages(db, chat_id)  # all messages, no limit

@@ -43,6 +43,16 @@ export async function deleteCharacter(id: string) {
   await api.delete(`/characters/${id}`);
 }
 
+export interface StructuredTagsResponse {
+  categories: { id: string; label_ru: string; label_en: string }[];
+  tags: Record<string, { id: string; category: string; label_ru: string; label_en: string }[]>;
+}
+
+export async function getStructuredTags(): Promise<StructuredTagsResponse> {
+  const { data } = await api.get<StructuredTagsResponse>('/characters/structured-tags');
+  return data;
+}
+
 export async function getOpenRouterModels(): Promise<OpenRouterModel[]> {
   const { data } = await api.get<OpenRouterModel[]>('/models/openrouter');
   return data;

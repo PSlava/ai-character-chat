@@ -113,6 +113,8 @@
   "form.taglinePlaceholder": "Brilliant detective from Baker Street",
   "form.personality": "Personality *",
   "form.personalityPlaceholder": "Describe the personality, manner of speech, habits. Write in second person: 'You are...'",
+  "form.structuredTags": "Character traits",
+  "form.structuredTagsHint": "Affect AI behavior — add instructions to the prompt",
   "form.appearance": "Appearance",
   "form.appearancePlaceholder": "Describe the character's appearance: height, build, facial features, clothing, distinguishing marks...",
   "form.scenario": "Scenario / World",
