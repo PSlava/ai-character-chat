@@ -12,6 +12,7 @@ _DEFAULTS = {
         "intro": "Ты — {name}. Веди себя точно как этот персонаж.",
         "personality": "## Характер и личность",
         "scenario": "## Сценарий и контекст",
+        "appearance": "## Внешность",
         "examples": "## Примеры стиля общения",
         "content_rules_header": "## Ограничения контента",
         "content_sfw": "Контент должен быть безопасным. Никакого откровенного, жестокого или сексуального контента.",
@@ -73,6 +74,7 @@ _DEFAULTS = {
         "intro": "You are {name}. Stay in character at all times.",
         "personality": "## Personality and Character",
         "scenario": "## Scenario and Context",
+        "appearance": "## Appearance",
         "examples": "## Dialogue Style Examples",
         "content_rules_header": "## Content Restrictions",
         "content_sfw": "Keep content safe for work. No explicit, violent, or sexual content.",
@@ -197,11 +199,19 @@ async def build_system_prompt(
     parts.append(_get(lang, "intro").format(name=character["name"]))
     parts.append(f"\n{_get(lang, 'personality')}\n{character['personality']}")
 
+    if character.get("appearance"):
+        parts.append(f"\n{_get(lang, 'appearance')}\n{character['appearance']}")
+
     if character.get("scenario"):
         parts.append(f"\n{_get(lang, 'scenario')}\n{character['scenario']}")
 
     if character.get("example_dialogues"):
-        parts.append(f"\n{_get(lang, 'examples')}\n{character['example_dialogues']}")
+        # Support {{char}}/{{user}} template variables
+        examples = character['example_dialogues']
+        char_name = character["name"]
+        u_name = user_name or "User"
+        examples = examples.replace("{{char}}", char_name).replace("{{user}}", u_name)
+        parts.append(f"\n{_get(lang, 'examples')}\n{examples}")
 
     content_rules = {
         "sfw": _get(lang, "content_sfw"),

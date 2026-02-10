@@ -22,6 +22,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
     name: str(initial?.name),
     tagline: str(initial?.tagline),
     personality: str(initial?.personality),
+    appearance: str(initial?.appearance),
     scenario: str(initial?.scenario),
     greeting_message: str(initial?.greeting_message),
     example_dialogues: str(initial?.example_dialogues),
@@ -55,6 +56,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
         name: form.name,
         tagline: form.tagline || undefined,
         personality: form.personality,
+        appearance: form.appearance || undefined,
         scenario: form.scenario || undefined,
         greeting_message: form.greeting_message,
         example_dialogues: form.example_dialogues || undefined,
@@ -98,6 +100,14 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
         placeholder={t('form.personalityPlaceholder')}
         rows={4}
         required
+      />
+
+      <Textarea
+        label={t('form.appearance')}
+        value={form.appearance}
+        onChange={(e) => update('appearance', e.target.value)}
+        placeholder={t('form.appearancePlaceholder')}
+        rows={3}
       />
 
       <Textarea

@@ -13,6 +13,7 @@ export interface Character {
   tagline: string | null;
   avatar_url: string | null;
   personality: string;
+  appearance: string | null;
   scenario: string | null;
   greeting_message: string;
   example_dialogues: string | null;

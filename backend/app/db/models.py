@@ -55,6 +55,7 @@ class Character(Base):
     scenario: Mapped[str | None] = mapped_column(Text, nullable=True)
     greeting_message: Mapped[str] = mapped_column(Text, nullable=False)
     example_dialogues: Mapped[str | None] = mapped_column(Text, nullable=True)
+    appearance: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_rating: Mapped[ContentRating] = mapped_column(
         SAEnum(ContentRating), default=ContentRating.sfw
     )

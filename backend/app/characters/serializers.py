@@ -12,6 +12,7 @@ def character_to_dict(c: Character) -> dict:
         "scenario": c.scenario,
         "greeting_message": c.greeting_message,
         "example_dialogues": c.example_dialogues,
+        "appearance": getattr(c, 'appearance', None),
         "content_rating": c.content_rating.value if hasattr(c.content_rating, 'value') else (c.content_rating or "sfw"),
         "system_prompt_suffix": c.system_prompt_suffix,
         "tags": [t for t in c.tags.split(",") if t] if c.tags else [],

@@ -6,6 +6,7 @@ class CharacterCreate(BaseModel):
     tagline: str | None = None
     avatar_url: str | None = None
     personality: str
+    appearance: str | None = None
     scenario: str | None = None
     greeting_message: str
     example_dialogues: str | None = None
@@ -31,6 +32,7 @@ class CharacterUpdate(BaseModel):
     tagline: str | None = None
     avatar_url: str | None = None
     personality: str | None = None
+    appearance: str | None = None
     scenario: str | None = None
     greeting_message: str | None = None
     example_dialogues: str | None = None

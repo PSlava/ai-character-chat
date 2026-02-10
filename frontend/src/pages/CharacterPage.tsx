@@ -137,6 +137,17 @@ export function CharacterPage() {
         </div>
       )}
 
+      {character.appearance && (
+        <div className="mb-6">
+          <h2 className="text-sm font-medium text-neutral-400 mb-2 uppercase tracking-wider">
+            {t('character.appearance')}
+          </h2>
+          <p className="text-neutral-200 bg-neutral-800/50 rounded-xl p-4">
+            {character.appearance}
+          </p>
+        </div>
+      )}
+
       <div className="mb-6">
         <h2 className="text-sm font-medium text-neutral-400 mb-2 uppercase tracking-wider">
           {t('character.greeting')}
