@@ -159,7 +159,10 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
 
   const regenerate = useCallback(
     async (messageId: string) => {
-      // Find the assistant message and the user message before it
+      // Extract info from current messages synchronously
+      let userContent: string | null = null;
+      let userMsgId: string | null = null;
+
       setMessages((prev) => {
         const idx = prev.findIndex((m) => m.id === messageId);
         if (idx === -1) return prev;
@@ -172,26 +175,22 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
         while (userIdx >= 0 && prev[userIdx].role !== 'user') userIdx--;
         if (userIdx < 0) return prev;
 
-        const userContent = prev[userIdx].content;
-        const userMsgId = prev[userIdx].id;
+        userContent = prev[userIdx].content;
+        userMsgId = prev[userIdx].id;
 
-        // Remove both messages from state
-        const updated = prev.filter((_, i) => i !== idx && i !== userIdx);
-
-        // Delete from DB in background, then resend
-        (async () => {
-          try {
-            // Delete saved messages from DB (ignore errors for optimistic messages)
-            await deleteChatMessage(chatId, messageId).catch(() => {});
-            await deleteChatMessage(chatId, userMsgId).catch(() => {});
-          } finally {
-            // Resend the user message
-            sendMessage(userContent);
-          }
-        })();
-
-        return updated;
+        // Remove only the assistant message; keep user message visible
+        return prev.filter((_, i) => i !== idx);
       });
+
+      if (!userContent || !userMsgId) return;
+
+      // Delete both from DB, then resend (sendMessage will replace the user message)
+      await deleteChatMessage(chatId, messageId).catch(() => {});
+      await deleteChatMessage(chatId, userMsgId).catch(() => {});
+
+      // Remove the old user message right before resending so sendMessage adds a fresh one
+      setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
+      sendMessage(userContent);
     },
     [chatId, sendMessage]
   );
