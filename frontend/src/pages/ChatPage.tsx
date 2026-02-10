@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { Trash2, Settings } from 'lucide-react';
-import { getChat, clearChatMessages, deleteChatMessage } from '@/api/chat';
+import { getChat, clearChatMessages, deleteChatMessage, getOlderMessages } from '@/api/chat';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
@@ -40,6 +40,8 @@ export function ChatPage() {
     } catch { return {}; }
   });
   const [activeModel, setActiveModel] = useState('');
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const { t } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
   const isAdmin = authUser?.role === 'admin';
@@ -60,6 +62,7 @@ export function ChatPage() {
       .then((data) => {
         setChatDetail(data);
         setMessages(data.messages);
+        setHasMore(data.has_more);
         // Restore saved settings or use server default
         const saved = chatSettings;
         if (saved.model) {
@@ -71,6 +74,22 @@ export function ChatPage() {
       })
       .catch(() => setError(t('chat.notFound')));
   }, [chatId, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleLoadMore = useCallback(async () => {
+    if (!chatId || loadingMore || !hasMore) return;
+    const firstMsg = messages.find((m) => m.role !== 'system');
+    if (!firstMsg) return;
+    setLoadingMore(true);
+    try {
+      const data = await getOlderMessages(chatId, firstMsg.id);
+      setMessages((prev) => [...data.messages, ...prev]);
+      setHasMore(data.has_more);
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [chatId, loadingMore, hasMore, messages, setMessages]);
 
   const handleApplySettings = (s: ChatSettings) => {
     setChatSettings(s);
@@ -183,6 +202,9 @@ export function ChatPage() {
         characterAvatar={character?.avatar_url}
         isStreaming={isStreaming}
         isAdmin={isAdmin}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        onLoadMore={handleLoadMore}
         onDeleteMessage={handleDeleteMessage}
         onRegenerate={!isStreaming ? regenerate : undefined}
         onResendLast={!isStreaming ? resendLast : undefined}

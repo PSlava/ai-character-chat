@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCw, Pencil, Send } from 'lucide-react';
+import { RefreshCw, Pencil, Send, Loader2 } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageBubble } from './MessageBubble';
 
@@ -10,20 +10,50 @@ interface Props {
   characterAvatar?: string | null;
   isStreaming: boolean;
   isAdmin?: boolean;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
   onDeleteMessage?: (messageId: string) => void;
   onRegenerate?: (messageId: string) => void;
   onResendLast?: (editedContent?: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, isAdmin, onDeleteMessage, onRegenerate, onResendLast }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, isAdmin, hasMore, loadingMore, onLoadMore, onDeleteMessage, onRegenerate, onResendLast }: Props) {
   const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState('');
+  const prevScrollHeightRef = useRef<number>(0);
+  const isPrependingRef = useRef(false);
+  const prevMsgCountRef = useRef(messages.length);
 
+  // Auto-scroll to bottom on new messages (but not when prepending old ones)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isPrependingRef.current) {
+      // Restore scroll position after prepending old messages
+      const container = containerRef.current;
+      if (container) {
+        const newScrollHeight = container.scrollHeight;
+        container.scrollTop = newScrollHeight - prevScrollHeightRef.current;
+      }
+      isPrependingRef.current = false;
+    } else {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    prevMsgCountRef.current = messages.length;
   }, [messages, isStreaming]);
+
+  // Detect scroll to top for loading more messages
+  const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container || !hasMore || loadingMore) return;
+    if (container.scrollTop < 100 && onLoadMore) {
+      prevScrollHeightRef.current = container.scrollHeight;
+      isPrependingRef.current = true;
+      onLoadMore();
+    }
+  }, [hasMore, loadingMore, onLoadMore]);
 
   const visible = messages.filter((m) => m.role !== 'system');
   const lastMsg = visible.length > 1 ? visible[visible.length - 1] : null;
@@ -47,8 +77,13 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
+    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4">
       <div className="max-w-3xl mx-auto space-y-4">
+        {loadingMore && (
+          <div className="flex justify-center py-2">
+            <Loader2 className="w-5 h-5 text-neutral-500 animate-spin" />
+          </div>
+        )}
         {visible.map((message, index) => (
             <MessageBubble
               key={message.id}

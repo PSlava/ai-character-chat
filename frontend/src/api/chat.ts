@@ -1,6 +1,6 @@
 import api from './client';
 import { getToken } from '@/lib/supabase';
-import type { Chat, ChatDetail } from '@/types';
+import type { Chat, ChatDetail, Message } from '@/types';
 
 export async function createChat(characterId: string, model?: string) {
   const { data } = await api.post<ChatDetail>('/chats', {
@@ -30,6 +30,14 @@ export async function clearChatMessages(chatId: string) {
 
 export async function deleteChatMessage(chatId: string, messageId: string) {
   await api.delete(`/chats/${chatId}/messages/${messageId}`);
+}
+
+export async function getOlderMessages(chatId: string, beforeId: string, limit = 20) {
+  const { data } = await api.get<{ messages: Message[]; has_more: boolean }>(
+    `/chats/${chatId}/messages`,
+    { params: { before: beforeId, limit } },
+  );
+  return data;
 }
 
 export async function getAuthToken(): Promise<string | null> {

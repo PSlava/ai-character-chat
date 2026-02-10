@@ -54,4 +54,5 @@ export interface Message {
 export interface ChatDetail {
   chat: Chat;
   messages: Message[];
+  has_more: boolean;
 }

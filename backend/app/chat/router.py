@@ -1,6 +1,7 @@
 import json
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.auth.middleware import get_current_user
@@ -47,21 +48,25 @@ def chat_to_dict(c):
     return d
 
 
-@router.post("", status_code=201)
+@router.post("")
 async def create_chat(
     body: CreateChatRequest,
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    chat, character = await service.create_chat(db, user["id"], body.character_id, body.model)
+    chat, character, created = await service.get_or_create_chat(db, user["id"], body.character_id, body.model)
     if not chat:
         raise HTTPException(status_code=404, detail="Character not found")
 
-    messages = await service.get_chat_messages(db, chat.id)
-    return {
-        "chat": chat_to_dict(chat),
-        "messages": [message_to_dict(m) for m in messages],
-    }
+    msgs, has_more = await service.get_chat_messages(db, chat.id, limit=20)
+    return JSONResponse(
+        content={
+            "chat": chat_to_dict(chat),
+            "messages": [message_to_dict(m) for m in msgs],
+            "has_more": has_more,
+        },
+        status_code=201 if created else 200,
+    )
 
 
 @router.get("")
@@ -82,10 +87,11 @@ async def get_chat(
     chat = await service.get_chat(db, chat_id, user["id"])
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
-    messages = await service.get_chat_messages(db, chat_id)
+    msgs, has_more = await service.get_chat_messages(db, chat_id, limit=20)
     return {
         "chat": chat_to_dict(chat),
-        "messages": [message_to_dict(m) for m in messages],
+        "messages": [message_to_dict(m) for m in msgs],
+        "has_more": has_more,
     }
 
 
@@ -98,6 +104,25 @@ async def delete_chat(
     deleted = await service.delete_chat(db, chat_id, user["id"])
     if not deleted:
         raise HTTPException(status_code=404, detail="Chat not found")
+
+
+@router.get("/{chat_id}/messages")
+async def get_messages(
+    chat_id: str,
+    before: str | None = None,
+    limit: int = 20,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Load older messages for infinite scroll."""
+    chat = await service.get_chat(db, chat_id, user["id"])
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    msgs, has_more = await service.get_chat_messages(db, chat_id, limit=limit, before_id=before)
+    return {
+        "messages": [message_to_dict(m) for m in msgs],
+        "has_more": has_more,
+    }
 
 
 @router.delete("/{chat_id}/messages", status_code=204)

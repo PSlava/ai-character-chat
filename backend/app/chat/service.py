@@ -11,11 +11,22 @@ MAX_CONTEXT_MESSAGES = 50
 DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/token
 
 
-async def create_chat(db: AsyncSession, user_id: str, character_id: str, model: str | None = None):
+async def get_or_create_chat(db: AsyncSession, user_id: str, character_id: str, model: str | None = None):
+    """Return existing chat with this character, or create a new one."""
+    # Check for existing chat
+    existing = await db.execute(
+        select(Chat)
+        .options(selectinload(Chat.character))
+        .where(Chat.user_id == user_id, Chat.character_id == character_id)
+    )
+    chat = existing.scalar_one_or_none()
+    if chat:
+        return chat, chat.character, False  # False = not newly created
+
     result = await db.execute(select(Character).where(Character.id == character_id))
     character = result.scalar_one_or_none()
     if not character:
-        return None, None
+        return None, None, False
 
     model_used = model or character.preferred_model or "claude"
 
@@ -46,7 +57,7 @@ async def create_chat(db: AsyncSession, user_id: str, character_id: str, model: 
         .where(Chat.id == chat.id)
     )
     chat = result.scalar_one()
-    return chat, chat.character
+    return chat, chat.character, True  # True = newly created
 
 
 async def get_chat(db: AsyncSession, chat_id: str, user_id: str):
@@ -58,13 +69,33 @@ async def get_chat(db: AsyncSession, chat_id: str, user_id: str):
     return result.scalar_one_or_none()
 
 
-async def get_chat_messages(db: AsyncSession, chat_id: str):
-    result = await db.execute(
-        select(Message)
-        .where(Message.chat_id == chat_id)
-        .order_by(Message.created_at.asc())
-    )
-    return result.scalars().all()
+async def get_chat_messages(db: AsyncSession, chat_id: str, limit: int = 0, before_id: str | None = None):
+    """Get messages for a chat. If limit > 0, return paginated (last N messages).
+
+    Returns (messages, has_more) when limit > 0, or (messages, False) when limit == 0 (all).
+    """
+    q = select(Message).where(Message.chat_id == chat_id)
+
+    if before_id:
+        anchor = await db.execute(select(Message.created_at).where(Message.id == before_id))
+        anchor_time = anchor.scalar_one_or_none()
+        if anchor_time:
+            q = q.where(Message.created_at < anchor_time)
+
+    if limit > 0:
+        q = q.order_by(Message.created_at.desc()).limit(limit + 1)
+        result = await db.execute(q)
+        msgs = list(result.scalars().all())
+        has_more = len(msgs) > limit
+        if has_more:
+            msgs = msgs[:limit]
+        msgs.reverse()
+        return msgs, has_more
+
+    # No limit — return all (used by build_conversation_messages)
+    q = q.order_by(Message.created_at.asc())
+    result = await db.execute(q)
+    return result.scalars().all(), False
 
 
 async def list_user_chats(db: AsyncSession, user_id: str):
@@ -190,7 +221,7 @@ async def build_conversation_messages(
         "response_length": getattr(character, 'response_length', None) or "long",
     }
     system_prompt = await build_system_prompt(char_dict, user_name=user_name, language=language, engine=db_engine)
-    messages_data = await get_chat_messages(db, chat_id)
+    messages_data, _ = await get_chat_messages(db, chat_id)  # all messages, no limit
 
     # context_limit is in "real" tokens; multiply by ~4 for char-based estimation
     max_tokens = (context_limit * 4) if context_limit else DEFAULT_CONTEXT_TOKENS
