@@ -22,14 +22,14 @@ OPENROUTER_FREE_MODELS = [
     {
         "id": "nvidia/nemotron-nano-9b-v2:free",
         "name": "Nemotron 9B",
-        "quality": 7,
+        "quality": 5,
         "nsfw": True,
-        "note": "быстрая, thinking-модель",
+        "note": "thinking-модель, мешает языки",
     },
     {
         "id": "deepseek/deepseek-r1-0528:free",
         "name": "DeepSeek R1",
-        "quality": 7,
+        "quality": 5,
         "nsfw": False,  # DeepSeek has content moderation
         "note": "умная, но медленная (>30с)",
     },
