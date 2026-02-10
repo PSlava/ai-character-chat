@@ -14,6 +14,7 @@ interface Props {
   orModels: OpenRouterModel[];
   groqModels: OpenRouterModel[];
   cerebrasModels: OpenRouterModel[];
+  togetherModels: OpenRouterModel[];
   contentRating?: string;
   onApply: (settings: ChatSettings) => void;
   onClose: () => void;
@@ -124,13 +125,13 @@ const CONTEXT_OPTIONS = [
 interface ModelOption {
   id: string;
   label: string;
-  group: 'auto' | 'openrouter' | 'groq' | 'cerebras' | 'direct' | 'paid';
+  group: 'auto' | 'openrouter' | 'groq' | 'cerebras' | 'together' | 'direct' | 'paid';
   nsfwOk?: boolean;
 }
 
 // GROUP_LABELS are now resolved via t() inside the component
 
-export function GenerationSettingsModal({ settings, currentModel, orModels, groqModels, cerebrasModels, contentRating, onApply, onClose }: Props) {
+export function GenerationSettingsModal({ settings, currentModel, orModels, groqModels, cerebrasModels, togetherModels, contentRating, onApply, onClose }: Props) {
   const { t } = useTranslation();
   const [model, setModel] = useState(settings.model || currentModel);
   const [local, setLocal] = useState({
@@ -161,6 +162,9 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
     // Cerebras
     { id: 'cerebras', label: 'Cerebras Auto', group: 'cerebras', nsfwOk: true },
     ...cerebrasModels.map((m) => ({ id: `cerebras:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'cerebras' as const, nsfwOk: m.nsfw !== false })),
+    // Together
+    { id: 'together', label: 'Together Auto', group: 'together', nsfwOk: true },
+    ...togetherModels.map((m) => ({ id: `together:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'together' as const, nsfwOk: m.nsfw !== false })),
     // Direct
     { id: 'deepseek', label: 'DeepSeek', group: 'direct', nsfwOk: true },
     { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct', nsfwOk: false },
@@ -173,7 +177,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
   const isSelected = (id: string) => model === id;
 
   // Group models for rendering with headers
-  const groups = ['auto', 'openrouter', 'groq', 'cerebras', 'direct', 'paid'] as const;
+  const groups = ['auto', 'openrouter', 'groq', 'cerebras', 'together', 'direct', 'paid'] as const;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>

@@ -68,6 +68,11 @@ export async function getCerebrasModels(): Promise<OpenRouterModel[]> {
   return data;
 }
 
+export async function getTogetherModels(): Promise<OpenRouterModel[]> {
+  const { data } = await api.get<OpenRouterModel[]>('/models/together');
+  return data;
+}
+
 /** Wake up Render backend if sleeping. Retries every 3s for up to 3 minutes. */
 export async function wakeUpServer(
   onStatus?: (status: string) => void,

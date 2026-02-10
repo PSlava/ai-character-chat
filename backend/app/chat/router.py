@@ -205,6 +205,9 @@ async def send_message(
     elif model_name.startswith("cerebras:"):
         provider_name = "cerebras"
         model_id = model_name[9:]
+    elif model_name.startswith("together:"):
+        provider_name = "together"
+        model_id = model_name[9:]
     elif "/" in model_name:
         provider_name = "openrouter"
         model_id = model_name
@@ -216,6 +219,9 @@ async def send_message(
         model_id = ""
     elif model_name in ("cerebras",):
         provider_name = "cerebras"
+        model_id = ""
+    elif model_name in ("together",):
+        provider_name = "together"
         model_id = ""
     else:
         provider_name = model_name

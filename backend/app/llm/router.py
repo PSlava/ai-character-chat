@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.llm.openrouter_models import get_models_sorted as get_or_models
 from app.llm.groq_models import get_models_sorted as get_groq_models, is_cache_stale as groq_stale
 from app.llm.cerebras_models import get_models_sorted as get_cerebras_models, is_cache_stale as cerebras_stale
+from app.llm.together_models import get_models_sorted as get_together_models, is_cache_stale as together_stale
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 
@@ -33,3 +34,15 @@ async def list_cerebras_models():
         except (ValueError, Exception):
             pass
     return get_cerebras_models()
+
+
+@router.get("/together")
+async def list_together_models():
+    if together_stale():
+        try:
+            from app.llm.registry import get_provider
+            provider = get_provider("together")
+            await provider.ensure_models_loaded()
+        except (ValueError, Exception):
+            pass
+    return get_together_models()

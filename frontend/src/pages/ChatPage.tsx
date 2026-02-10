@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Trash2, Settings } from 'lucide-react';
 import { getChat, deleteChat, deleteChatMessage, getOlderMessages } from '@/api/chat';
-import { getOpenRouterModels, getGroqModels, getCerebrasModels } from '@/api/characters';
+import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
@@ -24,6 +24,7 @@ const MODEL_ALIASES: Record<string, string> = {
   qwen: 'Qwen',
   groq: 'Groq',
   cerebras: 'Cerebras',
+  together: 'Together',
 };
 
 export function ChatPage() {
@@ -33,6 +34,7 @@ export function ChatPage() {
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
   const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
   const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
+  const [togetherModels, setTogetherModels] = useState<OpenRouterModel[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [chatSettings, setChatSettings] = useState<ChatSettings>(() => {
     if (!chatId) return {};
@@ -57,6 +59,7 @@ export function ChatPage() {
     getOpenRouterModels().then(setOrModels).catch(() => {});
     getGroqModels().then(setGroqModels).catch(() => {});
     getCerebrasModels().then(setCerebrasModels).catch(() => {});
+    getTogetherModels().then(setTogetherModels).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -116,6 +119,11 @@ export function ChatPage() {
       const id = m.slice(9);
       const found = cerebrasModels.find((cm) => cm.id === id);
       return found ? `Cerebras: ${found.name}` : `Cerebras: ${id}`;
+    }
+    if (m.startsWith('together:')) {
+      const id = m.slice(9);
+      const found = togetherModels.find((tm) => tm.id === id);
+      return found ? `Together: ${found.name}` : `Together: ${id}`;
     }
     const found = orModels.find((om) => om.id === m);
     return found ? found.name : m;
@@ -224,6 +232,7 @@ export function ChatPage() {
           orModels={orModels}
           groqModels={groqModels}
           cerebrasModels={cerebrasModels}
+          togetherModels={togetherModels}
           contentRating={character?.content_rating}
           onApply={handleApplySettings}
           onClose={() => setShowSettings(false)}

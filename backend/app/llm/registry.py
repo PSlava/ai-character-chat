@@ -7,6 +7,7 @@ from app.llm.deepseek_provider import DeepSeekProvider
 from app.llm.qwen_provider import QwenProvider
 from app.llm.groq_provider import GroqProvider
 from app.llm.cerebras_provider import CerebrasProvider
+from app.llm.together_provider import TogetherProvider
 
 _providers: dict[str, BaseLLMProvider] = {}
 
@@ -20,6 +21,7 @@ def init_providers(
     qwen_key: str | None = None,
     groq_key: str | None = None,
     cerebras_key: str | None = None,
+    together_key: str | None = None,
     proxy_url: str | None = None,
 ):
     if anthropic_key:
@@ -38,6 +40,8 @@ def init_providers(
         _providers["groq"] = GroqProvider(api_key=groq_key, proxy_url=proxy_url)
     if cerebras_key:
         _providers["cerebras"] = CerebrasProvider(api_key=cerebras_key, proxy_url=proxy_url)
+    if together_key:
+        _providers["together"] = TogetherProvider(api_key=together_key, proxy_url=proxy_url)
 
 
 def get_provider(name: str) -> BaseLLMProvider:

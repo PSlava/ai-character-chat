@@ -24,6 +24,7 @@ async def lifespan(app: FastAPI):
         qwen_key=settings.qwen_api_key,
         groq_key=settings.groq_api_key,
         cerebras_key=settings.cerebras_api_key,
+        together_key=settings.together_api_key,
         proxy_url=settings.proxy_url,
     )
     yield

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { getOpenRouterModels, getGroqModels, getCerebrasModels, getStructuredTags } from '@/api/characters';
+import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels, getStructuredTags } from '@/api/characters';
 import type { OpenRouterModel, StructuredTagsResponse } from '@/api/characters';
 import type { Character } from '@/types';
 
@@ -40,12 +40,14 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
   const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
   const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
+  const [togetherModels, setTogetherModels] = useState<OpenRouterModel[]>([]);
   const [tagRegistry, setTagRegistry] = useState<StructuredTagsResponse | null>(null);
 
   useEffect(() => {
     getOpenRouterModels().then(setOrModels).catch(() => {});
     getGroqModels().then(setGroqModels).catch(() => {});
     getCerebrasModels().then(setCerebrasModels).catch(() => {});
+    getTogetherModels().then(setTogetherModels).catch(() => {});
     getStructuredTags().then(setTagRegistry).catch(() => {});
   }, []);
 
@@ -257,6 +259,13 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
             <option value="cerebras">{t('form.cerebrasAuto')}</option>
             {cerebrasModels.map((m) => (
               <option key={`cerebras:${m.id}`} value={`cerebras:${m.id}`} disabled={form.content_rating === 'nsfw' && m.nsfw === false}>
+                {m.name} ({m.quality}/10)
+              </option>
+            ))}
+            <option disabled>{t('form.togetherSeparator')}</option>
+            <option value="together">{t('form.togetherAuto')}</option>
+            {togetherModels.map((m) => (
+              <option key={`together:${m.id}`} value={`together:${m.id}`} disabled={form.content_rating === 'nsfw' && m.nsfw === false}>
                 {m.name} ({m.quality}/10)
               </option>
             ))}
