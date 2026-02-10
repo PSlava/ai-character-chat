@@ -246,6 +246,13 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
           </div>
         </div>
 
+        {/* Cerebras penalty warning */}
+        {(model === 'cerebras' || model.startsWith('cerebras:')) && (
+          <p className="text-xs text-amber-400/80 mb-4">
+            {t('settings.cerebrasNoPenalty')}
+          </p>
+        )}
+
         {/* Generation params */}
         <div className="space-y-5">
           <Slider

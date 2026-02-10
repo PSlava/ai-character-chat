@@ -7,11 +7,13 @@ logger = logging.getLogger(__name__)
 
 # Static quality scores for known models (higher = better for roleplay)
 # Llama/Qwen preferred — GPT-OSS has strict content moderation
+# NOTE: Cerebras API does NOT support frequency_penalty / presence_penalty,
+# so repetition control is limited. Scores lowered vs Groq equivalents.
 QUALITY_SCORES: dict[str, int] = {
-    "llama-3.3-70b": 9,
-    "qwen-3-32b": 8,
-    "zai-glm-4.7": 7,
-    "gpt-oss-120b": 6,
+    "llama-3.3-70b": 7,
+    "qwen-3-32b": 7,
+    "zai-glm-4.7": 6,
+    "gpt-oss-120b": 5,
 }
 
 # Models that refuse NSFW content (strict content moderation)
@@ -30,9 +32,9 @@ CACHE_TTL = 3600  # 1 hour
 
 # Fallback if API unavailable
 FALLBACK_MODELS = [
-    {"id": "llama-3.3-70b", "name": "Llama 3.3 70B", "quality": 9, "nsfw": True, "note": ""},
-    {"id": "qwen-3-32b", "name": "Qwen 3 32B", "quality": 8, "nsfw": True, "note": ""},
-    {"id": "gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "nsfw": False, "note": ""},
+    {"id": "llama-3.3-70b", "name": "Llama 3.3 70B", "quality": 7, "nsfw": True, "note": "no penalty support"},
+    {"id": "qwen-3-32b", "name": "Qwen 3 32B", "quality": 7, "nsfw": True, "note": "no penalty support"},
+    {"id": "gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 5, "nsfw": False, "note": "no penalty support"},
 ]
 
 
