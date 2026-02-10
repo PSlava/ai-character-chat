@@ -60,7 +60,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 ### Backend (`backend/app/`)
 
 - **`config.py`** — `pydantic-settings`. `async_database_url` property auto-converts `postgres://` to `postgresql+asyncpg://`.
-- **`db/models.py`** — SQLAlchemy models: `User` (with `role`), `Character`, `Chat`, `Message` (with `model_used`), `Favorite`, `PromptTemplate`. Character has `appearance`, `response_length` (short/medium/long/very_long) and `max_tokens` (default 2048).
+- **`db/models.py`** — SQLAlchemy models: `User` (with `role`), `Character`, `Chat`, `Message` (with `model_used`), `Favorite`, `PromptTemplate`. Character has `appearance`, `structured_tags` (comma-separated tag IDs), `response_length` (short/medium/long/very_long) and `max_tokens` (default 2048).
 - **`db/session.py`** — Async engine + session factory. `init_db()` creates tables on startup + runs ALTER TABLE migrations in separate transactions with `IF NOT EXISTS`.
 - **`auth/router.py`** — `POST /api/auth/register`, `/api/auth/login`. JWT tokens (30-day). Uses bcrypt directly. `ADMIN_EMAILS` env var: auto-assigns admin role on register; syncs role on login.
 - **`auth/middleware.py`** — `get_current_user` dependency. `get_current_user_optional` returns None instead of 401.
@@ -80,10 +80,10 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
   - `anthropic_provider.py`, `openai_provider.py`, `gemini_provider.py` — Standard provider implementations.
   - `router.py` — `GET /api/models/openrouter` returns model list with quality scores.
 - **`admin/router.py`** — Admin-only CRUD for prompt template overrides. `require_admin` dependency checks JWT role. GET/PUT/DELETE `/api/admin/prompts`.
-- **`chat/prompt_builder.py`** — Dynamic system prompt from character fields. Two-layer system: `_DEFAULTS` (code) + DB overrides. `load_overrides(engine)` caches for 60s. `get_all_keys()` for admin UI. Bilingual: 20 keys × 2 languages (ru/en). Includes appearance section, `{{char}}`/`{{user}}` template variable replacement in example dialogues. Response length instructions vary by `response_length` setting.
+- **`chat/prompt_builder.py`** — Dynamic system prompt from character fields. Two-layer system: `_DEFAULTS` (code) + DB overrides. `load_overrides(engine)` caches for 60s. `get_all_keys()` for admin UI. Bilingual: 21 keys × 2 languages (ru/en). Includes structured tags snippets (between personality and appearance), appearance section, `{{char}}`/`{{user}}` template variable replacement in example dialogues. Response length instructions vary by `response_length` setting.
 - **`chat/service.py`** — `get_or_create_chat()` returns existing chat or creates new. `get_chat_messages(limit, before_id)` supports cursor pagination with `has_more`. Context window (sliding window ~24k tokens, 50 messages). `build_conversation_messages()` constructs LLM message list with system prompt (always loads all messages).
 - **`chat/router.py`** — SSE streaming via `StreamingResponse`. Events: `{type: "token"}`, `{type: "done", message_id, user_message_id}`, `{type: "error"}`. `POST /chats` is get-or-create (one chat per character). `GET /chats/{id}` returns last 20 messages + `has_more`. `GET /chats/{id}/messages?before=ID&limit=20` for infinite scroll. Cross-provider auto-fallback when `model_name == "auto"`.
-- **`characters/`** — CRUD + AI generation from text. Tags as comma-separated string. `serializers.py` for ORM→dict with `getattr` fallbacks for new columns. Admin bypass for edit/delete via `is_admin` param.
+- **`characters/`** — CRUD + AI generation from text. Tags as comma-separated string. `structured_tags.py` — registry of 33 predefined tags in 5 categories with bilingual labels and prompt snippets. `serializers.py` for ORM→dict with `getattr` fallbacks for new columns. Admin bypass for edit/delete via `is_admin` param.
 
 ### Frontend (`frontend/src/`)
 
@@ -99,14 +99,14 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **`components/chat/GenerationSettingsModal.tsx`** — Modal with model card grid + 5 sliders (temperature, top_p, top_k, frequency_penalty, max_tokens).
 - **`components/chat/MessageBubble.tsx`** — Message with delete/regenerate buttons on hover. Error messages in red. Admin sees `model_used` under assistant messages.
 - **`components/chat/ChatWindow.tsx`** — Message list with infinite scroll (loads older messages on scroll-to-top, preserves scroll position). Persistent regenerate button below last assistant message.
-- **`components/characters/CharacterForm.tsx`** — Full character form with appearance, response_length dropdown, max_tokens slider, and `{{char}}`/`{{user}}` hint in example dialogues placeholder.
+- **`components/characters/CharacterForm.tsx`** — Full character form with appearance, structured tag pills (fetched from API, grouped by category), response_length dropdown, max_tokens slider, and `{{char}}`/`{{user}}` hint in example dialogues placeholder.
 
 ## Key Patterns
 
 - **DB driver**: SQLite (`sqlite+aiosqlite://`) locally, PostgreSQL (`postgresql+asyncpg://`) in prod. Same SQLAlchemy models.
 - **DB migrations**: `init_db()` runs `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` in separate transactions (PostgreSQL aborts entire transaction on error). New nullable columns with defaults.
 - **Enum handling**: SQLite stores enums as strings. Use `hasattr(x, 'value')` in serializers.
-- **Tags**: Comma-separated string in DB, split to array in API responses.
+- **Tags**: Comma-separated string in DB, split to array in API responses. Two kinds: free-form `tags` (for search/categorization) and `structured_tags` (predefined IDs that inject prompt snippets).
 - **New LLM providers**: Implement `BaseLLMProvider`, register in `registry.py`, add env key to `config.py`, pass in `main.py`.
 - **Model selection in routers**: If model is `"auto"` → cross-provider fallback (Groq → Cerebras → OpenRouter, configurable via `AUTO_PROVIDER_ORDER`). If model contains `/` → OpenRouter direct ID. If `"openrouter"` → auto-fallback. Otherwise → provider name (deepseek, qwen, claude, etc.) with default model.
 - **Thinking models**: DeepSeek-reasoner uses `reasoning_content` field; Nemotron uses `reasoning` field. Extract when `content` is empty. `ThinkingFilter` strips `<think>` tags from streaming.
@@ -120,7 +120,8 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **Model tracking**: `model_used` stored on each Message as `{provider}:{model_id}`. Auto-fallback providers set `last_model_used` in for-loop. Visible to admin in chat UI.
 - **Auto-generated usernames**: Registration creates `user_{hex(3)}` if username not provided. Changeable in profile with `^[a-zA-Z0-9_]{3,20}$` validation.
 - **Prompt template overrides**: Defaults in code (`_DEFAULTS`), overrides in `prompt_templates` DB table. Admin edits via UI, "Reset" deletes override → falls back to code default. Cache TTL 60s, invalidated on PUT/DELETE.
-- **Appearance field**: Separate character field for physical description. Included in system prompt between personality and scenario sections.
+- **Structured tags**: 33 predefined tags in 5 categories (gender, role, personality, setting, style). Each tag has bilingual label and prompt snippet. Stored as comma-separated IDs on Character. Injected into system prompt between personality and appearance sections. Registry in `characters/structured_tags.py`, API at `GET /api/characters/structured-tags`.
+- **Appearance field**: Separate character field for physical description. Included in system prompt between structured tags and scenario sections.
 - **Template variables**: `{{char}}` and `{{user}}` in example dialogues are replaced with actual character and user names in system prompt.
 - **Cerebras limitations**: API does not support `frequency_penalty`/`presence_penalty` — params silently ignored. UI shows amber warning when Cerebras model selected.
 - **i18n**: react-i18next with `en.json`/`ru.json` locale files. Language stored in localStorage, applied to prompts via `language` param.
@@ -128,7 +129,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 ## API Routes
 
 Auth: `POST /api/auth/register` (username optional, auto-generated), `POST /api/auth/login` — JWT includes role
-Characters: `GET/POST /api/characters`, `GET/PUT/DELETE /api/characters/{id}`, `GET /api/characters/my`, `POST /api/characters/generate-from-story`
+Characters: `GET/POST /api/characters`, `GET/PUT/DELETE /api/characters/{id}`, `GET /api/characters/my`, `GET /api/characters/structured-tags`, `POST /api/characters/generate-from-story`
 Chats: `POST /api/chats` (get-or-create), `GET /api/chats`, `GET/DELETE /api/chats/{id}`, `GET /api/chats/{id}/messages?before=ID&limit=20` (pagination), `POST /api/chats/{id}/message` (SSE), `DELETE /api/chats/{id}/messages` (clear), `DELETE /api/chats/{id}/messages/{msg_id}`
 Users: `GET/PUT /api/users/me` (includes role, username), `GET /api/users/me/favorites`, `POST/DELETE /api/users/me/favorites/{id}`
 Admin: `GET /api/admin/prompts`, `PUT /api/admin/prompts/{key}`, `DELETE /api/admin/prompts/{key}` — admin role required

@@ -90,17 +90,19 @@ docker compose up -d
 - **NSFW-фильтрация моделей** — модели без поддержки NSFW отключены в UI и исключены из auto-selection
 - **Внешность (Appearance)** — отдельное поле для описания внешности персонажа (включается в system prompt)
 - **Шаблонные переменные** — `{{char}}` и `{{user}}` в примерах диалогов заменяются на реальные имена
+- **Структурированные теги** — 33 предустановленных тега в 5 категориях (пол, роль, характер, сеттинг, стиль ответов). Каждый тег добавляет свой промпт-сниппет в system prompt. Кликабельные pills в форме создания/редактирования
 - **Длина ответа** — настройка на персонаже: короткий / средний / длинный / очень длинный
 - **Макс. токенов** — настраиваемый лимит (256–4096, дефолт 2048)
 - **Генерация персонажа из текста** — вставляешь рассказ, AI создаёт профиль
 - **Выбор AI-модели** — OpenRouter, Groq, Cerebras + прямые провайдеры (DeepSeek, Qwen)
 - **API реестра моделей** — `GET /api/models/{openrouter,groq,cerebras}`
+- **API реестра тегов** — `GET /api/characters/structured-tags` — категории и теги для формы
 
 ### Чат
 - **Один чат на персонажа** — повторный «Начать чат» открывает существующий, не создаёт дубликат
 - SSE-стриминг ответов (токен за токеном)
 - Контекстное окно (sliding window, настраиваемый размер: 4K/8K/16K/∞)
-- System prompt с динамическими инструкциями по длине ответа (short/medium/long/very_long), **усиленные правила анти-повторений**
+- System prompt с динамическими инструкциями по длине ответа (short/medium/long/very_long), **структурированные теги** (сниппеты между personality и appearance), **усиленные правила анти-повторений**
 - **Ленивая подгрузка сообщений** — загружаются последние 20, остальные при скролле вверх (infinite scroll)
 - **Отслеживание модели** — каждое сообщение сохраняет `model_used` (напр. `openrouter:google/gemma-3-27b-it:free`)
 - **Показ модели для админа** — под каждым ответом ассистента (10px серый текст, только для admin)
@@ -287,11 +289,12 @@ chatbot/
 │   │   │   └── middleware.py        # get_current_user (с role), get_current_user_optional
 │   │   ├── admin/                   # Админ-панель
 │   │   │   └── router.py            # CRUD промпт-шаблонов (admin only)
-│   │   ├── characters/              # CRUD + генерация из текста
-│   │   │   ├── router.py            # API endpoints (admin bypass)
+│   │   ├── characters/              # CRUD + генерация из текста + структурированные теги
+│   │   │   ├── router.py            # API endpoints (admin bypass) + GET /structured-tags
 │   │   │   ├── service.py           # Бизнес-логика (is_admin)
 │   │   │   ├── schemas.py           # Pydantic модели
-│   │   │   └── serializers.py       # ORM → dict (username в profiles)
+│   │   │   ├── serializers.py       # ORM → dict (username в profiles)
+│   │   │   └── structured_tags.py   # Реестр 33 тегов × 5 категорий (с промпт-сниппетами ru/en)
 │   │   ├── chat/                    # SSE стриминг, контекст
 │   │   │   ├── router.py            # send_message (SSE + model_used), delete, clear
 │   │   │   ├── service.py           # Контекстное окно, сохранение (model_used)
@@ -346,7 +349,7 @@ chatbot/
 │   │   │   │   ├── MessageBubble.tsx     # Сообщение + delete + regenerate + model_used (admin)
 │   │   │   │   └── GenerationSettingsModal.tsx  # Модель (5 групп) + 6 слайдеров + память
 │   │   │   ├── characters/
-│   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, appearance, model, NSFW disable)
+│   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
 │   │   │   └── ui/                       # Button, Input, Avatar, LanguageSwitcher
 │   │   ├── lib/                     # Утилиты (localStorage с role)
 │   │   ├── locales/                 # i18n: en.json, ru.json
