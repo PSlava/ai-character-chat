@@ -15,6 +15,20 @@ from app.config import settings
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
 
+_GENERIC_ERROR_RU = "Ошибка генерации ответа. Попробуйте позже."
+_MODERATION_KEYWORDS = ("data_inspection_failed", "content_policy", "content_filter", "moderation", "safety system")
+
+
+def _is_moderation_error(err: str) -> bool:
+    low = err.lower()
+    return any(kw in low for kw in _MODERATION_KEYWORDS)
+
+
+def _user_error(err: str, is_admin: bool) -> str:
+    if is_admin or _is_moderation_error(err):
+        return err
+    return _GENERIC_ERROR_RU
+
 
 def message_to_dict(m):
     return {
@@ -237,6 +251,8 @@ async def send_message(
         "content_rating": content_rating,
     }
 
+    is_admin = user.get("role") == "admin"
+
     if is_auto:
         auto_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip()]
 
@@ -261,7 +277,8 @@ async def send_message(
                 except Exception as e:
                     errors.append(f"{pname}: {e}")
                     continue
-            yield f"data: {json.dumps({'type': 'error', 'content': 'Все провайдеры недоступны:\\n' + '\\n'.join(errors), 'user_message_id': user_msg.id})}\n\n"
+            full_err = 'Все провайдеры недоступны:\n' + '\n'.join(errors)
+            yield f"data: {json.dumps({'type': 'error', 'content': _user_error(full_err, is_admin), 'user_message_id': user_msg.id})}\n\n"
     else:
         provider = get_provider(provider_name)
         config = LLMConfig(model=model_id, **base_config)
@@ -278,6 +295,6 @@ async def send_message(
                 saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
                 yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
             except Exception as e:
-                yield f"data: {json.dumps({'type': 'error', 'content': str(e), 'user_message_id': user_msg.id})}\n\n"
+                yield f"data: {json.dumps({'type': 'error', 'content': _user_error(str(e), is_admin), 'user_message_id': user_msg.id})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
