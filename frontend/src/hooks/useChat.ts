@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getAuthToken, deleteChatMessage } from '@/api/chat';
 import type { Message } from '@/types';
@@ -9,10 +10,12 @@ export interface GenerationSettings {
   top_p?: number;
   top_k?: number;
   frequency_penalty?: number;
+  presence_penalty?: number;
   max_tokens?: number;
 }
 
 export function useChat(chatId: string, initialMessages: Message[] = []) {
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -60,11 +63,13 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
         },
         body: JSON.stringify({
           content,
+          language: i18n.language,
           ...(s.model && { model: s.model }),
           ...(s.temperature !== undefined && { temperature: s.temperature }),
           ...(s.top_p !== undefined && { top_p: s.top_p }),
           ...(s.top_k !== undefined && { top_k: s.top_k }),
           ...(s.frequency_penalty !== undefined && { frequency_penalty: s.frequency_penalty }),
+          ...(s.presence_penalty !== undefined && { presence_penalty: s.presence_penalty }),
           ...(s.max_tokens !== undefined && { max_tokens: s.max_tokens }),
         }),
         signal: ctrl.signal,
@@ -112,7 +117,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               if (last.role === 'assistant') {
                 updated[updated.length - 1] = {
                   ...last,
-                  content: data.content || 'Ошибка генерации',
+                  content: data.content || t('chat.generationError'),
                   isError: true,
                 };
               }
@@ -137,7 +142,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
             if (last.role === 'assistant' && !last.content) {
               updated[updated.length - 1] = {
                 ...last,
-                content: 'Ошибка соединения с сервером',
+                content: t('chat.connectionError'),
                 isError: true,
               };
             }

@@ -142,17 +142,28 @@ async def send_message(
         await db.commit()
 
     model_name = chat.model_used or settings.default_model
+    content_rating = character.content_rating.value if character.content_rating else "sfw"
+
+    # For NSFW characters, auto-redirect providers with strict content moderation:
+    # - DashScope (qwen) has Alibaba moderation that blocks NSFW
+    # - OpenRouter free models (Gemma) have strict Google safety filters
+    # Groq serves Llama/Qwen without provider-level moderation
+    if content_rating == "nsfw" and model_name in ("qwen", "openrouter"):
+        model_name = "groq"
+        chat.model_used = "groq"
+        await db.commit()
 
     # Save user message
     user_msg = await service.save_message(db, chat_id, "user", body.content)
 
-    # Get user display name for system prompt
+    # Get user display name and language for system prompt
     user_result = await db.execute(select(User).where(User.id == user["id"]))
     user_obj = user_result.scalar_one_or_none()
     user_name = user_obj.display_name if user_obj else None
+    language = body.language or (user_obj.language if user_obj else None) or "ru"
 
     # Build context
-    messages = await service.build_conversation_messages(db, chat_id, character, user_name=user_name)
+    messages = await service.build_conversation_messages(db, chat_id, character, user_name=user_name, language=language)
 
     # Resolve provider and model ID
     PROVIDER_MODELS = {
@@ -192,6 +203,7 @@ async def send_message(
         top_p=body.top_p if body.top_p is not None else 0.95,
         top_k=body.top_k if body.top_k is not None else 0,
         frequency_penalty=body.frequency_penalty if body.frequency_penalty is not None else 0.0,
+        presence_penalty=body.presence_penalty if body.presence_penalty is not None else 0.3,
     )
 
     async def event_stream():

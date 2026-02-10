@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trash2, RefreshCw } from 'lucide-react';
 import type { Message } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function MessageBubble({ message, characterName, characterAvatar, isFirstMessage, onDelete, onRegenerate }: Props) {
+  const { t } = useTranslation();
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
   const [hovering, setHovering] = useState(false);
@@ -25,7 +27,7 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
     >
       <div className="shrink-0 mt-1">
         {isUser ? (
-          <Avatar name="Вы" size="sm" />
+          <Avatar name={t('chat.you')} size="sm" />
         ) : (
           <Avatar src={characterAvatar} name={characterName || 'AI'} size="sm" />
         )}
@@ -50,7 +52,7 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
               <button
                 onClick={() => onRegenerate(message.id)}
                 className="p-1 text-neutral-500 hover:text-purple-400 transition-colors"
-                title="Перегенерировать"
+                title={t('chat.regenerateTooltip')}
               >
                 <RefreshCw size={14} />
               </button>
@@ -59,7 +61,7 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
               <button
                 onClick={() => onDelete(message.id)}
                 className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
-                title="Удалить сообщение"
+                title={t('chat.deleteMessage')}
               >
                 <Trash2 size={14} />
               </button>

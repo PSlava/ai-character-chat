@@ -1,4 +1,5 @@
 import { useState, KeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Send, Square } from 'lucide-react';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
 
   const handleSend = () => {
@@ -32,7 +34,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Напишите сообщение..."
+          placeholder={t('chat.placeholder')}
           rows={5}
           disabled={disabled}
           className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 resize-none max-h-48"

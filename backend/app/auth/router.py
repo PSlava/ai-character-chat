@@ -62,7 +62,7 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     token = create_token(user)
     return {
         "token": token,
-        "user": {"id": user.id, "email": user.email, "username": user.username},
+        "user": {"id": user.id, "email": user.email, "username": user.username, "language": user.language or "ru"},
     }
 
 
@@ -77,5 +77,5 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
     token = create_token(user)
     return {
         "token": token,
-        "user": {"id": user.id, "email": user.email, "username": user.username},
+        "user": {"id": user.id, "email": user.email, "username": user.username, "language": user.language or "ru"},
     }

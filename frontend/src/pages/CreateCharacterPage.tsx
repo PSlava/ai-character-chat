@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { createCharacter, generateFromStory, getOpenRouterModels, wakeUpServer } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { CharacterForm } from '@/components/characters/CharacterForm';
@@ -11,6 +12,7 @@ import type { Character } from '@/types';
 type Tab = 'manual' | 'from-story';
 
 export function CreateCharacterPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('manual');
   const [storyText, setStoryText] = useState('');
@@ -39,7 +41,7 @@ export function CreateCharacterPage() {
   const handleSubmit = async (data: Partial<Character>) => {
     setError('');
     try {
-      setStatusText('Проверка сервера...');
+      setStatusText(t('create.checkingServer'));
       await wakeUpServer((s) => setStatusText(s));
       setStatusText('');
       const character = await createCharacter(data);
@@ -54,7 +56,7 @@ export function CreateCharacterPage() {
       } else if (Array.isArray(detail)) {
         msg = detail.map((d: { msg?: string }) => d.msg || JSON.stringify(d)).join('; ');
       } else {
-        msg = ax?.message || 'Ошибка сохранения';
+        msg = ax?.message || t('create.saveError');
       }
       console.error('Save error:', ax?.response?.status, detail || ax?.message);
       setError(msg);
@@ -67,9 +69,9 @@ export function CreateCharacterPage() {
     setError('');
     setStatusText('');
     try {
-      setStatusText('Проверка сервера...');
+      setStatusText(t('create.checkingServer'));
       await wakeUpServer((s) => setStatusText(s));
-      setStatusText('Генерация... (может занять 10-30 сек)');
+      setStatusText(t('create.generating'));
       const data = await generateFromStory(storyText, characterName, model, contentRating, extraInstructions);
       setGenerated(data);
       setTab('manual');
@@ -83,7 +85,7 @@ export function CreateCharacterPage() {
       } else if (Array.isArray(detail)) {
         msg = detail.map((d: { msg?: string }) => d.msg || JSON.stringify(d)).join('; ');
       } else {
-        msg = ax?.message || 'Ошибка генерации';
+        msg = ax?.message || t('create.generateError');
       }
       setError(msg);
     } finally {
@@ -94,7 +96,7 @@ export function CreateCharacterPage() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Создать персонажа</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('create.title')}</h1>
 
       <div className="flex gap-2 mb-6">
         <button
@@ -105,7 +107,7 @@ export function CreateCharacterPage() {
               : 'bg-neutral-800 text-neutral-400 hover:text-white'
           }`}
         >
-          Вручную
+          {t('create.tabManual')}
         </button>
         <button
           onClick={() => setTab('from-story')}
@@ -115,7 +117,7 @@ export function CreateCharacterPage() {
               : 'bg-neutral-800 text-neutral-400 hover:text-white'
           }`}
         >
-          Из текста
+          {t('create.tabFromText')}
         </button>
       </div>
 
@@ -128,66 +130,66 @@ export function CreateCharacterPage() {
       {tab === 'from-story' && (
         <div className="space-y-4 max-w-2xl">
           <Textarea
-            label="Текст рассказа / описание персонажа"
+            label={t('create.storyLabel')}
             value={storyText}
             onChange={(e) => setStoryText(e.target.value)}
-            placeholder="Вставьте текст рассказа, описание персонажа или любой текст, на основе которого нужно создать персонажа..."
+            placeholder={t('create.storyPlaceholder')}
             rows={10}
             required
           />
 
           <Input
-            label="Имя персонажа (необязательно)"
+            label={t('create.nameOptional')}
             value={characterName}
             onChange={(e) => setCharacterName(e.target.value)}
-            placeholder="Если не указать — AI выберет самого интересного"
+            placeholder={t('create.nameHint')}
           />
 
           <div>
             <label className="block text-sm text-neutral-400 mb-1">
-              AI Модель
+              {t('create.aiModel')}
             </label>
             <select
               value={model}
               onChange={(e) => setModel(e.target.value)}
               className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white w-full"
             >
-              <option value="openrouter">OpenRouter Auto (Free) — автовыбор лучшей</option>
+              <option value="openrouter">{t('create.openrouterAuto')}</option>
               {orModels.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name} ({m.quality}/10) — {m.note}
                 </option>
               ))}
               <option disabled>───────────</option>
-              <option value="deepseek">DeepSeek (deepseek-chat)</option>
-              <option value="qwen">Qwen (qwen3-32b)</option>
+              <option value="deepseek">{t('create.deepseek')}</option>
+              <option value="qwen">{t('create.qwen')}</option>
               <option disabled>───────────</option>
-              <option value="gemini">Gemini (платная)</option>
-              <option value="claude">Claude (платная)</option>
-              <option value="openai">GPT-4o (платная)</option>
+              <option value="gemini">{t('create.geminiPaid')}</option>
+              <option value="claude">{t('create.claudePaid')}</option>
+              <option value="openai">{t('create.gptPaid')}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm text-neutral-400 mb-1">
-              Рейтинг контента
+              {t('create.contentRating')}
             </label>
             <select
               value={contentRating}
               onChange={(e) => setContentRating(e.target.value)}
               className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
             >
-              <option value="sfw">SFW — безопасный контент</option>
-              <option value="moderate">Moderate — умеренный (насилие, мрачные темы)</option>
-              <option value="nsfw">NSFW — взрослый контент</option>
+              <option value="sfw">{t('create.sfwLabel')}</option>
+              <option value="moderate">{t('create.moderateLabel')}</option>
+              <option value="nsfw">{t('create.nsfwLabel')}</option>
             </select>
           </div>
 
           <Textarea
-            label="Дополнительные пожелания (необязательно)"
+            label={t('create.extraWishes')}
             value={extraInstructions}
             onChange={(e) => setExtraInstructions(e.target.value)}
-            placeholder="Например: сделай персонажа более саркастичным, добавь акцент, пусть говорит на ты..."
+            placeholder={t('create.extraPlaceholder')}
             rows={3}
           />
 
@@ -196,7 +198,7 @@ export function CreateCharacterPage() {
             disabled={generating || !storyText.trim()}
             className="w-full"
           >
-            {generating ? (statusText || 'Генерация...') : 'Сгенерировать персонажа'}
+            {generating ? (statusText || t('create.generating')) : t('create.generateButton')}
           </Button>
         </div>
       )}
@@ -210,7 +212,7 @@ export function CreateCharacterPage() {
             key={generated ? 'generated' : 'empty'}
             initial={generated || undefined}
             onSubmit={handleSubmit}
-            submitLabel="Создать персонажа"
+            submitLabel={t('create.createButton')}
           />
         </>
       )}

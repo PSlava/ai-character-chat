@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { signIn, signUp } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
 export function AuthPage() {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,9 +32,9 @@ export function AuthPage() {
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { detail?: string } } };
-        setError(axiosErr.response?.data?.detail || 'Произошла ошибка');
+        setError(axiosErr.response?.data?.detail || t('auth.error'));
       } else {
-        setError('Произошла ошибка');
+        setError(t('auth.error'));
       }
     } finally {
       setLoading(false);
@@ -44,19 +46,19 @@ export function AuthPage() {
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">
-            {isLogin ? 'Вход' : 'Регистрация'}
+            {isLogin ? t('auth.login') : t('auth.register')}
           </h1>
           <p className="text-neutral-400 mt-1">
             {isLogin
-              ? 'Войдите, чтобы общаться с персонажами'
-              : 'Создайте аккаунт и начните общение'}
+              ? t('auth.loginSubtitle')
+              : t('auth.registerSubtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <Input
-              label="Имя пользователя"
+              label={t('auth.username')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="username"
@@ -72,7 +74,7 @@ export function AuthPage() {
             required
           />
           <Input
-            label="Пароль"
+            label={t('auth.password')}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -87,15 +89,15 @@ export function AuthPage() {
 
           <Button type="submit" disabled={loading} className="w-full">
             {loading
-              ? 'Загрузка...'
+              ? t('common.loading')
               : isLogin
-                ? 'Войти'
-                : 'Зарегистрироваться'}
+                ? t('auth.loginButton')
+                : t('auth.registerButton')}
           </Button>
         </form>
 
         <p className="text-center text-sm text-neutral-400">
-          {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}{' '}
+          {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}{' '}
           <button
             onClick={() => {
               setIsLogin(!isLogin);
@@ -103,7 +105,7 @@ export function AuthPage() {
             }}
             className="text-purple-400 hover:text-purple-300"
           >
-            {isLogin ? 'Зарегистрироваться' : 'Войти'}
+            {isLogin ? t('auth.switchToRegister') : t('auth.switchToLogin')}
           </button>
         </p>
       </div>

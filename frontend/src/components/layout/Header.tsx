@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/api/auth';
 import { Button } from '@/components/ui/Button';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { MessageCircle, Plus, LogOut, User } from 'lucide-react';
 
 export function Header() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { logout } = useAuthStore();
 
@@ -18,16 +21,17 @@ export function Header() {
     <header className="h-14 border-b border-neutral-800 flex items-center justify-between px-4 bg-neutral-900/80 backdrop-blur-sm sticky top-0 z-50">
       <Link to="/" className="flex items-center gap-2 text-lg font-bold">
         <MessageCircle className="w-6 h-6 text-purple-500" />
-        <span>AI Chat</span>
+        <span>{t('header.appName')}</span>
       </Link>
 
       <div className="flex items-center gap-2">
+        <LanguageSwitcher compact />
         {isAuthenticated ? (
           <>
             <Link to="/create">
               <Button variant="secondary" size="sm" className="flex items-center gap-1">
                 <Plus className="w-4 h-4" />
-                Создать
+                {t('header.create')}
               </Button>
             </Link>
             <Link to="/profile">
@@ -41,7 +45,7 @@ export function Header() {
           </>
         ) : (
           <Link to="/auth">
-            <Button size="sm">Войти</Button>
+            <Button size="sm">{t('header.login')}</Button>
           </Link>
         )}
       </div>

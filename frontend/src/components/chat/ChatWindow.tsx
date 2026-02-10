@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { RefreshCw, Pencil, Send } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageBubble } from './MessageBubble';
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, onDeleteMessage, onRegenerate, onResendLast }: Props) {
+  const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState('');
@@ -63,10 +65,10 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
             <button
               onClick={() => onRegenerate(lastAssistant.id)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
-              title="Перегенерировать ответ"
+              title={t('chat.regenerateTooltip')}
             >
               <RefreshCw size={13} />
-              Перегенерировать
+              {t('chat.regenerate')}
             </button>
           </div>
         )}
@@ -87,7 +89,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
                     onClick={() => setEditing(false)}
                     className="px-3 py-1.5 text-xs text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
                   >
-                    Отмена
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={() => {
@@ -100,7 +102,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <Send size={13} />
-                    Отправить
+                    {t('common.send')}
                   </button>
                 </div>
               </div>
@@ -109,10 +111,10 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
                 <button
                   onClick={() => onResendLast()}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
-                  title="Повторить отправку"
+                  title={t('chat.retryTooltip')}
                 >
                   <RefreshCw size={13} />
-                  Повторить
+                  {t('chat.retry')}
                 </button>
                 <button
                   onClick={() => {
@@ -120,10 +122,10 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
                     setEditing(true);
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
-                  title="Редактировать и отправить"
+                  title={t('chat.editTooltip')}
                 >
                   <Pencil size={13} />
-                  Редактировать
+                  {t('common.edit')}
                 </button>
               </div>
             )}

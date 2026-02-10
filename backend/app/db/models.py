@@ -35,6 +35,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+    language: Mapped[str | None] = mapped_column(String, nullable=True, default="ru")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     characters: Mapped[list["Character"]] = relationship(back_populates="creator")

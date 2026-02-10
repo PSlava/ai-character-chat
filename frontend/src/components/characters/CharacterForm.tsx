@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels } from '@/api/characters';
@@ -15,7 +16,8 @@ interface Props {
 const str = (v: unknown): string =>
   Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : '';
 
-export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать' }: Props) {
+export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     name: str(initial?.name),
     tagline: str(initial?.tagline),
@@ -60,7 +62,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
         system_prompt_suffix: form.system_prompt_suffix || undefined,
         tags: form.tags
           .split(',')
-          .map((t) => t.trim())
+          .map((tag) => tag.trim())
           .filter(Boolean),
         is_public: form.is_public,
         preferred_model: form.preferred_model,
@@ -75,73 +77,73 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
       <Input
-        label="Имя персонажа *"
+        label={t('form.name')}
         value={form.name}
         onChange={(e) => update('name', e.target.value)}
-        placeholder="Например: Шерлок Холмс"
+        placeholder={t('form.namePlaceholder')}
         required
       />
 
       <Input
-        label="Краткое описание"
+        label={t('form.tagline')}
         value={form.tagline}
         onChange={(e) => update('tagline', e.target.value)}
-        placeholder="Гениальный детектив с Бейкер-стрит"
+        placeholder={t('form.taglinePlaceholder')}
       />
 
       <Textarea
-        label="Личность и характер *"
+        label={t('form.personality')}
         value={form.personality}
         onChange={(e) => update('personality', e.target.value)}
-        placeholder="Опишите характер, манеру речи, привычки..."
+        placeholder={t('form.personalityPlaceholder')}
         rows={4}
         required
       />
 
       <Textarea
-        label="Сценарий / Мир"
+        label={t('form.scenario')}
         value={form.scenario}
         onChange={(e) => update('scenario', e.target.value)}
-        placeholder="Описание ситуации, мира, контекста взаимодействия..."
+        placeholder={t('form.scenarioPlaceholder')}
         rows={3}
       />
 
       <Textarea
-        label="Приветственное сообщение *"
+        label={t('form.greeting')}
         value={form.greeting_message}
         onChange={(e) => update('greeting_message', e.target.value)}
-        placeholder="Первое сообщение персонажа при начале чата"
+        placeholder={t('form.greetingPlaceholder')}
         rows={3}
         required
       />
 
       <Textarea
-        label="Примеры диалогов"
+        label={t('form.exampleDialogues')}
         value={form.example_dialogues}
         onChange={(e) => update('example_dialogues', e.target.value)}
-        placeholder="User: Привет!\nCharacter: *поправляет скрипку* Здравствуйте. Чем могу быть полезен?"
+        placeholder={t('form.exampleDialoguesPlaceholder')}
         rows={4}
       />
 
       <Textarea
-        label="Дополнительные инструкции"
+        label={t('form.instructions')}
         value={form.system_prompt_suffix}
         onChange={(e) => update('system_prompt_suffix', e.target.value)}
-        placeholder="Дополнительные правила для AI..."
+        placeholder={t('form.instructionsPlaceholder')}
         rows={2}
       />
 
       <Input
-        label="Теги (через запятую)"
+        label={t('form.tags')}
         value={form.tags}
         onChange={(e) => update('tags', e.target.value)}
-        placeholder="детектив, классика, Англия"
+        placeholder={t('form.tagsPlaceholder')}
       />
 
       <div className="flex gap-4 flex-wrap">
         <div>
           <label className="block text-sm text-neutral-400 mb-1">
-            Рейтинг контента
+            {t('form.contentRating')}
           </label>
           <select
             value={form.content_rating}
@@ -156,53 +158,53 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
 
         <div>
           <label className="block text-sm text-neutral-400 mb-1">
-            Длина ответа
+            {t('form.responseLength')}
           </label>
           <select
             value={form.response_length}
             onChange={(e) => update('response_length', e.target.value)}
             className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
           >
-            <option value="short">Короткий (1-3 предложения)</option>
-            <option value="medium">Средний (1-2 абзаца)</option>
-            <option value="long">Длинный (2-4 абзаца)</option>
-            <option value="very_long">Очень длинный (4-6 абзацев)</option>
+            <option value="short">{t('form.lengthShort')}</option>
+            <option value="medium">{t('form.lengthMedium')}</option>
+            <option value="long">{t('form.lengthLong')}</option>
+            <option value="very_long">{t('form.lengthVeryLong')}</option>
           </select>
         </div>
 
         <div className="flex-1 min-w-[200px]">
           <label className="block text-sm text-neutral-400 mb-1">
-            AI Модель (для чата)
+            {t('form.preferredModel')}
           </label>
           <select
             value={form.preferred_model}
             onChange={(e) => update('preferred_model', e.target.value)}
             className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white w-full"
           >
-            <option value="openrouter">OpenRouter Auto (Free)</option>
+            <option value="openrouter">{t('form.openrouterAuto')}</option>
             {orModels.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name} ({m.quality}/10)
               </option>
             ))}
-            <option disabled>─── Groq ───</option>
-            <option value="groq">Groq Auto</option>
+            <option disabled>{t('form.groqSeparator')}</option>
+            <option value="groq">{t('form.groqAuto')}</option>
             {groqModels.map((m) => (
               <option key={`groq:${m.id}`} value={`groq:${m.id}`}>
                 {m.name} ({m.quality}/10)
               </option>
             ))}
-            <option disabled>─── Cerebras ───</option>
-            <option value="cerebras">Cerebras Auto</option>
+            <option disabled>{t('form.cerebrasSeparator')}</option>
+            <option value="cerebras">{t('form.cerebrasAuto')}</option>
             {cerebrasModels.map((m) => (
               <option key={`cerebras:${m.id}`} value={`cerebras:${m.id}`}>
                 {m.name} ({m.quality}/10)
               </option>
             ))}
-            <option disabled>─── Прямой API ───</option>
+            <option disabled>{t('form.directApiSeparator')}</option>
             <option value="deepseek">DeepSeek</option>
             <option value="qwen">Qwen (DashScope)</option>
-            <option disabled>─── Платные ───</option>
+            <option disabled>{t('form.paidSeparator')}</option>
             <option value="gemini">Gemini</option>
             <option value="claude">Claude</option>
             <option value="openai">GPT-4o</option>
@@ -217,7 +219,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
               onChange={(e) => update('is_public', e.target.checked)}
               className="w-4 h-4 rounded accent-purple-600"
             />
-            <span className="text-sm text-neutral-300">Публичный</span>
+            <span className="text-sm text-neutral-300">{t('form.public')}</span>
           </label>
         </div>
       </div>
@@ -225,7 +227,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="text-sm text-neutral-400">
-            Макс. токенов ответа
+            {t('form.maxTokens')}
           </label>
           <span className="text-sm text-neutral-300">{form.max_tokens}</span>
         </div>
@@ -239,12 +241,12 @@ export function CharacterForm({ initial, onSubmit, submitLabel = 'Создать
           className="w-full accent-purple-500"
         />
         <p className="text-xs text-neutral-500 mt-1">
-          Максимальная длина ответа. 1 токен ≈ 3-4 символа. По умолчанию: 2048.
+          {t('form.maxTokensHelp')}
         </p>
       </div>
 
       <Button type="submit" disabled={loading} className="w-full">
-        {loading ? 'Сохранение...' : submitLabel}
+        {loading ? t('common.saving') : (submitLabel || t('common.create'))}
       </Button>
     </form>
   );

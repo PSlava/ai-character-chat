@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Character } from '@/types';
 import { CharacterCard } from './CharacterCard';
 
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export function CharacterGrid({ characters, loading }: Props) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -23,7 +25,7 @@ export function CharacterGrid({ characters, loading }: Props) {
   if (characters.length === 0) {
     return (
       <div className="text-center py-12 text-neutral-500">
-        Персонажи не найдены
+        {t('home.noCharacters')}
       </div>
     );
   }

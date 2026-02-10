@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { Trash2, Settings } from 'lucide-react';
 import { getChat, clearChatMessages, deleteChatMessage } from '@/api/chat';
@@ -38,6 +39,7 @@ export function ChatPage() {
     } catch { return {}; }
   });
   const [activeModel, setActiveModel] = useState('');
+  const { t } = useTranslation();
 
   const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast } = useChat(
     chatId || ''
@@ -64,7 +66,7 @@ export function ChatPage() {
           setActiveModel(data.chat.model_used || 'openrouter');
         }
       })
-      .catch(() => setError('Чат не найден'));
+      .catch(() => setError(t('chat.notFound')));
   }, [chatId, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleApplySettings = (s: ChatSettings) => {
@@ -96,7 +98,7 @@ export function ChatPage() {
 
   const handleClearChat = async () => {
     if (!chatId || isStreaming) return;
-    if (!confirm('Очистить историю чата? Приветственное сообщение останется.')) return;
+    if (!confirm(t('chat.clearConfirm'))) return;
     try {
       await clearChatMessages(chatId);
       setMessages((prev) => {
@@ -104,7 +106,7 @@ export function ChatPage() {
         return visible.length > 0 ? [visible[0]] : [];
       });
     } catch {
-      setError('Не удалось очистить чат');
+      setError(t('chat.clearError'));
     }
   };
 
@@ -135,7 +137,7 @@ export function ChatPage() {
   if (!chatDetail) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse text-neutral-500">Загрузка...</div>
+        <div className="animate-pulse text-neutral-500">{t('common.loading')}</div>
       </div>
     );
   }
@@ -159,14 +161,14 @@ export function ChatPage() {
           onClick={() => setShowSettings(true)}
           className="flex items-center gap-2 px-3 py-1.5 border border-neutral-700 rounded-lg text-sm text-neutral-300 hover:border-neutral-500 hover:text-white transition-colors"
         >
-          <span className="hidden sm:inline">Модель и настройки</span>
+          <span className="hidden sm:inline">{t('chat.modelAndSettings')}</span>
           <Settings size={16} />
         </button>
         <button
           onClick={handleClearChat}
           disabled={isStreaming}
           className="p-2 text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-50"
-          title="Очистить чат"
+          title={t('chat.clearChat')}
         >
           <Trash2 size={18} />
         </button>

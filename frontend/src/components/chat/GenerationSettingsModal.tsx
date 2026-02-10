@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import type { GenerationSettings } from '@/hooks/useChat';
 import type { OpenRouterModel } from '@/api/characters';
@@ -19,19 +20,35 @@ interface Props {
 
 function TooltipIcon({ text }: { text: string }) {
   const [show, setShow] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLSpanElement>(null);
+
+  const open = () => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({
+        top: rect.top,
+        left: Math.min(Math.max(12, rect.left - 120), window.innerWidth - 304),
+      });
+    }
+    setShow(true);
+  };
+  const close = () => setShow(false);
 
   return (
     <span
       ref={ref}
-      className="relative text-neutral-500 cursor-help"
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-      onClick={() => setShow((v) => !v)}
+      className="text-neutral-500 cursor-help"
+      onMouseEnter={open}
+      onMouseLeave={close}
+      onClick={() => (show ? close() : open())}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      {show && (
-        <span className="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 p-3 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-neutral-300 leading-relaxed shadow-xl whitespace-pre-line">
+      {show && pos && (
+        <span
+          className="fixed z-[100] w-72 max-w-[calc(100vw-24px)] p-3 bg-neutral-800 border border-neutral-600 rounded-lg text-xs text-neutral-300 leading-relaxed shadow-xl whitespace-pre-line pointer-events-none"
+          style={{ bottom: `${window.innerHeight - pos.top + 8}px`, left: `${pos.left}px` }}
+        >
           {text}
         </span>
       )}
@@ -91,6 +108,7 @@ const GEN_DEFAULTS = {
   top_p: 0.95,
   top_k: 0,
   frequency_penalty: 0,
+  presence_penalty: 0.3,
   max_tokens: 2048,
 };
 
@@ -100,21 +118,17 @@ interface ModelOption {
   group: 'openrouter' | 'groq' | 'cerebras' | 'direct' | 'paid';
 }
 
-const GROUP_LABELS: Record<string, string> = {
-  openrouter: 'OpenRouter',
-  groq: 'Groq',
-  cerebras: 'Cerebras',
-  direct: 'Прямой API',
-  paid: 'Платные',
-};
+// GROUP_LABELS are now resolved via t() inside the component
 
 export function GenerationSettingsModal({ settings, currentModel, orModels, groqModels, cerebrasModels, onApply, onClose }: Props) {
+  const { t } = useTranslation();
   const [model, setModel] = useState(settings.model || currentModel);
   const [local, setLocal] = useState({
     temperature: settings.temperature ?? GEN_DEFAULTS.temperature,
     top_p: settings.top_p ?? GEN_DEFAULTS.top_p,
     top_k: settings.top_k ?? GEN_DEFAULTS.top_k,
     frequency_penalty: settings.frequency_penalty ?? GEN_DEFAULTS.frequency_penalty,
+    presence_penalty: settings.presence_penalty ?? GEN_DEFAULTS.presence_penalty,
     max_tokens: settings.max_tokens ?? GEN_DEFAULTS.max_tokens,
   });
 
@@ -153,7 +167,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold">Модель и настройки</h2>
+          <h2 className="text-lg font-bold">{t('settings.title')}</h2>
           <button onClick={onClose} className="p-1 text-neutral-400 hover:text-white transition-colors">
             <X size={20} />
           </button>
@@ -161,13 +175,13 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
 
         {/* Model selection */}
         <div className="mb-6">
-          <p className="text-sm text-neutral-400 mb-3">Выбор модели для генерации ответа</p>
+          <p className="text-sm text-neutral-400 mb-3">{t('settings.modelLabel')}</p>
           {groups.map((group) => {
             const items = allModels.filter((m) => m.group === group);
             if (items.length === 0) return null;
             return (
               <div key={group} className="mb-3">
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1.5">{GROUP_LABELS[group]}</p>
+                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1.5">{t(`settings.group${group.charAt(0).toUpperCase()}${group.slice(1)}` as any)}</p>
                 <div className="grid grid-cols-2 gap-2">
                   {items.map((m) => (
                     <button
@@ -191,8 +205,8 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
         {/* Generation params */}
         <div className="space-y-5">
           <Slider
-            label="Температура"
-            tooltip={"Контролирует случайность ответов.\n\n0.0 — строго предсказуемый текст, модель всегда выбирает самое вероятное слово.\n0.3–0.5 — сдержанный стиль, мало неожиданностей.\n0.7 — баланс между точностью и творчеством (по умолчанию).\n1.0+ — более творческие, непредсказуемые ответы.\n2.0 — максимальная случайность, текст может стать бессвязным.\n\nПо умолчанию: 0.7"}
+            label={t('settings.temperature')}
+            tooltip={t('settings.temperatureTooltip')}
             value={local.temperature}
             onChange={(v) => update('temperature', v)}
             min={0}
@@ -200,8 +214,8 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
             step={0.01}
           />
           <Slider
-            label="Top-P"
-            tooltip={"Ограничивает выбор слов по суммарной вероятности (nucleus sampling).\n\nМодель рассматривает только самые вероятные слова, пока их суммарная вероятность не достигнет этого порога.\n\n0.5 — только топ-50% вероятных слов, текст сдержаннее.\n0.9 — широкий выбор, текст разнообразнее.\n1.0 — все слова доступны.\n\nРаботает вместе с температурой. Обычно достаточно менять что-то одно.\n\nПо умолчанию: 0.95"}
+            label={t('settings.topP')}
+            tooltip={t('settings.topPTooltip')}
             value={local.top_p}
             onChange={(v) => update('top_p', v)}
             min={0}
@@ -209,8 +223,8 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
             step={0.01}
           />
           <Slider
-            label="Top-K"
-            tooltip={"Ограничивает выбор слов количеством: модель выбирает только из K самых вероятных вариантов.\n\n0 — отключено, модель выбирает из всех слов.\n10 — только топ-10 слов, текст очень предсказуемый.\n40–50 — хороший баланс.\n100 — почти без ограничений.\n\nПо умолчанию: 0 (отключено)"}
+            label={t('settings.topK')}
+            tooltip={t('settings.topKTooltip')}
             value={local.top_k}
             onChange={(v) => update('top_k', Math.round(v))}
             min={0}
@@ -218,8 +232,8 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
             step={1}
           />
           <Slider
-            label="Штраф за повторения"
-            tooltip={"Снижает вероятность повторения одних и тех же слов и фраз (frequency penalty).\n\n0.0 — без штрафа, модель может повторяться.\n0.3–0.5 — лёгкий штраф, убирает навязчивые повторы.\n1.0 — заметный штраф, текст более разнообразный.\n2.0 — сильный штраф, модель избегает любых повторов (может ухудшить связность).\n\nПо умолчанию: 0"}
+            label={t('settings.frequencyPenalty')}
+            tooltip={t('settings.frequencyPenaltyTooltip')}
             value={local.frequency_penalty}
             onChange={(v) => update('frequency_penalty', v)}
             min={0}
@@ -227,8 +241,17 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
             step={0.01}
           />
           <Slider
-            label="Макс. токенов"
-            tooltip={"Максимальная длина ответа. 1 токен — примерно 3-4 символа или 1 слог на русском.\n\n256 — очень короткий ответ (~750 символов).\n1024 — короткий ответ (~3000 символов).\n2048 — средний ответ (~6000 символов).\n4096 — длинный ответ (~12000 символов).\n\nЭто жёсткий лимит: ответ обрежется, если превысит. Реальная длина зависит от настройки «Длина ответа» на персонаже.\n\nПо умолчанию: 2048"}
+            label={t('settings.presencePenalty')}
+            tooltip={t('settings.presencePenaltyTooltip')}
+            value={local.presence_penalty}
+            onChange={(v) => update('presence_penalty', v)}
+            min={0}
+            max={2}
+            step={0.01}
+          />
+          <Slider
+            label={t('settings.maxTokens')}
+            tooltip={t('settings.maxTokensTooltip')}
             value={local.max_tokens}
             onChange={(v) => update('max_tokens', Math.round(v))}
             min={256}
@@ -242,13 +265,13 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
             onClick={onClose}
             className="flex-1 px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg text-sm transition-colors"
           >
-            Отмена
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => { onApply({ ...local, model }); onClose(); }}
             className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
           >
-            Применить
+            {t('common.apply')}
           </button>
         </div>
       </div>

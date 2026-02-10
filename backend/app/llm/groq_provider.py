@@ -45,6 +45,7 @@ class GroqProvider(BaseLLMProvider):
                     temperature=config.temperature,
                     top_p=config.top_p,
                     frequency_penalty=config.frequency_penalty,
+                    presence_penalty=config.presence_penalty,
                     stream=True,
                 )
                 has_content = False
@@ -88,6 +89,7 @@ class GroqProvider(BaseLLMProvider):
                     temperature=config.temperature,
                     top_p=config.top_p,
                     frequency_penalty=config.frequency_penalty,
+                    presence_penalty=config.presence_penalty,
                 )
                 content = response.choices[0].message.content if response.choices else None
                 if not content:

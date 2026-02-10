@@ -24,6 +24,8 @@ class OpenAIProvider(BaseLLMProvider):
             max_tokens=config.max_tokens,
             temperature=config.temperature,
             top_p=config.top_p,
+            frequency_penalty=config.frequency_penalty,
+            presence_penalty=config.presence_penalty,
             stream=True,
         )
         async for chunk in stream:
@@ -44,5 +46,7 @@ class OpenAIProvider(BaseLLMProvider):
             max_tokens=config.max_tokens,
             temperature=config.temperature,
             top_p=config.top_p,
+            frequency_penalty=config.frequency_penalty,
+            presence_penalty=config.presence_penalty,
         )
         return response.choices[0].message.content

@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { MessageCircle, Home, Heart } from 'lucide-react';
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { chats, fetchChats } = useChatStore();
   const { chatId } = useParams();
@@ -24,7 +26,7 @@ export function Sidebar() {
           className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
         >
           <Home className="w-4 h-4" />
-          Главная
+          {t('sidebar.home')}
         </Link>
         {isAuthenticated && (
           <Link
@@ -32,7 +34,7 @@ export function Sidebar() {
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
           >
             <Heart className="w-4 h-4" />
-            Избранное
+            {t('sidebar.favorites')}
           </Link>
         )}
       </nav>
@@ -41,7 +43,7 @@ export function Sidebar() {
         <div className="flex-1 overflow-y-auto border-t border-neutral-800">
           <div className="p-3">
             <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 px-3">
-              Мои чаты
+              {t('sidebar.myChats')}
             </p>
             <div className="space-y-1">
               {chats.map((chat) => (
@@ -72,7 +74,7 @@ export function Sidebar() {
       {!isAuthenticated && (
         <div className="p-4 text-sm text-neutral-500">
           <MessageCircle className="w-8 h-8 mb-2 text-neutral-600" />
-          <p>Войдите, чтобы начать общение с персонажами</p>
+          <p>{t('sidebar.loginPrompt')}</p>
         </div>
       )}
     </aside>

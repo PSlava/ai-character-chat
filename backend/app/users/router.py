@@ -13,6 +13,7 @@ class ProfileUpdate(BaseModel):
     display_name: str | None = None
     bio: str | None = None
     avatar_url: str | None = None
+    language: str | None = None
 
 
 @router.get("/me")
@@ -28,6 +29,7 @@ async def get_profile(user=Depends(get_current_user), db: AsyncSession = Depends
         "display_name": u.display_name,
         "avatar_url": u.avatar_url,
         "bio": u.bio,
+        "language": u.language or "ru",
     }
 
 
@@ -54,6 +56,7 @@ async def update_profile(
         "display_name": u.display_name,
         "avatar_url": u.avatar_url,
         "bio": u.bio,
+        "language": u.language or "ru",
     }
 
 

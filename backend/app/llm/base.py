@@ -17,6 +17,7 @@ class LLMConfig:
     top_p: float = 0.95
     top_k: int = 0  # 0 = disabled
     frequency_penalty: float = 0.0
+    presence_penalty: float = 0.0
 
 
 class BaseLLMProvider(ABC):

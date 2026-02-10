@@ -67,11 +67,11 @@ export async function wakeUpServer(
       await api.get('/health', { timeout: 5000 });
       return;
     } catch {
-      onStatus?.(`Ожидание сервера... (${i * 3}с)`);
+      onStatus?.(`Waiting for server... (${i * 3}s)`);
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
-  throw new Error('Сервер не отвечает');
+  throw new Error('Server is not responding');
 }
 
 export async function generateFromStory(

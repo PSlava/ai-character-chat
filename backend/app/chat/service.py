@@ -169,7 +169,7 @@ async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_i
     return True
 
 
-async def build_conversation_messages(db: AsyncSession, chat_id: str, character: Character, user_name: str | None = None) -> list[LLMMessage]:
+async def build_conversation_messages(db: AsyncSession, chat_id: str, character: Character, user_name: str | None = None, language: str = "ru") -> list[LLMMessage]:
     char_dict = {
         "name": character.name,
         "personality": character.personality,
@@ -180,7 +180,7 @@ async def build_conversation_messages(db: AsyncSession, chat_id: str, character:
         "system_prompt_suffix": character.system_prompt_suffix,
         "response_length": getattr(character, 'response_length', None) or "long",
     }
-    system_prompt = build_system_prompt(char_dict, user_name=user_name)
+    system_prompt = build_system_prompt(char_dict, user_name=user_name, language=language)
     messages_data = await get_chat_messages(db, chat_id)
 
     # Sliding window

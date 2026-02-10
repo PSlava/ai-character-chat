@@ -31,6 +31,7 @@ class DeepSeekProvider(BaseLLMProvider):
             temperature=config.temperature,
             top_p=config.top_p,
             frequency_penalty=config.frequency_penalty,
+            presence_penalty=config.presence_penalty,
             stream=True,
         )
         async for chunk in stream:
@@ -54,6 +55,7 @@ class DeepSeekProvider(BaseLLMProvider):
                 temperature=config.temperature,
                 top_p=config.top_p,
                 frequency_penalty=config.frequency_penalty,
+                presence_penalty=config.presence_penalty,
             ),
             timeout=TIMEOUT,
         )

@@ -56,6 +56,7 @@ class OpenRouterProvider(BaseLLMProvider):
                     temperature=config.temperature,
                     top_p=config.top_p,
                     frequency_penalty=config.frequency_penalty,
+                    presence_penalty=config.presence_penalty,
                     stream=True,
                     extra_body=extra or None,
                 )
@@ -103,6 +104,7 @@ class OpenRouterProvider(BaseLLMProvider):
                         temperature=config.temperature,
                         top_p=config.top_p,
                         frequency_penalty=config.frequency_penalty,
+                        presence_penalty=config.presence_penalty,
                         extra_body=extra or None,
                     ),
                     timeout=PER_MODEL_TIMEOUT,

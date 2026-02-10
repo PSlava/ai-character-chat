@@ -34,6 +34,7 @@ class QwenProvider(BaseLLMProvider):
                 temperature=config.temperature,
                 top_p=config.top_p,
                 frequency_penalty=config.frequency_penalty,
+                presence_penalty=config.presence_penalty,
                 stream=True,
                 extra_body={"enable_thinking": False},
             )
@@ -60,6 +61,7 @@ class QwenProvider(BaseLLMProvider):
                 temperature=config.temperature,
                 top_p=config.top_p,
                 frequency_penalty=config.frequency_penalty,
+                presence_penalty=config.presence_penalty,
                 extra_body={"enable_thinking": False},
             )
         except BadRequestError as e:
