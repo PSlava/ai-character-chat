@@ -80,7 +80,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
   - `anthropic_provider.py`, `openai_provider.py`, `gemini_provider.py` — Standard provider implementations.
   - `router.py` — `GET /api/models/openrouter` returns model list with quality scores.
 - **`admin/router.py`** — Admin-only CRUD for prompt template overrides. `require_admin` dependency checks JWT role. GET/PUT/DELETE `/api/admin/prompts`.
-- **`chat/prompt_builder.py`** — Dynamic system prompt from character fields. Two-layer system: `_DEFAULTS` (code) + DB overrides. `load_overrides(engine)` caches for 60s. `get_all_keys()` for admin UI. Bilingual: 20 keys × 2 languages (ru/en). Response length instructions vary by `response_length` setting.
+- **`chat/prompt_builder.py`** — Dynamic system prompt from character fields. Two-layer system: `_DEFAULTS` (code) + DB overrides. `load_overrides(engine)` caches for 60s. `get_all_keys()` for admin UI. Bilingual: 19 keys × 2 languages (ru/en). Response length instructions vary by `response_length` setting.
 - **`chat/service.py`** — Context window (sliding window ~24k tokens, 50 messages). `build_conversation_messages()` constructs LLM message list with system prompt.
 - **`chat/router.py`** — SSE streaming via `StreamingResponse`. Events: `{type: "token"}`, `{type: "done", message_id, user_message_id}`, `{type: "error"}`. Supports generation settings override per-request. Clear/delete message endpoints.
 - **`characters/`** — CRUD + AI generation from text. Tags as comma-separated string. `serializers.py` for ORM→dict with `getattr` fallbacks for new columns. Admin bypass for edit/delete via `is_admin` param.
@@ -129,5 +129,5 @@ Characters: `GET/POST /api/characters`, `GET/PUT/DELETE /api/characters/{id}`, `
 Chats: `POST /api/chats`, `GET /api/chats`, `GET/DELETE /api/chats/{id}`, `POST /api/chats/{id}/message` (SSE), `DELETE /api/chats/{id}/messages` (clear), `DELETE /api/chats/{id}/messages/{msg_id}`
 Users: `GET/PUT /api/users/me` (includes role, username), `GET /api/users/me/favorites`, `POST/DELETE /api/users/me/favorites/{id}`
 Admin: `GET /api/admin/prompts`, `PUT /api/admin/prompts/{key}`, `DELETE /api/admin/prompts/{key}` — admin role required
-Models: `GET /api/models/openrouter`
+Models: `GET /api/models/openrouter`, `GET /api/models/groq`, `GET /api/models/cerebras`
 Health: `GET /api/health`
