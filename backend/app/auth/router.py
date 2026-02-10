@@ -47,6 +47,13 @@ def _generate_username() -> str:
     return f"user_{secrets.token_hex(3)}"
 
 
+def _is_admin_email(email: str) -> bool:
+    admin_list = settings.admin_emails
+    if not admin_list:
+        return False
+    return email.lower() in [e.strip().lower() for e in admin_list.split(",") if e.strip()]
+
+
 @router.post("/register")
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     # Check email uniqueness
@@ -71,11 +78,13 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
         if check.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Username already taken")
 
+    role = "admin" if _is_admin_email(body.email) else "user"
     user = User(
         email=body.email,
         username=username,
         display_name=username,
         password_hash=hash_password(body.password),
+        role=role,
     )
     db.add(user)
     await db.commit()
@@ -95,6 +104,13 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
 
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Sync admin role from env (in case ADMIN_EMAILS changed)
+    expected_role = "admin" if _is_admin_email(user.email) else "user"
+    if (user.role or "user") != expected_role:
+        user.role = expected_role
+        await db.commit()
+        await db.refresh(user)
 
     token = create_token(user)
     return {
