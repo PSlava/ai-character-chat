@@ -6,25 +6,32 @@ Models with unstable providers get lower scores.
 
 OPENROUTER_FREE_MODELS = [
     {
+        "id": "nousresearch/hermes-3-llama-3.1-405b:free",
+        "name": "Hermes 3 405B",
+        "quality": 9,
+        "nsfw": True,
+        "note": "лучшая для RP, Venice нестабилен",
+    },
+    {
+        "id": "meta-llama/llama-3.3-70b-instruct:free",
+        "name": "Llama 3.3 70B",
+        "quality": 8,
+        "nsfw": True,
+        "note": "хорошая для RP, Venice нестабилен",
+    },
+    {
         "id": "google/gemma-3-27b-it:free",
         "name": "Gemma 3 27B",
-        "quality": 9,
+        "quality": 7,
         "nsfw": False,  # Google safety filters block NSFW
-        "note": "стабильная, Google AI Studio",
+        "note": "стабильная, но слабый RP на русском",
     },
     {
         "id": "google/gemma-3-12b-it:free",
         "name": "Gemma 3 12B",
-        "quality": 8,
+        "quality": 6,
         "nsfw": False,  # Google safety filters block NSFW
         "note": "стабильная, быстрая",
-    },
-    {
-        "id": "nvidia/nemotron-nano-9b-v2:free",
-        "name": "Nemotron 9B",
-        "quality": 5,
-        "nsfw": True,
-        "note": "thinking-модель, мешает языки",
     },
     {
         "id": "deepseek/deepseek-r1-0528:free",
@@ -34,30 +41,23 @@ OPENROUTER_FREE_MODELS = [
         "note": "умная, но медленная (>30с)",
     },
     {
-        "id": "nousresearch/hermes-3-llama-3.1-405b:free",
-        "name": "Hermes 3 405B",
-        "quality": 6,
+        "id": "nvidia/nemotron-nano-9b-v2:free",
+        "name": "Nemotron 9B",
+        "quality": 4,
         "nsfw": True,
-        "note": "Venice провайдер нестабилен",
-    },
-    {
-        "id": "meta-llama/llama-3.3-70b-instruct:free",
-        "name": "Llama 3.3 70B",
-        "quality": 6,
-        "nsfw": True,
-        "note": "Venice провайдер нестабилен",
+        "note": "thinking-модель, мешает языки",
     },
     {
         "id": "qwen/qwen3-4b:free",
         "name": "Qwen3 4B",
-        "quality": 5,
+        "quality": 4,
         "nsfw": True,
         "note": "маленькая, Venice нестабилен",
     },
     {
         "id": "meta-llama/llama-3.2-3b-instruct:free",
         "name": "Llama 3.2 3B",
-        "quality": 4,
+        "quality": 3,
         "nsfw": True,
         "note": "маленькая, Venice нестабилен",
     },
