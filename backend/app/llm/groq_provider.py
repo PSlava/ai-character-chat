@@ -37,6 +37,7 @@ class GroqProvider(BaseLLMProvider):
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
 
         for model in models:
+            self.last_model_used = model
             try:
                 stream = await self.client.chat.completions.create(
                     model=model,
@@ -81,6 +82,7 @@ class GroqProvider(BaseLLMProvider):
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
 
         for model in models:
+            self.last_model_used = model
             try:
                 response = await self.client.chat.completions.create(
                     model=model,

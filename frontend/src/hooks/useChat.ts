@@ -96,7 +96,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               // Update assistant message with real DB id
               const last = updated[updated.length - 1];
               if (last.role === 'assistant') {
-                updated[updated.length - 1] = { ...last, id: data.message_id };
+                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used };
               }
               // Update user message with real DB id
               if (data.user_message_id) {

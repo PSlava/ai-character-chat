@@ -16,7 +16,7 @@ async def get_current_user(
             settings.jwt_secret,
             algorithms=["HS256"],
         )
-        return {"id": payload["sub"], "email": payload.get("email")}
+        return {"id": payload["sub"], "email": payload.get("email"), "role": payload.get("role", "user")}
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -36,6 +36,6 @@ async def get_current_user_optional(
             settings.jwt_secret,
             algorithms=["HS256"],
         )
-        return {"id": payload["sub"], "email": payload.get("email")}
+        return {"id": payload["sub"], "email": payload.get("email"), "role": payload.get("role", "user")}
     except jwt.PyJWTError:
         return None

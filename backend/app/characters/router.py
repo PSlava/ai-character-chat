@@ -158,8 +158,9 @@ async def update_character(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    is_admin = user.get("role") == "admin"
     result = await service.update_character(
-        db, character_id, user["id"], body.model_dump()
+        db, character_id, user["id"], body.model_dump(), is_admin=is_admin
     )
     if not result:
         raise HTTPException(status_code=404, detail="Character not found or not yours")
@@ -172,6 +173,7 @@ async def delete_character(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    deleted = await service.delete_character(db, character_id, user["id"])
+    is_admin = user.get("role") == "admin"
+    deleted = await service.delete_character(db, character_id, user["id"], is_admin=is_admin)
     if not deleted:
         raise HTTPException(status_code=404, detail="Character not found or not yours")

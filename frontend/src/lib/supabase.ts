@@ -13,12 +13,12 @@ export function removeToken() {
   localStorage.removeItem('token');
 }
 
-export function getUser(): { id: string; email: string; username: string } | null {
+export function getUser(): { id: string; email: string; username: string; role: string } | null {
   const raw = localStorage.getItem('user');
   return raw ? JSON.parse(raw) : null;
 }
 
-export function setUser(user: { id: string; email: string; username: string }) {
+export function setUser(user: { id: string; email: string; username: string; role: string }) {
   localStorage.setItem('user', JSON.stringify(user));
 }
 

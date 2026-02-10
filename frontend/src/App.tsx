@@ -7,6 +7,7 @@ import { ChatPage } from '@/pages/ChatPage';
 import { CreateCharacterPage } from '@/pages/CreateCharacterPage';
 import { EditCharacterPage } from '@/pages/EditCharacterPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { AdminPromptsPage } from '@/pages/AdminPromptsPage';
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/chat/:chatId" element={<ChatPage />} />
           <Route path="/create" element={<CreateCharacterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/admin/prompts" element={<AdminPromptsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

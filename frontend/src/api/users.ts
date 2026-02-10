@@ -8,6 +8,7 @@ export interface UserProfile {
   avatar_url: string | null;
   bio: string | null;
   language: string;
+  role: string;
 }
 
 export async function getProfile() {
@@ -15,7 +16,7 @@ export async function getProfile() {
   return data;
 }
 
-export async function updateProfile(body: { display_name?: string; bio?: string; avatar_url?: string; language?: string }) {
+export async function updateProfile(body: { display_name?: string; username?: string; bio?: string; avatar_url?: string; language?: string }) {
   const { data } = await api.put<UserProfile>('/users/me', body);
   return data;
 }

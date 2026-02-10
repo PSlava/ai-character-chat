@@ -22,6 +22,7 @@
   "auth.switchToRegister": "Sign Up",
   "auth.switchToLogin": "Sign In",
   "auth.error": "An error occurred",
+  "auth.usernameOptional": "username (optional, auto-generated)",
 
   "common.loading": "Loading...",
   "common.saving": "Saving...",
@@ -97,6 +98,9 @@
 
   "profile.title": "Profile",
   "profile.settings": "Settings",
+  "profile.usernameLabel": "Username",
+  "profile.usernamePlaceholder": "3-20 characters: letters, digits, underscore",
+  "profile.usernameHint": "Shown on your character cards as @username",
   "profile.nameLabel": "Your name (used in character dialogues)",
   "profile.namePlaceholder": "How characters will address you",
   "profile.language": "Interface language",
@@ -158,6 +162,14 @@
   "settings.contextLimitTooltip": "How much conversation history the model sees.\n\n4K — ~10-15 messages, fast responses.\n8K — ~25-35 messages, good balance.\n16K — ~50-70 messages, deep context.\n\u221E — no limit, all history (may hit model limits).\n\nOlder messages beyond the limit are \"forgotten\" by the model.\n\nDefault: \u221E (no limit)",
   "settings.nsfwBlocked": "This model doesn't support NSFW content",
   "settings.maxTokensTooltip": "Maximum response length. 1 token ≈ 3-4 characters.\n\n256 — very short (~750 chars).\n1024 — short (~3000 chars).\n2048 — medium (~6000 chars).\n4096 — long (~12000 chars).\n\nHard limit: response will be cut off if exceeded.\n\nDefault: 2048",
+
+  "admin.prompts": "Prompts",
+  "admin.promptsTitle": "Prompt Templates",
+  "admin.promptsSubtitle": "Configure system prompts. Changes apply to new messages.",
+  "admin.default": "Default",
+  "admin.overridden": "Overridden",
+  "admin.reset": "Reset",
+  "admin.resetConfirm": "Reset to default value?",
 
   "lang.ru": "Русский",
   "lang.en": "English"

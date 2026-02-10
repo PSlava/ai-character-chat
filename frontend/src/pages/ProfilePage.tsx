@@ -17,6 +17,8 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
+  const [usernameError, setUsernameError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -27,17 +29,29 @@ export function ProfilePage() {
     getProfile().then((p) => {
       setProfile(p);
       setDisplayName(p.display_name || '');
+      setUsername(p.username || '');
     });
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
+    setUsernameError('');
     try {
-      const updated = await updateProfile({ display_name: displayName || undefined });
+      const body: Record<string, string | undefined> = { display_name: displayName || undefined };
+      if (username !== (profile?.username || '')) {
+        body.username = username;
+      }
+      const updated = await updateProfile(body);
       setProfile(updated);
+      setUsername(updated.username || '');
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { detail?: string } } };
+        setUsernameError(axiosErr.response?.data?.detail || t('auth.error'));
+      }
     } finally {
       setSaving(false);
     }
@@ -53,6 +67,18 @@ export function ProfilePage() {
       <div className="mb-8 max-w-md">
         <h2 className="text-lg font-semibold mb-4">{t('profile.settings')}</h2>
         <div className="space-y-4">
+          <div>
+            <Input
+              label={t('profile.usernameLabel')}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={t('profile.usernamePlaceholder')}
+            />
+            {usernameError && (
+              <p className="text-red-400 text-xs mt-1">{usernameError}</p>
+            )}
+            <p className="text-neutral-500 text-xs mt-1">{t('profile.usernameHint')}</p>
+          </div>
           <Input
             label={t('profile.nameLabel')}
             value={displayName}
@@ -62,7 +88,7 @@ export function ProfilePage() {
           <div className="flex items-center gap-3">
             <Button
               onClick={handleSave}
-              disabled={saving || displayName === (profile?.display_name || '')}
+              disabled={saving || (displayName === (profile?.display_name || '') && username === (profile?.username || ''))}
             >
               {saving ? t('common.saving') : t('common.save')}
             </Button>

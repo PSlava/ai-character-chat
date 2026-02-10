@@ -9,12 +9,13 @@ interface Props {
   characterName?: string;
   characterAvatar?: string | null;
   isStreaming: boolean;
+  isAdmin?: boolean;
   onDeleteMessage?: (messageId: string) => void;
   onRegenerate?: (messageId: string) => void;
   onResendLast?: (editedContent?: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, onDeleteMessage, onRegenerate, onResendLast }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, isStreaming, isAdmin, onDeleteMessage, onRegenerate, onResendLast }: Props) {
   const { t } = useTranslation();
   const bottomRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
@@ -55,6 +56,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
               characterName={characterName}
               characterAvatar={characterAvatar}
               isFirstMessage={index === 0}
+              isAdmin={isAdmin}
               onDelete={onDeleteMessage}
               onRegenerate={onRegenerate}
             />

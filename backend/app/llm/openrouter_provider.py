@@ -44,6 +44,7 @@ class OpenRouterProvider(BaseLLMProvider):
         errors: list[tuple[str, str]] = []
 
         for model in models_to_try:
+            self.last_model_used = model
             api_messages = self._prepare_messages(messages, model)
             try:
                 extra: dict = {}
@@ -91,6 +92,7 @@ class OpenRouterProvider(BaseLLMProvider):
         errors: list[tuple[str, str]] = []
 
         for model in models_to_try:
+            self.last_model_used = model
             api_messages = self._prepare_messages(messages, model)
             try:
                 extra: dict = {}

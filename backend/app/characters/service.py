@@ -61,12 +61,15 @@ async def create_character(db: AsyncSession, creator_id: str, data: dict):
     return await get_character(db, character.id)
 
 
-async def update_character(db: AsyncSession, character_id: str, creator_id: str, data: dict):
-    result = await db.execute(
-        select(Character).where(
-            Character.id == character_id, Character.creator_id == creator_id
+async def update_character(db: AsyncSession, character_id: str, creator_id: str, data: dict, is_admin: bool = False):
+    if is_admin:
+        result = await db.execute(select(Character).where(Character.id == character_id))
+    else:
+        result = await db.execute(
+            select(Character).where(
+                Character.id == character_id, Character.creator_id == creator_id
+            )
         )
-    )
     character = result.scalar_one_or_none()
     if not character:
         return None
@@ -83,12 +86,15 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
     return await get_character(db, character.id)
 
 
-async def delete_character(db: AsyncSession, character_id: str, creator_id: str):
-    result = await db.execute(
-        select(Character).where(
-            Character.id == character_id, Character.creator_id == creator_id
+async def delete_character(db: AsyncSession, character_id: str, creator_id: str, is_admin: bool = False):
+    if is_admin:
+        result = await db.execute(select(Character).where(Character.id == character_id))
+    else:
+        result = await db.execute(
+            select(Character).where(
+                Character.id == character_id, Character.creator_id == creator_id
+            )
         )
-    )
     character = result.scalar_one_or_none()
     if not character:
         return False

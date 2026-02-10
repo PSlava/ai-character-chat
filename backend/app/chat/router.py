@@ -21,6 +21,7 @@ def message_to_dict(m):
         "chat_id": m.chat_id,
         "role": m.role.value if hasattr(m.role, 'value') else m.role,
         "content": m.content,
+        "model_used": m.model_used,
         "created_at": m.created_at.isoformat() if m.created_at else None,
     }
 
@@ -210,8 +211,9 @@ async def send_message(
                 yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
 
             complete_text = "".join(full_response)
-            saved_msg = await service.save_message(db, chat_id, "assistant", complete_text)
-            yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id})}\n\n"
+            actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
+            saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
+            yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'content': str(e), 'user_message_id': user_msg.id})}\n\n"
 

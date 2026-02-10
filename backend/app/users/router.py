@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -6,11 +7,14 @@ from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from app.db.models import User, Favorite, Character
 
+USERNAME_RE = re.compile(r"^[a-zA-Z0-9_]{3,20}$")
+
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 class ProfileUpdate(BaseModel):
     display_name: str | None = None
+    username: str | None = None
     bio: str | None = None
     avatar_url: str | None = None
     language: str | None = None
@@ -30,6 +34,7 @@ async def get_profile(user=Depends(get_current_user), db: AsyncSession = Depends
         "avatar_url": u.avatar_url,
         "bio": u.bio,
         "language": u.language or "ru",
+        "role": u.role or "user",
     }
 
 
@@ -44,7 +49,17 @@ async def update_profile(
     if not u:
         raise HTTPException(status_code=404)
 
-    for key, value in body.model_dump().items():
+    data = body.model_dump()
+    # Validate and check username uniqueness
+    if data.get("username") is not None:
+        username = data["username"]
+        if not USERNAME_RE.match(username):
+            raise HTTPException(status_code=400, detail="Username must be 3-20 characters: letters, digits, underscore")
+        existing = await db.execute(select(User).where(User.username == username, User.id != u.id))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Username already taken")
+
+    for key, value in data.items():
         if value is not None:
             setattr(u, key, value)
     await db.commit()
@@ -57,6 +72,7 @@ async def update_profile(
         "avatar_url": u.avatar_url,
         "bio": u.bio,
         "language": u.language or "ru",
+        "role": u.role or "user",
     }
 
 

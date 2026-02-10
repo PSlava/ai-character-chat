@@ -9,11 +9,12 @@ interface Props {
   characterName?: string;
   characterAvatar?: string | null;
   isFirstMessage?: boolean;
+  isAdmin?: boolean;
   onDelete?: (messageId: string) => void;
   onRegenerate?: (messageId: string) => void;
 }
 
-export function MessageBubble({ message, characterName, characterAvatar, isFirstMessage, onDelete, onRegenerate }: Props) {
+export function MessageBubble({ message, characterName, characterAvatar, isFirstMessage, isAdmin, onDelete, onRegenerate }: Props) {
   const { t } = useTranslation();
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
@@ -46,6 +47,9 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
             {message.content || (isAssistant ? '...' : '')}
           </p>
         </div>
+        {isAdmin && isAssistant && message.model_used && (
+          <span className="text-[10px] text-neutral-600 mt-0.5 block">{message.model_used}</span>
+        )}
         {!isFirstMessage && hovering && (
           <div className={`absolute top-1 ${isUser ? '-left-8' : '-right-8'} flex flex-col gap-1`}>
             {isAssistant && onRegenerate && (

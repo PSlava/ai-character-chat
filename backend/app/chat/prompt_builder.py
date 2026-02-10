@@ -1,6 +1,13 @@
-"""Build system prompt for character roleplay — supports ru/en."""
+"""Build system prompt for character roleplay — supports ru/en.
 
-_STRINGS = {
+Defaults live in code (_DEFAULTS). Admin can override any key via DB
+(prompt_templates table). Overrides are cached in-memory for 60 seconds.
+"""
+
+import time
+from sqlalchemy import text
+
+_DEFAULTS = {
     "ru": {
         "intro": "Ты — {name}. Веди себя точно как этот персонаж.",
         "personality": "## Характер и личность",
@@ -125,38 +132,94 @@ _STRINGS = {
     },
 }
 
+# --- Override cache ---
+_overrides: dict[str, str] = {}
+_overrides_ts: float = 0
+_CACHE_TTL = 60  # seconds
 
-def build_system_prompt(character: dict, user_name: str | None = None, language: str = "ru") -> str:
-    s = _STRINGS.get(language, _STRINGS["en"])
+
+async def load_overrides(engine) -> None:
+    """Load prompt overrides from DB into in-memory cache (60s TTL)."""
+    global _overrides, _overrides_ts
+    now = time.monotonic()
+    if now - _overrides_ts < _CACHE_TTL:
+        return
+    try:
+        async with engine.connect() as conn:
+            result = await conn.execute(text("SELECT key, value FROM prompt_templates"))
+            _overrides = {row[0]: row[1] for row in result}
+    except Exception:
+        pass  # table might not exist yet; use defaults
+    _overrides_ts = now
+
+
+def invalidate_cache() -> None:
+    """Force reload on next build_system_prompt call."""
+    global _overrides_ts
+    _overrides_ts = 0
+
+
+def _get(lang: str, key: str) -> str:
+    """Get prompt value: override from DB if exists, else default from code."""
+    override = _overrides.get(f"{lang}.{key}")
+    if override is not None:
+        return override
+    defaults = _DEFAULTS.get(lang, _DEFAULTS["en"])
+    return defaults.get(key, "")
+
+
+def get_all_keys() -> list[dict]:
+    """Return all prompt keys with their default values for both languages."""
+    result = []
+    for lang in ("ru", "en"):
+        for key, default_value in _DEFAULTS[lang].items():
+            full_key = f"{lang}.{key}"
+            result.append({
+                "key": full_key,
+                "default": default_value,
+                "override": _overrides.get(full_key),
+            })
+    return result
+
+
+async def build_system_prompt(
+    character: dict,
+    user_name: str | None = None,
+    language: str = "ru",
+    engine=None,
+) -> str:
+    if engine:
+        await load_overrides(engine)
+
+    lang = language if language in _DEFAULTS else "en"
     parts = []
 
-    parts.append(s["intro"].format(name=character["name"]))
-    parts.append(f"\n{s['personality']}\n{character['personality']}")
+    parts.append(_get(lang, "intro").format(name=character["name"]))
+    parts.append(f"\n{_get(lang, 'personality')}\n{character['personality']}")
 
     if character.get("scenario"):
-        parts.append(f"\n{s['scenario']}\n{character['scenario']}")
+        parts.append(f"\n{_get(lang, 'scenario')}\n{character['scenario']}")
 
     if character.get("example_dialogues"):
-        parts.append(f"\n{s['examples']}\n{character['example_dialogues']}")
+        parts.append(f"\n{_get(lang, 'examples')}\n{character['example_dialogues']}")
 
     content_rules = {
-        "sfw": s["content_sfw"],
-        "moderate": s["content_moderate"],
-        "nsfw": s["content_nsfw"],
+        "sfw": _get(lang, "content_sfw"),
+        "moderate": _get(lang, "content_moderate"),
+        "nsfw": _get(lang, "content_nsfw"),
     }
     rating = character.get("content_rating", "sfw")
-    # For NSFW, use a permissive header instead of "restrictions"
     if rating == "nsfw":
-        header = "## Правила контента" if language == "ru" else "## Content Rules"
+        header = _get(lang, "content_rules_header").replace("Ограничения", "Правила").replace("Restrictions", "Rules")
     else:
-        header = s["content_rules_header"]
+        header = _get(lang, "content_rules_header")
     parts.append(f"\n{header}\n{content_rules.get(rating, content_rules['sfw'])}")
 
     if character.get("system_prompt_suffix"):
-        parts.append(f"\n{s['extra_instructions']}\n{character['system_prompt_suffix']}")
+        parts.append(f"\n{_get(lang, 'extra_instructions')}\n{character['system_prompt_suffix']}")
 
     if user_name:
-        parts.append(f"\n{s['user_section']}\n{s['user_name_line'].format(user_name=user_name)}")
+        parts.append(f"\n{_get(lang, 'user_section')}\n{_get(lang, 'user_name_line').format(user_name=user_name)}")
 
     length_keys = {
         "short": "length_short",
@@ -168,11 +231,11 @@ def build_system_prompt(character: dict, user_name: str | None = None, language:
     length_key = length_keys.get(response_length, "length_long")
 
     parts.append(
-        f"\n{s['format_header']}"
-        + s[length_key]
-        + s["format_rules"]
-        + f"\n\n{s['rules_header']}"
-        + s["rules"]
+        f"\n{_get(lang, 'format_header')}"
+        + _get(lang, length_key)
+        + _get(lang, "format_rules")
+        + f"\n\n{_get(lang, 'rules_header')}"
+        + _get(lang, "rules")
     )
 
     return "\n".join(parts)

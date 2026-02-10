@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import secrets
 import jwt
 import bcrypt as _bcrypt
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 class RegisterRequest(BaseModel):
     email: str
     password: str
-    username: str
+    username: str | None = None  # auto-generated if not provided
 
 
 class LoginRequest(BaseModel):
@@ -36,23 +37,44 @@ def create_token(user: User) -> str:
     payload = {
         "sub": user.id,
         "email": user.email,
+        "role": user.role or "user",
         "exp": datetime.utcnow() + timedelta(days=30),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
 
+def _generate_username() -> str:
+    return f"user_{secrets.token_hex(3)}"
+
+
 @router.post("/register")
 async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
-    existing = await db.execute(
-        select(User).where((User.email == body.email) | (User.username == body.username))
-    )
+    # Check email uniqueness
+    existing = await db.execute(select(User).where(User.email == body.email))
     if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email or username already taken")
+        raise HTTPException(status_code=400, detail="Email already taken")
+
+    # Auto-generate username if not provided
+    username = body.username
+    if not username:
+        for _ in range(10):
+            candidate = _generate_username()
+            check = await db.execute(select(User).where(User.username == candidate))
+            if not check.scalar_one_or_none():
+                username = candidate
+                break
+        else:
+            username = f"user_{secrets.token_hex(6)}"
+    else:
+        # Check username uniqueness
+        check = await db.execute(select(User).where(User.username == username))
+        if check.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Username already taken")
 
     user = User(
         email=body.email,
-        username=body.username,
-        display_name=body.username,
+        username=username,
+        display_name=username,
         password_hash=hash_password(body.password),
     )
     db.add(user)
@@ -62,7 +84,7 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
     token = create_token(user)
     return {
         "token": token,
-        "user": {"id": user.id, "email": user.email, "username": user.username, "language": user.language or "ru"},
+        "user": {"id": user.id, "email": user.email, "username": user.username, "language": user.language or "ru", "role": user.role or "user"},
     }
 
 
@@ -77,5 +99,5 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
     token = create_token(user)
     return {
         "token": token,
-        "user": {"id": user.id, "email": user.email, "username": user.username, "language": user.language or "ru"},
+        "user": {"id": user.id, "email": user.email, "username": user.username, "language": user.language or "ru", "role": user.role or "user"},
     }

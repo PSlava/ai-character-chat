@@ -20,7 +20,8 @@ export function CharacterPage() {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const isOwner = isAuthenticated && character && user?.id === character.creator_id;
+  const isAdmin = user?.role === 'admin';
+  const isOwner = isAuthenticated && character && (user?.id === character.creator_id || isAdmin);
 
   useEffect(() => {
     if (id) {

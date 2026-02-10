@@ -45,6 +45,7 @@ export interface Message {
   chat_id: string;
   role: 'system' | 'user' | 'assistant';
   content: string;
+  model_used?: string;
   created_at: string;
   isError?: boolean;
 }

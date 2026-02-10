@@ -25,7 +25,7 @@ export function AuthPage() {
       if (isLogin) {
         await signIn(email, password);
       } else {
-        await signUp(email, password, username);
+        await signUp(email, password, username || undefined);
       }
       init(); // refresh auth state
       navigate('/');
@@ -61,8 +61,7 @@ export function AuthPage() {
               label={t('auth.username')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="username"
-              required
+              placeholder={t('auth.usernameOptional')}
             />
           )}
           <Input

@@ -12,6 +12,7 @@ import { GenerationSettingsModal } from '@/components/chat/GenerationSettingsMod
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ChatDetail } from '@/types';
+import { useAuthStore } from '@/store/authStore';
 
 const MODEL_ALIASES: Record<string, string> = {
   claude: 'Claude',
@@ -40,6 +41,8 @@ export function ChatPage() {
   });
   const [activeModel, setActiveModel] = useState('');
   const { t } = useTranslation();
+  const authUser = useAuthStore((s) => s.user);
+  const isAdmin = authUser?.role === 'admin';
 
   const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast } = useChat(
     chatId || ''
@@ -179,6 +182,7 @@ export function ChatPage() {
         characterName={character?.name}
         characterAvatar={character?.avatar_url}
         isStreaming={isStreaming}
+        isAdmin={isAdmin}
         onDeleteMessage={handleDeleteMessage}
         onRegenerate={!isStreaming ? regenerate : undefined}
         onResendLast={!isStreaming ? resendLast : undefined}

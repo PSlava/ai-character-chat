@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
-import { MessageCircle, Home, Heart } from 'lucide-react';
+import { MessageCircle, Home, Heart, Settings } from 'lucide-react';
 
 export function Sidebar() {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const { chats, fetchChats } = useChatStore();
   const { chatId } = useParams();
 
@@ -35,6 +36,15 @@ export function Sidebar() {
           >
             <Heart className="w-4 h-4" />
             {t('sidebar.favorites')}
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
+            to="/admin/prompts"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+          >
+            <Settings className="w-4 h-4" />
+            {t('admin.prompts')}
           </Link>
         )}
       </nav>

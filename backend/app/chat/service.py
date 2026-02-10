@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db.models import Chat, Message, Character, MessageRole
 from app.chat.prompt_builder import build_system_prompt
+from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage
 
 MAX_CONTEXT_MESSAGES = 50
@@ -88,12 +89,13 @@ async def delete_chat(db: AsyncSession, chat_id: str, user_id: str):
     return True
 
 
-async def save_message(db: AsyncSession, chat_id: str, role: str, content: str):
+async def save_message(db: AsyncSession, chat_id: str, role: str, content: str, model_used: str | None = None):
     msg = Message(
         chat_id=chat_id,
         role=MessageRole(role),
         content=content,
         token_count=len(content) // 4,
+        model_used=model_used,
     )
     db.add(msg)
 
@@ -187,7 +189,7 @@ async def build_conversation_messages(
         "system_prompt_suffix": character.system_prompt_suffix,
         "response_length": getattr(character, 'response_length', None) or "long",
     }
-    system_prompt = build_system_prompt(char_dict, user_name=user_name, language=language)
+    system_prompt = await build_system_prompt(char_dict, user_name=user_name, language=language, engine=db_engine)
     messages_data = await get_chat_messages(db, chat_id)
 
     # context_limit is in "real" tokens; multiply by ~4 for char-based estimation
