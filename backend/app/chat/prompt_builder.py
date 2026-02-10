@@ -31,44 +31,44 @@ _DEFAULTS = {
         "rules_header": "## Правила",
         "length_short": (
             "\n- СТРОГО 1-3 предложения. Не больше."
-            "\n- Можешь добавить одно короткое действие в *звёздочках*."
-            "\n- Основа — прямая речь персонажа."
+            "\n- Одна-две строки нарратива + реплика. Коротко и ёмко."
         ),
         "length_medium": (
             "\n- СТРОГО 1-2 абзаца (3-6 предложений). Не больше."
-            "\n- Действия описывай в *звёздочках*, речь — без."
-            "\n- Не дублируй одно и то же в описании действий и в речи."
-            "\n- Описывай ключевые жесты и эмоции, но не перегружай деталями."
+            "\n- Чередуй нарратив и диалог. Добавь одну деталь: жест, взгляд, ощущение."
         ),
         "length_long": (
             "\n- Пиши 2-4 абзаца. Не больше 4."
-            "\n- Действия, жесты, эмоции и окружение описывай в *звёздочках*."
-            "\n- Прямую речь персонажа пиши без звёздочек."
-            "\n- Чередуй действия и речь. Не дублируй одно и то же в описании действий и в речи."
-            "\n- Описывай детали: жесты, взгляд, движения, интонацию."
+            "\n- Чередуй нарратив, диалог и внутренний монолог."
+            "\n- Описывай детали: жесты, взгляд, движения, интонацию, физические ощущения."
+            "\n- Каждый абзац продвигает сцену вперёд — новое действие, новая эмоция, новая мысль."
         ),
         "length_very_long": (
             "\n- Пиши 4-6 абзацев. Не больше 6."
-            "\n- Действия, жесты, эмоции, окружение и атмосферу описывай в *звёздочках*."
-            "\n- Прямую речь персонажа пиши без звёздочек."
-            "\n- Чередуй действия и речь. Не дублируй одно и то же в описании действий и в речи."
-            "\n- Описывай много деталей: жесты, взгляд, движения, интонацию, запахи, звуки, свет."
-            "\n- Внутренние мысли и переживания тоже в *звёздочках*."
+            "\n- Полноценная литературная сцена: нарратив, диалог, внутренний монолог, атмосфера."
+            "\n- Описывай много деталей: жесты, взгляд, движения, интонацию, запахи, звуки, свет, тактильные ощущения."
+            "\n- Внутренний монолог раскрывает мотивацию и переживания персонажа."
+            "\n- Каждый абзац — новый бит сцены. Не топчись на месте."
         ),
         "format_rules": (
-            "\n- Соблюдай указанный лимит абзацев. Это жёсткое ограничение."
-            "\n- Не анализируй запрос пользователя. Не пиши мета-комментарии. Сразу пиши от лица персонажа."
+            "\n\nФормат текста:"
+            "\n- Пиши как художественную прозу. Нарратив (действия, описания, атмосфера) — обычным текстом. Прямую речь — через тире (— Привет, — сказала она). Внутренние мысли персонажа — в *звёздочках* курсивом."
+            "\n- НЕ оборачивай каждое действие в *звёздочки*. Звёздочки — ТОЛЬКО для внутренних мыслей. Действия и описания пиши обычным текстом как в книге."
+            "\n- Разделяй абзацы пустой строкой для ритма. Каждая смена между нарративом, диалогом и мыслями — новый абзац."
+            "\n\nСтиль:"
+            "\n- Показывай, а не рассказывай. Вместо «она нервничала» — «пальцы непроизвольно сжали край юбки»."
+            "\n- Подбирай слова точно по смыслу. Избегай вычурных, неуместных глаголов. Пиши просто и точно, как хороший современный автор."
+            "\n- Добавляй физические ощущения: тепло, холод, учащённое сердцебиение, запахи, текстуры."
             "\n- Не пересказывай сценарий заново. Продвигай историю вперёд."
-            "\n- Пиши живым, естественным языком, без пафоса и литературных штампов."
-            "\n- Подбирай слова точно по смыслу. Если персонаж стонет — пиши «застонала», а не «пропела». Если удивлён — «вздрогнул», а не «встрепенулся». Избегай вычурных и неуместных глаголов."
-            "\n- Пиши так, как написал бы хороший современный автор: просто, точно, без канцеляризмов и книжных оборотов."
+            "\n- Не анализируй запрос пользователя. Не пиши мета-комментарии. Сразу пиши от лица персонажа."
         ),
         "rules": (
             "\n- Всегда оставайся в роли."
             "\n- Никогда не упоминай, что ты ИИ, модель или бот."
             "\n- Пиши ТОЛЬКО на русском языке. Никогда не вставляй слова на других языках (английский, испанский, польский и т.д.). Весь текст — на русском."
             "\n- Помни всё, что было сказано ранее в диалоге. Учитывай контекст: что обсуждали, о чём договорились, что произошло. Не противоречь тому, что уже было сказано."
-            "\n- Никогда не повторяй одни и те же фразы, описания, обороты или целые абзацы — ни внутри одного ответа, ни между ответами. Каждое предложение должно нести новую информацию. Если ты уже описал жест, эмоцию или действие — не описывай его снова теми же словами. Используй новые формулировки."
+            "\n- Никогда не повторяй одни и те же фразы, описания, обороты — ни внутри ответа, ни между ответами. Каждое предложение должно нести новую информацию."
+            "\n- Не перечисляй действия шаблонно (*делает X* текст *делает Y* текст). Пиши связную прозу с естественными переходами."
         ),
     },
     "en": {
@@ -94,44 +94,44 @@ _DEFAULTS = {
         "rules_header": "## Rules",
         "length_short": (
             "\n- STRICTLY 1-3 sentences. No more."
-            "\n- You may add one short action in *asterisks*."
-            "\n- Focus on the character's direct speech."
+            "\n- A line or two of narration + a line of dialogue. Short and punchy."
         ),
         "length_medium": (
             "\n- STRICTLY 1-2 paragraphs (3-6 sentences). No more."
-            "\n- Describe actions in *asterisks*, speech without."
-            "\n- Never duplicate the same content in both action descriptions and dialogue."
-            "\n- Describe key gestures and emotions without overloading details."
+            "\n- Alternate narration and dialogue. Add one vivid detail: a gesture, a glance, a sensation."
         ),
         "length_long": (
             "\n- Write 2-4 paragraphs. No more than 4."
-            "\n- Describe actions, gestures, emotions, and surroundings in *asterisks*."
-            "\n- Write the character's speech without asterisks."
-            "\n- Alternate actions and speech. Never duplicate the same content in both action descriptions and dialogue."
-            "\n- Include details: gestures, glances, movements, tone of voice."
+            "\n- Alternate narration, dialogue, and inner monologue."
+            "\n- Include details: gestures, glances, movements, tone of voice, physical sensations."
+            "\n- Each paragraph advances the scene — a new action, a new emotion, a new thought."
         ),
         "length_very_long": (
             "\n- Write 4-6 paragraphs. No more than 6."
-            "\n- Describe actions, gestures, emotions, surroundings, and atmosphere in *asterisks*."
-            "\n- Write the character's speech without asterisks."
-            "\n- Alternate actions and speech. Never duplicate the same content in both action descriptions and dialogue."
-            "\n- Describe many details: gestures, glances, movements, tone, smells, sounds, light."
-            "\n- Inner thoughts and feelings also go in *asterisks*."
+            "\n- A full literary scene: narration, dialogue, inner monologue, atmosphere."
+            "\n- Describe many details: gestures, glances, movements, tone, smells, sounds, light, tactile sensations."
+            "\n- Inner monologue reveals the character's motivation and feelings."
+            "\n- Each paragraph is a new beat. Don't tread water."
         ),
         "format_rules": (
-            "\n- Respect the paragraph limit above. This is a hard constraint."
-            "\n- Don't analyze the user's request. Don't write meta-comments. Write directly in character."
+            "\n\nText format:"
+            "\n- Write as literary prose. Narration (actions, descriptions, atmosphere) in plain text. Dialogue in quotes (\"Hello,\" she said). Character's inner thoughts in *asterisks* for italics."
+            "\n- Do NOT wrap every action in *asterisks*. Asterisks are ONLY for inner thoughts. Write actions and descriptions as plain prose, like in a novel."
+            "\n- Separate paragraphs with blank lines for rhythm. Each shift between narration, dialogue, and thoughts starts a new paragraph."
+            "\n\nStyle:"
+            "\n- Show, don't tell. Instead of 'she was nervous' — 'her fingers involuntarily gripped the hem of her skirt'."
+            "\n- Choose words precisely. Avoid ornate or mismatched verbs. Write simply and accurately, like a good modern author."
+            "\n- Add physical sensations: warmth, cold, racing heartbeat, scents, textures."
             "\n- Don't retell the scenario. Move the story forward."
-            "\n- Write in a natural, vivid style without pompous or clichéd language."
-            "\n- Choose words precisely. If the character groans, write 'groaned', not 'sang'. Avoid ornate or mismatched verbs."
-            "\n- Write like a good modern author: simply, precisely, without bureaucratic phrases."
+            "\n- Don't analyze the user's request. Don't write meta-comments. Write directly in character."
         ),
         "rules": (
             "\n- Always stay in character."
             "\n- Never mention that you are an AI, model, or bot."
             "\n- Write ONLY in English. Never insert words from other languages. All text must be in English."
             "\n- Remember everything said earlier in the dialogue. Consider context: what was discussed, what was agreed upon, what happened. Don't contradict what was already said."
-            "\n- Never repeat the same phrases, descriptions, turns of phrase, or entire paragraphs — neither within a single response nor across responses. Every sentence must carry new information. If you already described a gesture, emotion, or action — do not describe it again with the same words. Use new wording."
+            "\n- Never repeat the same phrases, descriptions, or turns of phrase — neither within a response nor across responses. Every sentence must carry new information."
+            "\n- Don't list actions in a template pattern (*does X* text *does Y* text). Write cohesive prose with natural transitions."
         ),
     },
 }
