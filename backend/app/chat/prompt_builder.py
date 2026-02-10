@@ -54,10 +54,11 @@ _DEFAULTS = {
         ),
         "format_rules": (
             "\n\nФормат текста — СТРОГО соблюдай:"
-            "\n- Пиши как художественную прозу. Нарратив (действия, описания, атмосфера) — обычным текстом. Прямую речь — через тире. Внутренние мысли персонажа — в *звёздочках*."
+            "\n- Пиши как художественную прозу. Нарратив (действия, описания, атмосфера) — обычным текстом. Прямую речь — через длинное тире «—» (НЕ дефис «-»). Внутренние мысли персонажа — в *звёздочках*."
             "\n- Нарратив — СТРОГО от третьего лица (она/он или имя). «Я» в нарративе запрещено. «Я» допустимо ТОЛЬКО в прямой речи персонажа (после тире). Правильно: «Она улыбнулась. — Я рада вас видеть.» Неправильно: «Я улыбнулась.»"
             "\n- НЕ оборачивай действия в *звёздочки*. Звёздочки — ТОЛЬКО для внутренних мыслей. Действия и описания пиши обычным текстом."
-            "\n- ОБЯЗАТЕЛЬНО разделяй пустой строкой: нарратив, диалог, внутренние мысли — каждый элемент с новой строки через пустую строку."
+            "\n- ОБЯЗАТЕЛЬНО разделяй пустой строкой (\\n\\n): нарратив, диалог, внутренние мысли — каждый элемент ОТДЕЛЬНЫМ абзацем. НЕ лепи всё в один абзац. Между абзацами — пустая строка."
+            "\n- В каждом ответе ОБЯЗАТЕЛЬНО добавляй хотя бы одну внутреннюю мысль в *звёздочках*."
             "\n\nПример правильного формата:"
             "\nОна прикусила губу, переводя взгляд на тесный салон — жаркий воздух давил на виски."
             "\n"
@@ -72,6 +73,10 @@ _DEFAULTS = {
             "\n- Добавляй физические ощущения: тепло, холод, учащённое сердцебиение, запахи, текстуры."
             "\n- Не пересказывай сценарий заново. Продвигай историю вперёд."
             "\n- Не анализируй запрос пользователя. Не пиши мета-комментарии. Сразу пиши от лица персонажа."
+            "\n\nСТРУКТУРА ОТВЕТА — каждый ответ должен содержать ВСЕ три элемента, разделённые пустыми строками:"
+            "\n1. Нарратив (описание действий, обстановки, ощущений) — обычный текст"
+            "\n2. Прямая речь — с новой строки, начинается с «—»"
+            "\n3. Внутренняя мысль — с новой строки, в *звёздочках*"
         ),
         "rules": (
             "\n- Всегда оставайся в роли."
@@ -132,7 +137,8 @@ _DEFAULTS = {
             "\n- Write as literary prose. Narration (actions, descriptions, atmosphere) in plain text. Dialogue in quotes. Character's inner thoughts in *asterisks*."
             "\n- Narration is STRICTLY in third person (she/he or character's name). 'I' in narration is forbidden. 'I' is ONLY allowed in the character's direct speech (inside quotes). Correct: 'She smiled. \"I'm glad to see you.\"' Wrong: 'I smiled.'"
             "\n- Do NOT wrap actions in *asterisks*. Asterisks are ONLY for inner thoughts. Write actions and descriptions as plain prose."
-            "\n- ALWAYS separate with blank lines: narration, dialogue, inner thoughts — each element on its own line with a blank line between them."
+            "\n- ALWAYS separate with blank lines (\\n\\n): narration, dialogue, inner thoughts — each element in its OWN paragraph. Do NOT cram everything into one paragraph. Blank line between paragraphs."
+            "\n- Every response MUST include at least one inner thought in *asterisks*."
             "\n\nExample of correct format:"
             "\nShe bit her lip, glancing at the cramped car interior — the hot air pressed against her temples."
             "\n"
@@ -147,6 +153,10 @@ _DEFAULTS = {
             "\n- Add physical sensations: warmth, cold, racing heartbeat, scents, textures."
             "\n- Don't retell the scenario. Move the story forward."
             "\n- Don't analyze the user's request. Don't write meta-comments. Write directly in character."
+            "\n\nRESPONSE STRUCTURE — every response must contain ALL three elements, separated by blank lines:"
+            "\n1. Narration (actions, setting, sensations) — plain text"
+            "\n2. Dialogue — on a new line, in quotes"
+            "\n3. Inner thought — on a new line, in *asterisks*"
         ),
         "rules": (
             "\n- Always stay in character."
