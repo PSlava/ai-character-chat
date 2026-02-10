@@ -81,8 +81,8 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
   - `router.py` — `GET /api/models/openrouter` returns model list with quality scores.
 - **`admin/router.py`** — Admin-only CRUD for prompt template overrides. `require_admin` dependency checks JWT role. GET/PUT/DELETE `/api/admin/prompts`.
 - **`chat/prompt_builder.py`** — Dynamic system prompt from character fields. Two-layer system: `_DEFAULTS` (code) + DB overrides. `load_overrides(engine)` caches for 60s. `get_all_keys()` for admin UI. Bilingual: 20 keys × 2 languages (ru/en). Includes appearance section, `{{char}}`/`{{user}}` template variable replacement in example dialogues. Response length instructions vary by `response_length` setting.
-- **`chat/service.py`** — Context window (sliding window ~24k tokens, 50 messages). `build_conversation_messages()` constructs LLM message list with system prompt.
-- **`chat/router.py`** — SSE streaming via `StreamingResponse`. Events: `{type: "token"}`, `{type: "done", message_id, user_message_id}`, `{type: "error"}`. Supports generation settings override per-request. Cross-provider auto-fallback when `model_name == "auto"` (tries providers in `auto_provider_order`). Clear/delete message endpoints.
+- **`chat/service.py`** — `get_or_create_chat()` returns existing chat or creates new. `get_chat_messages(limit, before_id)` supports cursor pagination with `has_more`. Context window (sliding window ~24k tokens, 50 messages). `build_conversation_messages()` constructs LLM message list with system prompt (always loads all messages).
+- **`chat/router.py`** — SSE streaming via `StreamingResponse`. Events: `{type: "token"}`, `{type: "done", message_id, user_message_id}`, `{type: "error"}`. `POST /chats` is get-or-create (one chat per character). `GET /chats/{id}` returns last 20 messages + `has_more`. `GET /chats/{id}/messages?before=ID&limit=20` for infinite scroll. Cross-provider auto-fallback when `model_name == "auto"`.
 - **`characters/`** — CRUD + AI generation from text. Tags as comma-separated string. `serializers.py` for ORM→dict with `getattr` fallbacks for new columns. Admin bypass for edit/delete via `is_admin` param.
 
 ### Frontend (`frontend/src/`)
@@ -90,7 +90,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **`lib/supabase.ts`** — NOT Supabase SDK. Just localStorage helpers for token/user.
 - **`api/client.ts`** — Axios with JWT auto-injection from localStorage.
 - **`api/characters.ts`** — `wakeUpServer()` pings `/health` every 3s for up to 3 min. `getOpenRouterModels()` fetches model registry.
-- **`api/chat.ts`** — `clearChatMessages()`, `deleteChatMessage()`.
+- **`api/chat.ts`** — `deleteChat()`, `deleteChatMessage()`, `getOlderMessages(chatId, beforeId)` for infinite scroll.
 - **`hooks/useChat.ts`** — SSE streaming via `@microsoft/fetch-event-source`. `GenerationSettings` includes model, temperature, top_p, top_k, frequency_penalty, max_tokens. Updates user message ID from `done` event.
 - **`api/admin.ts`** — Admin API client: getPrompts, updatePrompt, resetPrompt.
 - **`store/`** — Zustand: `authStore` (with role), `chatStore`.
@@ -98,7 +98,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **`pages/`** — Home, Chat, CharacterPage, CreateCharacter, EditCharacter, Auth, Profile, AdminPromptsPage.
 - **`components/chat/GenerationSettingsModal.tsx`** — Modal with model card grid + 5 sliders (temperature, top_p, top_k, frequency_penalty, max_tokens).
 - **`components/chat/MessageBubble.tsx`** — Message with delete/regenerate buttons on hover. Error messages in red. Admin sees `model_used` under assistant messages.
-- **`components/chat/ChatWindow.tsx`** — Message list + persistent regenerate button below last assistant message.
+- **`components/chat/ChatWindow.tsx`** — Message list with infinite scroll (loads older messages on scroll-to-top, preserves scroll position). Persistent regenerate button below last assistant message.
 - **`components/characters/CharacterForm.tsx`** — Full character form with appearance, response_length dropdown, max_tokens slider, and `{{char}}`/`{{user}}` hint in example dialogues placeholder.
 
 ## Key Patterns
@@ -129,7 +129,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 
 Auth: `POST /api/auth/register` (username optional, auto-generated), `POST /api/auth/login` — JWT includes role
 Characters: `GET/POST /api/characters`, `GET/PUT/DELETE /api/characters/{id}`, `GET /api/characters/my`, `POST /api/characters/generate-from-story`
-Chats: `POST /api/chats`, `GET /api/chats`, `GET/DELETE /api/chats/{id}`, `POST /api/chats/{id}/message` (SSE), `DELETE /api/chats/{id}/messages` (clear), `DELETE /api/chats/{id}/messages/{msg_id}`
+Chats: `POST /api/chats` (get-or-create), `GET /api/chats`, `GET/DELETE /api/chats/{id}`, `GET /api/chats/{id}/messages?before=ID&limit=20` (pagination), `POST /api/chats/{id}/message` (SSE), `DELETE /api/chats/{id}/messages` (clear), `DELETE /api/chats/{id}/messages/{msg_id}`
 Users: `GET/PUT /api/users/me` (includes role, username), `GET /api/users/me/favorites`, `POST/DELETE /api/users/me/favorites/{id}`
 Admin: `GET /api/admin/prompts`, `PUT /api/admin/prompts/{key}`, `DELETE /api/admin/prompts/{key}` — admin role required
 Models: `GET /api/models/openrouter`, `GET /api/models/groq`, `GET /api/models/cerebras`
