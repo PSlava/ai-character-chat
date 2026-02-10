@@ -52,6 +52,9 @@
 
   "chat.placeholder": "Type a message...",
   "chat.modelAndSettings": "Model & Settings",
+  "chat.clearChat": "Clear chat",
+  "chat.clearConfirm": "Clear chat? All messages will be deleted, only the greeting will remain.",
+  "chat.clearError": "Failed to clear chat",
   "chat.deleteChat": "Delete chat",
   "chat.deleteConfirm": "Delete chat? All history will be lost.",
   "chat.deleteError": "Failed to delete chat",

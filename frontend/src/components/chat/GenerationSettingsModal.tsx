@@ -9,7 +9,6 @@ export interface ChatSettings extends GenerationSettings {
 }
 
 interface Props {
-  settings: ChatSettings;
   currentModel: string;
   orModels: OpenRouterModel[];
   groqModels: OpenRouterModel[];
@@ -115,6 +114,18 @@ const GEN_DEFAULTS = {
   context_limit: 0,
 };
 
+export function loadModelSettings(modelId: string): typeof GEN_DEFAULTS {
+  try {
+    const raw = localStorage.getItem(`model-settings:${modelId}`);
+    if (raw) return { ...GEN_DEFAULTS, ...JSON.parse(raw) };
+  } catch {}
+  return { ...GEN_DEFAULTS };
+}
+
+function saveModelSettings(modelId: string, s: typeof GEN_DEFAULTS) {
+  try { localStorage.setItem(`model-settings:${modelId}`, JSON.stringify(s)); } catch {}
+}
+
 const CONTEXT_OPTIONS = [
   { value: 4000, label: '4K' },
   { value: 8000, label: '8K' },
@@ -131,18 +142,10 @@ interface ModelOption {
 
 // GROUP_LABELS are now resolved via t() inside the component
 
-export function GenerationSettingsModal({ settings, currentModel, orModels, groqModels, cerebrasModels, togetherModels, contentRating, onApply, onClose }: Props) {
+export function GenerationSettingsModal({ currentModel, orModels, groqModels, cerebrasModels, togetherModels, contentRating, onApply, onClose }: Props) {
   const { t } = useTranslation();
-  const [model, setModel] = useState(settings.model || currentModel);
-  const [local, setLocal] = useState({
-    temperature: settings.temperature ?? GEN_DEFAULTS.temperature,
-    top_p: settings.top_p ?? GEN_DEFAULTS.top_p,
-    top_k: settings.top_k ?? GEN_DEFAULTS.top_k,
-    frequency_penalty: settings.frequency_penalty ?? GEN_DEFAULTS.frequency_penalty,
-    presence_penalty: settings.presence_penalty ?? GEN_DEFAULTS.presence_penalty,
-    max_tokens: settings.max_tokens ?? GEN_DEFAULTS.max_tokens,
-    context_limit: settings.context_limit ?? GEN_DEFAULTS.context_limit,
-  });
+  const [model, setModel] = useState(currentModel);
+  const [local, setLocal] = useState(() => loadModelSettings(currentModel));
 
   const update = <K extends keyof typeof GEN_DEFAULTS>(key: K, value: number) =>
     setLocal((prev) => ({ ...prev, [key]: value }));
@@ -207,7 +210,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
                     return (
                       <button
                         key={m.id}
-                        onClick={() => !disabled && setModel(m.id)}
+                        onClick={() => { if (!disabled) { setModel(m.id); setLocal(loadModelSettings(m.id)); } }}
                         disabled={disabled}
                         className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
                           disabled
@@ -325,7 +328,7 @@ export function GenerationSettingsModal({ settings, currentModel, orModels, groq
             {t('common.cancel')}
           </button>
           <button
-            onClick={() => { onApply({ ...local, model }); onClose(); }}
+            onClick={() => { saveModelSettings(model, local); onApply({ ...local, model }); onClose(); }}
             className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
           >
             {t('common.apply')}

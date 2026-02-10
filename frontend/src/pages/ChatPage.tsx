@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trash2, Settings } from 'lucide-react';
-import { getChat, deleteChat, deleteChatMessage, getOlderMessages } from '@/api/chat';
+import { Trash2, RotateCcw, Settings } from 'lucide-react';
+import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages } from '@/api/chat';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { ChatInput } from '@/components/chat/ChatInput';
-import { GenerationSettingsModal } from '@/components/chat/GenerationSettingsModal';
+import { GenerationSettingsModal, loadModelSettings } from '@/components/chat/GenerationSettingsModal';
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ChatDetail } from '@/types';
@@ -36,12 +36,6 @@ export function ChatPage() {
   const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
   const [togetherModels, setTogetherModels] = useState<OpenRouterModel[]>([]);
   const [showSettings, setShowSettings] = useState(false);
-  const [chatSettings, setChatSettings] = useState<ChatSettings>(() => {
-    if (!chatId) return {};
-    try {
-      return JSON.parse(localStorage.getItem(`chat-settings:${chatId}`) || '{}');
-    } catch { return {}; }
-  });
   const [activeModel, setActiveModel] = useState('');
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -69,14 +63,27 @@ export function ChatPage() {
         setChatDetail(data);
         setMessages(data.messages);
         setHasMore(data.has_more);
-        // Restore saved settings or use server default
-        const saved = chatSettings;
-        if (saved.model) {
-          setActiveModel(saved.model);
-          setGenerationSettings(saved);
-        } else {
-          setActiveModel(data.chat.model_used || 'openrouter');
-        }
+
+        // Migrate old format: chat-settings:{chatId} → chat-model:{chatId}
+        let savedModel: string | null = null;
+        try {
+          savedModel = localStorage.getItem(`chat-model:${chatId}`);
+          if (!savedModel) {
+            const old = localStorage.getItem(`chat-settings:${chatId}`);
+            if (old) {
+              const parsed = JSON.parse(old);
+              if (parsed.model) {
+                savedModel = parsed.model;
+                localStorage.setItem(`chat-model:${chatId}`, savedModel!);
+              }
+              localStorage.removeItem(`chat-settings:${chatId}`);
+            }
+          }
+        } catch {}
+
+        const model = savedModel || data.chat.model_used || 'openrouter';
+        setActiveModel(model);
+        setGenerationSettings(loadModelSettings(model));
       })
       .catch(() => setError(t('chat.notFound')));
   }, [chatId, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -98,13 +105,12 @@ export function ChatPage() {
   }, [chatId, loadingMore, hasMore, messages, setMessages]);
 
   const handleApplySettings = (s: ChatSettings) => {
-    setChatSettings(s);
     setGenerationSettings(s);
     if (s.model) {
       setActiveModel(s.model);
-    }
-    if (chatId) {
-      try { localStorage.setItem(`chat-settings:${chatId}`, JSON.stringify(s)); } catch {}
+      if (chatId) {
+        try { localStorage.setItem(`chat-model:${chatId}`, s.model); } catch {}
+      }
     }
   };
 
@@ -138,6 +144,20 @@ export function ChatPage() {
       navigate('/');
     } catch {
       setError(t('chat.deleteError'));
+    }
+  };
+
+  const handleClearChat = async () => {
+    if (!chatId || isStreaming) return;
+    if (!confirm(t('chat.clearConfirm'))) return;
+    try {
+      await clearChatMessages(chatId);
+      // Reload chat to get only the greeting message
+      const data = await getChat(chatId);
+      setMessages(data.messages);
+      setHasMore(data.has_more);
+    } catch {
+      setError(t('chat.clearError'));
     }
   };
 
@@ -196,6 +216,14 @@ export function ChatPage() {
           <Settings size={16} />
         </button>
         <button
+          onClick={handleClearChat}
+          disabled={isStreaming}
+          className="p-2 text-neutral-500 hover:text-yellow-400 transition-colors disabled:opacity-50"
+          title={t('chat.clearChat')}
+        >
+          <RotateCcw size={18} />
+        </button>
+        <button
           onClick={handleDeleteChat}
           disabled={isStreaming}
           className="p-2 text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-50"
@@ -227,7 +255,6 @@ export function ChatPage() {
 
       {showSettings && (
         <GenerationSettingsModal
-          settings={chatSettings}
           currentModel={activeModel}
           orModels={orModels}
           groqModels={groqModels}
