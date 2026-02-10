@@ -43,9 +43,9 @@ OPENROUTER_FREE_MODELS = [
     {
         "id": "nvidia/nemotron-nano-9b-v2:free",
         "name": "Nemotron 9B",
-        "quality": 4,
+        "quality": 0,
         "nsfw": True,
-        "note": "thinking-модель, мешает языки",
+        "note": "thinking-модель, мешает языки — исключена из auto-fallback",
     },
     {
         "id": "qwen/qwen3-4b:free",
