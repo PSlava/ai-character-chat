@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Trash2, Settings } from 'lucide-react';
-import { getChat, clearChatMessages, deleteChatMessage, getOlderMessages } from '@/api/chat';
+import { getChat, deleteChat, deleteChatMessage, getOlderMessages } from '@/api/chat';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
@@ -13,6 +13,7 @@ import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ChatDetail } from '@/types';
 import { useAuthStore } from '@/store/authStore';
+import { useChatStore } from '@/store/chatStore';
 
 const MODEL_ALIASES: Record<string, string> = {
   claude: 'Claude',
@@ -42,8 +43,10 @@ export function ChatPage() {
   const [activeModel, setActiveModel] = useState('');
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
+  const removeChat = useChatStore((s) => s.removeChat);
   const isAdmin = authUser?.role === 'admin';
 
   const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast } = useChat(
@@ -118,17 +121,15 @@ export function ChatPage() {
     return found ? found.name : m;
   };
 
-  const handleClearChat = async () => {
+  const handleDeleteChat = async () => {
     if (!chatId || isStreaming) return;
-    if (!confirm(t('chat.clearConfirm'))) return;
+    if (!confirm(t('chat.deleteConfirm'))) return;
     try {
-      await clearChatMessages(chatId);
-      setMessages((prev) => {
-        const visible = prev.filter((m) => m.role !== 'system');
-        return visible.length > 0 ? [visible[0]] : [];
-      });
+      await deleteChat(chatId);
+      removeChat(chatId);
+      navigate('/');
     } catch {
-      setError(t('chat.clearError'));
+      setError(t('chat.deleteError'));
     }
   };
 
@@ -187,10 +188,10 @@ export function ChatPage() {
           <Settings size={16} />
         </button>
         <button
-          onClick={handleClearChat}
+          onClick={handleDeleteChat}
           disabled={isStreaming}
           className="p-2 text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-50"
-          title={t('chat.clearChat')}
+          title={t('chat.deleteChat')}
         >
           <Trash2 size={18} />
         </button>

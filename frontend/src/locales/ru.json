@@ -52,9 +52,9 @@
 
   "chat.placeholder": "Напишите сообщение...",
   "chat.modelAndSettings": "Модель и настройки",
-  "chat.clearChat": "Очистить чат",
-  "chat.clearConfirm": "Очистить историю чата? Приветственное сообщение останется.",
-  "chat.clearError": "Не удалось очистить чат",
+  "chat.deleteChat": "Удалить чат",
+  "chat.deleteConfirm": "Удалить чат? Вся история будет потеряна.",
+  "chat.deleteError": "Не удалось удалить чат",
   "chat.notFound": "Чат не найден",
   "chat.you": "Вы",
   "chat.regenerate": "Перегенерировать",
