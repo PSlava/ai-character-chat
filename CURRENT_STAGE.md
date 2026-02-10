@@ -56,6 +56,7 @@ docker compose up -d
 | CEREBRAS_API_KEY | — | Вручную | Cerebras |
 | DEEPSEEK_API_KEY | — | Вручную | DeepSeek |
 | QWEN_API_KEY | — | Вручную | Qwen/DashScope |
+| TOGETHER_API_KEY | — | Вручную | Together AI (платный, без модерации) |
 | ANTHROPIC_API_KEY | Да | Вручную | Claude (нужны кредиты) |
 | OPENAI_API_KEY | Да | Вручную | GPT (нужны кредиты) |
 | GEMINI_API_KEY | Да | Вручную | Gemini (квота=0) |
@@ -94,8 +95,8 @@ docker compose up -d
 - **Длина ответа** — настройка на персонаже: короткий / средний / длинный / очень длинный
 - **Макс. токенов** — настраиваемый лимит (256–4096, дефолт 2048)
 - **Генерация персонажа из текста** — вставляешь рассказ, AI создаёт профиль
-- **Выбор AI-модели** — OpenRouter, Groq, Cerebras + прямые провайдеры (DeepSeek, Qwen)
-- **API реестра моделей** — `GET /api/models/{openrouter,groq,cerebras}`
+- **Выбор AI-модели** — OpenRouter, Groq, Cerebras, Together + прямые провайдеры (DeepSeek, Qwen)
+- **API реестра моделей** — `GET /api/models/{openrouter,groq,cerebras,together}`
 - **API реестра тегов** — `GET /api/characters/structured-tags` — категории и теги для формы
 
 ### Чат
@@ -118,7 +119,7 @@ docker compose up -d
 - **Перегенерация ответа** — кнопка на hover + постоянная кнопка под последним ответом
 - **Ошибки в чате** — красные баблы с текстом ошибки вместо пустых сообщений
 - **Настройки генерации** — модалка «Модель и настройки» с:
-  - Выбор модели (карточки с категориями: OpenRouter / Groq / Cerebras / Прямой API / Платные)
+  - Выбор модели (карточки с категориями: OpenRouter / Groq / Cerebras / Together / Прямой API / Платные)
   - Temperature (0–2), Top-P (0–1), Top-K (0–100)
   - Frequency penalty (0–2), Presence penalty (0–2)
   - Макс. токенов (256–4096)
@@ -137,13 +138,14 @@ docker compose up -d
   - Страница `/admin/prompts` с табами RU/EN, expandable карточки, метки «Изменён»/«По умолчанию»
 - Ссылка в сайдбаре видна только админу
 
-### LLM-провайдеры (8 штук)
+### LLM-провайдеры (9 штук)
 
 | Провайдер | Модели | API | Статус |
 |-----------|--------|-----|--------|
 | **OpenRouter** | 8 бесплатных моделей (auto-fallback) | openrouter.ai/api/v1 | **Работает** |
 | **Groq** | 6 моделей (auto-fallback) | api.groq.com/openai/v1 | **Работает** |
 | **Cerebras** | 3 модели (auto-fallback) | api.cerebras.ai/v1 | **Работает** |
+| **Together AI** | 7+ моделей (auto-fallback) | api.together.xyz/v1 | **Готов** — платный, нужен ключ |
 | **DeepSeek** | deepseek-chat, deepseek-reasoner | api.deepseek.com/v1 | **Готов** — нужен ключ |
 | **Qwen (DashScope)** | qwen3-32b, qwen3-235b и др. | dashscope-intl.aliyuncs.com | **Готов** — нужен ключ |
 | Gemini | gemini-2.0-flash | generativelanguage.googleapis.com | Не работает (квота=0) |
@@ -185,18 +187,30 @@ docker compose up -d
 
 **Cerebras ограничения**: API не поддерживает `frequency_penalty` / `presence_penalty`. Параметры игнорируются. В UI предупреждение для пользователя.
 
+**Платные модели через Together AI (авто-обновление из API):**
+
+| Модель | Качество | Примечание |
+|--------|----------|------------|
+| Llama 4 Maverick | 9/10 | Лучшая для creative writing |
+| Llama 3.3 70B Turbo | 8/10 | Быстрая и качественная |
+| Qwen 3 32B | 7/10 | Без модерации DashScope |
+| Llama 4 Scout | 7/10 | Новая |
+| DeepSeek V3 / R1 | 6/10 | Reasoning |
+
+**Together AI**: платный (pay-per-token, от $0.02/M), OpenAI-совместимый. **Без модерации контента** — Qwen и Llama работают без NSFW-ограничений. Поддерживает все параметры генерации.
+
 **Режимы выбора модели:**
 - **Auto (Все провайдеры)** — кросс-провайдерный fallback: Groq → Cerebras → OpenRouter (настраиваемый порядок через `AUTO_PROVIDER_ORDER`). Дефолт для новых персонажей
-- **Auto (OpenRouter / Groq / Cerebras)** — автоматический перебор топ-3 по качеству внутри одного провайдера, с NSFW-фильтрацией
+- **Auto (OpenRouter / Groq / Cerebras / Together)** — автоматический перебор топ-3 по качеству внутри одного провайдера, с NSFW-фильтрацией
 - **Конкретная модель** — выбор конкретной модели провайдера (напр. `groq:llama-3.3-70b-versatile`)
 - **Прямой провайдер** (DeepSeek, Qwen) — напрямую через API, минуя агрегаторы
-- **Авто-обновление реестров** — модели Groq и Cerebras обновляются из API каждый час
+- **Авто-обновление реестров** — модели Groq, Cerebras и Together обновляются из API каждый час
 - **NSFW-фильтрация** — модели без поддержки NSFW исключаются из auto-selection для NSFW-персонажей
 - **`last_model_used`** — провайдеры с auto-fallback отслеживают какая модель реально ответила
 
 **Кулдаун неработающих моделей:**
 - Если модель вернула ошибку (429, 402, 404, rate limit) — она исключается из auto-перебора на 15 минут
-- Работает для всех трёх агрегаторов: OpenRouter, Groq, Cerebras
+- Работает для всех четырёх агрегаторов: OpenRouter, Groq, Cerebras, Together
 - Реализация: `backend/app/llm/model_cooldown.py`
 
 **Особенности провайдеров:**
@@ -222,7 +236,7 @@ docker compose up -d
 - Zustand для стейт-менеджмента
 - 8 страниц: главная, авторизация, персонаж, чат, создание, редактирование, профиль, **админ-промпты**
 - Стриминг сообщений в реальном времени
-- Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras (с оценками) + DeepSeek + Qwen + платные
+- Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
 - **NSFW-модели визуально отключены** в настройках для NSFW-персонажей
 - **Предупреждение Cerebras** — жёлтое предупреждение о неподдержке penalty
 - Настройки генерации (модалка с моделью + 6 слайдеров + память)
@@ -280,7 +294,7 @@ docker compose up -d
 Backend:  Python 3.12 + FastAPI + SQLAlchemy + PyJWT + bcrypt + gunicorn + uvicorn
 Frontend: React 18 + TypeScript + Vite + Tailwind CSS + Zustand + i18next
 Database: PostgreSQL 16 (Docker) / Supabase (облако) / SQLite (локально)
-AI:       OpenRouter + Groq + Cerebras + DeepSeek + Qwen/DashScope + Anthropic + OpenAI + Google GenAI
+AI:       OpenRouter + Groq + Cerebras + Together + DeepSeek + Qwen/DashScope + Anthropic + OpenAI + Google GenAI
 Streaming: SSE (Server-Sent Events)
 Deploy:   Docker Compose (VPS) / Vercel + Render + Supabase (облако)
 CI/CD:    GitHub Webhook (auto-deploy on push to main)
@@ -310,7 +324,7 @@ chatbot/
 │   │   │   ├── service.py           # Контекстное окно, сохранение (model_used)
 │   │   │   ├── schemas.py           # SendMessageRequest (model, temp, top_p, context_limit, etc.)
 │   │   │   └── prompt_builder.py    # Defaults + DB overrides, 21 ключ × ru/en, литературный формат с примером, 60s cache
-│   │   ├── llm/                     # 8 провайдеров + реестр + модели + кулдаун
+│   │   ├── llm/                     # 9 провайдеров + реестр + модели + кулдаун
 │   │   │   ├── base.py              # BaseLLMProvider, LLMConfig (+ content_rating)
 │   │   │   ├── registry.py          # init_providers + get_provider
 │   │   │   ├── model_cooldown.py    # 15-мин кулдаун для неработающих моделей
@@ -320,13 +334,15 @@ chatbot/
 │   │   │   ├── groq_models.py          # Реестр моделей Groq + NSFW_BLOCKED
 │   │   │   ├── cerebras_provider.py    # Cerebras (auto-fallback, last_model_used)
 │   │   │   ├── cerebras_models.py      # Реестр моделей Cerebras + NSFW_BLOCKED
+│   │   │   ├── together_provider.py     # Together AI (auto-fallback, платный, без модерации)
+│   │   │   ├── together_models.py       # Реестр моделей Together (7+ моделей, quality scores)
 │   │   │   ├── deepseek_provider.py    # DeepSeek прямой API
 │   │   │   ├── qwen_provider.py        # Qwen/DashScope + модерация
 │   │   │   ├── anthropic_provider.py   # Claude
 │   │   │   ├── openai_provider.py      # GPT-4o
 │   │   │   ├── gemini_provider.py      # Gemini
 │   │   │   ├── thinking_filter.py      # ThinkingFilter для <think> блоков
-│   │   │   └── router.py              # GET /api/models/{openrouter,groq,cerebras}
+│   │   │   └── router.py              # GET /api/models/{openrouter,groq,cerebras,together}
 │   │   ├── users/                   # Профиль (username update), избранное
 │   │   └── db/                      # Модели, сессии, миграции
 │   │       ├── models.py            # User (role), Character, Chat, Message (model_used), Favorite, PromptTemplate
@@ -357,7 +373,7 @@ chatbot/
 │   │   │   │   ├── ChatWindow.tsx        # Список сообщений + перегенерация + isAdmin
 │   │   │   │   ├── ChatInput.tsx         # Ввод + стоп
 │   │   │   │   ├── MessageBubble.tsx     # Сообщение + delete + regenerate + model_used (admin)
-│   │   │   │   └── GenerationSettingsModal.tsx  # Модель (5 групп) + 6 слайдеров + память
+│   │   │   │   └── GenerationSettingsModal.tsx  # Модель (7 групп) + 6 слайдеров + память
 │   │   │   ├── characters/
 │   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
 │   │   │   └── ui/                       # Button, Input, Avatar, LanguageSwitcher
