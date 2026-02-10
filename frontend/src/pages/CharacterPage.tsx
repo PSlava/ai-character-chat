@@ -69,8 +69,8 @@ export function CharacterPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-start gap-6 mb-8">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 md:mb-8">
         <Avatar src={character.avatar_url} name={character.name} size="lg" />
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{character.name}</h1>

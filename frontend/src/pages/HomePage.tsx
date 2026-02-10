@@ -22,9 +22,9 @@ export function HomePage() {
   }, [search]);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{t('home.title')}</h1>
+    <div className="p-4 md:p-6 max-w-5xl mx-auto">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t('home.title')}</h1>
         <p className="text-neutral-400">
           {t('home.subtitle')}
         </p>

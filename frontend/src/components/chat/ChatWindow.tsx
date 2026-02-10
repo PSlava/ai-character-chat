@@ -77,7 +77,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
   }
 
   return (
-    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4">
+    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-2 sm:p-4">
       <div className="max-w-3xl mx-auto space-y-4">
         {loadingMore && (
           <div className="flex justify-center py-2">
@@ -98,7 +98,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
           ))}
 
         {!isStreaming && lastAssistant && onRegenerate && (
-          <div className="flex justify-start pl-11">
+          <div className="flex justify-start pl-9 sm:pl-11">
             <button
               onClick={() => onRegenerate(lastAssistant.id)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
@@ -111,7 +111,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
         )}
 
         {!isStreaming && lastUserNoReply && onResendLast && (
-          <div className="flex justify-end pr-11">
+          <div className="flex justify-end pr-9 sm:pr-11">
             {editing ? (
               <div className="w-full max-w-[75%] space-y-2">
                 <textarea

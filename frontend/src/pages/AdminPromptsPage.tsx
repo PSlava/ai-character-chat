@@ -192,7 +192,7 @@ export function AdminPromptsPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{t('admin.promptsTitle')}</h1>
         <p className="text-neutral-400 mt-1 text-sm">{t('admin.promptsSubtitle')}</p>

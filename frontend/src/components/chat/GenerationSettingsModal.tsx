@@ -185,7 +185,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
-        className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-neutral-900 border border-neutral-700 rounded-2xl p-4 sm:p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
@@ -204,7 +204,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
             return (
               <div key={group} className="mb-3">
                 <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1.5">{t(`settings.group${group.charAt(0).toUpperCase()}${group.slice(1)}` as any)}</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {items.map((m) => {
                     const disabled = isNsfw && !m.nsfwOk;
                     return (

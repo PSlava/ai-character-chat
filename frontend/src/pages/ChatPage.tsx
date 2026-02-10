@@ -198,7 +198,7 @@ export function ChatPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Chat header */}
-      <div className="border-b border-neutral-800 px-4 py-3 flex items-center gap-3">
+      <div className="border-b border-neutral-800 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
         <Avatar
           src={character?.avatar_url}
           name={character?.name || '?'}

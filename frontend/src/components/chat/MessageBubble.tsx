@@ -33,7 +33,7 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
           <Avatar src={characterAvatar} name={characterName || 'AI'} size="sm" />
         )}
       </div>
-      <div className="relative max-w-[75%]">
+      <div className="relative max-w-[85%] sm:max-w-[75%]">
         <div
           className={`rounded-2xl px-4 py-2.5 ${
             message.isError

@@ -1,17 +1,23 @@
 import { useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
-import { MessageCircle, Home, Heart, Settings } from 'lucide-react';
+import { MessageCircle, Home, Heart, Settings, X } from 'lucide-react';
 
-export function Sidebar() {
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { chats, fetchChats } = useChatStore();
   const { chatId } = useParams();
+  const location = useLocation();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -19,8 +25,13 @@ export function Sidebar() {
     }
   }, [isAuthenticated, fetchChats]);
 
-  return (
-    <aside className="w-64 border-r border-neutral-800 flex flex-col h-full overflow-hidden shrink-0 hidden md:flex">
+  // Close drawer on route change (mobile)
+  useEffect(() => {
+    onClose();
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sidebarContent = (
+    <>
       <nav className="p-3 space-y-1">
         <Link
           to="/"
@@ -87,6 +98,33 @@ export function Sidebar() {
           <p>{t('sidebar.loginPrompt')}</p>
         </div>
       )}
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="w-64 border-r border-neutral-800 flex-col h-full overflow-hidden shrink-0 hidden md:flex">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile drawer */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+          {/* Panel */}
+          <aside className="relative w-64 h-full bg-neutral-900 border-r border-neutral-800 flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-3 border-b border-neutral-800">
+              <span className="text-sm font-semibold text-neutral-300">{t('header.appName')}</span>
+              <button onClick={onClose} className="p-1 text-neutral-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

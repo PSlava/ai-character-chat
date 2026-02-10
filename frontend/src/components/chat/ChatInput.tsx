@@ -28,14 +28,14 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
   };
 
   return (
-    <div className="border-t border-neutral-800 p-4">
+    <div className="border-t border-neutral-800 p-2 sm:p-4">
       <div className="flex items-end gap-2 max-w-3xl mx-auto">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={t('chat.placeholder')}
-          rows={5}
+          rows={2}
           disabled={disabled}
           className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 resize-none max-h-48"
         />
