@@ -132,6 +132,12 @@
   "profile.namePlaceholder": "How characters will address you",
   "profile.language": "Interface language",
   "profile.myCharacters": "My Characters",
+  "profile.dangerZone": "Danger Zone",
+  "profile.deleteAccount": "Delete Account",
+  "profile.deleteAccountTitle": "Delete account?",
+  "profile.deleteAccountConfirm": "This will permanently delete your account, all your characters, and all chat history. This action cannot be undone.",
+  "profile.deleteAccountHint": "Permanently delete your account and all associated data.",
+  "profile.deleting": "Deleting...",
 
   "form.avatar": "Avatar",
   "form.avatarHint": "Click to upload (max 4MB)",
@@ -217,6 +223,10 @@
   "admin.seedImported": "Imported {{count}} characters",
   "admin.seedDeleted": "Deleted {{count}} characters",
   "admin.seedAlreadyImported": "Characters already imported. Delete first to re-import.",
+  "admin.cleanupTitle": "File Cleanup",
+  "admin.cleanupSubtitle": "Delete avatar files not linked to any character or user",
+  "admin.cleanupButton": "Clean Orphans",
+  "admin.cleanupResult": "Deleted: {{deleted}}, kept: {{kept}}",
   "admin.seedConfirmDelete": "Delete all seed characters from @sweetsin?",
 
   "lang.ru": "Русский",

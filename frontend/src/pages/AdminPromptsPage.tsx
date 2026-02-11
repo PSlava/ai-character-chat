@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, RotateCcw, Save, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { getPrompts, updatePrompt, resetPrompt, importSeedCharacters, deleteSeedCharacters } from '@/api/admin';
+import { getPrompts, updatePrompt, resetPrompt, importSeedCharacters, deleteSeedCharacters, cleanupOrphanAvatars } from '@/api/admin';
 import type { PromptEntry } from '@/api/admin';
 
 const KEY_LABELS: Record<string, Record<string, string>> = {
@@ -155,6 +155,8 @@ export function AdminPromptsPage() {
   const [tab, setTab] = useState<'ru' | 'en'>('ru');
   const [seedLoading, setSeedLoading] = useState(false);
   const [seedMsg, setSeedMsg] = useState<string | null>(null);
+  const [cleanupLoading, setCleanupLoading] = useState(false);
+  const [cleanupMsg, setCleanupMsg] = useState<string | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -227,6 +229,34 @@ export function AdminPromptsPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
+      {/* Cleanup section */}
+      <div className="mb-4 border border-neutral-800 rounded-lg p-4">
+        <h2 className="text-lg font-bold mb-1">{t('admin.cleanupTitle')}</h2>
+        <p className="text-neutral-400 text-sm mb-4">{t('admin.cleanupSubtitle')}</p>
+        <button
+          onClick={async () => {
+            setCleanupLoading(true);
+            setCleanupMsg(null);
+            try {
+              const { deleted, kept } = await cleanupOrphanAvatars();
+              setCleanupMsg(t('admin.cleanupResult', { deleted, kept }));
+            } catch (err: any) {
+              setCleanupMsg(err?.response?.data?.detail || err?.message || 'Error');
+            } finally {
+              setCleanupLoading(false);
+            }
+          }}
+          disabled={cleanupLoading}
+          className="flex items-center gap-1.5 px-4 py-2 text-sm text-neutral-400 hover:text-white hover:bg-neutral-800 border border-neutral-700 rounded-lg transition-colors disabled:opacity-40"
+        >
+          <Trash2 size={15} />
+          {t('admin.cleanupButton')}
+        </button>
+        {cleanupMsg && (
+          <p className="mt-3 text-sm text-neutral-300">{cleanupMsg}</p>
+        )}
+      </div>
+
       {/* Seed characters section */}
       <div className="mb-8 border border-neutral-800 rounded-lg p-4">
         <h2 className="text-lg font-bold mb-1">{t('admin.seedTitle')}</h2>

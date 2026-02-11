@@ -20,3 +20,7 @@ export async function updateProfile(body: { display_name?: string; username?: st
   const { data } = await api.put<UserProfile>('/users/me', body);
   return data;
 }
+
+export async function deleteAccount(): Promise<void> {
+  await api.delete('/users/me');
+}

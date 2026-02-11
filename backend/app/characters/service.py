@@ -92,6 +92,16 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
     if not character:
         return None
 
+    # Delete old avatar file if being replaced
+    new_avatar = data.get("avatar_url")
+    if new_avatar and character.avatar_url and new_avatar != character.avatar_url:
+        if character.avatar_url.startswith("/api/uploads/avatars/"):
+            from pathlib import Path
+            from app.config import settings
+            old_file = Path(settings.upload_dir) / "avatars" / character.avatar_url.split("/")[-1]
+            if old_file.exists():
+                old_file.unlink(missing_ok=True)
+
     # Sanitize text fields
     for field in _TEXT_FIELDS_TO_SANITIZE:
         if field in data and isinstance(data[field], str):
@@ -123,6 +133,16 @@ async def delete_character(db: AsyncSession, character_id: str, creator_id: str,
     character = result.scalar_one_or_none()
     if not character:
         return False
+
+    # Delete avatar file from disk
+    if character.avatar_url and character.avatar_url.startswith("/api/uploads/avatars/"):
+        from pathlib import Path
+        from app.config import settings
+        filename = character.avatar_url.split("/")[-1]
+        avatar_path = Path(settings.upload_dir) / "avatars" / filename
+        if avatar_path.exists():
+            avatar_path.unlink(missing_ok=True)
+
     await db.delete(character)
     await db.commit()
     return True

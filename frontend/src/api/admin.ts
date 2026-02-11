@@ -29,3 +29,8 @@ export async function deleteSeedCharacters(): Promise<{ deleted: number }> {
   const { data } = await api.delete<{ deleted: number }>('/admin/seed-characters');
   return data;
 }
+
+export async function cleanupOrphanAvatars(): Promise<{ deleted: number; kept: number }> {
+  const { data } = await api.post<{ deleted: number; kept: number }>('/admin/cleanup-avatars');
+  return data;
+}

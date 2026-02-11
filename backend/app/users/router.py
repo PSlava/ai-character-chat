@@ -63,6 +63,16 @@ async def update_profile(
         if existing.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Username already taken")
 
+    # Delete old avatar file if being replaced
+    new_avatar = data.get("avatar_url")
+    if new_avatar and u.avatar_url and new_avatar != u.avatar_url:
+        if u.avatar_url.startswith("/api/uploads/avatars/"):
+            from pathlib import Path
+            from app.config import settings
+            old_file = Path(settings.upload_dir) / "avatars" / u.avatar_url.split("/")[-1]
+            if old_file.exists():
+                old_file.unlink(missing_ok=True)
+
     for key, value in data.items():
         if value is not None and key in _PROFILE_ALLOWED_FIELDS:
             if key in ("display_name", "bio") and isinstance(value, str):
@@ -145,4 +155,42 @@ async def remove_favorite(
         character.like_count = character.like_count - 1
 
     await db.delete(fav)
+    await db.commit()
+
+
+@router.delete("/me", status_code=204)
+async def delete_account(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete current user account and all associated data."""
+    from pathlib import Path
+    from sqlalchemy.orm import selectinload
+    from app.config import settings
+
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.characters))
+        .where(User.id == user["id"])
+    )
+    u = result.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404)
+
+    # Delete avatar files for all user's characters
+    avatars_dir = Path(settings.upload_dir) / "avatars"
+    for char in u.characters:
+        if char.avatar_url and char.avatar_url.startswith("/api/uploads/avatars/"):
+            f = avatars_dir / char.avatar_url.split("/")[-1]
+            if f.exists():
+                f.unlink(missing_ok=True)
+
+    # Delete user's own avatar file
+    if u.avatar_url and u.avatar_url.startswith("/api/uploads/avatars/"):
+        f = avatars_dir / u.avatar_url.split("/")[-1]
+        if f.exists():
+            f.unlink(missing_ok=True)
+
+    # Cascade deletes characters, chats, messages, favorites via DB FK
+    await db.delete(u)
     await db.commit()

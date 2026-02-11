@@ -132,6 +132,12 @@
   "profile.namePlaceholder": "Как персонажи будут к вам обращаться",
   "profile.language": "Язык интерфейса",
   "profile.myCharacters": "Мои персонажи",
+  "profile.dangerZone": "Опасная зона",
+  "profile.deleteAccount": "Удалить аккаунт",
+  "profile.deleteAccountTitle": "Удалить аккаунт?",
+  "profile.deleteAccountConfirm": "Это навсегда удалит ваш аккаунт, всех персонажей и всю историю чатов. Это действие нельзя отменить.",
+  "profile.deleteAccountHint": "Безвозвратное удаление аккаунта и всех данных.",
+  "profile.deleting": "Удаление...",
 
   "form.avatar": "Аватар",
   "form.avatarHint": "Нажмите для загрузки (макс. 4 МБ)",
@@ -217,6 +223,10 @@
   "admin.seedImported": "Импортировано {{count}} персонажей",
   "admin.seedDeleted": "Удалено {{count}} персонажей",
   "admin.seedAlreadyImported": "Персонажи уже импортированы. Сначала удалите, чтобы импортировать заново.",
+  "admin.cleanupTitle": "Очистка файлов",
+  "admin.cleanupSubtitle": "Удалить файлы аватаров, не привязанные ни к одному персонажу или пользователю",
+  "admin.cleanupButton": "Очистить сироты",
+  "admin.cleanupResult": "Удалено: {{deleted}}, оставлено: {{kept}}",
   "admin.seedConfirmDelete": "Удалить всех персонажей от @sweetsin?",
 
   "lang.ru": "Русский",

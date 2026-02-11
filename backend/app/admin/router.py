@@ -188,3 +188,45 @@ async def delete_seed_characters(
     )
     await db.commit()
     return {"deleted": count}
+
+
+# ── Orphan cleanup ──────────────────────────────────────────────
+
+
+@router.post("/cleanup-avatars")
+async def cleanup_orphan_avatars(
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete avatar files not referenced by any character or user."""
+    from pathlib import Path
+    from app.config import settings
+
+    avatars_dir = Path(settings.upload_dir) / "avatars"
+    if not avatars_dir.exists():
+        return {"deleted": 0, "kept": 0}
+
+    # Collect all referenced avatar URLs from DB
+    char_result = await db.execute(
+        select(Character.avatar_url).where(Character.avatar_url.isnot(None))
+    )
+    user_result = await db.execute(
+        select(User.avatar_url).where(User.avatar_url.isnot(None))
+    )
+    referenced = set()
+    for (url,) in char_result.all():
+        # "/api/uploads/avatars/abc.webp" → "abc.webp"
+        referenced.add(url.split("/")[-1])
+    for (url,) in user_result.all():
+        referenced.add(url.split("/")[-1])
+
+    deleted = 0
+    kept = 0
+    for f in avatars_dir.iterdir():
+        if f.is_file() and f.name not in referenced:
+            f.unlink()
+            deleted += 1
+        else:
+            kept += 1
+
+    return {"deleted": deleted, "kept": kept}
