@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useChatStore } from '@/store/chatStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { MessageCircle, Heart, User, Pencil, Trash2 } from 'lucide-react';
 import type { Character } from '@/types';
 
@@ -19,6 +20,7 @@ export function CharacterPage() {
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isAdmin = user?.role === 'admin';
   const isOwner = isAuthenticated && character && (user?.id === character.creator_id || isAdmin);
@@ -48,7 +50,8 @@ export function CharacterPage() {
   };
 
   const handleDelete = async () => {
-    if (!character || !confirm(t('character.deleteConfirm'))) return;
+    if (!character) return;
+    setShowDeleteConfirm(false);
     setDeleting(true);
     try {
       await deleteCharacter(character.id);
@@ -105,7 +108,7 @@ export function CharacterPage() {
               <Pencil className="w-4 h-4" />
             </button>
             <button
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               disabled={deleting}
               className="p-2 rounded-lg bg-neutral-800 hover:bg-red-900/50 text-neutral-400 hover:text-red-400 transition-colors"
               title={t('common.delete')}
@@ -163,6 +166,15 @@ export function CharacterPage() {
       <Button onClick={handleStartChat} disabled={loading} size="lg" className="w-full">
         {loading ? t('character.creatingChat') : t('character.startChat')}
       </Button>
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title={t('character.deleteTitle')}
+          message={t('character.deleteConfirm')}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </div>
   );
 }

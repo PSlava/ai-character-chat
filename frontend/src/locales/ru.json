@@ -47,6 +47,7 @@
   "character.creatingChat": "Создание чата...",
   "character.startChat": "Начать общение",
   "character.deleteConfirm": "Удалить персонажа? Все чаты с ним тоже будут удалены.",
+  "character.deleteTitle": "Удалить персонажа?",
   "character.deleteError": "Ошибка удаления",
   "character.notFound": "Персонаж не найден",
 
@@ -66,6 +67,11 @@
   "chat.retryTooltip": "Повторить отправку",
   "chat.editTooltip": "Редактировать и отправить",
   "chat.deleteMessage": "Удалить сообщение",
+  "chat.deleteMessageConfirm": "Это сообщение будет удалено без возможности восстановления.",
+  "chat.deleteMessageTitle": "Удалить сообщение?",
+  "chat.deleteChatTitle": "Удалить чат?",
+  "chat.clearChatTitle": "Очистить чат?",
+  "chat.clearButton": "Очистить",
   "chat.generationError": "Ошибка генерации",
   "chat.connectionError": "Ошибка соединения с сервером",
 

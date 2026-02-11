@@ -47,6 +47,7 @@
   "character.creatingChat": "Creating chat...",
   "character.startChat": "Start chatting",
   "character.deleteConfirm": "Delete character? All chats with it will be deleted too.",
+  "character.deleteTitle": "Delete character?",
   "character.deleteError": "Delete error",
   "character.notFound": "Character not found",
 
@@ -66,6 +67,11 @@
   "chat.retryTooltip": "Retry sending",
   "chat.editTooltip": "Edit and send",
   "chat.deleteMessage": "Delete message",
+  "chat.deleteMessageConfirm": "This message will be permanently deleted.",
+  "chat.deleteMessageTitle": "Delete message?",
+  "chat.deleteChatTitle": "Delete chat?",
+  "chat.clearChatTitle": "Clear chat?",
+  "chat.clearButton": "Clear",
   "chat.generationError": "Generation error",
   "chat.connectionError": "Server connection error",
 

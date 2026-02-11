@@ -10,6 +10,7 @@ import { ChatWindow } from '@/components/chat/ChatWindow';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { GenerationSettingsModal, loadModelSettings } from '@/components/chat/GenerationSettingsModal';
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ChatDetail } from '@/types';
 import { useAuthStore } from '@/store/authStore';
@@ -27,6 +28,8 @@ const MODEL_ALIASES: Record<string, string> = {
   together: 'Together',
 };
 
+type ConfirmAction = { type: 'deleteChat' } | { type: 'clearChat' } | { type: 'deleteMessage'; messageId: string };
+
 export function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
   const [chatDetail, setChatDetail] = useState<ChatDetail | null>(null);
@@ -39,6 +42,7 @@ export function ChatPage() {
   const [activeModel, setActiveModel] = useState('');
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
@@ -135,45 +139,79 @@ export function ChatPage() {
     return found ? found.name : m;
   };
 
-  const handleDeleteChat = async () => {
+  const handleDeleteChat = () => {
     if (!chatId || isStreaming) return;
-    if (!confirm(t('chat.deleteConfirm'))) return;
-    try {
-      await deleteChat(chatId);
-      removeChat(chatId);
-      navigate('/');
-    } catch {
-      setError(t('chat.deleteError'));
-    }
+    setConfirmAction({ type: 'deleteChat' });
   };
 
-  const handleClearChat = async () => {
+  const handleClearChat = () => {
     if (!chatId || isStreaming) return;
-    if (!confirm(t('chat.clearConfirm'))) return;
-    try {
-      await clearChatMessages(chatId);
-      // Reload chat to get only the greeting message
-      const data = await getChat(chatId);
-      setMessages(data.messages);
-      setHasMore(data.has_more);
-    } catch {
-      setError(t('chat.clearError'));
-    }
+    setConfirmAction({ type: 'clearChat' });
   };
 
-  const handleDeleteMessage = async (messageId: string) => {
+  const handleDeleteMessage = (messageId: string) => {
     if (!chatId || isStreaming) return;
-    // Check if it's an error message (local only, not in DB)
+    // Error messages — delete locally without confirmation
     const msg = messages.find((m) => m.id === messageId);
     if (msg?.isError) {
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
       return;
     }
-    try {
-      await deleteChatMessage(chatId, messageId);
-      setMessages((prev) => prev.filter((m) => m.id !== messageId));
-    } catch {
-      // Silently fail — message might be the greeting
+    setConfirmAction({ type: 'deleteMessage', messageId });
+  };
+
+  const executeConfirm = async () => {
+    if (!confirmAction || !chatId) return;
+    const action = confirmAction;
+    setConfirmAction(null);
+
+    if (action.type === 'deleteChat') {
+      try {
+        await deleteChat(chatId);
+        removeChat(chatId);
+        navigate('/');
+      } catch {
+        setError(t('chat.deleteError'));
+      }
+    } else if (action.type === 'clearChat') {
+      try {
+        await clearChatMessages(chatId);
+        const data = await getChat(chatId);
+        setMessages(data.messages);
+        setHasMore(data.has_more);
+      } catch {
+        setError(t('chat.clearError'));
+      }
+    } else if (action.type === 'deleteMessage') {
+      try {
+        await deleteChatMessage(chatId, action.messageId);
+        setMessages((prev) => prev.filter((m) => m.id !== action.messageId));
+      } catch {
+        // Silently fail — message might be the greeting
+      }
+    }
+  };
+
+  const getConfirmProps = () => {
+    if (!confirmAction) return null;
+    switch (confirmAction.type) {
+      case 'deleteChat':
+        return {
+          title: t('chat.deleteChatTitle'),
+          message: t('chat.deleteConfirm'),
+        };
+      case 'clearChat':
+        return {
+          title: t('chat.clearChatTitle'),
+          message: t('chat.clearConfirm'),
+          confirmLabel: t('chat.clearButton'),
+          variant: 'warning' as const,
+        };
+      case 'deleteMessage':
+        return {
+          title: t('chat.deleteMessageTitle'),
+          message: t('chat.deleteMessageConfirm'),
+        };
     }
   };
 
@@ -194,6 +232,7 @@ export function ChatPage() {
   }
 
   const character = chatDetail.chat.characters;
+  const confirmProps = getConfirmProps();
 
   return (
     <div className="h-full flex flex-col">
@@ -264,6 +303,14 @@ export function ChatPage() {
           contentRating={character?.content_rating}
           onApply={handleApplySettings}
           onClose={() => setShowSettings(false)}
+        />
+      )}
+
+      {confirmProps && (
+        <ConfirmDialog
+          {...confirmProps}
+          onConfirm={executeConfirm}
+          onCancel={() => setConfirmAction(null)}
         />
       )}
     </div>
