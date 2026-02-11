@@ -9,7 +9,7 @@
 | **Слоган EN** | Where fantasy comes alive |
 | **Слоган RU** | Где фантазии оживают |
 | **Подзаголовок EN** | Where fantasy comes alive. Chat with AI characters — no limits, no filters. |
-| **Подзаголовок RU** | Где фантазии оживают. AI-персонажи без ограничений и фильтров. |
+| **Подзаголовок RU** | Где фантазии оживают. ИИ-персонажи без ограничений и фильтров. |
 | **Цветовая схема** | Rose (rose-500/600/700) — ранее purple |
 | **Иконка** | Flame (lucide-react) |
 | **Логотип** | Текстовый: **Sweet** (белый) + **Sin** (rose-500) |
@@ -100,6 +100,12 @@ docker compose up -d
 | AUTO_PROVIDER_ORDER | groq,cerebras,openrouter | Настраиваемый | Порядок провайдеров для auto-fallback |
 | ADMIN_EMAILS | — | Вручную | Список email-ов админов (через запятую) |
 | PROXY_URL | Да | Вручную | HTTP прокси |
+| SMTP_HOST | — | Вручную | SMTP сервер (пусто = ссылка в консоль) |
+| SMTP_PORT | — | 587 | SMTP порт |
+| SMTP_USER | — | Вручную | SMTP логин |
+| SMTP_PASSWORD | — | Вручную | SMTP пароль |
+| SMTP_FROM_EMAIL | — | Вручную | Email отправителя |
+| FRONTEND_URL | — | http://localhost:5173 | URL фронтенда (для ссылок в email) |
 | DOMAIN | — | Вручную | Домен для SSL |
 | POSTGRES_PASSWORD | — | auto-generated | Пароль PostgreSQL |
 | WEBHOOK_SECRET | — | auto-generated | GitHub webhook secret |
@@ -109,12 +115,20 @@ docker compose up -d
 ### Аутентификация и роли
 - Регистрация и логин по email/пароль
 - **Автогенерация username** при регистрации (`user_XXXXXX`), можно сменить в профиле
-- JWT-токены (30 дней) с ролью, bcrypt хеширование
+- JWT-токены (7 дней) с ролью, bcrypt хеширование
 - **Роли пользователей**: admin и user
 - **ADMIN_EMAILS** — автоназначение роли admin по email (при регистрации и синхронизация при логине)
+- **Админ-роль проверяется из БД** (не только из JWT) в `require_admin`
 - Защищённые эндпоинты через middleware
 - Опциональная авторизация (`get_current_user_optional`) для публичных эндпоинтов
 - Хранение токена и роли в localStorage
+- **Восстановление пароля** — полный флоу:
+  - `POST /api/auth/forgot-password` — всегда возвращает одинаковый ответ (не раскрывает наличие email в БД)
+  - JWT-based reset token (1 час, одноразовый — привязан к хешу пароля)
+  - Отправка email через SMTP (`aiosmtplib`), в dev-режиме — ссылка выводится в консоль
+  - `POST /api/auth/reset-password` — валидация токена, смена пароля
+  - Фронтенд: «Забыли пароль?» на странице логина, отдельная страница `/auth/reset-password?token=...`
+  - Rate limiting: 3 запроса на сброс за 5 минут на IP
 
 ### Персонажи
 - Полный CRUD: создание, просмотр, редактирование, удаление (с cascade на чаты)
@@ -272,7 +286,7 @@ docker compose up -d
 - React + TypeScript + Vite + Tailwind CSS
 - Тёмная тема, **цветовая схема rose** (бренд SweetSin)
 - Zustand для стейт-менеджмента
-- 8 страниц: главная, авторизация, персонаж, чат, создание, редактирование, профиль, **админ-промпты**
+- 9 страниц: главная, авторизация, сброс пароля, персонаж, чат, создание, редактирование, профиль, **админ-промпты**
 - **Брендинг**: логотип Sweet+Sin с иконкой Flame, SEO мета-теги, Open Graph
 - Стриминг сообщений в реальном времени
 - Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
@@ -287,10 +301,26 @@ docker compose up -d
 - **Профиль**: смена display name, username (с валидацией), языка
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
 
+### Безопасность
+- **Rate limiting** — in-memory (без зависимостей):
+  - Auth (login/register): 10 запросов/мин на IP
+  - Сброс пароля: 3 запроса/5 мин на IP
+  - Сообщения чата: 20/мин на пользователя
+- **Input validation** — Pydantic `Field(max_length=...)` на всех входных данных (schemas)
+- **Mass assignment protection** — allowlists (`_ALLOWED_FIELDS`) для `setattr` в characters и users
+- **ILIKE injection** — экранирование `%`, `_`, `\` при поиске персонажей
+- **HTML sanitization** — `strip_html_tags()` на текстовых полях персонажей и профиля
+- **Private character access control** — `GET /characters/{id}` проверяет `is_public` для не-владельцев
+- **JWT production check** — блокирует запуск с дефолтным секретом в production
+- **SSL certificate verification** — включена для Supabase (ранее отключена)
+- **CORS** — ограничены `allow_methods` и `allow_headers` (вместо `*`)
+- **Avatar URL validation** — блокирует `javascript:` и `data:` URI (фронтенд)
+- **SSE safety** — `JSON.parse` в try/catch, localStorage в try/catch
+
 ### Инфраструктура
 - SQLAlchemy ORM (SQLite локально / PostgreSQL в проде)
 - Авто-миграции: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` при старте (отдельные транзакции)
-- SSL для подключения к Supabase
+- SSL для подключения к Supabase (с проверкой сертификата)
 - **Docker Compose** — полный VPS-деплой (PostgreSQL + Backend + Nginx + Webhook)
 - **Multi-stage Docker build** — frontend собирается в node:20, раздаётся через nginx:alpine
 - **GitHub Webhook** — автодеплой при push в main (Flask на порту 9000)
@@ -359,9 +389,10 @@ chatbot/
 │   ├── app/
 │   │   ├── main.py                  # FastAPI, CORS, lifespan
 │   │   ├── config.py                # Настройки из env
-│   │   ├── auth/                    # JWT аутентификация + роли
-│   │   │   ├── router.py            # register (auto-username), login
-│   │   │   └── middleware.py        # get_current_user (с role), get_current_user_optional
+│   │   ├── auth/                    # JWT аутентификация + роли + rate limiting
+│   │   │   ├── router.py            # register, login, forgot-password, reset-password
+│   │   │   ├── middleware.py        # get_current_user (с role), get_current_user_optional
+│   │   │   └── rate_limit.py        # In-memory rate limiter (auth, messages, reset)
 │   │   ├── admin/                   # Админ-панель
 │   │   │   └── router.py            # CRUD промпт-шаблонов (admin only)
 │   │   ├── characters/              # CRUD + генерация из текста + структурированные теги
@@ -395,6 +426,9 @@ chatbot/
 │   │   │   ├── thinking_filter.py      # ThinkingFilter для <think> блоков
 │   │   │   └── router.py              # GET /api/models/{openrouter,groq,cerebras,together}
 │   │   ├── users/                   # Профиль (username update), избранное
+│   │   ├── utils/                   # Утилиты
+│   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
+│   │   │   └── email.py             # Async email sender (SMTP + dev console fallback)
 │   │   └── db/                      # Модели, сессии, миграции
 │   │       ├── models.py            # User (role), Character, Chat, Message (model_used), Favorite, PromptTemplate
 │   │       └── session.py           # Engine, init_db + auto-migrations
@@ -413,7 +447,9 @@ chatbot/
 │   │   │   ├── useAuth.ts           # Авторизация
 │   │   │   └── useChat.ts           # SSE стриминг + GenerationSettings + model_used
 │   │   ├── store/                   # Zustand (auth с role, chat)
-│   │   ├── pages/                   # 9 страниц
+│   │   ├── pages/                   # 10 страниц
+│   │   │   ├── AuthPage.tsx         # Вход / регистрация / забыли пароль (3 режима)
+│   │   │   ├── ResetPasswordPage.tsx # Установка нового пароля (по ссылке из email)
 │   │   │   ├── ChatPage.tsx         # Чат + настройки + модель + isAdmin
 │   │   │   ├── AdminPromptsPage.tsx # Админ: редактор промптов
 │   │   │   ├── CreateCharacterPage.tsx  # Создание (ручное + из текста)
