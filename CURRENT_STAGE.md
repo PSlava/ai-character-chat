@@ -73,7 +73,7 @@ docker compose up -d
 |-----------|------------|------|
 | postgres | PostgreSQL 16, хранение данных | 5432 (internal) |
 | backend | FastAPI + gunicorn + uvicorn workers | 8000 (internal) |
-| nginx | Static frontend + reverse proxy /api → backend | 80, 443 |
+| nginx | Static frontend + reverse proxy /api → backend + uploads | 80, 443 |
 | webhook | GitHub webhook → auto-deploy | 9000 |
 
 Автодеплой:
@@ -106,6 +106,9 @@ docker compose up -d
 | SMTP_PASSWORD | — | Вручную | SMTP пароль |
 | SMTP_FROM_EMAIL | — | Вручную | Email отправителя |
 | FRONTEND_URL | — | http://localhost:5173 | URL фронтенда (для ссылок в email) |
+| CORS_ORIGINS | — | * | CORS (по умолч. `*`, можно ограничить через env) |
+| UPLOAD_DIR | — | data/uploads | Директория для загруженных файлов |
+| MAX_AVATAR_SIZE | — | 2097152 | Макс. размер аватара в байтах (2 МБ) |
 | DOMAIN | — | Вручную | Домен для SSL |
 | POSTGRES_PASSWORD | — | auto-generated | Пароль PostgreSQL |
 | WEBHOOK_SECRET | — | auto-generated | GitHub webhook secret |
@@ -180,6 +183,17 @@ docker compose up -d
 - **Смена модели mid-chat** — сохраняется в БД на чате
 - **Синхронизация ID сообщений** — фронтенд обновляет локальные UUID на реальные из БД (в т.ч. при ошибках)
 - **Фильтрация thinking-токенов** — `<think>...</think>` блоки вырезаются из стриминга (Qwen3, DeepSeek R1)
+
+### Аватары
+- **Загрузка аватаров** — `POST /api/upload/avatar` (multipart, auth required)
+- **Безопасность**: проверка Content-Type, magic bytes (JPEG/PNG/WebP/GIF), лимит 2 МБ
+- **Обработка**: Pillow — валидация, ресайз до 512×512, конвертация в WebP (quality=85), EXIF удаляется
+- **Хранение**: `data/uploads/avatars/{uuid}.webp`, UUID-имена файлов (нет user-controlled имён)
+- **Раздача**: FastAPI StaticFiles (dev) + nginx location (prod) с кэшированием 30 дней
+- **Docker**: shared volume `uploads` между backend и nginx
+- **Фронтенд**: компонент `AvatarUpload` — кликабельный аватар с overlay камеры, загрузка, preview
+- **Интеграция**: форма создания/редактирования персонажа, страница профиля
+- **Фон на странице персонажа** — размытый растянутый аватар (blur-3xl, opacity-20)
 
 ### Админ-панель
 - **Шаблоны промптов** — админ может редактировать любой кусок system prompt через UI
@@ -286,7 +300,7 @@ docker compose up -d
 - React + TypeScript + Vite + Tailwind CSS
 - Тёмная тема, **цветовая схема rose** (бренд SweetSin)
 - Zustand для стейт-менеджмента
-- 9 страниц: главная, авторизация, сброс пароля, персонаж, чат, создание, редактирование, профиль, **админ-промпты**
+- 9 страниц: главная, авторизация, сброс пароля, персонаж (с размытым фоном аватара), чат, создание, редактирование, профиль (аватар), **админ-промпты**
 - **Брендинг**: логотип Sweet+Sin с иконкой Flame, SEO мета-теги, Open Graph
 - Стриминг сообщений в реальном времени
 - Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
@@ -312,15 +326,17 @@ docker compose up -d
 - **HTML sanitization** — `strip_html_tags()` на текстовых полях персонажей и профиля
 - **Private character access control** — `GET /characters/{id}` проверяет `is_public` для не-владельцев
 - **JWT production check** — блокирует запуск с дефолтным секретом в production
-- **SSL certificate verification** — включена для Supabase (ранее отключена)
-- **CORS** — ограничены `allow_methods` и `allow_headers` (вместо `*`)
-- **Avatar URL validation** — блокирует `javascript:` и `data:` URI (фронтенд)
+- **SSL certificate verification** — включена для Supabase (CERT_REQUIRED, check_hostname=False для Supabase pooler)
+- **CORS** — ограничены `allow_methods` и `allow_headers` (вместо `*`); `CORS_ORIGINS` по умолчанию `*`, настраивается через env
+- **Avatar URL validation** — блокирует `javascript:` и `data:` URI (фронтенд), принимает только `https://` и `/api/uploads/`
+- **Avatar upload security** — magic bytes проверка, Pillow валидация, UUID-имена, 2MB лимит, WebP-конвертация
 - **SSE safety** — `JSON.parse` в try/catch, localStorage в try/catch
 
 ### Инфраструктура
 - SQLAlchemy ORM (SQLite локально / PostgreSQL в проде)
 - Авто-миграции: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` при старте (отдельные транзакции)
-- SSL для подключения к Supabase (с проверкой сертификата)
+- SSL для подключения к Supabase (CERT_REQUIRED, check_hostname=False для pooler)
+- **Файловое хранилище** — `data/uploads/` с Docker volume, nginx раздача с кэшированием
 - **Docker Compose** — полный VPS-деплой (PostgreSQL + Backend + Nginx + Webhook)
 - **Multi-stage Docker build** — frontend собирается в node:20, раздаётся через nginx:alpine
 - **GitHub Webhook** — автодеплой при push в main (Flask на порту 9000)
@@ -345,7 +361,7 @@ docker compose up -d
 - [x] Ребрендинг — SweetSin (логотип, цвета, SEO, слоган, OG-теги)
 - [ ] Зарегистрировать домен sweetsin.cc
 - [ ] Настроить DNS и SSL для sweetsin.cc на VPS
-- [ ] Загрузка аватаров персонажей (сейчас только URL, нет загрузки файлов)
+- [x] Загрузка аватаров персонажей и пользователей (POST /api/upload/avatar, Pillow → WebP 512x512)
 - [ ] Протестировать качество ответов с новым литературным форматом промпта на разных моделях
 
 ### Средний приоритет
@@ -359,7 +375,6 @@ docker compose up -d
 
 ### Низкий приоритет (будущее)
 - [ ] OAuth авторизация (Google, GitHub)
-- [ ] Загрузка файлов через Storage
 - [ ] Модерация контента
 - [ ] Аналитика (популярные персонажи, активность)
 - [ ] Экспорт/импорт персонажей (совместимость с SillyTavern формат)
@@ -372,7 +387,7 @@ docker compose up -d
 ## Стек технологий
 
 ```
-Backend:  Python 3.12 + FastAPI + SQLAlchemy + PyJWT + bcrypt + gunicorn + uvicorn
+Backend:  Python 3.12 + FastAPI + SQLAlchemy + PyJWT + bcrypt + Pillow + gunicorn + uvicorn
 Frontend: React 18 + TypeScript + Vite + Tailwind CSS + Zustand + i18next
 Database: PostgreSQL 16 (Docker) / Supabase (облако) / SQLite (локально)
 AI:       OpenRouter + Groq + Cerebras + Together + DeepSeek + Qwen/DashScope + Anthropic + OpenAI + Google GenAI
@@ -425,6 +440,8 @@ chatbot/
 │   │   │   ├── gemini_provider.py      # Gemini
 │   │   │   ├── thinking_filter.py      # ThinkingFilter для <think> блоков
 │   │   │   └── router.py              # GET /api/models/{openrouter,groq,cerebras,together}
+│   │   ├── uploads/                 # Загрузка файлов (аватары)
+│   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP)
 │   │   ├── users/                   # Профиль (username update), избранное
 │   │   ├── utils/                   # Утилиты
 │   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
@@ -442,6 +459,7 @@ chatbot/
 │   │   │   ├── admin.ts             # Промпт-шаблоны (admin)
 │   │   │   ├── characters.ts        # CRUD + generate + wake-up + models
 │   │   │   ├── users.ts             # Profile (username, role)
+│   │   │   ├── uploads.ts           # uploadAvatar (multipart)
 │   │   │   └── chat.ts              # chats, messages, delete, clear
 │   │   ├── hooks/
 │   │   │   ├── useAuth.ts           # Авторизация
@@ -463,7 +481,7 @@ chatbot/
 │   │   │   │   └── GenerationSettingsModal.tsx  # Модель (7 групп) + 6 слайдеров + память
 │   │   │   ├── characters/
 │   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
-│   │   │   └── ui/                       # Button, Input, Avatar, ConfirmDialog, LanguageSwitcher
+│   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, ConfirmDialog, LanguageSwitcher
 │   │   ├── lib/                     # Утилиты (localStorage с role)
 │   │   ├── locales/                 # i18n: en.json, ru.json
 │   │   └── types/                   # TypeScript типы (Message с model_used)
@@ -480,7 +498,7 @@ chatbot/
 │       ├── Dockerfile               # Python + docker CLI
 │       ├── server.py                # Flask webhook server
 │       └── requirements.txt
-├── docker-compose.yml               # PostgreSQL + Backend + Nginx + Webhook
+├── docker-compose.yml               # PostgreSQL + Backend + Nginx + Webhook + uploads volume
 ├── .env.example                     # Шаблон переменных (cp → .env → nano → setup --auto)
 ├── render.yaml
 ├── CLAUDE.md
