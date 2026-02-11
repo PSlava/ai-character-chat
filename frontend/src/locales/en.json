@@ -134,7 +134,7 @@
   "profile.myCharacters": "My Characters",
 
   "form.avatar": "Avatar",
-  "form.avatarHint": "Click to upload (max 2MB)",
+  "form.avatarHint": "Click to upload (max 4MB)",
   "form.name": "Character name *",
   "form.namePlaceholder": "E.g.: Sherlock Holmes",
   "form.tagline": "Brief description",

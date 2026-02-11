@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
     cors_origins: str = "*"
     upload_dir: str = "data/uploads"
-    max_avatar_size: int = 2 * 1024 * 1024  # 2MB
+    max_avatar_size: int = 4 * 1024 * 1024  # 4MB default, override via MAX_AVATAR_SIZE env
     environment: str = "development"  # development | production
 
     class Config:

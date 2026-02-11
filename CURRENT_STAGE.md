@@ -108,7 +108,7 @@ docker compose up -d
 | FRONTEND_URL | — | http://localhost:5173 | URL фронтенда (для ссылок в email) |
 | CORS_ORIGINS | — | * | CORS (по умолч. `*`, можно ограничить через env) |
 | UPLOAD_DIR | — | data/uploads | Директория для загруженных файлов |
-| MAX_AVATAR_SIZE | — | 2097152 | Макс. размер аватара в байтах (2 МБ) |
+| MAX_AVATAR_SIZE | — | 4194304 | Макс. размер аватара в байтах (4 МБ) |
 | DOMAIN | — | Вручную | Домен для SSL |
 | POSTGRES_PASSWORD | — | auto-generated | Пароль PostgreSQL |
 | WEBHOOK_SECRET | — | auto-generated | GitHub webhook secret |

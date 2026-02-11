@@ -134,7 +134,7 @@
   "profile.myCharacters": "Мои персонажи",
 
   "form.avatar": "Аватар",
-  "form.avatarHint": "Нажмите для загрузки (макс. 2 МБ)",
+  "form.avatarHint": "Нажмите для загрузки (макс. 4 МБ)",
   "form.name": "Имя персонажа *",
   "form.namePlaceholder": "Например: Шерлок Холмс",
   "form.tagline": "Краткое описание",
