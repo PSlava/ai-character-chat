@@ -140,10 +140,20 @@ async def list_structured_tags():
 
 
 @router.get("/{character_id}")
-async def get_character(character_id: str, db: AsyncSession = Depends(get_db)):
+async def get_character(
+    character_id: str,
+    user=Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
     character = await service.get_character(db, character_id)
     if not character:
         raise HTTPException(status_code=404, detail="Character not found")
+    # Private characters only visible to owner and admins
+    if not character.is_public:
+        user_id = user["id"] if user else None
+        user_role = user.get("role") if user else None
+        if character.creator_id != user_id and user_role != "admin":
+            raise HTTPException(status_code=404, detail="Character not found")
     return character_to_dict(character)
 
 

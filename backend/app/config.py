@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     auto_provider_order: str = "groq,cerebras,openrouter"
     proxy_url: str | None = None  # e.g. http://user:pass@host:port
     admin_emails: str = ""  # comma-separated list of admin emails
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str | None = None
+    frontend_url: str = "http://localhost:5173"
     cors_origins: str = "http://localhost:5173"
     environment: str = "development"  # development | production
 

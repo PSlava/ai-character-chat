@@ -2,11 +2,14 @@ from datetime import datetime, timedelta
 import secrets
 import jwt
 import bcrypt as _bcrypt
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 import re
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.rate_limit import check_auth_rate, check_reset_rate
+from app.utils.email import send_reset_email
+import logging
 
 from app.config import settings
 from app.db.session import get_db
@@ -36,6 +39,15 @@ class LoginRequest(BaseModel):
     password: str = Field(max_length=128)
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(max_length=254)
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str = Field(min_length=6, max_length=128)
+
+
 def hash_password(password: str) -> str:
     return _bcrypt.hashpw(password.encode(), _bcrypt.gensalt()).decode()
 
@@ -49,7 +61,7 @@ def create_token(user: User) -> str:
         "sub": user.id,
         "email": user.email,
         "role": user.role or "user",
-        "exp": datetime.utcnow() + timedelta(days=30),
+        "exp": datetime.utcnow() + timedelta(days=7),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
@@ -66,7 +78,8 @@ def _is_admin_email(email: str) -> bool:
 
 
 @router.post("/register")
-async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+async def register(body: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    check_auth_rate(request)
     # Check email uniqueness
     existing = await db.execute(select(User).where(User.email == body.email))
     if existing.scalar_one_or_none():
@@ -109,7 +122,8 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login")
-async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
+async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    check_auth_rate(request)
     result = await db.execute(select(User).where(User.email == body.email))
     user = result.scalar_one_or_none()
 
@@ -128,3 +142,64 @@ async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
         "token": token,
         "user": {"id": user.id, "email": user.email, "username": user.username, "language": user.language or "ru", "role": user.role or "user"},
     }
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    body: ForgotPasswordRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    check_reset_rate(request)
+
+    result = await db.execute(select(User).where(User.email == body.email.lower().strip()))
+    user = result.scalar_one_or_none()
+
+    if user:
+        reset_payload = {
+            "sub": user.id,
+            "purpose": "reset",
+            "pwd": user.password_hash[:8],
+            "exp": datetime.utcnow() + timedelta(hours=1),
+        }
+        reset_token = jwt.encode(reset_payload, settings.jwt_secret, algorithm="HS256")
+        reset_url = f"{settings.frontend_url}/auth/reset-password?token={reset_token}"
+
+        try:
+            await send_reset_email(user.email, reset_url)
+        except Exception:
+            logging.getLogger(__name__).exception("Failed to send reset email")
+
+    return {"message": "If this email is registered, a reset link has been sent."}
+
+
+@router.post("/reset-password")
+async def reset_password(
+    body: ResetPasswordRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    check_auth_rate(request)
+
+    try:
+        payload = jwt.decode(body.token, settings.jwt_secret, algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail="Reset link has expired")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=400, detail="Invalid reset link")
+
+    if payload.get("purpose") != "reset":
+        raise HTTPException(status_code=400, detail="Invalid reset link")
+
+    result = await db.execute(select(User).where(User.id == payload.get("sub")))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid reset link")
+
+    if user.password_hash[:8] != payload.get("pwd"):
+        raise HTTPException(status_code=400, detail="This reset link has already been used")
+
+    user.password_hash = hash_password(body.password)
+    await db.commit()
+
+    return {"message": "Password has been reset successfully"}

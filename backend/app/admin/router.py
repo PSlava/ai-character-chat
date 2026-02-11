@@ -6,15 +6,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
-from app.db.models import PromptTemplate
+from app.db.models import PromptTemplate, User
 from app.chat.prompt_builder import get_all_keys, load_overrides, invalidate_cache
 from app.db.session import engine
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 
-async def require_admin(user=Depends(get_current_user)):
-    if user.get("role") != "admin":
+async def require_admin(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Verify admin role from DB, not just JWT claims."""
+    result = await db.execute(select(User).where(User.id == user["id"]))
+    db_user = result.scalar_one_or_none()
+    if not db_user or (db_user.role or "user") != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
 

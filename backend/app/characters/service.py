@@ -1,5 +1,9 @@
 from datetime import datetime
 from sqlalchemy import select
+from app.utils.sanitize import strip_html_tags
+
+_TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "scenario",
+                            "greeting_message", "example_dialogues", "system_prompt_suffix"}
 
 _CHARACTER_ALLOWED_FIELDS = {
     "name", "tagline", "avatar_url", "personality", "appearance",
@@ -56,6 +60,10 @@ async def get_character(db: AsyncSession, character_id: str):
 
 
 async def create_character(db: AsyncSession, creator_id: str, data: dict):
+    # Sanitize text fields
+    for field in _TEXT_FIELDS_TO_SANITIZE:
+        if field in data and isinstance(data[field], str):
+            data[field] = strip_html_tags(data[field])
     # Convert tags list to comma-separated string
     tags = data.pop("tags", [])
     structured_tags = data.pop("structured_tags", [])
@@ -84,6 +92,10 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
     if not character:
         return None
 
+    # Sanitize text fields
+    for field in _TEXT_FIELDS_TO_SANITIZE:
+        if field in data and isinstance(data[field], str):
+            data[field] = strip_html_tags(data[field])
     tags = data.pop("tags", None)
     structured_tags = data.pop("structured_tags", None)
     for key, value in data.items():

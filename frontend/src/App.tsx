@@ -8,6 +8,7 @@ import { CreateCharacterPage } from '@/pages/CreateCharacterPage';
 import { EditCharacterPage } from '@/pages/EditCharacterPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { AdminPromptsPage } from '@/pages/AdminPromptsPage';
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           <Route path="/character/:id" element={<CharacterPage />} />
           <Route path="/character/:id/edit" element={<EditCharacterPage />} />
           <Route path="/chat/:chatId" element={<ChatPage />} />

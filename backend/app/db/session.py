@@ -13,8 +13,6 @@ def _build_engine():
     is_local = any(h in url for h in ("localhost", "127.0.0.1", "postgres:"))
     if "postgresql" in url and not is_local:
         ssl_ctx = ssl.create_default_context()
-        ssl_ctx.check_hostname = False
-        ssl_ctx.verify_mode = ssl.CERT_NONE
         kwargs["connect_args"] = {"ssl": ssl_ctx}
         kwargs["pool_pre_ping"] = True
 

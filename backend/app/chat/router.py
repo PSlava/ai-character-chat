@@ -12,6 +12,7 @@ from app.db.models import User
 from app.llm.base import LLMConfig
 from app.llm.registry import get_provider
 from app.config import settings
+from app.auth.rate_limit import check_message_rate
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
 
@@ -171,6 +172,8 @@ async def send_message(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    check_message_rate(user["id"])
+
     chat = await service.get_chat(db, chat_id, user["id"])
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")

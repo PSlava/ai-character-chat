@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from app.db.models import User, Favorite, Character
+from app.utils.sanitize import strip_html_tags
 
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_]{3,20}$")
 
@@ -64,6 +65,8 @@ async def update_profile(
 
     for key, value in data.items():
         if value is not None and key in _PROFILE_ALLOWED_FIELDS:
+            if key in ("display_name", "bio") and isinstance(value, str):
+                value = strip_html_tags(value)
             setattr(u, key, value)
     await db.commit()
     await db.refresh(u)
