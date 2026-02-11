@@ -36,6 +36,8 @@ services:
       PROXY_URL: ${PROXY_URL:-}
       CORS_ORIGINS: "*"
       ENVIRONMENT: production
+    volumes:
+      - uploads:/app/data/uploads
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 10s
@@ -57,6 +59,7 @@ services:
     volumes:
       - ./deploy/nginx/certs:/etc/nginx/certs:ro
       - ./deploy/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - uploads:/app/uploads:ro
 
   webhook:
     build: ./deploy/webhook
@@ -71,3 +74,4 @@ services:
 
 volumes:
   pgdata:
+  uploads:

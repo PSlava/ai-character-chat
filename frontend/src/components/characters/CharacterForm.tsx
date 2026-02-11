@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { AvatarUpload } from '@/components/ui/AvatarUpload';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels, getStructuredTags } from '@/api/characters';
 import type { OpenRouterModel, StructuredTagsResponse } from '@/api/characters';
 import type { Character } from '@/types';
@@ -21,6 +22,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const [form, setForm] = useState({
+    avatar_url: initial?.avatar_url || '',
     name: str(initial?.name),
     tagline: str(initial?.tagline),
     personality: str(initial?.personality),
@@ -70,6 +72,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     setLoading(true);
     try {
       await onSubmit({
+        avatar_url: form.avatar_url || undefined,
         name: form.name,
         tagline: form.tagline || undefined,
         personality: form.personality,
@@ -96,6 +99,12 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
+      <AvatarUpload
+        currentUrl={form.avatar_url || null}
+        name={form.name || '?'}
+        onChange={(url) => setForm((prev) => ({ ...prev, avatar_url: url }))}
+      />
+
       <Input
         label={t('form.name')}
         value={form.name}

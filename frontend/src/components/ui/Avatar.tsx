@@ -13,7 +13,7 @@ const sizeMap = {
 };
 
 export function Avatar({ src, name, size = 'md' }: Props) {
-  const safeSrc = src && /^https?:\/\//.test(src) ? src : null;
+  const safeSrc = src && (/^https?:\/\//.test(src) || src.startsWith('/api/uploads/')) ? src : null;
   if (safeSrc) {
     return (
       <img

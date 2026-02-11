@@ -40,6 +40,7 @@
   "auth.invalidResetLink": "Invalid or missing reset link",
 
   "common.loading": "Loading...",
+  "common.uploadError": "Upload failed",
   "common.saving": "Saving...",
   "common.save": "Save",
   "common.saved": "Saved!",
@@ -122,6 +123,7 @@
   "edit.saveError": "Failed to save changes",
 
   "profile.title": "Profile",
+  "profile.avatar": "Profile photo",
   "profile.settings": "Settings",
   "profile.usernameLabel": "Username",
   "profile.usernamePlaceholder": "3-20 characters: letters, digits, underscore",
@@ -131,6 +133,8 @@
   "profile.language": "Interface language",
   "profile.myCharacters": "My Characters",
 
+  "form.avatar": "Avatar",
+  "form.avatarHint": "Click to upload (max 2MB)",
   "form.name": "Character name *",
   "form.namePlaceholder": "E.g.: Sherlock Holmes",
   "form.tagline": "Brief description",

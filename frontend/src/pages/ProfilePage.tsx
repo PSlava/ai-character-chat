@@ -6,6 +6,7 @@ import type { UserProfile } from '@/api/users';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { AvatarUpload } from '@/components/ui/AvatarUpload';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
 import type { Character } from '@/types';
@@ -67,6 +68,16 @@ export function ProfilePage() {
       <div className="mb-8 max-w-md">
         <h2 className="text-lg font-semibold mb-4">{t('profile.settings')}</h2>
         <div className="space-y-4">
+          <AvatarUpload
+            currentUrl={profile?.avatar_url || null}
+            name={profile?.display_name || profile?.username || '?'}
+            onChange={async (url) => {
+              try {
+                const updated = await updateProfile({ avatar_url: url });
+                setProfile(updated);
+              } catch { /* ignore */ }
+            }}
+          />
           <div>
             <Input
               label={t('profile.usernameLabel')}

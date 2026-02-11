@@ -11,26 +11,66 @@ from app.llm.registry import get_provider
 
 router = APIRouter(prefix="/api/characters", tags=["characters"])
 
-GENERATE_SYSTEM_PROMPT = """Ты — эксперт по созданию персонажей для ролевых чатов.
+GENERATE_SYSTEM_PROMPT = """Ты — эксперт по созданию персонажей для ролевых чатов с литературным стилем повествования.
 Проанализируй предоставленный текст и создай профиль персонажа в формате JSON.
 
 Верни строго JSON-объект со следующими полями:
 {
   "name": "Имя персонажа",
   "tagline": "Краткое описание в 5-10 слов",
-  "personality": "Детальное описание характера, манеры речи, привычек, особенностей поведения. Пиши от второго лица: 'Ты — ...'",
-  "scenario": "Описание мира, ситуации и контекста для начала диалога",
-  "greeting_message": "Первое сообщение персонажа в начале чата. Используй *звёздочки* для описания действий. Сообщение должно быть атмосферным и приглашать к диалогу.",
-  "example_dialogues": "2-3 примера коротких реплик в формате:\\nUser: ...\\nCharacter: ...",
+  "personality": "Детальное описание характера от второго лица: 'Ты — ...' Включи: темперамент, манеру речи (формальная/неформальная, особенности, любимые выражения), привычки, мотивацию, сильные и слабые стороны, отношение к другим людям. Минимум 5-7 предложений.",
+  "appearance": "Детальное описание внешности: рост, телосложение, черты лица, цвет глаз и волос, стиль одежды, особые приметы, характерные жесты и позы.",
+  "scenario": "Описание мира и начальной ситуации для диалога. Где происходит действие, какой контекст, что привело к встрече с пользователем.",
+  "greeting_message": "Первое сообщение персонажа. Литературный формат: нарратив от третьего лица обычным текстом, прямая речь через '—', внутренние мысли в *звёздочках*. 2-3 абзаца, разделённые пустой строкой.",
+  "example_dialogues": "2-3 примера реплик в формате:\\n{{user}}: ...\\n{{char}}: ...",
   "tags": ["тег1", "тег2", "тег3"],
-  "content_rating": "sfw"
+  "structured_tags": ["tag_id1", "tag_id2"],
+  "content_rating": "sfw",
+  "response_length": "long"
 }
 
-Правила:
-- personality должен быть подробным (минимум 3-4 предложения)
-- greeting_message должно быть от лица персонажа, атмосферным
+## Формат greeting_message
+
+Используй литературный стиль — как художественная проза:
+- Нарратив (действия, описания) — обычный текст от ТРЕТЬЕГО лица (она/он/имя)
+- Прямая речь — через длинное тире «—»
+- Внутренние мысли — в *звёздочках*
+- Каждый элемент — отдельный абзац через пустую строку
+- НЕ используй *звёздочки* для действий — только для мыслей
+
+Пример greeting_message:
+"Она стояла у окна, задумчиво постукивая пальцами по подоконнику. Тусклый свет фонаря выхватывал из темноты её силуэт.\\n\\n— Ты пришёл, — произнесла негромко, не оборачиваясь. — Я ждала.\\n\\n*Наконец-то. Уже начала сомневаться, что он вообще появится.*"
+
+## Формат example_dialogues
+
+Используй {{char}} и {{user}} как плейсхолдеры — они будут заменены на реальные имена:
+{{user}}: Привет!
+{{char}}: *прикусывает губу, отводя взгляд* — Здравствуй. Давно не виделись.
+
+## structured_tags
+
+Выбери подходящие ID из списка (только те, что точно подходят, 2-5 штук):
+Пол: male, female, non_binary, androgynous
+Роль: mentor, villain, love_interest, companion, rival, mysterious_stranger
+Характер: tsundere, yandere, kuudere, sarcastic, shy, cheerful, cold, flirty, wise, aggressive
+Сеттинг: fantasy, sci_fi, modern, historical, post_apocalyptic, school, horror
+Стиль: verbose, concise, emotional, stoic, poetic, humorous
+
+## response_length
+
+Выбери одно из: "short", "medium", "long", "very_long" — исходя из персонажа:
+- short — лаконичные персонажи, боевые сцены
+- medium — обычные диалоговые персонажи
+- long — персонажи с богатым внутренним миром (по умолчанию)
+- very_long — литературные, поэтичные, многословные персонажи
+
+## Правила
+
+- personality: подробный, от второго лица ("Ты — ..."), минимум 5-7 предложений
+- appearance: отдельно от personality, конкретные физические детали
+- greeting_message: литературный формат с тремя элементами (нарратив + речь + мысли)
 - content_rating: "sfw" для обычного контента, "moderate" если есть насилие/мрачные темы, "nsfw" если явный взрослый контент
-- Если указано имя конкретного персонажа — создай профиль для него. Иначе — выбери самого яркого/интересного персонажа из текста.
+- Если указано имя конкретного персонажа — создай профиль для него. Иначе — выбери самого яркого/интересного из текста.
 - Верни ТОЛЬКО JSON, без markdown-обёртки, без пояснений."""
 
 
@@ -98,7 +138,7 @@ async def generate_from_story(
         raise HTTPException(status_code=502, detail="Failed to parse LLM response as JSON")
 
     # Normalize: LLM sometimes returns arrays instead of strings
-    for field in ("name", "tagline", "personality", "scenario",
+    for field in ("name", "tagline", "personality", "appearance", "scenario",
                   "greeting_message", "example_dialogues"):
         if isinstance(data.get(field), list):
             data[field] = "\n".join(str(x) for x in data[field])
@@ -106,6 +146,18 @@ async def generate_from_story(
     # Ensure tags is a list of strings
     if "tags" in data and not isinstance(data["tags"], list):
         data["tags"] = []
+
+    # Ensure structured_tags is a list of valid IDs
+    from app.characters.structured_tags import _BY_ID
+    if isinstance(data.get("structured_tags"), list):
+        data["structured_tags"] = [t for t in data["structured_tags"] if t in _BY_ID]
+    else:
+        data["structured_tags"] = []
+
+    # Normalize response_length
+    valid_lengths = {"short", "medium", "long", "very_long"}
+    if data.get("response_length") not in valid_lengths:
+        data["response_length"] = "long"
 
     return data
 

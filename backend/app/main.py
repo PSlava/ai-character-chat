@@ -1,7 +1,10 @@
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.llm.registry import init_providers
 from app.db.session import init_db
@@ -13,6 +16,9 @@ async def lifespan(app: FastAPI):
     if settings.proxy_url:
         os.environ["HTTP_PROXY"] = settings.proxy_url
         os.environ["HTTPS_PROXY"] = settings.proxy_url
+
+    # Ensure upload directories exist
+    Path(settings.upload_dir, "avatars").mkdir(parents=True, exist_ok=True)
 
     await init_db()
     init_providers(
@@ -68,6 +74,7 @@ from app.chat.router import router as chat_router  # noqa: E402
 from app.users.router import router as users_router  # noqa: E402
 from app.llm.router import router as models_router  # noqa: E402
 from app.admin.router import router as admin_router  # noqa: E402
+from app.uploads.router import router as uploads_router  # noqa: E402
 
 app.include_router(auth_router)
 app.include_router(characters_router)
@@ -75,3 +82,7 @@ app.include_router(chat_router)
 app.include_router(users_router)
 app.include_router(models_router)
 app.include_router(admin_router)
+app.include_router(uploads_router)
+
+# Serve uploaded files (avatars etc.) — must be after routers
+app.mount("/api/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")

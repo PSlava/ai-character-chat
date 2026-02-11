@@ -40,6 +40,7 @@
   "auth.invalidResetLink": "Недействительная или отсутствующая ссылка для сброса",
 
   "common.loading": "Загрузка...",
+  "common.uploadError": "Ошибка загрузки",
   "common.saving": "Сохранение...",
   "common.save": "Сохранить",
   "common.saved": "Сохранено!",
@@ -122,6 +123,7 @@
   "edit.saveError": "Не удалось сохранить изменения",
 
   "profile.title": "Профиль",
+  "profile.avatar": "Фото профиля",
   "profile.settings": "Настройки",
   "profile.usernameLabel": "Имя пользователя",
   "profile.usernamePlaceholder": "3-20 символов: буквы, цифры, подчёркивание",
@@ -131,6 +133,8 @@
   "profile.language": "Язык интерфейса",
   "profile.myCharacters": "Мои персонажи",
 
+  "form.avatar": "Аватар",
+  "form.avatarHint": "Нажмите для загрузки (макс. 2 МБ)",
   "form.name": "Имя персонажа *",
   "form.namePlaceholder": "Например: Шерлок Холмс",
   "form.tagline": "Краткое описание",
