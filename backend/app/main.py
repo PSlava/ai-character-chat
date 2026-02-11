@@ -85,4 +85,6 @@ app.include_router(admin_router)
 app.include_router(uploads_router)
 
 # Serve uploaded files (avatars etc.) — must be after routers
+# Create directory before mounting (StaticFiles checks at import time)
+Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
 app.mount("/api/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
