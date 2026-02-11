@@ -237,6 +237,7 @@ export function ChatPage() {
         messages={messages}
         characterName={character?.name}
         characterAvatar={character?.avatar_url}
+        userName={authUser?.username}
         isStreaming={isStreaming}
         isAdmin={isAdmin}
         hasMore={hasMore}

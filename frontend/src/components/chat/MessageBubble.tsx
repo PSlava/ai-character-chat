@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, RefreshCw, EllipsisVertical } from 'lucide-react';
+import { Trash2, RefreshCw, Ellipsis } from 'lucide-react';
 import type { Message } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
 
@@ -8,22 +8,23 @@ interface Props {
   message: Message;
   characterName?: string;
   characterAvatar?: string | null;
+  userName?: string;
   isFirstMessage?: boolean;
   isAdmin?: boolean;
   onDelete?: (messageId: string) => void;
   onRegenerate?: (messageId: string) => void;
 }
 
-export function MessageBubble({ message, characterName, characterAvatar, isFirstMessage, isAdmin, onDelete, onRegenerate }: Props) {
+export function MessageBubble({ message, characterName, characterAvatar, userName, isFirstMessage, isAdmin, onDelete, onRegenerate }: Props) {
   const { t } = useTranslation();
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const displayName = isUser ? (userName || t('chat.you')) : characterName;
   const canRegenerate = isAssistant && !isFirstMessage && !!onRegenerate;
   const canDelete = !isFirstMessage && !!onDelete;
-  const hasMenu = canDelete; // menu contains delete (and potentially more later)
 
   // Close menu on outside click/tap
   useEffect(() => {
@@ -44,19 +45,19 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
   return (
     <div>
       {/* Header: avatar + name + action buttons */}
-      <div className={`flex items-center gap-2.5 mb-1 ${isUser ? 'flex-row-reverse' : ''}`}>
+      <div className={`flex items-center gap-2 mb-1 ${isUser ? 'flex-row-reverse' : ''}`}>
         {isUser ? (
-          <Avatar name={t('chat.you')} size="sm" />
+          <Avatar name={displayName || t('chat.you')} size="sm" />
         ) : (
           <Avatar src={characterAvatar} name={characterName || 'AI'} size="sm" />
         )}
         <span className="text-sm font-medium text-neutral-300">
-          {isUser ? t('chat.you') : characterName}
+          {displayName}
         </span>
 
-        {/* Action buttons — right side (or left for user messages) */}
-        {!isFirstMessage && (
-          <div className={`flex items-center gap-0.5 ${isUser ? 'mr-auto' : 'ml-auto'}`}>
+        {/* Action buttons — right next to name */}
+        {!isFirstMessage && (canRegenerate || canDelete) && (
+          <div className="flex items-center gap-0.5">
             {canRegenerate && (
               <button
                 onClick={() => onRegenerate!(message.id)}
@@ -66,13 +67,13 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
                 <span className="hidden sm:inline text-xs">{t('chat.regenerate')}</span>
               </button>
             )}
-            {hasMenu && (
+            {canDelete && (
               <div ref={menuRef} className="relative">
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 rounded-md transition-colors"
                 >
-                  <EllipsisVertical size={16} />
+                  <Ellipsis size={18} />
                 </button>
                 {menuOpen && (
                   <div
@@ -80,15 +81,13 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
                       isUser ? 'left-0' : 'right-0'
                     }`}
                   >
-                    {canDelete && (
-                      <button
-                        onClick={() => { onDelete!(message.id); setMenuOpen(false); }}
-                        className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 size={14} />
-                        {t('chat.deleteMessage')}
-                      </button>
-                    )}
+                    <button
+                      onClick={() => { onDelete!(message.id); setMenuOpen(false); }}
+                      className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                      {t('chat.deleteMessage')}
+                    </button>
                   </div>
                 )}
               </div>
