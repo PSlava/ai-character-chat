@@ -56,7 +56,8 @@ async def upload_avatar(
     # Read file into memory
     data = await file.read()
     if len(data) > settings.max_avatar_size:
-        raise HTTPException(status_code=400, detail="File too large (max 2MB)")
+        mb = settings.max_avatar_size // (1024 * 1024)
+        raise HTTPException(status_code=400, detail=f"File too large (max {mb}MB)")
 
     if not data:
         raise HTTPException(status_code=400, detail="Empty file")
