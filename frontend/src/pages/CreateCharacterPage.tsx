@@ -8,10 +8,13 @@ import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
 import { Input } from '@/components/ui/Input';
 import type { Character } from '@/types';
+import { useAuthStore } from '@/store/authStore';
 
 type Tab = 'manual' | 'from-story';
 
 export function CreateCharacterPage() {
+  const authUser = useAuthStore((s) => s.user);
+  const isAdmin = authUser?.role === 'admin';
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('manual');
@@ -213,6 +216,7 @@ export function CreateCharacterPage() {
             initial={generated || undefined}
             onSubmit={handleSubmit}
             submitLabel={t('create.createButton')}
+            isAdmin={isAdmin}
           />
         </>
       )}

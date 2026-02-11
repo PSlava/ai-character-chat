@@ -4,11 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { getCharacter, updateCharacter } from '@/api/characters';
 import { CharacterForm } from '@/components/characters/CharacterForm';
 import type { Character } from '@/types';
+import { useAuthStore } from '@/store/authStore';
 
 export function EditCharacterPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const authUser = useAuthStore((s) => s.user);
+  const isAdmin = authUser?.role === 'admin';
   const [character, setCharacter] = useState<Character | null>(null);
   const [error, setError] = useState('');
 
@@ -53,6 +56,7 @@ export function EditCharacterPage() {
         initial={character}
         onSubmit={handleSubmit}
         submitLabel={t('edit.saveChanges')}
+        isAdmin={isAdmin}
       />
     </div>
   );

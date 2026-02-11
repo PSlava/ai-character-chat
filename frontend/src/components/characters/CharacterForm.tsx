@@ -10,13 +10,14 @@ interface Props {
   initial?: Partial<Character>;
   onSubmit: (data: Partial<Character>) => Promise<void>;
   submitLabel?: string;
+  isAdmin?: boolean;
 }
 
 // AI may return arrays instead of strings — normalize to string
 const str = (v: unknown): string =>
   Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : '';
 
-export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
+export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const [form, setForm] = useState({
@@ -32,7 +33,9 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
     tags: Array.isArray(initial?.tags) ? initial.tags.join(', ') : '',
     structured_tags: initial?.structured_tags || [] as string[],
     is_public: initial?.is_public ?? true,
-    preferred_model: initial?.preferred_model || 'qwen',
+    preferred_model: (!isAdmin && ['gemini', 'claude', 'openai'].includes(initial?.preferred_model || ''))
+      ? 'auto'
+      : (initial?.preferred_model || 'qwen'),
     max_tokens: initial?.max_tokens ?? 2048,
     response_length: initial?.response_length || 'long',
   });
@@ -272,10 +275,14 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
             <option disabled>{t('form.directApiSeparator')}</option>
             <option value="deepseek">DeepSeek</option>
             <option value="qwen" disabled={form.content_rating === 'nsfw'}>Qwen (DashScope)</option>
-            <option disabled>{t('form.paidSeparator')}</option>
-            <option value="gemini">Gemini</option>
-            <option value="claude">Claude</option>
-            <option value="openai">GPT-4o</option>
+            {isAdmin && (
+              <>
+                <option disabled>{t('form.paidSeparator')}</option>
+                <option value="gemini">Gemini</option>
+                <option value="claude">Claude</option>
+                <option value="openai">GPT-4o</option>
+              </>
+            )}
           </select>
         </div>
 

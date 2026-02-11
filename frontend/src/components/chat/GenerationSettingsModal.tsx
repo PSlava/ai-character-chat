@@ -15,6 +15,7 @@ interface Props {
   cerebrasModels: OpenRouterModel[];
   togetherModels: OpenRouterModel[];
   contentRating?: string;
+  isAdmin?: boolean;
   onApply: (settings: ChatSettings) => void;
   onClose: () => void;
 }
@@ -142,7 +143,7 @@ interface ModelOption {
 
 // GROUP_LABELS are now resolved via t() inside the component
 
-export function GenerationSettingsModal({ currentModel, orModels, groqModels, cerebrasModels, togetherModels, contentRating, onApply, onClose }: Props) {
+export function GenerationSettingsModal({ currentModel, orModels, groqModels, cerebrasModels, togetherModels, contentRating, isAdmin, onApply, onClose }: Props) {
   const { t } = useTranslation();
   const [model, setModel] = useState(currentModel);
   const [local, setLocal] = useState(() => loadModelSettings(currentModel));
@@ -180,7 +181,9 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
   const isSelected = (id: string) => model === id;
 
   // Group models for rendering with headers
-  const groups = ['auto', 'openrouter', 'groq', 'cerebras', 'together', 'direct', 'paid'] as const;
+  const groups = isAdmin
+    ? (['auto', 'openrouter', 'groq', 'cerebras', 'together', 'direct', 'paid'] as const)
+    : (['auto', 'openrouter', 'groq', 'cerebras', 'together', 'direct'] as const);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>

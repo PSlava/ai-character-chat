@@ -85,7 +85,11 @@ export function ChatPage() {
           }
         } catch {}
 
-        const model = savedModel || data.chat.model_used || 'openrouter';
+        let model = savedModel || data.chat.model_used || 'openrouter';
+        // Non-admin users can't use paid models — fallback to auto
+        if (!isAdmin && ['gemini', 'claude', 'openai'].includes(model)) {
+          model = 'auto';
+        }
         setActiveModel(model);
         setGenerationSettings(loadModelSettings(model));
       })
@@ -245,7 +249,10 @@ export function ChatPage() {
         />
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold">{character?.name}</h2>
-          <p className="text-xs text-neutral-500">{getModelLabel(activeModel)}</p>
+          <p className="text-xs text-neutral-500">
+            {character?.profiles?.username && `@${character.profiles.username}`}
+            {isAdmin && <> · {getModelLabel(activeModel)}</>}
+          </p>
         </div>
         <button
           onClick={() => setShowSettings(true)}
@@ -301,6 +308,7 @@ export function ChatPage() {
           cerebrasModels={cerebrasModels}
           togetherModels={togetherModels}
           contentRating={character?.content_rating}
+          isAdmin={isAdmin}
           onApply={handleApplySettings}
           onClose={() => setShowSettings(false)}
         />
