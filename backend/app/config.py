@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     smtp_password: str | None = None
     smtp_from_email: str | None = None
     frontend_url: str = "http://localhost:5173"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "*"
     upload_dir: str = "data/uploads"
     max_avatar_size: int = 2 * 1024 * 1024  # 2MB
     environment: str = "development"  # development | production

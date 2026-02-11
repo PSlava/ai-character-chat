@@ -13,6 +13,8 @@ def _build_engine():
     is_local = any(h in url for h in ("localhost", "127.0.0.1", "postgres:"))
     if "postgresql" in url and not is_local:
         ssl_ctx = ssl.create_default_context()
+        # Supabase pooler hostname may differ from SSL cert subject
+        ssl_ctx.check_hostname = False
         kwargs["connect_args"] = {"ssl": ssl_ctx}
         kwargs["pool_pre_ping"] = True
 
