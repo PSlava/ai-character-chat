@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, RefreshCw, Ellipsis } from 'lucide-react';
+import { Trash2, RefreshCw, EllipsisVertical } from 'lucide-react';
 import type { Message } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
 
@@ -73,7 +73,7 @@ export function MessageBubble({ message, characterName, characterAvatar, userNam
                   onClick={() => setMenuOpen((v) => !v)}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 rounded-md transition-colors"
                 >
-                  <Ellipsis size={18} />
+                  <EllipsisVertical size={18} />
                 </button>
                 {menuOpen && (
                   <div
