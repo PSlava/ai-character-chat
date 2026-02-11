@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
-import { ChevronDown, ChevronRight, RotateCcw, Save } from 'lucide-react';
+import { ChevronDown, ChevronRight, RotateCcw, Save, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { getPrompts, updatePrompt, resetPrompt } from '@/api/admin';
+import { getPrompts, updatePrompt, resetPrompt, importSeedCharacters, deleteSeedCharacters } from '@/api/admin';
 import type { PromptEntry } from '@/api/admin';
 
 const KEY_LABELS: Record<string, Record<string, string>> = {
@@ -153,6 +153,8 @@ export function AdminPromptsPage() {
   const [prompts, setPrompts] = useState<PromptEntry[]>([]);
   const [loadingPrompts, setLoadingPrompts] = useState(true);
   const [tab, setTab] = useState<'ru' | 'en'>('ru');
+  const [seedLoading, setSeedLoading] = useState(false);
+  const [seedMsg, setSeedMsg] = useState<string | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -191,8 +193,67 @@ export function AdminPromptsPage() {
     );
   };
 
+  const handleSeedImport = async () => {
+    setSeedLoading(true);
+    setSeedMsg(null);
+    try {
+      const { imported } = await importSeedCharacters();
+      setSeedMsg(t('admin.seedImported', { count: imported }));
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail || err?.message;
+      if (detail === 'Seed characters already imported') {
+        setSeedMsg(t('admin.seedAlreadyImported'));
+      } else {
+        setSeedMsg(detail || 'Error');
+      }
+    } finally {
+      setSeedLoading(false);
+    }
+  };
+
+  const handleSeedDelete = async () => {
+    if (!confirm(t('admin.seedConfirmDelete'))) return;
+    setSeedLoading(true);
+    setSeedMsg(null);
+    try {
+      const { deleted } = await deleteSeedCharacters();
+      setSeedMsg(t('admin.seedDeleted', { count: deleted }));
+    } catch (err: any) {
+      setSeedMsg(err?.response?.data?.detail || err?.message || 'Error');
+    } finally {
+      setSeedLoading(false);
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto">
+      {/* Seed characters section */}
+      <div className="mb-8 border border-neutral-800 rounded-lg p-4">
+        <h2 className="text-lg font-bold mb-1">{t('admin.seedTitle')}</h2>
+        <p className="text-neutral-400 text-sm mb-4">{t('admin.seedSubtitle')}</p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSeedImport}
+            disabled={seedLoading}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors disabled:opacity-40"
+          >
+            <Download size={15} />
+            {t('admin.seedImport')}
+          </button>
+          <button
+            onClick={handleSeedDelete}
+            disabled={seedLoading}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm text-neutral-400 hover:text-white hover:bg-neutral-800 border border-neutral-700 rounded-lg transition-colors disabled:opacity-40"
+          >
+            <Trash2 size={15} />
+            {t('admin.seedDelete')}
+          </button>
+        </div>
+        {seedMsg && (
+          <p className="mt-3 text-sm text-neutral-300">{seedMsg}</p>
+        )}
+      </div>
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{t('admin.promptsTitle')}</h1>
         <p className="text-neutral-400 mt-1 text-sm">{t('admin.promptsSubtitle')}</p>

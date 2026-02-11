@@ -19,3 +19,13 @@ export async function updatePrompt(key: string, value: string): Promise<void> {
 export async function resetPrompt(key: string): Promise<void> {
   await api.delete(`/admin/prompts/${key}`);
 }
+
+export async function importSeedCharacters(): Promise<{ imported: number }> {
+  const { data } = await api.post<{ imported: number }>('/admin/seed-characters');
+  return data;
+}
+
+export async function deleteSeedCharacters(): Promise<{ deleted: number }> {
+  const { data } = await api.delete<{ deleted: number }>('/admin/seed-characters');
+  return data;
+}

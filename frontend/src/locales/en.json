@@ -210,6 +210,14 @@
   "admin.overridden": "Overridden",
   "admin.reset": "Reset",
   "admin.resetConfirm": "Reset to default value?",
+  "admin.seedTitle": "Seed Characters",
+  "admin.seedSubtitle": "30 ready-made characters from @sweetsin for a non-empty catalog",
+  "admin.seedImport": "Import",
+  "admin.seedDelete": "Delete All",
+  "admin.seedImported": "Imported {{count}} characters",
+  "admin.seedDeleted": "Deleted {{count}} characters",
+  "admin.seedAlreadyImported": "Characters already imported. Delete first to re-import.",
+  "admin.seedConfirmDelete": "Delete all seed characters from @sweetsin?",
 
   "lang.ru": "Русский",
   "lang.en": "English"
