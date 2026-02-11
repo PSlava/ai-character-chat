@@ -1,5 +1,12 @@
 from datetime import datetime
 from sqlalchemy import select
+
+_CHARACTER_ALLOWED_FIELDS = {
+    "name", "tagline", "avatar_url", "personality", "appearance",
+    "scenario", "greeting_message", "example_dialogues", "content_rating",
+    "system_prompt_suffix", "is_public", "preferred_model", "max_tokens",
+    "response_length",
+}
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db.models import Character, User
@@ -30,7 +37,8 @@ async def list_public_characters(
         .limit(limit)
     )
     if search:
-        query = query.where(Character.name.ilike(f"%{search}%"))
+        escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        query = query.where(Character.name.ilike(f"%{escaped}%"))
     if tag:
         query = query.where(Character.tags.contains(tag))
 
@@ -79,7 +87,7 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
     tags = data.pop("tags", None)
     structured_tags = data.pop("structured_tags", None)
     for key, value in data.items():
-        if value is not None:
+        if value is not None and key in _CHARACTER_ALLOWED_FIELDS:
             setattr(character, key, value)
     if tags is not None:
         character.tags = ",".join(tags) if isinstance(tags, list) else tags

@@ -1,6 +1,6 @@
 import re
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user
@@ -12,12 +12,15 @@ USERNAME_RE = re.compile(r"^[a-zA-Z0-9_]{3,20}$")
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
+_PROFILE_ALLOWED_FIELDS = {"display_name", "username", "bio", "avatar_url", "language"}
+
+
 class ProfileUpdate(BaseModel):
-    display_name: str | None = None
-    username: str | None = None
-    bio: str | None = None
-    avatar_url: str | None = None
-    language: str | None = None
+    display_name: str | None = Field(default=None, max_length=50)
+    username: str | None = Field(default=None, max_length=20)
+    bio: str | None = Field(default=None, max_length=500)
+    avatar_url: str | None = Field(default=None, max_length=2000)
+    language: str | None = Field(default=None, max_length=10)
 
 
 @router.get("/me")
@@ -60,7 +63,7 @@ async def update_profile(
             raise HTTPException(status_code=400, detail="Username already taken")
 
     for key, value in data.items():
-        if value is not None:
+        if value is not None and key in _PROFILE_ALLOWED_FIELDS:
             setattr(u, key, value)
     await db.commit()
     await db.refresh(u)
@@ -131,5 +134,12 @@ async def remove_favorite(
     fav = result.scalar_one_or_none()
     if not fav:
         raise HTTPException(status_code=404, detail="Favorite not found")
+
+    # Decrement like_count
+    char_result = await db.execute(select(Character).where(Character.id == character_id))
+    character = char_result.scalar_one_or_none()
+    if character and (character.like_count or 0) > 0:
+        character.like_count = character.like_count - 1
+
     await db.delete(fav)
     await db.commit()

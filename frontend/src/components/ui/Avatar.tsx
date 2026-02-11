@@ -13,10 +13,11 @@ const sizeMap = {
 };
 
 export function Avatar({ src, name, size = 'md' }: Props) {
-  if (src) {
+  const safeSrc = src && /^https?:\/\//.test(src) ? src : null;
+  if (safeSrc) {
     return (
       <img
-        src={src}
+        src={safeSrc}
         alt={name}
         className={`${sizeMap[size]} rounded-full object-cover`}
       />

@@ -35,3 +35,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Block startup with default JWT secret in production
+if settings.environment == "production" and settings.jwt_secret == "dev-secret-change-in-production":
+    raise RuntimeError(
+        "CRITICAL: JWT_SECRET must be changed in production! "
+        "Set JWT_SECRET environment variable to a random 256-bit secret."
+    )

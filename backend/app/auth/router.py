@@ -3,7 +3,8 @@ import secrets
 import jwt
 import bcrypt as _bcrypt
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+import re
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,15 +15,25 @@ from app.db.models import User
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
+_EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
+
+
 class RegisterRequest(BaseModel):
-    email: str
-    password: str
-    username: str | None = None  # auto-generated if not provided
+    email: str = Field(max_length=254)
+    password: str = Field(min_length=6, max_length=128)
+    username: str | None = Field(default=None, max_length=20)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        if not _EMAIL_RE.match(v):
+            raise ValueError("Invalid email format")
+        return v.lower().strip()
 
 
 class LoginRequest(BaseModel):
-    email: str
-    password: str
+    email: str = Field(max_length=254)
+    password: str = Field(max_length=128)
 
 
 def hash_password(password: str) -> str:

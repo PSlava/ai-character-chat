@@ -76,7 +76,8 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
         }),
         signal: ctrl.signal,
         onmessage(event) {
-          const data = JSON.parse(event.data);
+          let data: any;
+          try { data = JSON.parse(event.data); } catch { return; }
           if (data.type === 'token') {
             setMessages((prev) => {
               const updated = [...prev];
