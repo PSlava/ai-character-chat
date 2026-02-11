@@ -202,6 +202,15 @@ docker compose up -d
   - In-memory кэш (60 сек TTL) для минимизации запросов к БД
   - 21 ключ × 2 языка (ru/en): вступление, правила контента, длина ответа, формат с примером, структурированные теги, внешность, правила и др.
   - Страница `/admin/prompts` с табами RU/EN, expandable карточки, метки «Изменён»/«По умолчанию»
+- **Seed-персонажи** — 30 готовых персонажей от @sweetsin для непустого каталога
+  - Основаны на популярных архетипах конкурентов (SpicyChat, CrushOn, JanitorAI, Chub, WetDreams)
+  - 25 NSFW, 5 moderate: вампир, суккуб, мафия, яндере, профессор, демон, сосед, цундере, CEO, оборотень, нэко, тёмная эльфийка, фембой, сводный брат, инкуб, якудза, призрак, дракон, сталкер-бывший, андроид, доминатрикс, байкер, эльф-целитель, sugar mommy, рыцарь, Люцифер, ревнивый парень, ведьма, друг детства, пиратка
+  - DALL-E 3 аватары (512×512 WebP, ~1.1MB суммарно) — хранятся в `seed_avatars/`
+  - При импорте аватары копируются в `data/uploads/avatars/` с UUID-именами
+  - Внутренний пользователь `@sweetsin` (`system@sweetsin.cc`) создаётся автоматически
+  - `POST /api/admin/seed-characters` — импорт (409 если уже импортированы)
+  - `DELETE /api/admin/seed-characters` — удаление всех персонажей @sweetsin
+  - Кнопки «Импортировать» / «Удалить все» на странице админки
 - Ссылка в сайдбаре видна только админу
 
 ### LLM-провайдеры (9 штук)
@@ -409,7 +418,9 @@ chatbot/
 │   │   │   ├── middleware.py        # get_current_user (с role), get_current_user_optional
 │   │   │   └── rate_limit.py        # In-memory rate limiter (auth, messages, reset)
 │   │   ├── admin/                   # Админ-панель
-│   │   │   └── router.py            # CRUD промпт-шаблонов (admin only)
+│   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete (admin only)
+│   │   │   ├── seed_data.py         # 30 seed-персонажей (определения)
+│   │   │   └── seed_avatars/        # 30 DALL-E 3 аватаров (00–29.webp, 512×512)
 │   │   ├── characters/              # CRUD + генерация из текста + структурированные теги
 │   │   │   ├── router.py            # API endpoints (admin bypass) + GET /structured-tags
 │   │   │   ├── service.py           # Бизнес-логика (is_admin)
@@ -449,6 +460,8 @@ chatbot/
 │   │   └── db/                      # Модели, сессии, миграции
 │   │       ├── models.py            # User (role), Character, Chat, Message (model_used), Favorite, PromptTemplate
 │   │       └── session.py           # Engine, init_db + auto-migrations
+│   ├── scripts/
+│   │   └── generate_seed_avatars.py # Генерация аватаров через DALL-E 3
 │   ├── requirements.txt
 │   ├── Dockerfile                   # gunicorn + uvicorn workers
 │   └── .env.example
@@ -456,7 +469,7 @@ chatbot/
 │   ├── src/
 │   │   ├── api/                     # HTTP клиент, API функции
 │   │   │   ├── client.ts            # Axios с JWT
-│   │   │   ├── admin.ts             # Промпт-шаблоны (admin)
+│   │   │   ├── admin.ts             # Промпт-шаблоны + seed import/delete (admin)
 │   │   │   ├── characters.ts        # CRUD + generate + wake-up + models
 │   │   │   ├── users.ts             # Profile (username, role)
 │   │   │   ├── uploads.ts           # uploadAvatar (multipart)
