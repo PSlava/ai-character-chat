@@ -98,7 +98,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
           ))}
 
         {!isStreaming && lastAssistant && onRegenerate && (
-          <div className="flex justify-start pl-9 sm:pl-11">
+          <div className="flex justify-start">
             <button
               onClick={() => onRegenerate(lastAssistant.id)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
@@ -111,9 +111,9 @@ export function ChatWindow({ messages, characterName, characterAvatar, isStreami
         )}
 
         {!isStreaming && lastUserNoReply && onResendLast && (
-          <div className="flex justify-end pr-9 sm:pr-11">
+          <div className="flex justify-end">
             {editing ? (
-              <div className="w-full max-w-[75%] space-y-2">
+              <div className="w-full max-w-[85%] sm:max-w-[75%] space-y-2">
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
