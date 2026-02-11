@@ -103,7 +103,7 @@ export function MessageBubble({ message, characterName, characterAvatar, userNam
             ? `ml-auto max-w-[85%] sm:max-w-[75%] ${
                 message.isError
                   ? 'bg-red-900/30 border border-red-800 text-red-300'
-                  : 'bg-purple-600 text-white'
+                  : 'bg-rose-600 text-white'
               }`
             : `${
                 message.isError

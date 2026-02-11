@@ -103,7 +103,7 @@ export function CreateCharacterPage() {
           onClick={() => setTab('manual')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === 'manual'
-              ? 'bg-purple-600 text-white'
+              ? 'bg-rose-600 text-white'
               : 'bg-neutral-800 text-neutral-400 hover:text-white'
           }`}
         >
@@ -113,7 +113,7 @@ export function CreateCharacterPage() {
           onClick={() => setTab('from-story')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === 'from-story'
-              ? 'bg-purple-600 text-white'
+              ? 'bg-rose-600 text-white'
               : 'bg-neutral-800 text-neutral-400 hover:text-white'
           }`}
         >

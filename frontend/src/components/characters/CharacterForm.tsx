@@ -138,7 +138,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
                       onClick={() => toggleTag(tag.id)}
                       className={`px-3 py-1 rounded-full text-sm transition-colors ${
                         selected
-                          ? 'bg-purple-600 text-white'
+                          ? 'bg-rose-600 text-white'
                           : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
                       }`}
                     >
@@ -285,7 +285,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
               type="checkbox"
               checked={form.is_public}
               onChange={(e) => update('is_public', e.target.checked)}
-              className="w-4 h-4 rounded accent-purple-600"
+              className="w-4 h-4 rounded accent-rose-600"
             />
             <span className="text-sm text-neutral-300">{t('form.public')}</span>
           </label>
@@ -306,7 +306,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel }: Props) {
           min={256}
           max={4096}
           step={128}
-          className="w-full accent-purple-500"
+          className="w-full accent-rose-500"
         />
         <p className="text-xs text-neutral-500 mt-1">
           {t('form.maxTokensHelp')}

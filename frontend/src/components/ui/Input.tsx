@@ -11,7 +11,7 @@ export function Input({ label, className = '', ...props }: InputProps) {
         <label className="block text-sm text-neutral-400 mb-1">{label}</label>
       )}
       <input
-        className={`w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 ${className}`}
+        className={`w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500 ${className}`}
         {...props}
       />
     </div>
@@ -29,7 +29,7 @@ export function Textarea({ label, className = '', ...props }: TextareaProps) {
         <label className="block text-sm text-neutral-400 mb-1">{label}</label>
       )}
       <textarea
-        className={`w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 resize-none ${className}`}
+        className={`w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500 resize-none ${className}`}
         {...props}
       />
     </div>

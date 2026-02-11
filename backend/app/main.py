@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="AI Character Chat", lifespan=lifespan)
+app = FastAPI(title="SweetSin", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

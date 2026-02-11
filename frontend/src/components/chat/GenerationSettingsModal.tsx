@@ -98,7 +98,7 @@ function Slider({
         min={min}
         max={max}
         step={step}
-        className="w-full accent-purple-500"
+        className="w-full accent-rose-500"
       />
     </div>
   );
@@ -216,7 +216,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
                           disabled
                             ? 'border-neutral-800 bg-neutral-800/50 text-neutral-600 cursor-not-allowed'
                             : isSelected(m.id)
-                              ? 'border-purple-500 bg-purple-500/10 text-white'
+                              ? 'border-rose-500 bg-rose-500/10 text-white'
                               : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
                         }`}
                         title={disabled ? t('settings.nsfwBlocked') : undefined}
@@ -245,7 +245,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
                 onClick={() => update('context_limit', opt.value)}
                 className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
                   local.context_limit === opt.value
-                    ? 'border-purple-500 bg-purple-500/10 text-white'
+                    ? 'border-rose-500 bg-rose-500/10 text-white'
                     : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
                 }`}
               >
@@ -329,7 +329,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
           </button>
           <button
             onClick={() => { saveModelSettings(model, local); onApply({ ...local, model }); onClose(); }}
-            className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-colors"
           >
             {t('common.apply')}
           </button>

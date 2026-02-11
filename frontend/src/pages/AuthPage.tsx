@@ -102,7 +102,7 @@ export function AuthPage() {
               setIsLogin(!isLogin);
               setError('');
             }}
-            className="text-purple-400 hover:text-purple-300"
+            className="text-rose-400 hover:text-rose-300"
           >
             {isLogin ? t('auth.switchToRegister') : t('auth.switchToLogin')}
           </button>

@@ -36,7 +36,7 @@ export function HomePage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('home.search')}
-          className="w-full bg-neutral-800 border border-neutral-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-neutral-800 border border-neutral-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500"
         />
       </div>
 

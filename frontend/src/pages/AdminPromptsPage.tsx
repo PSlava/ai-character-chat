@@ -102,7 +102,7 @@ function PromptCard({ entry, onSave, onReset, t }: PromptCardProps) {
         <span className="flex-1 font-medium text-sm">{getLabel(entry.key)}</span>
         <span className="text-[10px] text-neutral-600 font-mono">{entry.key}</span>
         {isOverridden ? (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-600/20 text-purple-400">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-rose-600/20 text-rose-400">
             {t('admin.overridden')}
           </span>
         ) : (
@@ -117,13 +117,13 @@ function PromptCard({ entry, onSave, onReset, t }: PromptCardProps) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={Math.min(Math.max(text.split('\n').length + 1, 3), 12)}
-            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white font-mono resize-y focus:outline-none focus:border-purple-500"
+            className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-white font-mono resize-y focus:outline-none focus:border-rose-500"
           />
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
               disabled={!hasChanges || saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors disabled:opacity-40"
             >
               <Save size={13} />
               {saving ? t('common.saving') : t('common.save')}
@@ -205,7 +205,7 @@ export function AdminPromptsPage() {
             onClick={() => setTab(lang)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               tab === lang
-                ? 'bg-purple-600 text-white'
+                ? 'bg-rose-600 text-white'
                 : 'bg-neutral-800 text-neutral-400 hover:text-white'
             }`}
           >

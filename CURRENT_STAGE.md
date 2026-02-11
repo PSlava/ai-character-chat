@@ -1,4 +1,40 @@
-# AI Character Roleplay Chat — Текущий статус
+# SweetSin — AI Character Roleplay Chat
+
+## Бренд
+
+| Параметр | Значение |
+|----------|----------|
+| **Название** | SweetSin |
+| **Домен** | sweetsin.cc (~$10-12/год) |
+| **Слоган EN** | Where fantasy comes alive |
+| **Слоган RU** | Где фантазии оживают |
+| **Подзаголовок EN** | Where fantasy comes alive. Chat with AI characters — no limits, no filters. |
+| **Подзаголовок RU** | Где фантазии оживают. AI-персонажи без ограничений и фильтров. |
+| **Цветовая схема** | Rose (rose-500/600/700) — ранее purple |
+| **Иконка** | Flame (lucide-react) |
+| **Логотип** | Текстовый: **Sweet** (белый) + **Sin** (rose-500) |
+
+**SEO (index.html):**
+- Title: `SweetSin — AI Character Chat | Roleplay & Fantasy`
+- Meta description: Chat with AI characters without limits. Immersive roleplay, uncensored conversations, and endless fantasy.
+- Keywords: AI chat, AI roleplay, character AI alternative, NSFW AI chat, AI companion, uncensored AI, roleplay chatbot, AI girlfriend, AI boyfriend, fantasy chat, AI characters, SweetSin
+- Open Graph: title, description, type, site_name
+
+**Рассматривались домены (feb 2026):**
+- .ai зона (~$50-80/год): naughtai.ai, sweetsin.ai, temptai.ai, darkrose.ai, velvetai.ai — все свободны
+- .cc зона (~$10-12/год): sweetsin.cc ✓, naughtai.cc, darkdesire.cc, temptai.cc, lustai.cc, hotchat.cc — все свободны
+- .fun зона (~$9/год): naughtai.fun, darkdesire.fun, sweetsin.fun — все свободны
+- Заняты: lustchat.fun, lustchat.cc, afterdark.cc, spicychat.fun, spicyai.cc
+
+**Конкуренты для справки:**
+| Платформа | Домен | Трафик/мес |
+|-----------|-------|------------|
+| Character.AI | character.ai | ~200M+ |
+| CrushOn.AI | crushon.ai | ~100M |
+| SpicyChat.AI | spicychat.ai | ~73M |
+| JanitorAI | janitor.ai | ~50M+ |
+| Candy.AI | candy.ai | — |
+| Chub.AI | chub.ai | — |
 
 ## Деплой
 
@@ -234,17 +270,22 @@ docker compose up -d
 
 ### Фронтенд
 - React + TypeScript + Vite + Tailwind CSS
-- Тёмная тема
+- Тёмная тема, **цветовая схема rose** (бренд SweetSin)
 - Zustand для стейт-менеджмента
 - 8 страниц: главная, авторизация, персонаж, чат, создание, редактирование, профиль, **админ-промпты**
+- **Брендинг**: логотип Sweet+Sin с иконкой Flame, SEO мета-теги, Open Graph
 - Стриминг сообщений в реальном времени
 - Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
 - **NSFW-модели визуально отключены** в настройках для NSFW-персонажей
 - **Предупреждение Cerebras** — жёлтое предупреждение о неподдержке penalty
 - Настройки генерации (модалка с моделью + 6 слайдеров + память)
 - Управление сообщениями: удаление, перегенерация, очистка чата (кнопка RotateCcw в шапке)
+- **Красивые диалоги подтверждения** — ConfirmDialog (danger/warning) для удаления чата, очистки, удаления сообщения, удаления персонажа
+- **Мобильные действия с сообщениями** — вертикальное троеточие (⋮) вместо hover-кнопок, dropdown-меню
+- **Дизайн сообщений** — header row (аватар + имя + кнопки действий) над баблом, имя пользователя из профиля
 - Автоматическое пробуждение Render (wake-up) с индикатором статуса
 - **Профиль**: смена display name, username (с валидацией), языка
+- **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
 
 ### Инфраструктура
 - SQLAlchemy ORM (SQLite локально / PostgreSQL в проде)
@@ -268,16 +309,23 @@ docker compose up -d
 - [x] Роли пользователей (admin/user) + админ-панель промптов
 - [x] Структурированные теги — 33 тега в 5 категориях с промпт-сниппетами
 - [x] Литературный формат прозы — переписан system prompt с конкретным примером
-- [ ] Задать GROQ_API_KEY и CEREBRAS_API_KEY в Render
+- [x] Адаптивный дизайн для мобильных устройств (sidebar drawer, responsive padding, compact chat)
+- [x] Мобильные действия с сообщениями (tap-friendly menu вместо hover)
+- [x] Красивые диалоги подтверждения (ConfirmDialog для всех деструктивных действий)
+- [x] Ребрендинг — SweetSin (логотип, цвета, SEO, слоган, OG-теги)
+- [ ] Зарегистрировать домен sweetsin.cc
+- [ ] Настроить DNS и SSL для sweetsin.cc на VPS
 - [ ] Загрузка аватаров персонажей (сейчас только URL, нет загрузки файлов)
 - [ ] Протестировать качество ответов с новым литературным форматом промпта на разных моделях
 
 ### Средний приоритет
 - [ ] Пагинация в каталоге персонажей (бэкенд есть, фронтенд подгружает только первые 20)
-- [ ] Адаптивный дизайн для мобильных устройств
 - [ ] Уведомления/тосты при ошибках и успехах
 - [ ] Валидация форм (минимальная длина, обязательные поля)
 - [ ] Больше структурированных тегов (расширить реестр, добавить новые категории)
+- [ ] Favicon (SVG flame icon в rose цвете)
+- [ ] Landing page / hero section с примерами персонажей
+- [ ] Социальные мета-теги (og:image — preview card)
 
 ### Низкий приоритет (будущее)
 - [ ] OAuth авторизация (Google, GitHub)
@@ -289,6 +337,7 @@ docker compose up -d
 - [ ] Групповые чаты (несколько персонажей)
 - [ ] Голосовые сообщения (TTS)
 - [ ] Система отзывов/рейтингов персонажей
+- [ ] Монетизация (подписка, токены)
 
 ## Стек технологий
 
@@ -378,7 +427,7 @@ chatbot/
 │   │   │   │   └── GenerationSettingsModal.tsx  # Модель (7 групп) + 6 слайдеров + память
 │   │   │   ├── characters/
 │   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
-│   │   │   └── ui/                       # Button, Input, Avatar, LanguageSwitcher
+│   │   │   └── ui/                       # Button, Input, Avatar, ConfirmDialog, LanguageSwitcher
 │   │   ├── lib/                     # Утилиты (localStorage с role)
 │   │   ├── locales/                 # i18n: en.json, ru.json
 │   │   └── types/                   # TypeScript типы (Message с model_used)

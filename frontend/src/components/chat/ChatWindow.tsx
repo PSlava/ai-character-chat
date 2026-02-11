@@ -103,7 +103,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
           <div className="flex justify-start">
             <button
               onClick={() => onRegenerate(lastAssistant.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-rose-400 hover:bg-neutral-800 rounded-lg transition-colors"
               title={t('chat.regenerateTooltip')}
             >
               <RefreshCw size={13} />
@@ -119,7 +119,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
                 <textarea
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-purple-500"
+                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white text-sm resize-none focus:outline-none focus:border-rose-500"
                   rows={3}
                   autoFocus
                 />
@@ -138,7 +138,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
                       }
                     }}
                     disabled={!editText.trim()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <Send size={13} />
                     {t('common.send')}
@@ -149,7 +149,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
               <div className="flex gap-1">
                 <button
                   onClick={() => onResendLast()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-rose-400 hover:bg-neutral-800 rounded-lg transition-colors"
                   title={t('chat.retryTooltip')}
                 >
                   <RefreshCw size={13} />
@@ -160,7 +160,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
                     setEditText(lastUserNoReply.content);
                     setEditing(true);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-purple-400 hover:bg-neutral-800 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-rose-400 hover:bg-neutral-800 rounded-lg transition-colors"
                   title={t('chat.editTooltip')}
                 >
                   <Pencil size={13} />
@@ -174,9 +174,9 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
         {isStreaming && (
           <div className="flex gap-2 items-center text-neutral-500 text-sm">
             <div className="animate-pulse flex gap-1">
-              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" />
-              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:0.1s]" />
-              <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+              <span className="w-2 h-2 bg-rose-500 rounded-full animate-bounce" />
+              <span className="w-2 h-2 bg-rose-500 rounded-full animate-bounce [animation-delay:0.1s]" />
+              <span className="w-2 h-2 bg-rose-500 rounded-full animate-bounce [animation-delay:0.2s]" />
             </div>
           </div>
         )}

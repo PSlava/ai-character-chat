@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
-import { MessageCircle, Home, Heart, Settings, X } from 'lucide-react';
+import { Flame, Home, Heart, Settings, X } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -73,7 +73,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
                   to={`/chat/${chat.id}`}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                     chatId === chat.id
-                      ? 'bg-purple-600/20 text-purple-300'
+                      ? 'bg-rose-600/20 text-rose-300'
                       : 'hover:bg-neutral-800 text-neutral-400'
                   }`}
                 >
@@ -94,7 +94,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
 
       {!isAuthenticated && (
         <div className="p-4 text-sm text-neutral-500">
-          <MessageCircle className="w-8 h-8 mb-2 text-neutral-600" />
+          <Flame className="w-8 h-8 mb-2 text-neutral-600" />
           <p>{t('sidebar.loginPrompt')}</p>
         </div>
       )}
@@ -116,7 +116,10 @@ export function Sidebar({ isOpen, onClose }: Props) {
           {/* Panel */}
           <aside className="relative w-64 h-full bg-neutral-900 border-r border-neutral-800 flex flex-col overflow-hidden">
             <div className="flex items-center justify-between p-3 border-b border-neutral-800">
-              <span className="text-sm font-semibold text-neutral-300">{t('header.appName')}</span>
+              <span className="text-sm font-semibold flex items-center gap-1">
+                <Flame className="w-4 h-4 text-rose-500" />
+                <span className="text-neutral-300">Sweet</span><span className="text-rose-500">Sin</span>
+              </span>
               <button onClick={onClose} className="p-1 text-neutral-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
               </button>

@@ -37,7 +37,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
           placeholder={t('chat.placeholder')}
           rows={2}
           disabled={disabled}
-          className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-purple-500 resize-none max-h-48"
+          className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500 resize-none max-h-48"
         />
         {isStreaming ? (
           <button
@@ -50,7 +50,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
           <button
             onClick={handleSend}
             disabled={!text.trim() || disabled}
-            className="p-3 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-3 bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5" />
           </button>

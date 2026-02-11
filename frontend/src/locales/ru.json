@@ -1,5 +1,5 @@
 {
-  "header.appName": "AI Chat",
+  "header.appName": "SweetSin",
   "header.create": "Создать",
   "header.login": "Войти",
 
@@ -36,7 +36,7 @@
   "common.send": "Отправить",
 
   "home.title": "Персонажи",
-  "home.subtitle": "Выберите персонажа и начните общение",
+  "home.subtitle": "Где фантазии оживают. AI-персонажи без ограничений и фильтров.",
   "home.search": "Поиск персонажей...",
   "home.noCharacters": "Персонажи не найдены",
 
