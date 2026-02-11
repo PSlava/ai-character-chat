@@ -68,6 +68,20 @@ async def health():
     return {"status": "ok", "commit": _COMMIT, "started_at": _STARTED_AT}
 
 
+@app.get("/api/health/db")
+async def health_db():
+    """Test database connectivity and return diagnostic info."""
+    from app.db.session import engine
+    try:
+        from sqlalchemy import text
+        async with engine.connect() as conn:
+            result = await conn.execute(text("SELECT 1"))
+            result.fetchone()
+        return {"status": "ok", "db": "connected"}
+    except Exception as e:
+        return {"status": "error", "db": str(type(e).__name__), "detail": str(e)[:500]}
+
+
 from app.auth.router import router as auth_router  # noqa: E402
 from app.characters.router import router as characters_router  # noqa: E402
 from app.chat.router import router as chat_router  # noqa: E402
