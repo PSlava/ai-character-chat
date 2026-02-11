@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, RefreshCw } from 'lucide-react';
+import { Trash2, RefreshCw, EllipsisVertical } from 'lucide-react';
 import type { Message } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
 
@@ -18,14 +18,29 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
   const { t } = useTranslation();
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
-  const [hovering, setHovering] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const hasActions = !isFirstMessage && ((isAssistant && onRegenerate) || onDelete);
+
+  // Close menu on outside click/tap
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('touchstart', handler);
+    };
+  }, [menuOpen]);
 
   return (
-    <div
-      className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-    >
+    <div className={`group flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div className="shrink-0 mt-1">
         {isUser ? (
           <Avatar name={t('chat.you')} size="sm" />
@@ -50,25 +65,44 @@ export function MessageBubble({ message, characterName, characterAvatar, isFirst
         {isAdmin && isAssistant && message.model_used && (
           <span className="text-[10px] text-neutral-600 mt-0.5 block">{message.model_used}</span>
         )}
-        {!isFirstMessage && hovering && (
-          <div className={`absolute top-1 ${isUser ? '-left-8' : '-right-8'} flex flex-col gap-1`}>
-            {isAssistant && onRegenerate && (
-              <button
-                onClick={() => onRegenerate(message.id)}
-                className="p-1 text-neutral-500 hover:text-purple-400 transition-colors"
-                title={t('chat.regenerateTooltip')}
+
+        {/* Action menu */}
+        {hasActions && (
+          <div
+            ref={menuRef}
+            className={`absolute top-1 ${isUser ? '-left-8' : '-right-8'}`}
+          >
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="p-1.5 text-neutral-600 hover:text-neutral-300 transition-opacity opacity-50 md:opacity-0 md:group-hover:opacity-100"
+            >
+              <EllipsisVertical size={16} />
+            </button>
+            {menuOpen && (
+              <div
+                className={`absolute z-50 top-full mt-1 py-1 bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl min-w-[160px] ${
+                  isUser ? 'right-0' : 'left-0'
+                }`}
               >
-                <RefreshCw size={14} />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={() => onDelete(message.id)}
-                className="p-1 text-neutral-500 hover:text-red-400 transition-colors"
-                title={t('chat.deleteMessage')}
-              >
-                <Trash2 size={14} />
-              </button>
+                {isAssistant && onRegenerate && (
+                  <button
+                    onClick={() => { onRegenerate(message.id); setMenuOpen(false); }}
+                    className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
+                  >
+                    <RefreshCw size={14} />
+                    {t('chat.regenerate')}
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    onClick={() => { onDelete(message.id); setMenuOpen(false); }}
+                    className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                    {t('chat.deleteMessage')}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}
