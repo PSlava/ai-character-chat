@@ -4,7 +4,7 @@
 Usage:
     OPENAI_API_KEY=... python3 scripts/generate_seed_avatars.py
 
-Cost: ~$1.20 (30 images × $0.04 each, DALL-E 3 standard 1024×1024)
+Cost: ~$1.60 (40 images × $0.04 each, DALL-E 3 standard 1024×1024)
 """
 
 import asyncio
@@ -83,6 +83,27 @@ AVATAR_PROMPTS = [
     "Warm digital art portrait of a young man with a pleasant face, messy chestnut hair, brown eyes, wide genuine smile. Wearing a casual hoodie. Boy-next-door aesthetic, rooftop sunset golden hour lighting, bust shot.",
     # 29 Изабелла — pirate captain
     "Adventure digital art portrait of a tanned woman with dark curly hair, amber eyes, a small scar on her cheek. White shirt, leather corset, gold hoop earrings. Pirate captain, ocean and ship deck background, bust shot.",
+    # ── Realistic female characters ──
+    # 30 Алина — neighbor
+    "Realistic digital art portrait of a pretty young woman in her 20s with shoulder-length light brown hair, green eyes, light freckles on her nose. Wearing an oversized t-shirt, no makeup, natural look. Friendly warm smile, cozy apartment doorway background, bust shot.",
+    # 31 Марина — secretary
+    "Realistic digital art portrait of a slim attractive woman in her late 20s with dark hair in a neat bun, brown eyes behind thin-framed glasses. White blouse, pencil skirt. Professional but approachable, dim office evening lighting with desk lamp, bust shot.",
+    # 32 Даша — former classmate
+    "Realistic digital art portrait of a stunning woman in her late 20s with chestnut wavy hair, brown eyes, red lipstick. Wearing an elegant red dress. Confident alluring smile, warm bar ambient lighting, bust shot.",
+    # 33 Лена — fitness trainer
+    "Realistic digital art portrait of an athletic young woman with long blonde hair in a high ponytail, tanned skin, bright smile. Wearing a sports top and leggings. Fit and energetic, modern gym background with soft lighting, bust shot.",
+    # 34 Настя — train companion
+    "Realistic digital art portrait of a petite cute young woman with light hair in a messy bun, blue eyes, snub nose. Wearing a cozy oversized hoodie. Sweet natural look, warm train compartment night lighting, bust shot.",
+    # 35 Юля — English tutor
+    "Realistic digital art portrait of a slim young woman with long dark hair, brown eyes behind round glasses. Wearing a casual button-up shirt, holding a pen. Studious yet pretty, warm home study room lighting, bust shot.",
+    # 36 Оксана — mom's friend
+    "Realistic digital art portrait of an elegant well-groomed woman in her late 30s with shoulder-length auburn hair, green eyes, tasteful makeup. Wearing a shirt dress. Confident mature beauty, bright modern kitchen background, bust shot.",
+    # 37 Ира — bartender/waitress
+    "Realistic digital art portrait of a young woman with red hair in a ponytail, gray-green eyes, freckles. Wearing a black bar t-shirt, slightly disheveled end-of-shift look. Playful smirk, moody dark bar background with warm ambient lights, bust shot.",
+    # 38 Катя — roommate
+    "Realistic digital art portrait of a slim young woman with long straight black hair, dark eyes, no makeup. Wearing pajama shorts and a loose oversized t-shirt. Cozy relaxed vibe, dim living room with laptop glow, bust shot.",
+    # 39 Вера — masseuse
+    "Realistic digital art portrait of a gentle-looking woman in her late 20s with light brown hair pulled back, soft gray eyes. Wearing a white fitted medical uniform top. Calm serene expression, spa room with candles and soft warm lighting, bust shot.",
 ]
 
 
@@ -90,10 +111,10 @@ async def generate_avatar(client: httpx.AsyncClient, prompt: str, index: int, na
     """Generate a single avatar with DALL-E 3 and save as WebP."""
     filepath = AVATARS_DIR / f"{index:02d}.webp"
     if filepath.exists():
-        print(f"  [{index + 1}/30] {name} — already exists, skipping")
+        print(f"  [{index + 1}/{len(AVATAR_PROMPTS)}] {name} — already exists, skipping")
         return True
 
-    print(f"  [{index + 1}/30] Generating {name}...")
+    print(f"  [{index + 1}/{len(AVATAR_PROMPTS)}] Generating {name}...")
 
     try:
         response = await client.post(
@@ -149,7 +170,7 @@ async def main():
 
     print(f"Generating {len(SEED_CHARACTERS)} avatars with DALL-E 3")
     print(f"Output: {AVATARS_DIR}")
-    print(f"Estimated cost: ~$1.20")
+    print(f"Estimated cost: ~${len(SEED_CHARACTERS) * 0.04:.2f}")
     print()
 
     success = 0
