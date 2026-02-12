@@ -10,9 +10,24 @@ echo "=== Deploy started at $(date) ==="
 # Pull latest code
 git pull origin main
 
-# Rebuild and restart app services only (NOT webhook — it runs this script,
-# restarting it kills the deploy process mid-way, leaving containers in "Created" state)
-docker compose up -d --build --force-recreate --no-deps backend nginx
+# Build images first (no containers affected)
+echo "Building images..."
+docker compose build backend nginx
+
+# Restart backend, wait for healthy, then restart nginx
+echo "Restarting backend..."
+docker compose up -d --no-deps backend
+echo "Waiting for backend to be healthy..."
+for i in $(seq 1 30); do
+    if docker compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" 2>/dev/null; then
+        echo "Backend healthy."
+        break
+    fi
+    sleep 2
+done
+
+echo "Restarting nginx..."
+docker compose up -d --no-deps nginx
 
 # Clean up old images
 docker image prune -f
