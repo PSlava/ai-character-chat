@@ -202,12 +202,7 @@ export function AdminPromptsPage() {
       const { imported } = await importSeedCharacters();
       setSeedMsg(t('admin.seedImported', { count: imported }));
     } catch (err: any) {
-      const detail = err?.response?.data?.detail || err?.message;
-      if (detail === 'Seed characters already imported') {
-        setSeedMsg(t('admin.seedAlreadyImported'));
-      } else {
-        setSeedMsg(detail || 'Error');
-      }
+      setSeedMsg(err?.response?.data?.detail || err?.message || 'Error');
     } finally {
       setSeedLoading(false);
     }

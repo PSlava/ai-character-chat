@@ -112,15 +112,10 @@ async def import_seed_characters(
     """Import 40 seed characters under @sweetsin user."""
     sweetsin = await _get_or_create_sweetsin(db)
 
-    # Check if already imported
-    count = await db.execute(
-        select(func.count()).select_from(Character).where(
-            Character.creator_id == sweetsin.id
-        )
+    # Delete existing seed characters to avoid duplicates
+    await db.execute(
+        delete(Character).where(Character.creator_id == sweetsin.id)
     )
-    existing = count.scalar()
-    if existing and existing > 0:
-        raise HTTPException(status_code=409, detail="Seed characters already imported")
 
     # Copy seed avatars to uploads dir if available
     import shutil
