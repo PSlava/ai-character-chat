@@ -35,11 +35,20 @@ export interface Chat {
   id: string;
   user_id: string;
   character_id: string;
+  persona_id?: string | null;
   title: string | null;
   model_used: string | null;
   created_at: string;
   updated_at: string;
   characters?: Character;
+}
+
+export interface Persona {
+  id: string;
+  name: string;
+  description: string | null;
+  is_default: boolean;
+  created_at: string;
 }
 
 export interface Message {

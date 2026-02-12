@@ -4,15 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { getMyCharacters } from '@/api/characters';
 import { getProfile, updateProfile, deleteAccount } from '@/api/users';
 import type { UserProfile } from '@/api/users';
+import { getPersonas, createPersona, updatePersona, deletePersona } from '@/api/personas';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
-import { Input } from '@/components/ui/Input';
+import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
-import type { Character } from '@/types';
+import type { Character, Persona } from '@/types';
+import { Plus, Star, Pencil, Trash2, Check, X } from 'lucide-react';
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -30,6 +32,16 @@ export function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Personas state
+  const [personas, setPersonas] = useState<Persona[]>([]);
+  const [showPersonaForm, setShowPersonaForm] = useState(false);
+  const [editingPersona, setEditingPersona] = useState<Persona | null>(null);
+  const [personaName, setPersonaName] = useState('');
+  const [personaDesc, setPersonaDesc] = useState('');
+  const [personaDefault, setPersonaDefault] = useState(false);
+  const [personaSaving, setPersonaSaving] = useState(false);
+  const [deletePersonaId, setDeletePersonaId] = useState<string | null>(null);
+
   useEffect(() => {
     getMyCharacters()
       .then(setMyCharacters)
@@ -39,6 +51,7 @@ export function ProfilePage() {
       setDisplayName(p.display_name || '');
       setUsername(p.username || '');
     });
+    getPersonas().then(setPersonas).catch(() => {});
   }, []);
 
   const handleDeleteAccount = async () => {
@@ -51,6 +64,64 @@ export function ProfilePage() {
       setDeleting(false);
       setShowDeleteConfirm(false);
     }
+  };
+
+  const resetPersonaForm = () => {
+    setShowPersonaForm(false);
+    setEditingPersona(null);
+    setPersonaName('');
+    setPersonaDesc('');
+    setPersonaDefault(false);
+  };
+
+  const handlePersonaSave = async () => {
+    if (!personaName.trim()) return;
+    setPersonaSaving(true);
+    try {
+      if (editingPersona) {
+        const updated = await updatePersona(editingPersona.id, {
+          name: personaName.trim(),
+          description: personaDesc.trim() || undefined,
+          is_default: personaDefault,
+        });
+        setPersonas((prev) => prev.map((p) => {
+          if (p.id === updated.id) return updated;
+          if (personaDefault && p.is_default) return { ...p, is_default: false };
+          return p;
+        }));
+      } else {
+        const created = await createPersona({
+          name: personaName.trim(),
+          description: personaDesc.trim() || undefined,
+          is_default: personaDefault,
+        });
+        setPersonas((prev) => {
+          const list = personaDefault ? prev.map((p) => ({ ...p, is_default: false })) : prev;
+          return [...list, created];
+        });
+      }
+      resetPersonaForm();
+    } catch {
+      /* ignore */
+    } finally {
+      setPersonaSaving(false);
+    }
+  };
+
+  const handlePersonaDelete = async (id: string) => {
+    setDeletePersonaId(null);
+    try {
+      await deletePersona(id);
+      setPersonas((prev) => prev.filter((p) => p.id !== id));
+    } catch { /* ignore */ }
+  };
+
+  const startEditPersona = (p: Persona) => {
+    setEditingPersona(p);
+    setPersonaName(p.name);
+    setPersonaDesc(p.description || '');
+    setPersonaDefault(p.is_default);
+    setShowPersonaForm(true);
   };
 
   const handleSave = async () => {
@@ -142,6 +213,112 @@ export function ProfilePage() {
         </div>
       </div>
 
+      {/* Personas section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold">{t('persona.title')}</h2>
+            <p className="text-neutral-500 text-sm mt-0.5">{t('persona.subtitle')}</p>
+          </div>
+          {personas.length < 10 && !showPersonaForm && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => { resetPersonaForm(); setShowPersonaForm(true); }}
+            >
+              <Plus className="w-4 h-4 mr-1 inline" />
+              {t('persona.create')}
+            </Button>
+          )}
+        </div>
+
+        {/* Inline form for create/edit */}
+        {showPersonaForm && (
+          <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4 mb-4 max-w-md">
+            <div className="space-y-3">
+              <Input
+                label={t('persona.name')}
+                value={personaName}
+                onChange={(e) => setPersonaName(e.target.value)}
+                placeholder={t('persona.namePlaceholder')}
+                maxLength={50}
+              />
+              <Textarea
+                label={t('persona.description')}
+                value={personaDesc}
+                onChange={(e) => setPersonaDesc(e.target.value)}
+                placeholder={t('persona.descriptionPlaceholder')}
+                rows={3}
+                maxLength={2000}
+              />
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-neutral-300">
+                <input
+                  type="checkbox"
+                  checked={personaDefault}
+                  onChange={(e) => setPersonaDefault(e.target.checked)}
+                  className="rounded bg-neutral-700 border-neutral-600 text-rose-500 focus:ring-rose-500"
+                />
+                {t('persona.isDefault')}
+              </label>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handlePersonaSave} disabled={personaSaving || !personaName.trim()}>
+                  <Check className="w-4 h-4 mr-1 inline" />
+                  {personaSaving ? t('common.saving') : t('common.save')}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={resetPersonaForm}>
+                  <X className="w-4 h-4 mr-1 inline" />
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Persona cards */}
+        {personas.length === 0 && !showPersonaForm ? (
+          <p className="text-neutral-500 text-sm">{t('persona.empty')}</p>
+        ) : (
+          <div className="grid gap-3 max-w-md">
+            {personas.map((p) => (
+              <div key={p.id} className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-4 flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-white truncate">{p.name}</span>
+                    {p.is_default && (
+                      <span className="flex items-center gap-1 text-xs text-amber-400 bg-amber-900/30 px-2 py-0.5 rounded-full">
+                        <Star className="w-3 h-3" />
+                        {t('persona.default')}
+                      </span>
+                    )}
+                  </div>
+                  {p.description && (
+                    <p className="text-neutral-400 text-sm mt-1 line-clamp-2">{p.description}</p>
+                  )}
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <button
+                    onClick={() => startEditPersona(p)}
+                    className="p-1.5 rounded-lg hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setDeletePersonaId(p.id)}
+                    className="p-1.5 rounded-lg hover:bg-red-900/50 text-neutral-400 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {personas.length >= 10 && (
+          <p className="text-neutral-500 text-xs mt-2">{t('persona.limit')}</p>
+        )}
+      </div>
+
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-4">{t('profile.myCharacters')}</h2>
         <CharacterGrid characters={myCharacters} loading={loading} />
@@ -157,6 +334,15 @@ export function ProfilePage() {
           {t('profile.deleteAccount')}
         </Button>
       </div>
+
+      {deletePersonaId && (
+        <ConfirmDialog
+          title={t('persona.deleteTitle')}
+          message={t('persona.deleteConfirm')}
+          onConfirm={() => handlePersonaDelete(deletePersonaId)}
+          onCancel={() => setDeletePersonaId(null)}
+        />
+      )}
 
       {showDeleteConfirm && (
         <ConfirmDialog

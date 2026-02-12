@@ -8,7 +8,7 @@ from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from app.chat.schemas import CreateChatRequest, SendMessageRequest
 from app.chat import service
-from app.db.models import User
+from app.db.models import User, Persona
 from app.llm.base import LLMConfig
 from app.llm.registry import get_provider
 from app.config import settings
@@ -47,6 +47,7 @@ def chat_to_dict(c):
         "id": c.id,
         "user_id": c.user_id,
         "character_id": c.character_id,
+        "persona_id": getattr(c, 'persona_id', None),
         "title": c.title,
         "model_used": c.model_used,
         "created_at": c.created_at.isoformat() if c.created_at else None,
@@ -69,7 +70,9 @@ async def create_chat(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    chat, character, created = await service.get_or_create_chat(db, user["id"], body.character_id, body.model)
+    chat, character, created = await service.get_or_create_chat(
+        db, user["id"], body.character_id, body.model, persona_id=body.persona_id,
+    )
     if not chat:
         raise HTTPException(status_code=404, detail="Character not found")
 
@@ -194,13 +197,22 @@ async def send_message(
     # Get user display name and language for system prompt
     user_result = await db.execute(select(User).where(User.id == user["id"]))
     user_obj = user_result.scalar_one_or_none()
-    user_name = user_obj.display_name if user_obj else None
     language = body.language or (user_obj.language if user_obj else None) or "ru"
+
+    # Load persona if attached to chat
+    user_name = user_obj.display_name if user_obj else None
+    user_description = None
+    if chat.persona_id:
+        persona_result = await db.execute(select(Persona).where(Persona.id == chat.persona_id))
+        persona_obj = persona_result.scalar_one_or_none()
+        if persona_obj:
+            user_name = persona_obj.name
+            user_description = persona_obj.description
 
     # Build context
     messages = await service.build_conversation_messages(
-        db, chat_id, character, user_name=user_name, language=language,
-        context_limit=body.context_limit,
+        db, chat_id, character, user_name=user_name, user_description=user_description,
+        language=language, context_limit=body.context_limit,
     )
 
     # Resolve provider and model ID

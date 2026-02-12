@@ -239,6 +239,25 @@
   "ageGate.decline": "Мне нет 18 — уйти",
   "ageGate.disclaimer": "Входя на сайт, вы соглашаетесь с тем, что несёте ответственность за просмотр данного контента в соответствии с законодательством вашей страны.",
 
+  "persona.title": "Мои персоны",
+  "persona.subtitle": "Создайте описания себя, чтобы персонажи подстраивались под ваш образ",
+  "persona.create": "Создать персону",
+  "persona.name": "Имя персоны",
+  "persona.namePlaceholder": "Как персонажи будут к вам обращаться",
+  "persona.description": "Описание / предыстория",
+  "persona.descriptionPlaceholder": "Расскажите о себе: кто вы, чем занимаетесь, ваш характер...",
+  "persona.isDefault": "По умолчанию",
+  "persona.default": "По умолчанию",
+  "persona.delete": "Удалить персону",
+  "persona.deleteConfirm": "Удалить эту персону? Чаты, использующие её, продолжат работать без персоны.",
+  "persona.deleteTitle": "Удалить персону?",
+  "persona.limit": "Максимум 10 персон",
+  "persona.selectTitle": "Выберите персону",
+  "persona.selectSubtitle": "От чьего лица вы хотите общаться?",
+  "persona.none": "Без персоны",
+  "persona.noneHint": "Использовать имя из профиля",
+  "persona.empty": "У вас пока нет персон",
+
   "lang.ru": "Русский",
   "lang.en": "English"
 }

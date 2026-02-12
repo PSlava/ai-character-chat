@@ -41,6 +41,7 @@ class User(Base):
 
     characters: Mapped[list["Character"]] = relationship(back_populates="creator")
     chats: Mapped[list["Chat"]] = relationship(back_populates="user")
+    personas: Mapped[list["Persona"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
 class Character(Base):
@@ -75,12 +76,27 @@ class Character(Base):
     chats: Mapped[list["Chat"]] = relationship(back_populates="character", cascade="all, delete-orphan")
 
 
+class Persona(Base):
+    __tablename__ = "personas"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="personas")
+    chats: Mapped[list["Chat"]] = relationship(back_populates="persona")
+
+
 class Chat(Base):
     __tablename__ = "chats"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     character_id: Mapped[str] = mapped_column(ForeignKey("characters.id", ondelete="CASCADE"))
+    persona_id: Mapped[str | None] = mapped_column(ForeignKey("personas.id", ondelete="SET NULL"), nullable=True)
     title: Mapped[str | None] = mapped_column(String, nullable=True)
     model_used: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -88,6 +104,7 @@ class Chat(Base):
 
     user: Mapped["User"] = relationship(back_populates="chats")
     character: Mapped["Character"] = relationship(back_populates="chats")
+    persona: Mapped["Persona | None"] = relationship(back_populates="chats")
     messages: Mapped[list["Message"]] = relationship(back_populates="chat", cascade="all, delete-orphan")
 
 

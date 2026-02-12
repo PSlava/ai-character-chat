@@ -239,6 +239,25 @@
   "ageGate.decline": "I am under 18 — Leave",
   "ageGate.disclaimer": "By entering this site, you agree that you are responsible for viewing this content in accordance with the laws of your country.",
 
+  "persona.title": "My Personas",
+  "persona.subtitle": "Create descriptions of yourself so characters adapt to your persona",
+  "persona.create": "Create Persona",
+  "persona.name": "Persona name",
+  "persona.namePlaceholder": "How characters will address you",
+  "persona.description": "Description / backstory",
+  "persona.descriptionPlaceholder": "Tell about yourself: who you are, what you do, your personality...",
+  "persona.isDefault": "Default",
+  "persona.default": "Default",
+  "persona.delete": "Delete persona",
+  "persona.deleteConfirm": "Delete this persona? Chats using it will continue without a persona.",
+  "persona.deleteTitle": "Delete persona?",
+  "persona.limit": "Maximum 10 personas",
+  "persona.selectTitle": "Choose a Persona",
+  "persona.selectSubtitle": "Who do you want to be in this chat?",
+  "persona.none": "No persona",
+  "persona.noneHint": "Use profile display name",
+  "persona.empty": "You don't have any personas yet",
+
   "lang.ru": "Русский",
   "lang.en": "English"
 }

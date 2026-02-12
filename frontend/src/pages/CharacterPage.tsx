@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getCharacter, deleteCharacter } from '@/api/characters';
 import { createChat } from '@/api/chat';
+import { getPersonas } from '@/api/personas';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatStore } from '@/store/chatStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { MessageCircle, Heart, User, Pencil, Trash2 } from 'lucide-react';
-import type { Character } from '@/types';
+import { MessageCircle, Heart, User, Pencil, Trash2, Star } from 'lucide-react';
+import type { Character, Persona } from '@/types';
 
 export function CharacterPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,8 @@ export function CharacterPage() {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPersonaModal, setShowPersonaModal] = useState(false);
+  const [personas, setPersonas] = useState<Persona[]>([]);
 
   const isAdmin = user?.role === 'admin';
   const isOwner = isAuthenticated && character && (user?.id === character.creator_id || isAdmin);
@@ -34,18 +37,41 @@ export function CharacterPage() {
     }
   }, [id]);
 
+  const startChatWithPersona = async (personaId?: string) => {
+    if (!character) return;
+    setShowPersonaModal(false);
+    setLoading(true);
+    try {
+      const { chat } = await createChat(character.id, undefined, personaId);
+      await fetchChats();
+      navigate(`/chat/${chat.id}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleStartChat = async () => {
     if (!character || !isAuthenticated) {
       navigate('/auth');
       return;
     }
-    setLoading(true);
+    // Fetch personas and decide flow
     try {
-      const { chat } = await createChat(character.id);
-      await fetchChats();
-      navigate(`/chat/${chat.id}`);
-    } finally {
-      setLoading(false);
+      const list = await getPersonas();
+      setPersonas(list);
+      if (list.length === 0) {
+        // No personas — start directly
+        startChatWithPersona();
+      } else if (list.length === 1 && list[0].is_default) {
+        // Single default persona — use automatically
+        startChatWithPersona(list[0].id);
+      } else {
+        // Multiple personas — show picker
+        setShowPersonaModal(true);
+      }
+    } catch {
+      // API error — start without persona
+      startChatWithPersona();
     }
   };
 
@@ -184,6 +210,47 @@ export function CharacterPage() {
           onConfirm={handleDelete}
           onCancel={() => setShowDeleteConfirm(false)}
         />
+      )}
+
+      {/* Persona selection modal */}
+      {showPersonaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowPersonaModal(false)}>
+          <div
+            className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 sm:p-6 w-full max-w-sm mx-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold text-white mb-1">{t('persona.selectTitle')}</h3>
+            <p className="text-sm text-neutral-400 mb-4">{t('persona.selectSubtitle')}</p>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {/* No persona option */}
+              <button
+                onClick={() => startChatWithPersona()}
+                className="w-full text-left p-3 rounded-xl bg-neutral-800/50 border border-neutral-700 hover:border-neutral-500 transition-colors"
+              >
+                <span className="font-medium text-neutral-300">{t('persona.none')}</span>
+                <span className="block text-xs text-neutral-500 mt-0.5">{t('persona.noneHint')}</span>
+              </button>
+              {/* Persona options */}
+              {personas.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => startChatWithPersona(p.id)}
+                  className="w-full text-left p-3 rounded-xl bg-neutral-800/50 border border-neutral-700 hover:border-rose-500/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-white">{p.name}</span>
+                    {p.is_default && (
+                      <Star className="w-3.5 h-3.5 text-amber-400" />
+                    )}
+                  </div>
+                  {p.description && (
+                    <p className="text-xs text-neutral-400 mt-1 line-clamp-2">{p.description}</p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </div>

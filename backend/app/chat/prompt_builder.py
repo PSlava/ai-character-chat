@@ -27,6 +27,7 @@ _DEFAULTS = {
         "extra_instructions": "## Дополнительные инструкции",
         "user_section": "## Пользователь",
         "user_name_line": "Имя пользователя — {user_name}. Можешь обращаться к нему по имени.",
+        "user_description_line": "О пользователе: {user_description}",
         "format_header": "## Формат ответа",
         "rules_header": "## Правила",
         "length_short": (
@@ -107,6 +108,7 @@ _DEFAULTS = {
         "extra_instructions": "## Additional Instructions",
         "user_section": "## User",
         "user_name_line": "The user's name is {user_name}. You may address them by name.",
+        "user_description_line": "About the user: {user_description}",
         "format_header": "## Response Format",
         "rules_header": "## Rules",
         "length_short": (
@@ -223,6 +225,7 @@ def get_all_keys() -> list[dict]:
 async def build_system_prompt(
     character: dict,
     user_name: str | None = None,
+    user_description: str | None = None,
     language: str = "ru",
     engine=None,
 ) -> str:
@@ -272,7 +275,10 @@ async def build_system_prompt(
         parts.append(f"\n{_get(lang, 'extra_instructions')}\n{tpl(character['system_prompt_suffix'])}")
 
     if user_name:
-        parts.append(f"\n{_get(lang, 'user_section')}\n{_get(lang, 'user_name_line').format(user_name=user_name)}")
+        user_lines = _get(lang, 'user_name_line').format(user_name=user_name)
+        if user_description:
+            user_lines += "\n" + _get(lang, 'user_description_line').format(user_description=user_description)
+        parts.append(f"\n{_get(lang, 'user_section')}\n{user_lines}")
 
     length_keys = {
         "short": "length_short",

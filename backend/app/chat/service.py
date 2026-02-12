@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.db.models import Chat, Message, Character, User, MessageRole
+from app.db.models import Chat, Message, Character, User, Persona, MessageRole
 from app.chat.prompt_builder import build_system_prompt
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage
@@ -11,7 +11,10 @@ MAX_CONTEXT_MESSAGES = 50
 DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/token
 
 
-async def get_or_create_chat(db: AsyncSession, user_id: str, character_id: str, model: str | None = None):
+async def get_or_create_chat(
+    db: AsyncSession, user_id: str, character_id: str,
+    model: str | None = None, persona_id: str | None = None,
+):
     """Return existing chat with this character, or create a new one."""
     # Check for existing chat
     existing = await db.execute(
@@ -33,6 +36,7 @@ async def get_or_create_chat(db: AsyncSession, user_id: str, character_id: str, 
     chat = Chat(
         user_id=user_id,
         character_id=character_id,
+        persona_id=persona_id,
         title=character.name,
         model_used=model_used,
     )
@@ -42,9 +46,17 @@ async def get_or_create_chat(db: AsyncSession, user_id: str, character_id: str, 
     # Apply {{char}}/{{user}} template variables in greeting
     greeting_text = character.greeting_message
     if "{{char}}" in greeting_text or "{{user}}" in greeting_text:
-        user_result = await db.execute(select(User).where(User.id == user_id))
-        user_obj = user_result.scalar_one_or_none()
-        u_name = user_obj.display_name if user_obj and user_obj.display_name else "User"
+        # Prefer persona name over display_name for {{user}}
+        u_name = None
+        if persona_id:
+            persona_result = await db.execute(select(Persona).where(Persona.id == persona_id))
+            persona_obj = persona_result.scalar_one_or_none()
+            if persona_obj:
+                u_name = persona_obj.name
+        if not u_name:
+            user_result = await db.execute(select(User).where(User.id == user_id))
+            user_obj = user_result.scalar_one_or_none()
+            u_name = user_obj.display_name if user_obj and user_obj.display_name else "User"
         greeting_text = greeting_text.replace("{{char}}", character.name).replace("{{user}}", u_name)
 
     greeting = Message(
@@ -215,6 +227,7 @@ async def build_conversation_messages(
     chat_id: str,
     character: Character,
     user_name: str | None = None,
+    user_description: str | None = None,
     language: str = "ru",
     context_limit: int | None = None,
 ) -> list[LLMMessage]:
@@ -230,7 +243,10 @@ async def build_conversation_messages(
         "appearance": getattr(character, 'appearance', None),
         "structured_tags": [t for t in (getattr(character, 'structured_tags', '') or '').split(",") if t],
     }
-    system_prompt = await build_system_prompt(char_dict, user_name=user_name, language=language, engine=db_engine)
+    system_prompt = await build_system_prompt(
+        char_dict, user_name=user_name, user_description=user_description,
+        language=language, engine=db_engine,
+    )
     messages_data, _ = await get_chat_messages(db, chat_id)  # all messages, no limit
 
     # context_limit is in "real" tokens; multiply by ~4 for char-based estimation
