@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { AgeGate } from '@/components/ui/AgeGate';
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -15,6 +16,7 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
+      <AgeGate />
     </div>
   );
 }

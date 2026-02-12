@@ -229,6 +229,12 @@
   "admin.cleanupResult": "Deleted: {{deleted}}, kept: {{kept}}",
   "admin.seedConfirmDelete": "Delete all seed characters from @sweetsin?",
 
+  "ageGate.title": "Adults Only",
+  "ageGate.message": "This website contains adult content (18+), including explicit text and sexual themes. By continuing, you confirm that you are at least 18 years old.",
+  "ageGate.confirm": "I am 18 or older — Enter",
+  "ageGate.decline": "I am under 18 — Leave",
+  "ageGate.disclaimer": "By entering this site, you agree that you are responsible for viewing this content in accordance with the laws of your country.",
+
   "lang.ru": "Русский",
   "lang.en": "English"
 }
