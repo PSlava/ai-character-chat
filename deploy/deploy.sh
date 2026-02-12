@@ -10,8 +10,9 @@ echo "=== Deploy started at $(date) ==="
 # Pull latest code
 git pull origin main
 
-# Rebuild and restart containers
-docker compose up -d --build --remove-orphans
+# Rebuild and restart app services only (NOT webhook — it runs this script,
+# restarting it kills the deploy process mid-way, leaving containers in "Created" state)
+docker compose up -d --build --force-recreate --no-deps backend nginx
 
 # Clean up old images
 docker image prune -f
