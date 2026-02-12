@@ -6,6 +6,7 @@ import { createChat } from '@/api/chat';
 import { getPersonas } from '@/api/personas';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatStore } from '@/store/chatStore';
+import { useFavoritesStore } from '@/store/favoritesStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -18,6 +19,7 @@ export function CharacterPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { fetchChats } = useChatStore();
+  const { favoriteIds, addFavorite: addFav, removeFavorite: removeFav } = useFavoritesStore();
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -121,10 +123,26 @@ export function CharacterPage() {
               <MessageCircle className="w-4 h-4" />
               {character.chat_count} {t('character.chats')}
             </span>
-            <span className="flex items-center gap-1">
-              <Heart className="w-4 h-4" />
+            <button
+              onClick={() => {
+                if (!isAuthenticated) { navigate('/auth'); return; }
+                if (favoriteIds.has(character.id)) {
+                  removeFav(character.id);
+                  setCharacter((c) => c ? { ...c, like_count: Math.max(0, c.like_count - 1) } : c);
+                } else {
+                  addFav(character.id);
+                  setCharacter((c) => c ? { ...c, like_count: c.like_count + 1 } : c);
+                }
+              }}
+              className={`flex items-center gap-1 transition-colors ${
+                favoriteIds.has(character.id)
+                  ? 'text-rose-500 hover:text-rose-400'
+                  : 'hover:text-rose-400'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${favoriteIds.has(character.id) ? 'fill-current' : ''}`} />
               {character.like_count}
-            </span>
+            </button>
             {character.profiles?.username && (
               <span className="flex items-center gap-1">
                 <User className="w-4 h-4" />

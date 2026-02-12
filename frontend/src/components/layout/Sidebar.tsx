@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
+import { useFavoritesStore } from '@/store/favoritesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Flame, Home, Heart, Settings, X } from 'lucide-react';
@@ -16,14 +17,16 @@ export function Sidebar({ isOpen, onClose }: Props) {
   const { user, isAuthenticated } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { chats, fetchChats } = useChatStore();
+  const { fetchFavorites } = useFavoritesStore();
   const { chatId } = useParams();
   const location = useLocation();
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchChats();
+      fetchFavorites();
     }
-  }, [isAuthenticated, fetchChats]);
+  }, [isAuthenticated, fetchChats, fetchFavorites]);
 
   // Close drawer on route change (mobile)
   useEffect(() => {
@@ -42,7 +45,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
         </Link>
         {isAuthenticated && (
           <Link
-            to="/profile"
+            to="/favorites"
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
           >
             <Heart className="w-4 h-4" />

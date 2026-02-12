@@ -5,7 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
+from sqlalchemy.orm import selectinload
 from app.db.models import User, Favorite, Character
+from app.characters.serializers import character_to_dict
 from app.utils.sanitize import strip_html_tags
 
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_]{3,20}$")
@@ -95,23 +97,14 @@ async def update_profile(
 @router.get("/me/favorites")
 async def get_favorites(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     result = await db.execute(
-        select(Favorite, Character)
-        .join(Character, Favorite.character_id == Character.id)
+        select(Character)
+        .join(Favorite, Favorite.character_id == Character.id)
         .where(Favorite.user_id == user["id"])
+        .options(selectinload(Character.creator))
+        .order_by(Favorite.created_at.desc())
     )
-    rows = result.all()
-    return [
-        {
-            "character_id": fav.character_id,
-            "character": {
-                "id": char.id,
-                "name": char.name,
-                "tagline": char.tagline,
-                "avatar_url": char.avatar_url,
-            },
-        }
-        for fav, char in rows
-    ]
+    characters = result.scalars().all()
+    return [character_to_dict(c) for c in characters]
 
 
 @router.post("/me/favorites/{character_id}", status_code=201)

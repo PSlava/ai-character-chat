@@ -258,6 +258,10 @@
   "persona.noneHint": "Использовать имя из профиля",
   "persona.empty": "У вас пока нет персон",
 
+  "favorites.title": "Избранное",
+  "favorites.empty": "У вас пока нет избранных персонажей",
+  "favorites.emptyHint": "Нажмите \u2764\ufe0f на карточке любого персонажа, чтобы добавить в избранное",
+
   "lang.ru": "Русский",
   "lang.en": "English"
 }

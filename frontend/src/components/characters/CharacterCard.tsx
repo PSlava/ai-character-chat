@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Character } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
+import { useAuth } from '@/hooks/useAuth';
+import { useFavoritesStore } from '@/store/favoritesStore';
 import { MessageCircle, Heart } from 'lucide-react';
 
 interface Props {
@@ -8,6 +10,25 @@ interface Props {
 }
 
 export function CharacterCard({ character }: Props) {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { favoriteIds, addFavorite, removeFavorite } = useFavoritesStore();
+  const isFav = favoriteIds.has(character.id);
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      navigate('/auth');
+      return;
+    }
+    if (isFav) {
+      removeFavorite(character.id);
+    } else {
+      addFavorite(character.id);
+    }
+  };
+
   return (
     <Link
       to={`/character/${character.id}`}
@@ -27,10 +48,17 @@ export function CharacterCard({ character }: Props) {
               <MessageCircle className="w-3 h-3" />
               {character.chat_count}
             </span>
-            <span className="flex items-center gap-1">
-              <Heart className="w-3 h-3" />
+            <button
+              onClick={toggleFavorite}
+              className={`flex items-center gap-1 transition-colors ${
+                isFav
+                  ? 'text-rose-500 hover:text-rose-400'
+                  : 'hover:text-rose-400'
+              }`}
+            >
+              <Heart className={`w-3 h-3 ${isFav ? 'fill-current' : ''}`} />
               {character.like_count}
-            </span>
+            </button>
             {character.profiles?.username && (
               <span>@{character.profiles.username}</span>
             )}

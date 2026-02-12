@@ -49,7 +49,7 @@
 
 ### VPS-деплой (Docker Compose) — РАБОТАЕТ
 
-VPS развёрнут на `45.33.60.244`. Docker Compose: 4 контейнера, автодеплой через GitHub webhook.
+VPS развёрнут на `89.116.31.138` (sweetsin.cc). Docker Compose: 4 контейнера, автодеплой через GitHub webhook.
 
 ```bash
 # Вариант 1 — Интерактивная установка (спросит ключи):
@@ -77,11 +77,13 @@ docker compose up -d
 | webhook | GitHub webhook → auto-deploy | 9000 |
 
 Автодеплой:
-- **GitHub Webhook** — Flask-сервер на порту 9000, при push в main → `git pull && docker compose up -d --build`
+- **GitHub Webhook** — Flask-сервер на порту 9000, при push в main → `git pull && docker compose build && up -d`
+- **Zero-downtime deploy** — build images → restart backend → health check → restart nginx (последовательно)
 - **Deploy tracking** — статус деплоя (deploying/done/failed/timeout) с exit_code и временными метками
 - **Health endpoint** — `GET :9000/health` возвращает commit, started_at, last_deploy (status, exit_code, finished_at)
-- **Docker compose v2** — standalone binary в webhook-контейнере (не через apt)
-- **SSL** — опциональный Certbot (Let's Encrypt) через setup.sh
+- **Docker compose v2 + buildx** — standalone бинарники в webhook-контейнере
+- **Same-path mount** — webhook контейнер монтирует репо по тому же пути что и на хосте (`HOST_REPO_DIR:HOST_REPO_DIR`), чтобы build context и volume paths совпадали для Docker daemon
+- **SSL** — Certbot (Let's Encrypt) через setup.sh, настроен для sweetsin.cc
 
 ## Env-переменные
 
@@ -114,6 +116,7 @@ docker compose up -d
 | DOMAIN | — | Вручную | Домен для SSL |
 | POSTGRES_PASSWORD | — | auto-generated | Пароль PostgreSQL |
 | WEBHOOK_SECRET | — | auto-generated | GitHub webhook secret |
+| HOST_REPO_DIR | — | /opt/ai-chat | Путь к репозиторию на хосте (для webhook same-path mount) |
 
 ## Что сделано
 
@@ -139,6 +142,8 @@ docker compose up -d
 - Полный CRUD: создание, просмотр, редактирование, удаление (с cascade на чаты)
 - **Админ может редактировать и удалять персонажей всех пользователей**
 - Каталог публичных персонажей с поиском и фильтрацией по тегам
+- **Пагинация каталога** — 15 персонажей на страницу, навигация по страницам с умными номерами (1 ... 3 4 5 ... 12)
+- **Сортировка по популярности** — персонажи сортируются по количеству сообщений на текущем языке пользователя (JSONB `message_counts`)
 - Приватные персонажи видны только владельцу в каталоге
 - Страница персонажа со статистикой (чаты, лайки), **username создателя как @username**
 - Избранное (лайки)
@@ -153,6 +158,27 @@ docker compose up -d
 - **Выбор AI-модели** — OpenRouter, Groq, Cerebras, Together + прямые провайдеры (DeepSeek, Qwen)
 - **API реестра моделей** — `GET /api/models/{openrouter,groq,cerebras,together}`
 - **API реестра тегов** — `GET /api/characters/structured-tags` — категории и теги для формы
+- **Автоперевод карточек** — имена, tagline и теги автоматически переводятся LLM при просмотре на другом языке (batch, с кэшированием в JSONB)
+- **Счётчик сообщений по языкам** — атомарный инкремент JSONB `message_counts` при каждом сообщении (кроме перегенераций)
+
+### Персоны пользователя
+- **Пользовательские персоны** — до 10 альтернативных личностей для ролевых чатов
+- CRUD: создание, редактирование, удаление, установка дефолтной
+- Каждая персона имеет имя и опциональное описание
+- При создании чата с персоной — имя персоны используется вместо display name для `{{user}}`
+- Привязка к чату через `persona_id` (FK на Chat)
+- При удалении персоны — чаты продолжают работать (`persona_id` → NULL)
+- HTML-санитизация текстовых полей
+
+### Автоперевод карточек персонажей
+- **Batch-перевод через LLM** — до 15 персонажей за один вызов Groq/Cerebras/OpenRouter
+- **Правила для имён**: собственные → транслитерация (Алина → Alina), описательные → перевод (Тёмный Лорд → Dark Lord), смешанные → комбинация (Князь Владимир → Prince Vladimir)
+- **JSONB кэш** — `translations` поле на Character: `{"en": {"name": "...", "tagline": "...", "tags": [...]}}`
+- **Прозрачная подстановка** — бэкенд возвращает переведённые данные, фронтенд не знает о переводе
+- **Fire-and-forget сохранение** — перевод сохраняется в фоне через `asyncio.create_task()`, не блокирует ответ
+- **Сброс кэша** — при обновлении name/tagline/tags кэш очищается
+- **Fallback** — при ошибке перевода показывается оригинал, timeout 8с
+- Поддержка 8 языков (en, ru, es, fr, de, ja, zh, ko)
 
 ### Чат
 - **Один чат на персонажа** — повторный «Начать чат» открывает существующий, не создаёт дубликат
@@ -357,48 +383,53 @@ docker compose up -d
 - SSL для подключения к Supabase (CERT_REQUIRED, check_hostname=False для pooler)
 - **Файловое хранилище** — `data/uploads/` с Docker volume, nginx раздача с кэшированием
 - **Docker Compose** — полный VPS-деплой (PostgreSQL + Backend + Nginx + Webhook)
-- **Multi-stage Docker build** — frontend собирается в node:20, раздаётся через nginx:alpine
+- **Multi-stage Docker build** — frontend собирается в node:20, nginx.conf baked в образ (не volume mount)
 - **GitHub Webhook** — автодеплой при push в main (Flask на порту 9000), tracking статуса (done/failed/timeout)
+- **Zero-downtime deploy** — build → restart backend → health check (до 60с) → restart nginx
+- **Same-path mount** — webhook контейнер монтирует репо по `HOST_REPO_DIR:HOST_REPO_DIR`, чтобы Docker daemon видел корректные пути для build context и volumes
 - **Health endpoints** — `/api/health` и `:9000/health` с commit hash, started_at, last_deploy
 - **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`), настройка SMTP, ADMIN_EMAILS, авто-определение FRONTEND_URL
-- **SSL** — опциональный Certbot через setup.sh, поддержка добавления домена позже
+- **SSL** — Certbot (Let's Encrypt), настроен для sweetsin.cc
 - render.yaml + vercel.json для облачного деплоя
 - Прокси для обхода региональных ограничений API
 
 ## Что нужно доработать
 
 ### Высокий приоритет
-- [x] Протестировать Docker Compose сборку локально — все образы собираются, контейнеры стартуют
-- [x] Развернуть на VPS (45.33.60.244) — работает, автодеплой через webhook
-- [x] Настроить GitHub webhook для автодеплоя (с отслеживанием статуса деплоя)
+- [x] Протестировать Docker Compose сборку локально
+- [x] Развернуть на VPS — работает на sweetsin.cc (89.116.31.138)
+- [x] Настроить GitHub webhook для автодеплоя (zero-downtime, health check)
 - [x] Роли пользователей (admin/user) + админ-панель промптов
 - [x] Структурированные теги — 33 тега в 5 категориях с промпт-сниппетами
 - [x] Литературный формат прозы — переписан system prompt с конкретным примером
-- [x] Адаптивный дизайн для мобильных устройств (sidebar drawer, responsive padding, compact chat)
-- [x] Мобильные действия с сообщениями (tap-friendly menu вместо hover)
-- [x] Красивые диалоги подтверждения (ConfirmDialog для всех деструктивных действий)
-- [x] Ребрендинг — SweetSin (логотип, цвета, SEO, слоган, OG-теги)
-- [x] Загрузка аватаров персонажей и пользователей (POST /api/upload/avatar, Pillow → WebP 512x512)
-- [x] 40 seed-персонажей с DALL-E 3 аватарами (30 фэнтези + 10 реалистичных женских)
-- [x] Age gate (18+) для неавторизованных пользователей
-- [x] Удаление аккаунта (danger zone на ProfilePage)
-- [x] Жизненный цикл аватаров (автоудаление при замене/удалении + очистка сирот)
-- [x] Docker env vars (SMTP, FRONTEND_URL, ADMIN_EMAILS, AUTO_PROVIDER_ORDER) проброшены в контейнер
-- [x] Перевод ошибок бэкенда на фронтенде (ERROR_MAP)
-- [ ] Зарегистрировать домен sweetsin.cc
-- [ ] Настроить DNS и SSL для sweetsin.cc на VPS
+- [x] Адаптивный дизайн для мобильных устройств
+- [x] Мобильные действия с сообщениями (tap-friendly menu)
+- [x] Красивые диалоги подтверждения (ConfirmDialog)
+- [x] Ребрендинг — SweetSin
+- [x] Загрузка аватаров (Pillow → WebP 512x512)
+- [x] 40 seed-персонажей с DALL-E 3 аватарами
+- [x] Age gate (18+)
+- [x] Удаление аккаунта
+- [x] Жизненный цикл аватаров (автоудаление + очистка сирот)
+- [x] Docker env vars проброшены в контейнер
+- [x] Перевод ошибок бэкенда (ERROR_MAP)
+- [x] Домен sweetsin.cc — DNS + SSL (Let's Encrypt) настроены
+- [x] Пагинация каталога (15 на страницу, smart page numbers)
+- [x] Автоперевод карточек персонажей (name, tagline, tags через LLM с кэшированием)
+- [x] Счётчик сообщений по языкам + сортировка по популярности
+- [x] Пользовательские персоны (до 10 альтернативных личностей)
 - [ ] Настроить SMTP (Gmail / Resend) для отправки email (сброс пароля)
-- [ ] Протестировать качество ответов с новым литературным форматом промпта на разных моделях
+- [ ] Протестировать качество ответов с литературным форматом на разных моделях
 
 ### Средний приоритет
-- [ ] Пагинация в каталоге персонажей (бэкенд есть, фронтенд подгружает только первые 20)
 - [ ] Уведомления/тосты при ошибках и успехах
-- [ ] Валидация форм (минимальная длина, обязательные поля)
 - [ ] Больше структурированных тегов (расширить реестр, добавить новые категории)
 - [ ] Favicon (SVG flame icon в rose цвете)
 - [ ] Landing page / hero section с примерами персонажей
 - [ ] Социальные мета-теги (og:image — preview card)
 - [ ] Множественные чаты с одним персонажем (история чатов)
+- [ ] Перевод описаний персонажей целиком (personality, scenario, greeting) — пока переводятся только карточки
+- [ ] Выбор персоны в UI чата (сейчас только API)
 
 ### Низкий приоритет (будущее)
 - [ ] OAuth авторизация (Google, GitHub)
@@ -439,16 +470,17 @@ chatbot/
 │   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete + cleanup-avatars (admin only)
 │   │   │   ├── seed_data.py         # 40 seed-персонажей (определения)
 │   │   │   └── seed_avatars/        # 40 DALL-E 3 аватаров (00–39.webp, 512×512)
-│   │   ├── characters/              # CRUD + генерация из текста + структурированные теги
+│   │   ├── characters/              # CRUD + генерация + теги + перевод
 │   │   │   ├── router.py            # API endpoints (admin bypass) + GET /structured-tags
-│   │   │   ├── service.py           # Бизнес-логика (is_admin)
+│   │   │   ├── service.py           # Бизнес-логика (is_admin, сортировка по популярности)
 │   │   │   ├── schemas.py           # Pydantic модели
-│   │   │   ├── serializers.py       # ORM → dict (username в profiles)
+│   │   │   ├── serializers.py       # ORM → dict (username, active_translations)
+│   │   │   ├── translation.py       # Batch LLM-перевод карточек (name, tagline, tags) + JSONB кэш
 │   │   │   └── structured_tags.py   # Реестр 33 тегов × 5 категорий (с промпт-сниппетами ru/en)
-│   │   ├── chat/                    # SSE стриминг, контекст
-│   │   │   ├── router.py            # send_message (SSE + model_used), delete, clear
-│   │   │   ├── service.py           # Контекстное окно, сохранение (model_used)
-│   │   │   ├── schemas.py           # SendMessageRequest (model, temp, top_p, context_limit, etc.)
+│   │   ├── chat/                    # SSE стриминг, контекст, счётчики
+│   │   │   ├── router.py            # send_message (SSE + model_used + message count), delete, clear
+│   │   │   ├── service.py           # Контекстное окно, сохранение, increment_message_count
+│   │   │   ├── schemas.py           # SendMessageRequest (model, temp, top_p, is_regenerate, etc.)
 │   │   │   └── prompt_builder.py    # Defaults + DB overrides, 21 ключ × ru/en, литературный формат с примером, 60s cache
 │   │   ├── llm/                     # 9 провайдеров + реестр + модели + кулдаун
 │   │   │   ├── base.py              # BaseLLMProvider, LLMConfig (+ content_rating)
@@ -469,6 +501,9 @@ chatbot/
 │   │   │   ├── gemini_provider.py      # Gemini
 │   │   │   ├── thinking_filter.py      # ThinkingFilter для <think> блоков
 │   │   │   └── router.py              # GET /api/models/{openrouter,groq,cerebras,together}
+│   │   ├── personas/                # Пользовательские персоны
+│   │   │   ├── router.py            # CRUD (до 10 на пользователя)
+│   │   │   └── schemas.py           # PersonaCreate, PersonaUpdate
 │   │   ├── uploads/                 # Загрузка файлов (аватары)
 │   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP)
 │   │   ├── users/                   # Профиль (username update), избранное, удаление аккаунта
@@ -476,7 +511,7 @@ chatbot/
 │   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
 │   │   │   └── email.py             # Async email sender (SMTP + dev console fallback)
 │   │   └── db/                      # Модели, сессии, миграции
-│   │       ├── models.py            # User (role), Character, Chat, Message (model_used), Favorite, PromptTemplate
+│   │       ├── models.py            # User, Character (translations, message_counts), Chat (persona_id), Message, Favorite, Persona, PromptTemplate
 │   │       └── session.py           # Engine, init_db + auto-migrations
 │   ├── scripts/
 │   │   └── generate_seed_avatars.py # Генерация аватаров через DALL-E 3
@@ -494,7 +529,7 @@ chatbot/
 │   │   │   └── chat.ts              # chats, messages, delete, clear
 │   │   ├── hooks/
 │   │   │   ├── useAuth.ts           # Авторизация
-│   │   │   └── useChat.ts           # SSE стриминг + GenerationSettings + model_used
+│   │   │   └── useChat.ts           # SSE стриминг + GenerationSettings + model_used + is_regenerate
 │   │   ├── store/                   # Zustand (auth с role, chat)
 │   │   ├── pages/                   # 10 страниц
 │   │   │   ├── AuthPage.tsx         # Вход / регистрация / забыли пароль (3 режима)
@@ -526,8 +561,8 @@ chatbot/
 │   │   ├── nginx.conf               # Reverse proxy + SSE support
 │   │   └── certs/                   # SSL сертификаты (gitignored)
 │   └── webhook/
-│       ├── Dockerfile               # Python + docker CLI + docker compose v2
-│       ├── server.py                # Flask webhook server
+│       ├── Dockerfile               # Python + docker CLI + docker compose v2 + buildx
+│       ├── server.py                # Flask webhook server (HOST_REPO_DIR aware)
 │       └── requirements.txt
 ├── docker-compose.yml               # PostgreSQL + Backend + Nginx + Webhook + uploads volume
 ├── .env.example                     # Шаблон переменных (cp → .env → nano → setup --auto)

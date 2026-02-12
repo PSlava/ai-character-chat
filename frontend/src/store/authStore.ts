@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getToken, getUser, removeToken, removeUser } from '@/lib/supabase';
+import { useFavoritesStore } from './favoritesStore';
 
 interface AuthUser {
   id: string;
@@ -35,6 +36,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     removeToken();
     removeUser();
+    useFavoritesStore.getState().clear();
     set({ token: null, user: null });
   },
 }));
