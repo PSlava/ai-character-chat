@@ -68,7 +68,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+      - ${HOST_REPO_DIR:-.}/deploy/nginx/certs:/etc/nginx/certs:ro
       - uploads:/app/uploads:ro
 
   webhook:
@@ -81,7 +81,7 @@ services:
       HOST_REPO_DIR: ${HOST_REPO_DIR:-/opt/ai-chat}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - .:/app/repo
+      - ${HOST_REPO_DIR:-.}:/app/repo
 
 volumes:
   pgdata:
