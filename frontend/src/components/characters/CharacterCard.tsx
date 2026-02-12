@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Character } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
@@ -14,6 +15,8 @@ export function CharacterCard({ character }: Props) {
   const { isAuthenticated } = useAuth();
   const { favoriteIds, addFavorite, removeFavorite } = useFavoritesStore();
   const isFav = favoriteIds.has(character.id);
+  const initialFav = useRef(isFav);
+  const likeOffset = (isFav ? 1 : 0) - (initialFav.current ? 1 : 0);
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,7 +60,7 @@ export function CharacterCard({ character }: Props) {
               }`}
             >
               <Heart className={`w-3 h-3 ${isFav ? 'fill-current' : ''}`} />
-              {character.like_count}
+              {Math.max(0, character.like_count + likeOffset)}
             </button>
             {character.profiles?.username && (
               <span>@{character.profiles.username}</span>
