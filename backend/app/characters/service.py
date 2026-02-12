@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.utils.sanitize import strip_html_tags
 
 _TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "scenario",
@@ -48,6 +48,30 @@ async def list_public_characters(
 
     result = await db.execute(query)
     return result.scalars().all()
+
+
+async def count_public_characters(
+    db: AsyncSession,
+    search: str | None = None,
+    tag: str | None = None,
+    user_id: str | None = None,
+) -> int:
+    from sqlalchemy import or_
+
+    if user_id:
+        visibility = or_(Character.is_public == True, Character.creator_id == user_id)
+    else:
+        visibility = Character.is_public == True
+
+    query = select(func.count()).select_from(Character).where(visibility)
+    if search:
+        escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        query = query.where(Character.name.ilike(f"%{escaped}%"))
+    if tag:
+        query = query.where(Character.tags.contains(tag))
+
+    result = await db.execute(query)
+    return result.scalar_one()
 
 
 async def get_character(db: AsyncSession, character_id: str):

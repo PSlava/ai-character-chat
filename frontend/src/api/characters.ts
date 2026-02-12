@@ -9,13 +9,18 @@ export interface OpenRouterModel {
   note: string;
 }
 
+export interface PaginatedCharacters {
+  items: Character[];
+  total: number;
+}
+
 export async function getCharacters(params?: {
   search?: string;
   tag?: string;
   limit?: number;
   offset?: number;
 }) {
-  const { data } = await api.get<Character[]>('/characters', { params });
+  const { data } = await api.get<PaginatedCharacters>('/characters', { params });
   return data;
 }
 

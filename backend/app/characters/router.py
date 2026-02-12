@@ -164,7 +164,7 @@ async def generate_from_story(
 
 @router.get("")
 async def browse_characters(
-    limit: int = Query(20, le=50),
+    limit: int = Query(15, le=50),
     offset: int = Query(0, ge=0),
     search: str | None = None,
     tag: str | None = None,
@@ -173,7 +173,8 @@ async def browse_characters(
 ):
     user_id = user["id"] if user else None
     characters = await service.list_public_characters(db, limit, offset, search, tag, user_id=user_id)
-    return [character_to_dict(c) for c in characters]
+    total = await service.count_public_characters(db, search, tag, user_id=user_id)
+    return {"items": [character_to_dict(c) for c in characters], "total": total}
 
 
 @router.get("/my")
