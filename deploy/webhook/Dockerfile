@@ -1,7 +1,11 @@
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    docker.io git curl && rm -rf /var/lib/apt/lists/*
+    git curl && rm -rf /var/lib/apt/lists/*
+
+# Install docker CLI (static binary)
+RUN curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-27.5.1.tgz" \
+    | tar xz --strip-components=1 -C /usr/local/bin docker/docker
 
 # Install docker compose v2 CLI plugin (standalone)
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
