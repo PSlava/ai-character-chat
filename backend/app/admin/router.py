@@ -89,13 +89,14 @@ async def _get_or_create_sweetsin(db: AsyncSession) -> User:
         return user
 
     import secrets
-    from passlib.hash import bcrypt
+    import bcrypt as _bcrypt
 
+    random_password = secrets.token_hex(32).encode()
     user = User(
         email=SWEETSIN_EMAIL,
         username=SWEETSIN_USERNAME,
         display_name="SweetSin",
-        password_hash=bcrypt.hash(secrets.token_hex(32)),
+        password_hash=_bcrypt.hashpw(random_password, _bcrypt.gensalt()).decode(),
         role="user",
     )
     db.add(user)
