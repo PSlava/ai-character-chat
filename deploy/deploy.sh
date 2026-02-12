@@ -11,10 +11,13 @@ echo "=== Deploy started at $(date) ==="
 git pull origin main
 
 # When running inside webhook container, volume mounts resolve to container
-# paths (/app/repo/...) instead of host paths. --project-directory fixes this
-# by telling docker compose to resolve relative paths from the host directory.
-PROJECT_DIR="${HOST_REPO_DIR:-$(pwd)}"
-DC="docker compose --project-directory $PROJECT_DIR"
+# paths (/app/repo/...) instead of host paths. Use -f for compose file location
+# (container path) and --project-directory for volume path resolution (host path).
+if [ -n "$HOST_REPO_DIR" ]; then
+    DC="docker compose -f $REPO_DIR/docker-compose.yml --project-directory $HOST_REPO_DIR"
+else
+    DC="docker compose"
+fi
 
 # Build images first (no containers affected)
 echo "Building images..."
