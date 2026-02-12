@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import String, Text, Boolean, Integer, DateTime, ForeignKey, Enum as SAEnum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 import enum
 
@@ -69,6 +70,7 @@ class Character(Base):
     preferred_model: Mapped[str] = mapped_column(String, default="claude")
     max_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True, default=2048)
     response_length: Mapped[str | None] = mapped_column(String, nullable=True, default="long")
+    message_counts: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)  # {"ru": 150, "en": 30}
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

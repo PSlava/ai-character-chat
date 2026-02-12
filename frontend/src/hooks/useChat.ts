@@ -27,7 +27,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
   }, []);
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, opts?: { is_regenerate?: boolean }) => {
       const token = await getAuthToken();
       if (!token) return;
 
@@ -65,6 +65,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
         body: JSON.stringify({
           content,
           language: i18n.language,
+          ...(opts?.is_regenerate && { is_regenerate: true }),
           ...(s.model && { model: s.model }),
           ...(s.temperature !== undefined && { temperature: s.temperature }),
           ...(s.top_p !== undefined && { top_p: s.top_p }),
@@ -191,7 +192,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
 
       // Remove the old user message right before resending so sendMessage adds a fresh one
       setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
-      sendMessage(userContent);
+      sendMessage(userContent, { is_regenerate: true });
     },
     [chatId, sendMessage]
   );

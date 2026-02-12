@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db.models import Chat, Message, Character, User, Persona, MessageRole
@@ -220,6 +220,22 @@ async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_i
     await db.delete(msg)
     await db.commit()
     return True
+
+
+async def increment_message_count(character_id: str, language: str):
+    """Atomically increment message_counts->{language} for a character."""
+    lang = language[:10]  # safety limit
+    async with db_engine.begin() as conn:
+        await conn.execute(
+            text("""
+                UPDATE characters SET message_counts = jsonb_set(
+                    COALESCE(message_counts, '{}'),
+                    ARRAY[:lang],
+                    to_jsonb(COALESCE((message_counts->>:lang)::int, 0) + 1)
+                ) WHERE id = :cid
+            """),
+            {"lang": lang, "cid": character_id},
+        )
 
 
 async def build_conversation_messages(

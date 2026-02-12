@@ -19,6 +19,7 @@ export async function getCharacters(params?: {
   tag?: string;
   limit?: number;
   offset?: number;
+  language?: string;
 }) {
   const { data } = await api.get<PaginatedCharacters>('/characters', { params });
   return data;

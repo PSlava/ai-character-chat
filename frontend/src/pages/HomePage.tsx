@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getCharacters } from '@/api/characters';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
@@ -8,19 +8,27 @@ import type { Character } from '@/types';
 const PAGE_SIZE = 15;
 
 export function HomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const prevLangRef = useRef(i18n.language);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   useEffect(() => {
-    // Reset to page 1 when search changes
+    // Reset to page 1 when search or language changes
     setPage(1);
   }, [search]);
+
+  useEffect(() => {
+    if (prevLangRef.current !== i18n.language) {
+      prevLangRef.current = i18n.language;
+      setPage(1);
+    }
+  }, [i18n.language]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -29,6 +37,7 @@ export function HomePage() {
         search: search || undefined,
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
+        language: i18n.language,
       })
         .then((res) => {
           setCharacters(res.items);
@@ -37,7 +46,7 @@ export function HomePage() {
         .finally(() => setLoading(false));
     }, search ? 300 : 0);
     return () => clearTimeout(timer);
-  }, [search, page]);
+  }, [search, page, i18n.language]);
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">

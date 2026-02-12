@@ -18,3 +18,4 @@ class SendMessageRequest(BaseModel):
     max_tokens: int | None = Field(default=None, ge=128, le=8192)
     context_limit: int | None = Field(default=None, ge=0, le=128000)
     language: str | None = Field(default=None, max_length=10)
+    is_regenerate: bool = False

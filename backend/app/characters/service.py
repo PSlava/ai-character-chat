@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from app.utils.sanitize import strip_html_tags
 
 _TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "scenario",
@@ -23,6 +23,7 @@ async def list_public_characters(
     search: str | None = None,
     tag: str | None = None,
     user_id: str | None = None,
+    language: str | None = None,
 ):
     from sqlalchemy import or_
 
@@ -32,11 +33,17 @@ async def list_public_characters(
     else:
         visibility = Character.is_public == True
 
+    if language and language.isalpha() and len(language) <= 10:
+        # Safe: language is validated to be alpha-only, no injection risk
+        order = text(f"COALESCE((characters.message_counts->>'{language}')::int, 0) DESC"), Character.created_at.desc()
+    else:
+        order = (Character.created_at.desc(),)
+
     query = (
         select(Character)
         .options(selectinload(Character.creator))
         .where(visibility)
-        .order_by(Character.created_at.desc())
+        .order_by(*order)
         .offset(offset)
         .limit(limit)
     )
