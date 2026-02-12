@@ -221,7 +221,7 @@
   "admin.reset": "Сбросить",
   "admin.resetConfirm": "Сбросить к значению по умолчанию?",
   "admin.seedTitle": "Каталог персонажей",
-  "admin.seedSubtitle": "30 готовых персонажей от @sweetsin для непустого каталога",
+  "admin.seedSubtitle": "40 готовых персонажей от @sweetsin для непустого каталога",
   "admin.seedImport": "Импортировать",
   "admin.seedDelete": "Удалить все",
   "admin.seedImported": "Импортировано {{count}} персонажей",

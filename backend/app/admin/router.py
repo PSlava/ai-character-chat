@@ -109,7 +109,7 @@ async def import_seed_characters(
     user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Import 30 seed characters under @sweetsin user."""
+    """Import 40 seed characters under @sweetsin user."""
     sweetsin = await _get_or_create_sweetsin(db)
 
     # Check if already imported

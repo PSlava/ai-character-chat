@@ -221,7 +221,7 @@
   "admin.reset": "Reset",
   "admin.resetConfirm": "Reset to default value?",
   "admin.seedTitle": "Seed Characters",
-  "admin.seedSubtitle": "30 ready-made characters from @sweetsin for a non-empty catalog",
+  "admin.seedSubtitle": "40 ready-made characters from @sweetsin for a non-empty catalog",
   "admin.seedImport": "Import",
   "admin.seedDelete": "Delete All",
   "admin.seedImported": "Imported {{count}} characters",
