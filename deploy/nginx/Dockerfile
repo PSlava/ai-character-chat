@@ -10,8 +10,9 @@ RUN npm run build
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
 
-# Remove default config
+# Remove default config and add ours
 RUN rm /etc/nginx/conf.d/default.conf
+COPY deploy/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built frontend
 COPY --from=build /app/dist /usr/share/nginx/html
