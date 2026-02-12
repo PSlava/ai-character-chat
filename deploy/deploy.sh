@@ -10,14 +10,11 @@ echo "=== Deploy started at $(date) ==="
 # Pull latest code
 git pull origin main
 
-# When running inside webhook container, volume mounts resolve to container
-# paths (/app/repo/...) instead of host paths. Use -f for compose file location
-# (container path) and --project-directory for volume path resolution (host path).
-if [ -n "$HOST_REPO_DIR" ]; then
-    DC="docker compose -f $REPO_DIR/docker-compose.yml --project-directory $HOST_REPO_DIR"
-else
-    DC="docker compose"
-fi
+# When running inside the webhook container, docker compose reads the file from
+# /app/repo/ (container mount). Volume paths in docker-compose.yml use
+# ${HOST_REPO_DIR:-.} which expands to the absolute host path (/opt/ai-chat),
+# so no --project-directory hack is needed.
+DC="docker compose"
 
 # Build images first (no containers affected)
 echo "Building images..."
