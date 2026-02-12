@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    docker.io docker-compose-plugin git curl && rm -rf /var/lib/apt/lists/*
+    docker.io git curl && rm -rf /var/lib/apt/lists/*
 
 # Install docker compose v2 CLI plugin (standalone)
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
