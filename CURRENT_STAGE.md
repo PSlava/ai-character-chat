@@ -78,7 +78,9 @@ docker compose up -d
 
 Автодеплой:
 - **GitHub Webhook** — Flask-сервер на порту 9000, при push в main → `git pull && docker compose up -d --build`
-- **Health endpoint** — `GET :9000/health` возвращает commit, started_at, last_deploy
+- **Deploy tracking** — статус деплоя (deploying/done/failed/timeout) с exit_code и временными метками
+- **Health endpoint** — `GET :9000/health` возвращает commit, started_at, last_deploy (status, exit_code, finished_at)
+- **Docker compose v2** — standalone binary в webhook-контейнере (не через apt)
 - **SSL** — опциональный Certbot (Let's Encrypt) через setup.sh
 
 ## Env-переменные
@@ -205,13 +207,14 @@ docker compose up -d
   - In-memory кэш (60 сек TTL) для минимизации запросов к БД
   - 21 ключ × 2 языка (ru/en): вступление, правила контента, длина ответа, формат с примером, структурированные теги, внешность, правила и др.
   - Страница `/admin/prompts` с табами RU/EN, expandable карточки, метки «Изменён»/«По умолчанию»
-- **Seed-персонажи** — 30 готовых персонажей от @sweetsin для непустого каталога
+- **Seed-персонажи** — 40 готовых персонажей от @sweetsin для непустого каталога
   - Основаны на популярных архетипах конкурентов (SpicyChat, CrushOn, JanitorAI, Chub, WetDreams)
-  - 25 NSFW, 5 moderate: вампир, суккуб, мафия, яндере, профессор, демон, сосед, цундере, CEO, оборотень, нэко, тёмная эльфийка, фембой, сводный брат, инкуб, якудза, призрак, дракон, сталкер-бывший, андроид, доминатрикс, байкер, эльф-целитель, sugar mommy, рыцарь, Люцифер, ревнивый парень, ведьма, друг детства, пиратка
-  - DALL-E 3 аватары (512×512 WebP, ~1.1MB суммарно) — хранятся в `seed_avatars/`
+  - **30 фэнтези/архетипы** (25 NSFW, 5 moderate): вампир, суккуб, мафия, яндере, профессор, демон, сосед, цундере, CEO, оборотень, нэко, тёмная эльфийка, фембой, сводный брат, инкуб, якудза, призрак, дракон, сталкер-бывший, андроид, доминатрикс, байкер, эльф-целитель, sugar mommy, рыцарь, Люцифер, ревнивый парень, ведьма, друг детства, пиратка
+  - **10 реалистичных женских NSFW** (бытовые сценарии): соседка, секретарша, бывшая одноклассница, фитнес-тренер, попутчица в поезде, репетитор английского, мамина подруга, официантка, соседка по квартире, массажистка
+  - DALL-E 3 аватары (512×512 WebP, ~1.5MB суммарно) — хранятся в `seed_avatars/`
   - При импорте аватары копируются в `data/uploads/avatars/` с UUID-именами
   - Внутренний пользователь `@sweetsin` (`system@sweetsin.cc`) создаётся автоматически
-  - `POST /api/admin/seed-characters` — импорт (409 если уже импортированы)
+  - `POST /api/admin/seed-characters` — импорт (автоматически удаляет старые перед импортом, нет дублей)
   - `DELETE /api/admin/seed-characters` — удаление всех персонажей @sweetsin
   - Кнопки «Импортировать» / «Удалить все» на странице админки
 - **Очистка файлов** — кнопка для удаления сиротских аватаров (не привязанных к персонажам/пользователям)
@@ -325,7 +328,8 @@ docker compose up -d
 - **Мобильные действия с сообщениями** — вертикальное троеточие (⋮) вместо hover-кнопок, dropdown-меню
 - **Дизайн сообщений** — header row (аватар + имя + кнопки действий) над баблом, имя пользователя из профиля
 - Автоматическое пробуждение Render (wake-up) с индикатором статуса
-- **Профиль**: смена display name, username (с валидацией), языка, удаление аккаунта (danger zone с ConfirmDialog)
+- **Профиль**: смена display name, username (с валидацией), языка, аватар, удаление аккаунта (danger zone с ConfirmDialog)
+- **Перевод ошибок бэкенда** — `ERROR_MAP` в AuthPage маппит английские ошибки на i18n-ключи (emailTaken, usernameTaken, invalidCredentials, usernameInvalid)
 - **Age gate (18+)** — полноэкранный оверлей с backdrop blur для неавторизованных, подтверждение в localStorage, отказ → google.com
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
 
@@ -354,9 +358,9 @@ docker compose up -d
 - **Файловое хранилище** — `data/uploads/` с Docker volume, nginx раздача с кэшированием
 - **Docker Compose** — полный VPS-деплой (PostgreSQL + Backend + Nginx + Webhook)
 - **Multi-stage Docker build** — frontend собирается в node:20, раздаётся через nginx:alpine
-- **GitHub Webhook** — автодеплой при push в main (Flask на порту 9000)
+- **GitHub Webhook** — автодеплой при push в main (Flask на порту 9000), tracking статуса (done/failed/timeout)
 - **Health endpoints** — `/api/health` и `:9000/health` с commit hash, started_at, last_deploy
-- **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`)
+- **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`), настройка SMTP, ADMIN_EMAILS, авто-определение FRONTEND_URL
 - **SSL** — опциональный Certbot через setup.sh, поддержка добавления домена позже
 - render.yaml + vercel.json для облачного деплоя
 - Прокси для обхода региональных ограничений API
@@ -366,7 +370,7 @@ docker compose up -d
 ### Высокий приоритет
 - [x] Протестировать Docker Compose сборку локально — все образы собираются, контейнеры стартуют
 - [x] Развернуть на VPS (45.33.60.244) — работает, автодеплой через webhook
-- [x] Настроить GitHub webhook для автодеплоя
+- [x] Настроить GitHub webhook для автодеплоя (с отслеживанием статуса деплоя)
 - [x] Роли пользователей (admin/user) + админ-панель промптов
 - [x] Структурированные теги — 33 тега в 5 категориях с промпт-сниппетами
 - [x] Литературный формат прозы — переписан system prompt с конкретным примером
@@ -374,9 +378,16 @@ docker compose up -d
 - [x] Мобильные действия с сообщениями (tap-friendly menu вместо hover)
 - [x] Красивые диалоги подтверждения (ConfirmDialog для всех деструктивных действий)
 - [x] Ребрендинг — SweetSin (логотип, цвета, SEO, слоган, OG-теги)
+- [x] Загрузка аватаров персонажей и пользователей (POST /api/upload/avatar, Pillow → WebP 512x512)
+- [x] 40 seed-персонажей с DALL-E 3 аватарами (30 фэнтези + 10 реалистичных женских)
+- [x] Age gate (18+) для неавторизованных пользователей
+- [x] Удаление аккаунта (danger zone на ProfilePage)
+- [x] Жизненный цикл аватаров (автоудаление при замене/удалении + очистка сирот)
+- [x] Docker env vars (SMTP, FRONTEND_URL, ADMIN_EMAILS, AUTO_PROVIDER_ORDER) проброшены в контейнер
+- [x] Перевод ошибок бэкенда на фронтенде (ERROR_MAP)
 - [ ] Зарегистрировать домен sweetsin.cc
 - [ ] Настроить DNS и SSL для sweetsin.cc на VPS
-- [x] Загрузка аватаров персонажей и пользователей (POST /api/upload/avatar, Pillow → WebP 512x512)
+- [ ] Настроить SMTP (Gmail / Resend) для отправки email (сброс пароля)
 - [ ] Протестировать качество ответов с новым литературным форматом промпта на разных моделях
 
 ### Средний приоритет
@@ -387,6 +398,7 @@ docker compose up -d
 - [ ] Favicon (SVG flame icon в rose цвете)
 - [ ] Landing page / hero section с примерами персонажей
 - [ ] Социальные мета-теги (og:image — preview card)
+- [ ] Множественные чаты с одним персонажем (история чатов)
 
 ### Низкий приоритет (будущее)
 - [ ] OAuth авторизация (Google, GitHub)
@@ -425,8 +437,8 @@ chatbot/
 │   │   │   └── rate_limit.py        # In-memory rate limiter (auth, messages, reset)
 │   │   ├── admin/                   # Админ-панель
 │   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete + cleanup-avatars (admin only)
-│   │   │   ├── seed_data.py         # 30 seed-персонажей (определения)
-│   │   │   └── seed_avatars/        # 30 DALL-E 3 аватаров (00–29.webp, 512×512)
+│   │   │   ├── seed_data.py         # 40 seed-персонажей (определения)
+│   │   │   └── seed_avatars/        # 40 DALL-E 3 аватаров (00–39.webp, 512×512)
 │   │   ├── characters/              # CRUD + генерация из текста + структурированные теги
 │   │   │   ├── router.py            # API endpoints (admin bypass) + GET /structured-tags
 │   │   │   ├── service.py           # Бизнес-логика (is_admin)
@@ -514,7 +526,7 @@ chatbot/
 │   │   ├── nginx.conf               # Reverse proxy + SSE support
 │   │   └── certs/                   # SSL сертификаты (gitignored)
 │   └── webhook/
-│       ├── Dockerfile               # Python + docker CLI
+│       ├── Dockerfile               # Python + docker CLI + docker compose v2
 │       ├── server.py                # Flask webhook server
 │       └── requirements.txt
 ├── docker-compose.yml               # PostgreSQL + Backend + Nginx + Webhook + uploads volume
