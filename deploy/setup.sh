@@ -116,6 +116,35 @@ if [ ! -f "$REPO_DIR/.env" ]; then
         read -rp "  QWEN_API_KEY: " KEY
         [ -n "$KEY" ] && sed -i "s|^QWEN_API_KEY=.*|QWEN_API_KEY=$KEY|" "$REPO_DIR/.env"
 
+        # Ask for SMTP (password reset)
+        echo ""
+        echo "Email settings for password reset (press Enter to skip all):"
+        echo "  Gmail: host=smtp.gmail.com, port=587, use App Password"
+        echo ""
+
+        read -rp "  SMTP_HOST (e.g. smtp.gmail.com): " KEY
+        if [ -n "$KEY" ]; then
+            sed -i "s|^SMTP_HOST=.*|SMTP_HOST=$KEY|" "$REPO_DIR/.env"
+
+            read -rp "  SMTP_PORT [587]: " PORT
+            [ -n "$PORT" ] && sed -i "s|^SMTP_PORT=.*|SMTP_PORT=$PORT|" "$REPO_DIR/.env"
+
+            read -rp "  SMTP_USER (email): " KEY
+            [ -n "$KEY" ] && sed -i "s|^SMTP_USER=.*|SMTP_USER=$KEY|" "$REPO_DIR/.env"
+
+            read -rsp "  SMTP_PASSWORD: " KEY
+            echo ""
+            [ -n "$KEY" ] && sed -i "s|^SMTP_PASSWORD=.*|SMTP_PASSWORD=$KEY|" "$REPO_DIR/.env"
+
+            read -rp "  SMTP_FROM_EMAIL (sender, same as user usually): " KEY
+            [ -n "$KEY" ] && sed -i "s|^SMTP_FROM_EMAIL=.*|SMTP_FROM_EMAIL=$KEY|" "$REPO_DIR/.env"
+        fi
+
+        # Ask for admin emails
+        echo ""
+        read -rp "  ADMIN_EMAILS (comma-separated): " KEY
+        [ -n "$KEY" ] && sed -i "s|^ADMIN_EMAILS=.*|ADMIN_EMAILS=$KEY|" "$REPO_DIR/.env"
+
         echo ""
         echo "[2/5] Environment configured."
     fi
@@ -130,13 +159,46 @@ fi
 # Show active API keys
 echo ""
 echo "       Active API keys:"
-for KEY_NAME in GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY DEEPSEEK_API_KEY QWEN_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY GEMINI_API_KEY; do
+for KEY_NAME in GROQ_API_KEY CEREBRAS_API_KEY OPENROUTER_API_KEY DEEPSEEK_API_KEY QWEN_API_KEY TOGETHER_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY GEMINI_API_KEY; do
     VAL=$(grep "^${KEY_NAME}=" "$REPO_DIR/.env" | cut -d= -f2-)
     if [ -n "$VAL" ]; then
         echo "         $KEY_NAME: ${VAL:0:8}..."
     fi
 done
+
+# Show SMTP status
+SMTP_HOST_VAL=$(grep "^SMTP_HOST=" "$REPO_DIR/.env" | cut -d= -f2-)
+if [ -n "$SMTP_HOST_VAL" ]; then
+    echo "       Email (SMTP): $SMTP_HOST_VAL"
+else
+    echo "       Email (SMTP): not configured (reset links in logs only)"
+fi
+
+# Show admin emails
+ADMIN_VAL=$(grep "^ADMIN_EMAILS=" "$REPO_DIR/.env" | cut -d= -f2-)
+if [ -n "$ADMIN_VAL" ]; then
+    echo "       Admin emails: $ADMIN_VAL"
+fi
 echo ""
+
+# ---- Auto-set FRONTEND_URL from DOMAIN or server IP ----
+CURRENT_FRONTEND_URL=$(grep "^FRONTEND_URL=" "$REPO_DIR/.env" 2>/dev/null | cut -d= -f2-)
+CURRENT_DOMAIN=$(grep "^DOMAIN=" "$REPO_DIR/.env" | cut -d= -f2-)
+if [ -z "$CURRENT_FRONTEND_URL" ] || [ "$CURRENT_FRONTEND_URL" = "http://localhost:5173" ]; then
+    if [ -n "$CURRENT_DOMAIN" ]; then
+        sed -i "s|^FRONTEND_URL=.*|FRONTEND_URL=http://$CURRENT_DOMAIN|" "$REPO_DIR/.env" 2>/dev/null || \
+            echo "FRONTEND_URL=http://$CURRENT_DOMAIN" >> "$REPO_DIR/.env"
+        echo "       FRONTEND_URL set to http://$CURRENT_DOMAIN"
+    else
+        SERVER_IP_DETECTED=$(curl -sf ifconfig.me 2>/dev/null || echo "")
+        if [ -n "$SERVER_IP_DETECTED" ]; then
+            grep -q "^FRONTEND_URL=" "$REPO_DIR/.env" && \
+                sed -i "s|^FRONTEND_URL=.*|FRONTEND_URL=http://$SERVER_IP_DETECTED|" "$REPO_DIR/.env" || \
+                echo "FRONTEND_URL=http://$SERVER_IP_DETECTED" >> "$REPO_DIR/.env"
+            echo "       FRONTEND_URL set to http://$SERVER_IP_DETECTED"
+        fi
+    fi
+fi
 
 # ---- Step 3: Create cert directory ----
 echo "[3/5] Preparing directories..."

@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/Button';
 
 type Mode = 'login' | 'register' | 'forgot';
 
+const ERROR_MAP: Record<string, string> = {
+  'Email already taken': 'auth.emailTaken',
+  'Username already taken': 'auth.usernameTaken',
+  'Invalid email or password': 'auth.invalidCredentials',
+  'Username must be 3-20 characters: letters, digits, underscore': 'auth.usernameInvalid',
+};
+
 export function AuthPage() {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('login');
@@ -46,7 +53,9 @@ export function AuthPage() {
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { detail?: string } } };
-        setError(axiosErr.response?.data?.detail || t('auth.error'));
+        const detail = axiosErr.response?.data?.detail || '';
+        const key = ERROR_MAP[detail];
+        setError(key ? t(key) : detail || t('auth.error'));
       } else {
         setError(t('auth.error'));
       }

@@ -70,7 +70,13 @@ export function ProfilePage() {
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { data?: { detail?: string } } };
-        setUsernameError(axiosErr.response?.data?.detail || t('auth.error'));
+        const detail = axiosErr.response?.data?.detail || '';
+        const map: Record<string, string> = {
+          'Username already taken': 'auth.usernameTaken',
+          'Username must be 3-20 characters: letters, digits, underscore': 'auth.usernameInvalid',
+        };
+        const key = map[detail];
+        setUsernameError(key ? t(key) : detail || t('auth.error'));
       }
     } finally {
       setSaving(false);
