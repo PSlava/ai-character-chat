@@ -47,6 +47,8 @@ async def init_db():
         "ALTER TABLE characters ADD COLUMN IF NOT EXISTS structured_tags VARCHAR DEFAULT ''",
         "ALTER TABLE chats ADD COLUMN IF NOT EXISTS persona_id VARCHAR REFERENCES personas(id) ON DELETE SET NULL",
         "ALTER TABLE characters ADD COLUMN IF NOT EXISTS message_counts JSONB DEFAULT '{}'",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS original_language VARCHAR DEFAULT 'ru'",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS translations JSONB DEFAULT '{}'",
     ]
     for sql in migrations:
         try:

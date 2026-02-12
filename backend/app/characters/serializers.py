@@ -2,11 +2,12 @@ from app.db.models import Character
 
 
 def character_to_dict(c: Character) -> dict:
+    tr = getattr(c, '_active_translations', None)
     d = {
         "id": c.id,
         "creator_id": c.creator_id,
-        "name": c.name,
-        "tagline": c.tagline,
+        "name": tr["name"] if tr and "name" in tr else c.name,
+        "tagline": tr["tagline"] if tr and "tagline" in tr else c.tagline,
         "avatar_url": c.avatar_url,
         "personality": c.personality,
         "scenario": c.scenario,
@@ -15,7 +16,7 @@ def character_to_dict(c: Character) -> dict:
         "appearance": getattr(c, 'appearance', None),
         "content_rating": c.content_rating.value if hasattr(c.content_rating, 'value') else (c.content_rating or "sfw"),
         "system_prompt_suffix": c.system_prompt_suffix,
-        "tags": [t for t in c.tags.split(",") if t] if c.tags else [],
+        "tags": tr["tags"] if tr and "tags" in tr else ([t for t in c.tags.split(",") if t] if c.tags else []),
         "structured_tags": [t for t in (getattr(c, 'structured_tags', '') or '').split(",") if t],
         "is_public": c.is_public,
         "chat_count": c.chat_count,

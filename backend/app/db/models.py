@@ -71,6 +71,8 @@ class Character(Base):
     max_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True, default=2048)
     response_length: Mapped[str | None] = mapped_column(String, nullable=True, default="long")
     message_counts: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)  # {"ru": 150, "en": 30}
+    original_language: Mapped[str] = mapped_column(String, default="ru")
+    translations: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)  # {"en": {"name": "...", "tagline": "...", "tags": [...]}}
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

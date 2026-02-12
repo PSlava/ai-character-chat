@@ -27,6 +27,7 @@ export interface Character {
   preferred_model: string;
   max_tokens: number;
   response_length: 'short' | 'medium' | 'long' | 'very_long';
+  original_language?: string;
   created_at: string;
   profiles?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'>;
 }

@@ -54,7 +54,14 @@ async def list_public_characters(
         query = query.where(Character.tags.contains(tag))
 
     result = await db.execute(query)
-    return result.scalars().all()
+    characters = result.scalars().all()
+
+    # Translate card fields if language differs from original
+    if language:
+        from app.characters.translation import ensure_translations
+        await ensure_translations(characters, language)
+
+    return characters
 
 
 async def count_public_characters(
@@ -146,6 +153,11 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
         character.tags = ",".join(tags) if isinstance(tags, list) else tags
     if structured_tags is not None:
         character.structured_tags = ",".join(structured_tags) if isinstance(structured_tags, list) else structured_tags
+
+    # Clear translation cache if translatable fields changed
+    if any(key in data and data[key] is not None for key in ("name", "tagline")) or tags is not None:
+        character.translations = {}
+
     character.updated_at = datetime.utcnow()
 
     await db.commit()

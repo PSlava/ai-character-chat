@@ -91,7 +91,8 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         preferred_model: form.preferred_model,
         max_tokens: form.max_tokens,
         response_length: form.response_length as Character['response_length'],
-      });
+        original_language: i18n.language,
+      } as Partial<Character>);
     } finally {
       setLoading(false);
     }

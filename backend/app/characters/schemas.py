@@ -18,6 +18,7 @@ class CharacterCreate(BaseModel):
     preferred_model: str = Field(default="qwen", max_length=200)
     max_tokens: int = Field(default=2048, ge=128, le=8192)
     response_length: str = Field(default="long", max_length=20)
+    original_language: str = Field(default="ru", max_length=10)
 
 
 class GenerateFromStoryRequest(BaseModel):
