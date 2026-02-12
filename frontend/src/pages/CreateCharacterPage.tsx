@@ -138,6 +138,7 @@ export function CreateCharacterPage() {
             onChange={(e) => setStoryText(e.target.value)}
             placeholder={t('create.storyPlaceholder')}
             rows={10}
+            maxLength={50000}
             required
           />
 
@@ -146,6 +147,7 @@ export function CreateCharacterPage() {
             value={characterName}
             onChange={(e) => setCharacterName(e.target.value)}
             placeholder={t('create.nameHint')}
+            maxLength={100}
           />
 
           <div>
@@ -194,6 +196,7 @@ export function CreateCharacterPage() {
             onChange={(e) => setExtraInstructions(e.target.value)}
             placeholder={t('create.extraPlaceholder')}
             rows={3}
+            maxLength={2000}
           />
 
           <Button

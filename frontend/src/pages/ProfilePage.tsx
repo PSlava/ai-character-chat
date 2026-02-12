@@ -180,6 +180,7 @@ export function ProfilePage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder={t('profile.usernamePlaceholder')}
+              maxLength={20}
             />
             {usernameError && (
               <p className="text-red-400 text-xs mt-1">{usernameError}</p>
@@ -191,6 +192,7 @@ export function ProfilePage() {
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder={t('profile.namePlaceholder')}
+            maxLength={50}
           />
           <div className="flex items-center gap-3">
             <Button

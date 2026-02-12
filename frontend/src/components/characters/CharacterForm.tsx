@@ -110,6 +110,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         value={form.name}
         onChange={(e) => update('name', e.target.value)}
         placeholder={t('form.namePlaceholder')}
+        maxLength={100}
         required
       />
 
@@ -118,6 +119,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         value={form.tagline}
         onChange={(e) => update('tagline', e.target.value)}
         placeholder={t('form.taglinePlaceholder')}
+        maxLength={300}
       />
 
       <Textarea
@@ -126,6 +128,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         onChange={(e) => update('personality', e.target.value)}
         placeholder={t('form.personalityPlaceholder')}
         rows={4}
+        maxLength={10000}
         required
       />
 
@@ -170,6 +173,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         onChange={(e) => update('appearance', e.target.value)}
         placeholder={t('form.appearancePlaceholder')}
         rows={3}
+        maxLength={5000}
       />
 
       <Textarea
@@ -178,6 +182,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         onChange={(e) => update('scenario', e.target.value)}
         placeholder={t('form.scenarioPlaceholder')}
         rows={3}
+        maxLength={5000}
       />
 
       <Textarea
@@ -186,6 +191,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         onChange={(e) => update('greeting_message', e.target.value)}
         placeholder={t('form.greetingPlaceholder')}
         rows={3}
+        maxLength={5000}
         required
       />
 
@@ -195,6 +201,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         onChange={(e) => update('example_dialogues', e.target.value)}
         placeholder={t('form.exampleDialoguesPlaceholder')}
         rows={4}
+        maxLength={10000}
       />
 
       <Textarea
@@ -203,6 +210,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         onChange={(e) => update('system_prompt_suffix', e.target.value)}
         placeholder={t('form.instructionsPlaceholder')}
         rows={2}
+        maxLength={5000}
       />
 
       <Input
@@ -210,6 +218,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         value={form.tags}
         onChange={(e) => update('tags', e.target.value)}
         placeholder={t('form.tagsPlaceholder')}
+        maxLength={500}
       />
 
       <div className="flex gap-4 flex-wrap">
