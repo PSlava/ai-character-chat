@@ -186,7 +186,7 @@ docker compose up -d
 
 ### Аватары
 - **Загрузка аватаров** — `POST /api/upload/avatar` (multipart, auth required)
-- **Безопасность**: проверка Content-Type, magic bytes (JPEG/PNG/WebP/GIF), лимит 2 МБ
+- **Безопасность**: проверка Content-Type, magic bytes (JPEG/PNG/WebP/GIF), настраиваемый лимит (MAX_AVATAR_SIZE, дефолт 4 МБ)
 - **Обработка**: Pillow — валидация, ресайз до 512×512, конвертация в WebP (quality=85), EXIF удаляется
 - **Хранение**: `data/uploads/avatars/{uuid}.webp`, UUID-имена файлов (нет user-controlled имён)
 - **Раздача**: FastAPI StaticFiles (dev) + nginx location (prod) с кэшированием 30 дней
@@ -194,6 +194,9 @@ docker compose up -d
 - **Фронтенд**: компонент `AvatarUpload` — кликабельный аватар с overlay камеры, загрузка, preview
 - **Интеграция**: форма создания/редактирования персонажа, страница профиля
 - **Фон на странице персонажа** — размытый растянутый аватар (blur-3xl, opacity-20)
+- **Жизненный цикл файлов** — автоматическое удаление старых файлов при замене аватара (персонаж + профиль), при удалении персонажа, при удалении аккаунта
+- **Очистка сирот** — `POST /api/admin/cleanup-avatars` сканирует диск, удаляет файлы не привязанные к БД
+- **onError fallback** — компонент Avatar показывает инициалы если картинка не загрузилась
 
 ### Админ-панель
 - **Шаблоны промптов** — админ может редактировать любой кусок system prompt через UI
@@ -211,6 +214,7 @@ docker compose up -d
   - `POST /api/admin/seed-characters` — импорт (409 если уже импортированы)
   - `DELETE /api/admin/seed-characters` — удаление всех персонажей @sweetsin
   - Кнопки «Импортировать» / «Удалить все» на странице админки
+- **Очистка файлов** — кнопка для удаления сиротских аватаров (не привязанных к персонажам/пользователям)
 - Ссылка в сайдбаре видна только админу
 
 ### LLM-провайдеры (9 штук)
@@ -321,7 +325,8 @@ docker compose up -d
 - **Мобильные действия с сообщениями** — вертикальное троеточие (⋮) вместо hover-кнопок, dropdown-меню
 - **Дизайн сообщений** — header row (аватар + имя + кнопки действий) над баблом, имя пользователя из профиля
 - Автоматическое пробуждение Render (wake-up) с индикатором статуса
-- **Профиль**: смена display name, username (с валидацией), языка
+- **Профиль**: смена display name, username (с валидацией), языка, удаление аккаунта (danger zone с ConfirmDialog)
+- **Age gate (18+)** — полноэкранный оверлей с backdrop blur для неавторизованных, подтверждение в localStorage, отказ → google.com
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
 
 ### Безопасность
@@ -338,7 +343,8 @@ docker compose up -d
 - **SSL certificate verification** — включена для Supabase (CERT_REQUIRED, check_hostname=False для Supabase pooler)
 - **CORS** — ограничены `allow_methods` и `allow_headers` (вместо `*`); `CORS_ORIGINS` по умолчанию `*`, настраивается через env
 - **Avatar URL validation** — блокирует `javascript:` и `data:` URI (фронтенд), принимает только `https://` и `/api/uploads/`
-- **Avatar upload security** — magic bytes проверка, Pillow валидация, UUID-имена, 2MB лимит, WebP-конвертация
+- **Avatar upload security** — magic bytes проверка, Pillow валидация, UUID-имена, настраиваемый лимит (MAX_AVATAR_SIZE, дефолт 4 МБ), WebP-конвертация
+- **Age gate (18+)** — полноэкранный оверлей для неавторизованных пользователей, подтверждение возраста сохраняется в localStorage
 - **SSE safety** — `JSON.parse` в try/catch, localStorage в try/catch
 
 ### Инфраструктура
@@ -418,7 +424,7 @@ chatbot/
 │   │   │   ├── middleware.py        # get_current_user (с role), get_current_user_optional
 │   │   │   └── rate_limit.py        # In-memory rate limiter (auth, messages, reset)
 │   │   ├── admin/                   # Админ-панель
-│   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete (admin only)
+│   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete + cleanup-avatars (admin only)
 │   │   │   ├── seed_data.py         # 30 seed-персонажей (определения)
 │   │   │   └── seed_avatars/        # 30 DALL-E 3 аватаров (00–29.webp, 512×512)
 │   │   ├── characters/              # CRUD + генерация из текста + структурированные теги
@@ -453,7 +459,7 @@ chatbot/
 │   │   │   └── router.py              # GET /api/models/{openrouter,groq,cerebras,together}
 │   │   ├── uploads/                 # Загрузка файлов (аватары)
 │   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP)
-│   │   ├── users/                   # Профиль (username update), избранное
+│   │   ├── users/                   # Профиль (username update), избранное, удаление аккаунта
 │   │   ├── utils/                   # Утилиты
 │   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
 │   │   │   └── email.py             # Async email sender (SMTP + dev console fallback)
@@ -469,9 +475,9 @@ chatbot/
 │   ├── src/
 │   │   ├── api/                     # HTTP клиент, API функции
 │   │   │   ├── client.ts            # Axios с JWT
-│   │   │   ├── admin.ts             # Промпт-шаблоны + seed import/delete (admin)
+│   │   │   ├── admin.ts             # Промпт-шаблоны + seed import/delete + cleanup (admin)
 │   │   │   ├── characters.ts        # CRUD + generate + wake-up + models
-│   │   │   ├── users.ts             # Profile (username, role)
+│   │   │   ├── users.ts             # Profile (username, role), deleteAccount
 │   │   │   ├── uploads.ts           # uploadAvatar (multipart)
 │   │   │   └── chat.ts              # chats, messages, delete, clear
 │   │   ├── hooks/
@@ -494,7 +500,7 @@ chatbot/
 │   │   │   │   └── GenerationSettingsModal.tsx  # Модель (7 групп) + 6 слайдеров + память
 │   │   │   ├── characters/
 │   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
-│   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, ConfirmDialog, LanguageSwitcher
+│   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher
 │   │   ├── lib/                     # Утилиты (localStorage с role)
 │   │   ├── locales/                 # i18n: en.json, ru.json
 │   │   └── types/                   # TypeScript типы (Message с model_used)
