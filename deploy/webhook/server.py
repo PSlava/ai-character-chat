@@ -15,7 +15,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 SECRET = os.environ.get("WEBHOOK_SECRET", "")
-REPO_DIR = "/app/repo"
+REPO_DIR = os.environ.get("HOST_REPO_DIR", "/opt/ai-chat")
 DEPLOY_SCRIPT = os.path.join(REPO_DIR, "deploy", "deploy.sh")
 
 # Track deploy info

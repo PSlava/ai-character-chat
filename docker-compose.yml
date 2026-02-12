@@ -81,7 +81,7 @@ services:
       HOST_REPO_DIR: ${HOST_REPO_DIR:-/opt/ai-chat}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ${HOST_REPO_DIR:-.}:/app/repo
+      - ${HOST_REPO_DIR:-.}:${HOST_REPO_DIR:-.}
 
 volumes:
   pgdata:

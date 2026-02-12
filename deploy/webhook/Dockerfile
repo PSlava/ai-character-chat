@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/docker-27.5.1.tgz" \
     | tar xz --strip-components=1 -C /usr/local/bin docker/docker
 
-# Install docker compose v2 CLI plugin (standalone)
+# Install docker compose v2 + buildx CLI plugins
+COPY --from=docker/buildx-bin /buildx /usr/local/lib/docker/cli-plugins/docker-buildx
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
     curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" \
     -o /usr/local/lib/docker/cli-plugins/docker-compose && \
