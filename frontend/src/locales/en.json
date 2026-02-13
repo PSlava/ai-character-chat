@@ -300,5 +300,67 @@
   "favorites.emptyHint": "Click \u2764\ufe0f on any character card to add it to favorites",
 
   "lang.ru": "Русский",
-  "lang.en": "English"
+  "lang.en": "English",
+
+  "stats.users": "users",
+  "stats.messages": "messages",
+  "stats.onlineNow": "online now",
+
+  "tags.all": "All",
+  "tags.fantasy": "Fantasy",
+  "tags.romance": "Romance",
+  "tags.modern": "Modern",
+  "tags.anime": "Anime",
+
+  "featured.title": "Character of the Day",
+
+  "footer.about": "About",
+  "footer.terms": "Terms of Service",
+  "footer.privacy": "Privacy Policy",
+  "footer.faq": "FAQ",
+  "footer.contact": "Contact",
+  "footer.copyright": "© {{year}} SweetSin. All rights reserved.",
+
+  "about.title": "About SweetSin",
+  "about.p1": "SweetSin is a platform for creative roleplay and character-driven conversations. We connect language models with imaginative character profiles to create immersive chat experiences.",
+  "about.p2": "Our platform supports multiple providers, giving you the freedom to choose the best model for your conversations. Whether you prefer speed, creativity, or depth — we have options for every style.",
+  "about.p3": "Create your own characters, explore community creations, and dive into stories without limits or judgment.",
+  "about.teamTitle": "Our Mission",
+  "about.teamDesc": "We believe in the power of creative expression and storytelling. SweetSin provides a safe space for adults to explore their imagination through character-driven conversations.",
+
+  "terms.title": "Terms of Service",
+  "terms.intro": "By using SweetSin, you agree to the following terms:",
+  "terms.section1Title": "1. Eligibility",
+  "terms.section1": "You must be at least 18 years old to use this service. By creating an account, you confirm that you meet this requirement.",
+  "terms.section2Title": "2. User Content",
+  "terms.section2": "You are responsible for the characters you create and the content you generate. Do not create content that promotes real-world harm, involves real persons without consent, or violates applicable laws.",
+  "terms.section3Title": "3. Acceptable Use",
+  "terms.section3": "You agree not to abuse the platform, attempt to reverse-engineer the service, or use automated tools to scrape content. We reserve the right to suspend accounts that violate these terms.",
+  "terms.section4Title": "4. Disclaimer",
+  "terms.section4": "SweetSin is provided as-is. We do not guarantee uninterrupted service or specific model availability. Generated content may contain inaccuracies.",
+
+  "privacy.title": "Privacy Policy",
+  "privacy.intro": "Your privacy matters to us. Here is how we handle your data:",
+  "privacy.section1Title": "Data We Collect",
+  "privacy.section1": "We collect your email, username, and chat history to provide the service. We do not sell your data to third parties.",
+  "privacy.section2Title": "How We Use Your Data",
+  "privacy.section2": "Your data is used solely to operate the service: account management, chat delivery, and service improvement. Chat content is sent to providers for response generation.",
+  "privacy.section3Title": "Data Security",
+  "privacy.section3": "We use industry-standard encryption and secure hosting. Passwords are hashed and never stored in plain text.",
+  "privacy.section4Title": "Your Rights",
+  "privacy.section4": "You can delete your account at any time from your profile page. This permanently removes all your data, characters, and chat history.",
+
+  "faq.title": "Frequently Asked Questions",
+  "faq.q1": "Is SweetSin free?",
+  "faq.a1": "Yes! Core features are free. We offer multiple free providers. Some premium models may require additional credits in the future.",
+  "faq.q2": "What models are available?",
+  "faq.a2": "We support OpenRouter, Groq, Cerebras, Together, DeepSeek, and direct API access to Claude, GPT-4o, and Gemini. Availability may vary.",
+  "faq.q3": "Can I create NSFW content?",
+  "faq.a3": "Yes, for users 18+. You can set content ratings (SFW, Moderate, NSFW) per character. Some models may have content restrictions.",
+  "faq.q4": "How do I create a character?",
+  "faq.a4": "Click 'Create' in the header. You can build a character manually or paste any text and let it generate a character profile from it.",
+  "faq.q5": "Is my chat history private?",
+  "faq.a5": "Yes. Your conversations are private and only visible to you. We do not share chat content with other users.",
+  "faq.q6": "Can I delete my data?",
+  "faq.a6": "Yes. Go to Profile and use the 'Delete Account' option in the Danger Zone section. This permanently removes everything."
 }

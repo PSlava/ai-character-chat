@@ -4,6 +4,7 @@ import type { Character } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoritesStore } from '@/store/favoritesStore';
+import { isCharacterOnline } from '@/lib/utils';
 import { MessageCircle, Heart } from 'lucide-react';
 
 interface Props {
@@ -12,7 +13,8 @@ interface Props {
 
 export function CharacterCard({ character }: Props) {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const { favoriteIds, addFavorite, removeFavorite } = useFavoritesStore();
   const isFav = favoriteIds.has(character.id);
   const initialFav = useRef(isFav);
@@ -38,7 +40,12 @@ export function CharacterCard({ character }: Props) {
       className="block bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-4 hover:border-rose-500/50 transition-all hover:bg-neutral-800"
     >
       <div className="flex items-start gap-3">
-        <Avatar src={character.avatar_url} name={character.name} size="lg" />
+        <div className="relative">
+          <Avatar src={character.avatar_url} name={character.name} size="lg" />
+          {isCharacterOnline(character.id) && (
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-neutral-800" />
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-white truncate">{character.name}</h3>
           {character.tagline && (
@@ -50,6 +57,9 @@ export function CharacterCard({ character }: Props) {
             <span className="flex items-center gap-1">
               <MessageCircle className="w-3 h-3" />
               {character.chat_count}
+              {isAdmin && character.real_chat_count !== undefined && (
+                <span className="text-emerald-500/70">({character.real_chat_count})</span>
+              )}
             </span>
             <button
               onClick={toggleFavorite}
@@ -61,6 +71,9 @@ export function CharacterCard({ character }: Props) {
             >
               <Heart className={`w-3 h-3 ${isFav ? 'fill-current' : ''}`} />
               {Math.max(0, character.like_count + likeOffset)}
+              {isAdmin && character.real_like_count !== undefined && (
+                <span className="text-emerald-500/70">({character.real_like_count})</span>
+              )}
             </button>
             {character.profiles?.username && (
               <span>@{character.profiles.username}</span>

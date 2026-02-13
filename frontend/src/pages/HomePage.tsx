@@ -1,11 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { getCharacters } from '@/api/characters';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { useAuth } from '@/hooks/useAuth';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Character } from '@/types';
+
+const TAG_PILLS = [
+  { key: 'all', labelKey: 'tags.all', value: null },
+  { key: 'fantasy', labelKey: 'tags.fantasy', value: 'фэнтези' },
+  { key: 'romance', labelKey: 'tags.romance', value: 'романтика' },
+  { key: 'modern', labelKey: 'tags.modern', value: 'современность' },
+  { key: 'anime', labelKey: 'tags.anime', value: 'аниме' },
+];
 
 const PAGE_SIZE = 15;
 
@@ -16,6 +25,7 @@ export function HomePage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const prevLangRef = useRef(i18n.language);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -23,9 +33,9 @@ export function HomePage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   useEffect(() => {
-    // Reset to page 1 when search or language changes
+    // Reset to page 1 when search, tag, or language changes
     setPage(1);
-  }, [search]);
+  }, [search, activeTag]);
 
   useEffect(() => {
     if (prevLangRef.current !== i18n.language) {
@@ -39,6 +49,7 @@ export function HomePage() {
       setLoading(true);
       getCharacters({
         search: search || undefined,
+        tag: activeTag || undefined,
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
         language: i18n.language,
@@ -50,7 +61,12 @@ export function HomePage() {
         .finally(() => setLoading(false));
     }, search ? 300 : 0);
     return () => clearTimeout(timer);
-  }, [search, page, i18n.language]);
+  }, [search, activeTag, page, i18n.language]);
+
+  // Featured character of the day — deterministic, changes daily
+  const featuredCharacter = characters.length > 0
+    ? characters[Math.floor(Date.now() / 86400000) % characters.length]
+    : null;
 
   const handleBrowseClick = () => {
     gridRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,6 +91,23 @@ export function HomePage() {
           </p>
         </div>
 
+        {/* Tag filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {TAG_PILLS.map((tag) => (
+            <button
+              key={tag.key}
+              onClick={() => setActiveTag(activeTag === tag.value ? null : tag.value)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activeTag === tag.value || (tag.value === null && activeTag === null)
+                  ? 'bg-rose-600 text-white'
+                  : 'bg-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-700'
+              }`}
+            >
+              {t(tag.labelKey)}
+            </button>
+          ))}
+        </div>
+
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
           <input
@@ -84,6 +117,37 @@ export function HomePage() {
             className="w-full bg-neutral-800 border border-neutral-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500"
           />
         </div>
+
+        {/* Featured character of the day */}
+        {featuredCharacter && !search && !activeTag && !loading && (
+          <Link
+            to={`/character/${featuredCharacter.id}`}
+            className="block mb-6 p-4 rounded-xl bg-gradient-to-r from-rose-950/50 to-neutral-800/50 border border-rose-500/20 hover:border-rose-500/40 transition-colors"
+          >
+            <p className="text-xs text-rose-400 uppercase tracking-wider mb-3 font-medium">
+              {t('featured.title')}
+            </p>
+            <div className="flex items-center gap-4">
+              {featuredCharacter.avatar_url && (
+                <div className="shrink-0">
+                  <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-br from-rose-500 to-purple-600">
+                    <img
+                      src={featuredCharacter.avatar_url}
+                      alt={featuredCharacter.name}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="min-w-0">
+                <h3 className="font-semibold text-white text-lg">{featuredCharacter.name}</h3>
+                {featuredCharacter.tagline && (
+                  <p className="text-sm text-neutral-400 line-clamp-2">{featuredCharacter.tagline}</p>
+                )}
+              </div>
+            </div>
+          </Link>
+        )}
 
         <CharacterGrid characters={characters} loading={loading} />
 

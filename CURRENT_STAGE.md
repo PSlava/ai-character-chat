@@ -105,11 +105,13 @@ docker compose up -d
 | AUTO_PROVIDER_ORDER | groq,cerebras,openrouter | Настраиваемый | Порядок провайдеров для auto-fallback |
 | ADMIN_EMAILS | — | Вручную | Список email-ов админов (через запятую) |
 | PROXY_URL | Да | Вручную | HTTP прокси |
-| SMTP_HOST | — | Вручную | SMTP сервер (пусто = ссылка в консоль) |
+| RESEND_API_KEY | — | Вручную | Resend API ключ (приоритет перед SMTP) |
+| RESEND_FROM_EMAIL | — | SweetSin <noreply@sweetsin.cc> | Email отправителя через Resend |
+| SMTP_HOST | — | Вручную | SMTP сервер (fallback если нет Resend) |
 | SMTP_PORT | — | 587 | SMTP порт |
 | SMTP_USER | — | Вручную | SMTP логин |
 | SMTP_PASSWORD | — | Вручную | SMTP пароль |
-| SMTP_FROM_EMAIL | — | Вручную | Email отправителя |
+| SMTP_FROM_EMAIL | — | Вручную | Email отправителя через SMTP |
 | FRONTEND_URL | — | http://localhost:5173 | URL фронтенда (для ссылок в email) |
 | CORS_ORIGINS | — | * | CORS (по умолч. `*`, можно ограничить через env) |
 | UPLOAD_DIR | — | data/uploads | Директория для загруженных файлов |
@@ -136,7 +138,7 @@ docker compose up -d
 - **Восстановление пароля** — полный флоу:
   - `POST /api/auth/forgot-password` — всегда возвращает одинаковый ответ (не раскрывает наличие email в БД)
   - JWT-based reset token (1 час, одноразовый — привязан к хешу пароля)
-  - Отправка email через SMTP (`aiosmtplib`), в dev-режиме — ссылка выводится в консоль
+  - **Отправка email**: 3-уровневый fallback — Resend API → SMTP (Gmail) → консоль (dev-режим)
   - `POST /api/auth/reset-password` — валидация токена, смена пароля
   - Фронтенд: «Забыли пароль?» на странице логина, отдельная страница `/auth/reset-password?token=...`
   - Rate limiting: 3/5мин на IP + 10/час на IP (анти-перебор) + 1/2мин на email (анти-спам)
@@ -164,6 +166,7 @@ docker compose up -d
 - **API реестра тегов** — `GET /api/characters/structured-tags` — категории и теги для формы
 - **Автоперевод карточек** — имена, tagline и теги автоматически переводятся LLM при просмотре на другом языке (batch, с кэшированием в JSONB)
 - **Счётчик сообщений по языкам** — атомарный инкремент JSONB `message_counts` при каждом сообщении (кроме перегенераций)
+- **Базовые счётчики (social proof)** — JSONB поля `base_chat_count` и `base_like_count` на Character: `{"ru": 345, "en": 567}`. Seed-персонажи инициализируются случайными значениями (100–1000 чатов, 50–100 лайков). Обычные пользователи видят `real + base[lang]`, админ видит реальные значения отдельно в зелёном
 
 ### Персоны пользователя
 - **Пользовательские персоны** — до 10 альтернативных личностей для ролевых чатов
@@ -354,9 +357,15 @@ docker compose up -d
 - React + TypeScript + Vite + Tailwind CSS
 - Тёмная тема, **цветовая схема rose** (бренд SweetSin)
 - Zustand для стейт-менеджмента
-- 12 страниц: главная, авторизация, сброс пароля, персонаж (с размытым фоном аватара), чат, создание, редактирование, профиль, **избранное**, **админ-промпты**, **админ-пользователи**
+- 16 страниц: главная, авторизация, сброс пароля, персонаж (с размытым фоном аватара), чат, создание, редактирование, профиль, **избранное**, **админ-промпты**, **админ-пользователи**, **о проекте**, **условия**, **конфиденциальность**, **FAQ**
 - **Брендинг**: логотип Sweet+Sin с SVG-иконкой сердца (дьявольские рожки/хвост), SEO мета-теги, Open Graph
-- **Landing page (hero section)** — для неавторизованных: большой логотип, слоган, 2 CTA-кнопки, аватары популярных персонажей, 4 feature-карточки (фантазии, без цензуры, 9 провайдеров, создайте своего). Gradient-фон rose-950/30. Для авторизованных — только каталог
+- **Landing page (hero section)** — для неавторизованных: большой логотип, слоган, **статистика** (пользователи/сообщения/онлайн), 2 CTA-кнопки, аватары популярных персонажей, 4 feature-карточки. Gradient-фон rose-950/30. Для авторизованных — только каталог
+- **Статистика на лендинге** — `GET /api/stats` возвращает users (+1200), messages (+45000), characters, online_now (15–45, pseudo-random stable per 5-min window)
+- **Footer** — ссылки на О проекте, Условия, Конфиденциальность, FAQ, контакт (support@sweetsin.cc), copyright. Прижат к низу через min-h-full flex
+- **Онлайн-точки** — зелёная точка на аватарах ~33% персонажей. Детерминистично: `hash(id + currentHour) % 3 === 0`. На CharacterCard и CharacterPage
+- **Фильтры по тегам** — пиллы (Все / Фэнтези / Романтика / Современность / Аниме) над поиском на главной. Используют существующий backend `tag` query param
+- **Персонаж дня** — gradient-баннер между фильтрами и гридом. `characters[daysSinceEpoch % count]`, меняется раз в день. Скрыт при поиске/фильтрации
+- **Статические страницы** — О проекте (`/about`), Условия (`/terms`), Конфиденциальность (`/privacy`), FAQ (`/faq`). Двуязычный контент через i18n
 - **Scroll to top** — при навигации между страницами контент автоматически прокручивается вверх (через `useRef` + `useEffect` на `pathname`)
 - Стриминг сообщений в реальном времени
 - Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
@@ -402,7 +411,7 @@ docker compose up -d
 - **Zero-downtime deploy** — build → restart backend → health check (до 60с) → restart nginx
 - **Same-path mount** — webhook контейнер монтирует репо по `HOST_REPO_DIR:HOST_REPO_DIR`, чтобы Docker daemon видел корректные пути для build context и volumes
 - **Health endpoints** — `/api/health` и `:9000/health` с commit hash, started_at, last_deploy
-- **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`), настройка SMTP, ADMIN_EMAILS, авто-определение FRONTEND_URL
+- **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`), настройка email (Resend/SMTP), ADMIN_EMAILS, авто-определение FRONTEND_URL
 - **SSL** — Certbot (Let's Encrypt), настроен для sweetsin.cc
 - render.yaml + vercel.json для облачного деплоя
 - Прокси для обхода региональных ограничений API
@@ -410,7 +419,7 @@ docker compose up -d
 ## Что нужно доработать
 
 ### Высокий приоритет
-- [ ] Настроить SMTP (Gmail App Password) для отправки email (сброс пароля)
+- [x] ~~Настроить email (Resend API + SMTP + console fallback)~~
 - [ ] Протестировать качество ответов с литературным форматом на разных моделях
 - [ ] Социальные мета-теги (og:image — preview card для шаринга)
 
@@ -497,9 +506,11 @@ chatbot/
 │   │   ├── uploads/                 # Загрузка файлов (аватары)
 │   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP)
 │   │   ├── users/                   # Профиль (username, stats: message_count/chat_count), избранное, удаление аккаунта
+│   │   ├── stats/                   # Публичная статистика
+│   │   │   └── router.py            # GET /api/stats (users, messages, characters, online_now)
 │   │   ├── utils/                   # Утилиты
 │   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
-│   │   │   └── email.py             # Async email sender (SMTP + dev console fallback)
+│   │   │   └── email.py             # Async email sender (Resend API → SMTP → console fallback)
 │   │   └── db/                      # Модели, сессии, миграции
 │   │       ├── models.py            # User (is_banned, message_count, chat_count), Character (translations, message_counts), Chat (persona_id), Message, Favorite, Persona, PromptTemplate
 │   │       └── session.py           # Engine, init_db + auto-migrations
@@ -516,12 +527,13 @@ chatbot/
 │   │   │   ├── characters.ts        # CRUD + generate + wake-up + models
 │   │   │   ├── users.ts             # Profile (username, role), deleteAccount
 │   │   │   ├── uploads.ts           # uploadAvatar (multipart)
-│   │   │   └── chat.ts              # chats, messages, delete, clear
+│   │   │   ├── chat.ts              # chats, messages, delete, clear
+│   │   │   └── stats.ts             # fetchStats() — публичная статистика
 │   │   ├── hooks/
 │   │   │   ├── useAuth.ts           # Авторизация
 │   │   │   └── useChat.ts           # SSE стриминг + GenerationSettings + model_used + is_regenerate
 │   │   ├── store/                   # Zustand (auth с role, chat, favorites)
-│   │   ├── pages/                   # 12 страниц
+│   │   ├── pages/                   # 16 страниц
 │   │   │   ├── AuthPage.tsx         # Вход / регистрация / забыли пароль (3 режима)
 │   │   │   ├── ResetPasswordPage.tsx # Установка нового пароля (по ссылке из email)
 │   │   │   ├── ChatPage.tsx         # Чат + настройки + модель + isAdmin
@@ -530,6 +542,10 @@ chatbot/
 │   │   │   ├── AdminUsersPage.tsx   # Админ: управление пользователями (ban/unban/delete)
 │   │   │   ├── CreateCharacterPage.tsx  # Создание (ручное + из текста)
 │   │   │   ├── EditCharacterPage.tsx    # Редактирование персонажа
+│   │   │   ├── AboutPage.tsx        # О проекте
+│   │   │   ├── TermsPage.tsx        # Условия использования
+│   │   │   ├── PrivacyPage.tsx      # Политика конфиденциальности
+│   │   │   ├── FAQPage.tsx          # Часто задаваемые вопросы
 │   │   │   └── ...
 │   │   ├── components/
 │   │   │   ├── chat/
@@ -540,9 +556,11 @@ chatbot/
 │   │   │   ├── characters/
 │   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
 │   │   │   ├── landing/
-│   │   │   │   └── HeroSection.tsx        # Landing hero: логотип, слоган, CTA, аватары, feature-карточки
+│   │   │   │   └── HeroSection.tsx        # Landing hero: логотип, слоган, статистика, CTA, аватары, feature-карточки
+│   │   │   ├── layout/
+│   │   │   │   └── Footer.tsx            # Ссылки на About/Terms/Privacy/FAQ, копирайт
 │   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher, Logo
-│   │   ├── lib/                     # Утилиты (localStorage с role)
+│   │   ├── lib/                     # Утилиты (localStorage с role, isCharacterOnline)
 │   │   ├── locales/                 # i18n: en.json, ru.json
 │   │   └── types/                   # TypeScript типы (Message с model_used)
 │   ├── vercel.json

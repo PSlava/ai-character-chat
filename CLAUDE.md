@@ -48,7 +48,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 2. Build: `pip install -r requirements.txt`
 3. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 4. Env vars: `DATABASE_URL`, `JWT_SECRET`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY`, `QWEN_API_KEY`, `GROQ_API_KEY`, `CEREBRAS_API_KEY`, `TOGETHER_API_KEY`, `CORS_ORIGINS`, `PROXY_URL`
-5. Optional: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`
+5. Optional: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`
 
 ### Vercel (frontend)
 1. Connect GitHub repo, set root directory to `frontend`
@@ -60,7 +60,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 ### Backend (`backend/app/`)
 
 - **`config.py`** — `pydantic-settings`. `async_database_url` property auto-converts `postgres://` to `postgresql+asyncpg://`.
-- **`db/models.py`** — SQLAlchemy models: `User` (with `role`), `Character`, `Chat`, `Message` (with `model_used`), `Favorite`, `PromptTemplate`. Character has `appearance`, `structured_tags` (comma-separated tag IDs), `response_length` (short/medium/long/very_long) and `max_tokens` (default 2048).
+- **`db/models.py`** — SQLAlchemy models: `User` (with `role`), `Character`, `Chat`, `Message` (with `model_used`), `Favorite`, `PromptTemplate`. Character has `appearance`, `structured_tags` (comma-separated tag IDs), `response_length` (short/medium/long/very_long), `max_tokens` (default 2048), `base_chat_count` and `base_like_count` (JSONB, per-language fake engagement counters).
 - **`db/session.py`** — Async engine + session factory. `init_db()` creates tables on startup + runs ALTER TABLE migrations in separate transactions with `IF NOT EXISTS`.
 - **`auth/router.py`** — `POST /api/auth/register`, `/api/auth/login`. JWT tokens (30-day). Uses bcrypt directly. `ADMIN_EMAILS` env var: auto-assigns admin role on register; syncs role on login.
 - **`auth/middleware.py`** — `get_current_user` dependency. `get_current_user_optional` returns None instead of 401.
@@ -85,19 +85,25 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **`chat/prompt_builder.py`** — Dynamic system prompt from character fields. Two-layer system: `_DEFAULTS` (code) + DB overrides. `load_overrides(engine)` caches for 60s. `get_all_keys()` for admin UI. Bilingual: 21 keys × 2 languages (ru/en). Includes structured tags snippets (between personality and appearance), appearance section, `{{char}}`/`{{user}}` template variable replacement in example dialogues. Response length instructions vary by `response_length` setting. Literary prose format: narration as plain text, dialogue via em-dash (ru) / quotes (en), `*asterisks*` only for inner thoughts. **Third-person narration** enforced (intro + format_rules + rules). Show-don't-tell, physical sensations, anti-template rules.
 - **`chat/service.py`** — `get_or_create_chat()` returns existing chat or creates new. `get_chat_messages(limit, before_id)` supports cursor pagination with `has_more`. Context window (sliding window ~24k tokens, 50 messages). `build_conversation_messages()` constructs LLM message list with system prompt (always loads all messages).
 - **`chat/router.py`** — SSE streaming via `StreamingResponse`. Events: `{type: "token"}`, `{type: "done", message_id, user_message_id}`, `{type: "error"}`. `POST /chats` is get-or-create (one chat per character). `GET /chats/{id}` returns last 20 messages + `has_more`. `GET /chats/{id}/messages?before=ID&limit=20` for infinite scroll. `DELETE /chats/{id}/messages` clears all except greeting. Cross-provider auto-fallback when `model_name == "auto"`. Error sanitization: non-admin users see generic error, admin sees full details, moderation errors shown to all.
-- **`characters/`** — CRUD + AI generation from text. Tags as comma-separated string. `structured_tags.py` — registry of 33 predefined tags in 5 categories with bilingual labels and prompt snippets. `serializers.py` for ORM→dict with `getattr` fallbacks for new columns. Admin bypass for edit/delete via `is_admin` param.
+- **`characters/`** — CRUD + AI generation from text. Tags as comma-separated string. `structured_tags.py` — registry of 33 predefined tags in 5 categories with bilingual labels and prompt snippets. `serializers.py` for ORM→dict with `getattr` fallbacks for new columns, inflated counters (`real + base[lang]`), admin sees `real_chat_count`/`real_like_count`. Admin bypass for edit/delete via `is_admin` param.
+- **`stats/router.py`** — `GET /api/stats` — public endpoint, returns inflated users (+1200), messages (+45000), characters, online_now (15–45 pseudo-random, stable per 5-min window via MD5 hash).
+- **`utils/email.py`** — Async email sender with 3-tier fallback: Resend API (httpx) → SMTP (aiosmtplib, Gmail etc.) → console (dev). `_get_provider()` selects based on env vars.
 
 ### Frontend (`frontend/src/`)
 
 - **`lib/supabase.ts`** — NOT Supabase SDK. Just localStorage helpers for token/user.
+- **`lib/utils.ts`** — Includes `isCharacterOnline(characterId)` — deterministic ~33% online status based on `hash(id + currentHour) % 3 === 0`.
 - **`api/client.ts`** — Axios with JWT auto-injection from localStorage.
 - **`api/characters.ts`** — `wakeUpServer()` pings `/health` every 3s for up to 3 min. `getOpenRouterModels()` fetches model registry.
 - **`api/chat.ts`** — `deleteChat()`, `clearChatMessages()`, `deleteChatMessage()`, `getOlderMessages(chatId, beforeId)` for infinite scroll.
+- **`api/stats.ts`** — `getStats()` fetches public site statistics (users, messages, characters, online_now).
 - **`hooks/useChat.ts`** — SSE streaming via `@microsoft/fetch-event-source`. `GenerationSettings` includes model, temperature, top_p, top_k, frequency_penalty, max_tokens. Updates user message ID from `done` event.
 - **`api/admin.ts`** — Admin API client: getPrompts, updatePrompt, resetPrompt.
 - **`store/`** — Zustand: `authStore` (with role), `chatStore`.
 - **`locales/`** — i18n via react-i18next. `en.json`, `ru.json`. Language stored in localStorage.
-- **`pages/`** — Home, Chat, CharacterPage, CreateCharacter, EditCharacter, Auth, Profile, AdminPromptsPage.
+- **`pages/`** — Home (tag filters, featured character), Chat, CharacterPage (online dot), CreateCharacter, EditCharacter, Auth, Profile, AdminPromptsPage, AdminUsersPage, AboutPage, TermsPage, PrivacyPage, FAQPage.
+- **`components/layout/Footer.tsx`** — Site footer with links to About, Terms, Privacy, FAQ, contact email, copyright. In Layout.tsx inside `<main>` with `min-h-full flex` wrapper.
+- **`components/landing/HeroSection.tsx`** — Landing hero with stats bar (users/messages/online), fetched from `/api/stats` on mount.
 - **`components/chat/GenerationSettingsModal.tsx`** — Modal with model card grid (auto, openrouter, groq, cerebras, together, direct, paid groups) + 6 sliders + context memory. Per-model settings stored in `localStorage model-settings:{modelId}`. `loadModelSettings()` exported for ChatPage. Switching model in modal loads saved params for that model.
 - **`components/chat/MessageBubble.tsx`** — Message with delete/regenerate buttons on hover. Error messages in red. Admin sees `model_used` under assistant messages.
 - **`components/chat/ChatWindow.tsx`** — Message list with infinite scroll (loads older messages on scroll-to-top, preserves scroll position). Persistent regenerate button below last assistant message.
@@ -128,6 +134,10 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **Template variables**: `{{char}}` and `{{user}}` in example dialogues are replaced with actual character and user names in system prompt.
 - **Cerebras limitations**: API does not support `frequency_penalty`/`presence_penalty` — params silently ignored. UI shows amber warning when Cerebras model selected.
 - **i18n**: react-i18next with `en.json`/`ru.json` locale files. Language stored in localStorage, applied to prompts via `language` param.
+- **Fake engagement counters**: `base_chat_count`/`base_like_count` are JSONB `{"ru": N, "en": M}`. Serializer inflates: `displayed = real + base[lang]`. Admin gets extra `real_chat_count`/`real_like_count` fields. Seed characters initialized with random(100-1000) chats, random(50-100) likes.
+- **Email providers**: 3-tier fallback — Resend API (if `RESEND_API_KEY` set) → SMTP (if `SMTP_HOST` + `SMTP_FROM_EMAIL` set) → console (prints to logs). Config: `resend_api_key`, `resend_from_email`, `smtp_host/port/user/password/from_email`.
+- **Online status (fake)**: `isCharacterOnline(id)` in `lib/utils.ts` — deterministic hash of `id + currentHour`, ~33% show green dot. Used on CharacterCard and CharacterPage.
+- **Static pages**: About, Terms, Privacy, FAQ — pure i18n content, routes at `/about`, `/terms`, `/privacy`, `/faq`. Footer links to all four.
 
 ## API Routes
 
@@ -137,4 +147,5 @@ Chats: `POST /api/chats` (get-or-create), `GET /api/chats`, `GET/DELETE /api/cha
 Users: `GET/PUT /api/users/me` (includes role, username), `GET /api/users/me/favorites`, `POST/DELETE /api/users/me/favorites/{id}`
 Admin: `GET /api/admin/prompts`, `PUT /api/admin/prompts/{key}`, `DELETE /api/admin/prompts/{key}` — admin role required
 Models: `GET /api/models/openrouter`, `GET /api/models/groq`, `GET /api/models/cerebras`, `GET /api/models/together`
+Stats: `GET /api/stats` — public, returns inflated counters + online_now
 Health: `GET /api/health`

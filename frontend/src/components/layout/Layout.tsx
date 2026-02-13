@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
+import { Footer } from './Footer';
 import { AgeGate } from '@/components/ui/AgeGate';
 
 export function Layout() {
@@ -19,7 +20,12 @@ export function Layout() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main ref={mainRef} className="flex-1 overflow-y-auto">
-          <Outlet />
+          <div className="min-h-full flex flex-col">
+            <div className="flex-1">
+              <Outlet />
+            </div>
+            <Footer />
+          </div>
         </main>
       </div>
       <AgeGate />

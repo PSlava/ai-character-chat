@@ -1,8 +1,11 @@
 from app.db.models import Character
 
 
-def character_to_dict(c: Character) -> dict:
+def character_to_dict(c: Character, language: str = None, is_admin: bool = False) -> dict:
     tr = getattr(c, '_active_translations', None)
+    lang = language or "ru"
+    base_chat = (c.base_chat_count or {}).get(lang, 0)
+    base_like = (c.base_like_count or {}).get(lang, 0)
     d = {
         "id": c.id,
         "creator_id": c.creator_id,
@@ -19,8 +22,8 @@ def character_to_dict(c: Character) -> dict:
         "tags": tr["tags"] if tr and "tags" in tr else ([t for t in c.tags.split(",") if t] if c.tags else []),
         "structured_tags": [t for t in (getattr(c, 'structured_tags', '') or '').split(",") if t],
         "is_public": c.is_public,
-        "chat_count": c.chat_count,
-        "like_count": c.like_count,
+        "chat_count": (c.chat_count or 0) + base_chat,
+        "like_count": (c.like_count or 0) + base_like,
         "preferred_model": c.preferred_model,
         "max_tokens": getattr(c, 'max_tokens', None) or 2048,
         "response_length": getattr(c, 'response_length', None) or "long",
@@ -33,4 +36,7 @@ def character_to_dict(c: Character) -> dict:
             "display_name": c.creator.display_name,
             "avatar_url": c.creator.avatar_url,
         }
+    if is_admin:
+        d["real_chat_count"] = c.chat_count or 0
+        d["real_like_count"] = c.like_count or 0
     return d

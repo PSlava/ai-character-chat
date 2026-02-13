@@ -70,6 +70,8 @@ class Character(Base):
     is_public: Mapped[bool] = mapped_column(Boolean, default=True)
     chat_count: Mapped[int] = mapped_column(Integer, default=0)
     like_count: Mapped[int] = mapped_column(Integer, default=0)
+    base_chat_count: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)  # {"ru": 345, "en": 567}
+    base_like_count: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)  # {"ru": 75, "en": 62}
     preferred_model: Mapped[str] = mapped_column(String, default="claude")
     max_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True, default=2048)
     response_length: Mapped[str | None] = mapped_column(String, nullable=True, default="long")

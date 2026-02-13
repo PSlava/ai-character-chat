@@ -173,9 +173,10 @@ async def browse_characters(
     db: AsyncSession = Depends(get_db),
 ):
     user_id = user["id"] if user else None
+    is_admin = user.get("role") == "admin" if user else False
     characters = await service.list_public_characters(db, limit, offset, search, tag, user_id=user_id, language=language)
     total = await service.count_public_characters(db, search, tag, user_id=user_id)
-    return {"items": [character_to_dict(c) for c in characters], "total": total}
+    return {"items": [character_to_dict(c, language=language, is_admin=is_admin) for c in characters], "total": total}
 
 
 @router.get("/my")
@@ -183,8 +184,9 @@ async def my_characters(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    is_admin = user.get("role") == "admin"
     characters = await service.list_my_characters(db, user["id"])
-    return [character_to_dict(c) for c in characters]
+    return [character_to_dict(c, is_admin=is_admin) for c in characters]
 
 
 @router.get("/structured-tags")
@@ -196,6 +198,7 @@ async def list_structured_tags():
 @router.get("/{character_id}")
 async def get_character(
     character_id: str,
+    language: str | None = None,
     user=Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
@@ -208,7 +211,8 @@ async def get_character(
         user_role = user.get("role") if user else None
         if character.creator_id != user_id and user_role != "admin":
             raise HTTPException(status_code=404, detail="Character not found")
-    return character_to_dict(character)
+    is_admin = user.get("role") == "admin" if user else False
+    return character_to_dict(character, language=language, is_admin=is_admin)
 
 
 @router.post("", status_code=201)
@@ -217,8 +221,9 @@ async def create_character(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    is_admin = user.get("role") == "admin"
     character = await service.create_character(db, user["id"], body.model_dump())
-    return character_to_dict(character)
+    return character_to_dict(character, is_admin=is_admin)
 
 
 @router.put("/{character_id}")
@@ -234,7 +239,7 @@ async def update_character(
     )
     if not result:
         raise HTTPException(status_code=404, detail="Character not found or not yours")
-    return character_to_dict(result)
+    return character_to_dict(result, is_admin=is_admin)
 
 
 @router.delete("/{character_id}", status_code=204)

@@ -39,6 +39,8 @@ services:
       PROXY_URL: ${PROXY_URL:-}
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       FRONTEND_URL: ${FRONTEND_URL:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-SweetSin <noreply@sweetsin.cc>}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}

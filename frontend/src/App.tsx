@@ -11,6 +11,10 @@ import { FavoritesPage } from '@/pages/FavoritesPage';
 import { AdminPromptsPage } from '@/pages/AdminPromptsPage';
 import { AdminUsersPage } from '@/pages/AdminUsersPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
+import { AboutPage } from '@/pages/AboutPage';
+import { TermsPage } from '@/pages/TermsPage';
+import { PrivacyPage } from '@/pages/PrivacyPage';
+import { FAQPage } from '@/pages/FAQPage';
 
 export default function App() {
   return (
@@ -28,6 +32,10 @@ export default function App() {
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/admin/prompts" element={<AdminPromptsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/faq" element={<FAQPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

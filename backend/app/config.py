@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     smtp_user: str | None = None
     smtp_password: str | None = None
     smtp_from_email: str | None = None
+    resend_api_key: str | None = None
+    resend_from_email: str = "SweetSin <noreply@sweetsin.cc>"
     frontend_url: str = "http://localhost:5173"
     cors_origins: str = "*"
     upload_dir: str = "data/uploads"

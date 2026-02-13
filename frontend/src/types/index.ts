@@ -24,6 +24,8 @@ export interface Character {
   is_public: boolean;
   chat_count: number;
   like_count: number;
+  real_chat_count?: number;
+  real_like_count?: number;
   preferred_model: string;
   max_tokens: number;
   response_length: 'short' | 'medium' | 'long' | 'very_long';

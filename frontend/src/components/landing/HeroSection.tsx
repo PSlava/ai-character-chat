@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/Button';
 import { Sparkles, ShieldOff, Cpu, Pencil } from 'lucide-react';
+import { getStats, type SiteStats } from '@/api/stats';
 import type { Character } from '@/types';
 
 const features = [
@@ -19,6 +21,11 @@ interface Props {
 
 export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
   const { t } = useTranslation();
+  const [stats, setStats] = useState<SiteStats | null>(null);
+
+  useEffect(() => {
+    getStats().then(setStats).catch(() => {});
+  }, []);
 
   const avatarChars = popularCharacters.filter((c) => c.avatar_url).slice(0, 6);
 
@@ -39,9 +46,25 @@ export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
             {t('hero.slogan')}
           </p>
 
-          <p className="text-neutral-400 max-w-lg mx-auto mb-8 text-sm md:text-base">
+          <p className="text-neutral-400 max-w-lg mx-auto mb-4 text-sm md:text-base">
             {t('hero.subtitle')}
           </p>
+
+          {stats && (
+            <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 mb-6 flex-wrap">
+              <span className="font-semibold text-white">{stats.users.toLocaleString()}+</span>
+              <span>{t('stats.users')}</span>
+              <span className="text-neutral-600 mx-1">&middot;</span>
+              <span className="font-semibold text-white">{stats.messages.toLocaleString()}+</span>
+              <span>{t('stats.messages')}</span>
+              <span className="text-neutral-600 mx-1">&middot;</span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="font-semibold text-green-400">{stats.online_now}</span>
+              </span>
+              <span>{t('stats.onlineNow')}</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-center gap-3 mb-12">
             <Link to="/auth">

@@ -25,8 +25,10 @@ export async function getCharacters(params?: {
   return data;
 }
 
-export async function getCharacter(id: string) {
-  const { data } = await api.get<Character>(`/characters/${id}`);
+export async function getCharacter(id: string, language?: string) {
+  const { data } = await api.get<Character>(`/characters/${id}`, {
+    params: language ? { language } : undefined,
+  });
   return data;
 }
 

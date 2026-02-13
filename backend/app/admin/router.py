@@ -127,6 +127,8 @@ async def import_seed_characters(
     avatars_dest = Path(settings.upload_dir) / "avatars"
     avatars_dest.mkdir(parents=True, exist_ok=True)
 
+    import random
+
     for i, char_data in enumerate(SEED_CHARACTERS):
         avatar_url = None
 
@@ -154,6 +156,8 @@ async def import_seed_characters(
             avatar_url=avatar_url,
             is_public=True,
             preferred_model="auto",
+            base_chat_count={"ru": random.randint(100, 1000), "en": random.randint(100, 1000)},
+            base_like_count={"ru": random.randint(50, 100), "en": random.randint(50, 100)},
         )
         db.add(char)
 

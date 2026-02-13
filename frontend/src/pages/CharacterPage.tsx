@@ -10,6 +10,7 @@ import { useFavoritesStore } from '@/store/favoritesStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { isCharacterOnline } from '@/lib/utils';
 import { MessageCircle, Heart, User, Pencil, Trash2, Star } from 'lucide-react';
 import type { Character, Persona } from '@/types';
 
@@ -17,7 +18,7 @@ export function CharacterPage() {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { fetchChats } = useChatStore();
   const { favoriteIds, addFavorite: addFav, removeFavorite: removeFav } = useFavoritesStore();
   const [character, setCharacter] = useState<Character | null>(null);
@@ -35,9 +36,9 @@ export function CharacterPage() {
 
   useEffect(() => {
     if (id) {
-      getCharacter(id).then(setCharacter);
+      getCharacter(id, i18n.language).then(setCharacter);
     }
-  }, [id]);
+  }, [id, i18n.language]);
 
   const startChatWithPersona = async (personaId?: string) => {
     if (!character) return;
@@ -112,7 +113,12 @@ export function CharacterPage() {
       )}
       <div className="relative p-4 md:p-6 max-w-3xl mx-auto">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 md:mb-8">
-        <Avatar src={character.avatar_url} name={character.name} size="lg" />
+        <div className="relative">
+          <Avatar src={character.avatar_url} name={character.name} size="lg" />
+          {isCharacterOnline(character.id) && (
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-neutral-800" />
+          )}
+        </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{character.name}</h1>
           {character.tagline && (
@@ -121,7 +127,11 @@ export function CharacterPage() {
           <div className="flex items-center gap-4 mt-3 text-sm text-neutral-500">
             <span className="flex items-center gap-1">
               <MessageCircle className="w-4 h-4" />
-              {character.chat_count} {t('character.chats')}
+              {character.chat_count}
+              {isAdmin && character.real_chat_count !== undefined && (
+                <span className="text-emerald-500">({character.real_chat_count})</span>
+              )}
+              {' '}{t('character.chats')}
             </span>
             <button
               onClick={() => {
@@ -142,6 +152,9 @@ export function CharacterPage() {
             >
               <Heart className={`w-4 h-4 ${favoriteIds.has(character.id) ? 'fill-current' : ''}`} />
               {character.like_count}
+              {isAdmin && character.real_like_count !== undefined && (
+                <span className="text-emerald-500">({character.real_like_count})</span>
+              )}
             </button>
             {character.profiles?.username && (
               <span className="flex items-center gap-1">

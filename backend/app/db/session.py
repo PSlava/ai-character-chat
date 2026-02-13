@@ -52,6 +52,8 @@ async def init_db():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS message_count INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS chat_count INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT FALSE",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS base_chat_count JSONB DEFAULT '{}'",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS base_like_count JSONB DEFAULT '{}'",
     ]
     for sql in migrations:
         try:
