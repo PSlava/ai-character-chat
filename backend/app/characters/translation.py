@@ -222,7 +222,8 @@ async def _save_translations(
                 await conn.execute(
                     text("""
                         UPDATE characters SET translations =
-                            COALESCE(translations, '{}'::jsonb) || jsonb_build_object(:lang, :data::jsonb)
+                            COALESCE(translations, CAST('{}' AS jsonb))
+                            || jsonb_build_object(:lang, CAST(:data AS jsonb))
                         WHERE id = :cid
                     """),
                     {"lang": target_language, "data": json.dumps(tr, ensure_ascii=False), "cid": char_id},
