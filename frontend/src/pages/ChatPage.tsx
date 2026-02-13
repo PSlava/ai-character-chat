@@ -63,7 +63,7 @@ export function ChatPage() {
   }, []);
 
   useEffect(() => {
-    if (!chatId) return;
+    if (!chatId || !isAuthenticated) return;
     getChat(chatId)
       .then((data) => {
         setChatDetail(data);
@@ -96,7 +96,7 @@ export function ChatPage() {
         setGenerationSettings(loadModelSettings(model));
       })
       .catch(() => setError(t('chat.notFound')));
-  }, [chatId, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [chatId, isAuthenticated, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLoadMore = useCallback(async () => {
     if (!chatId || loadingMore || !hasMore) return;
