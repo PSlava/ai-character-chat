@@ -47,6 +47,7 @@ export interface AdminUser {
   message_count: number;
   chat_count: number;
   character_count: number;
+  language: string;
   created_at: string;
 }
 

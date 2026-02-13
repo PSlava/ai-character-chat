@@ -240,6 +240,7 @@
   "admin.userSearch": "Поиск по email или имени...",
   "admin.userCol": "Пользователь",
   "admin.roleCol": "Роль",
+  "admin.langCol": "Язык",
   "admin.dateCol": "Дата",
   "admin.statusCol": "Статус",
   "admin.actionsCol": "Действия",

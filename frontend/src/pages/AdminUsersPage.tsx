@@ -116,6 +116,7 @@ export function AdminUsersPage() {
                   <th className="text-center py-3 px-3"><MessageCircle className="w-3.5 h-3.5 inline" /></th>
                   <th className="text-center py-3 px-3"><MessagesSquare className="w-3.5 h-3.5 inline" /></th>
                   <th className="text-center py-3 px-3"><Users className="w-3.5 h-3.5 inline" /></th>
+                  <th className="text-center py-3 px-3">{t('admin.langCol')}</th>
                   <th className="text-center py-3 px-3">{t('admin.dateCol')}</th>
                   <th className="text-center py-3 px-3">{t('admin.statusCol')}</th>
                   <th className="text-right py-3 px-3">{t('admin.actionsCol')}</th>
@@ -146,6 +147,7 @@ export function AdminUsersPage() {
                     <td className="py-3 px-3 text-center text-neutral-400">{u.message_count}</td>
                     <td className="py-3 px-3 text-center text-neutral-400">{u.chat_count}</td>
                     <td className="py-3 px-3 text-center text-neutral-400">{u.character_count}</td>
+                    <td className="py-3 px-3 text-center text-neutral-400 text-xs uppercase">{u.language}</td>
                     <td className="py-3 px-3 text-center text-neutral-500 text-xs">{formatDate(u.created_at)}</td>
                     <td className="py-3 px-3 text-center">
                       {u.is_banned ? (
@@ -228,6 +230,7 @@ export function AdminUsersPage() {
                       <span className="flex items-center gap-1">
                         <Users className="w-3 h-3" /> {u.character_count}
                       </span>
+                      <span className="uppercase">{u.language}</span>
                       <span>{formatDate(u.created_at)}</span>
                     </div>
                   </div>

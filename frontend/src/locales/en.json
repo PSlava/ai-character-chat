@@ -240,6 +240,7 @@
   "admin.userSearch": "Search by email or name...",
   "admin.userCol": "User",
   "admin.roleCol": "Role",
+  "admin.langCol": "Lang",
   "admin.dateCol": "Date",
   "admin.statusCol": "Status",
   "admin.actionsCol": "Actions",

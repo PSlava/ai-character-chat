@@ -297,6 +297,7 @@ async def list_users(
             "message_count": u.message_count or 0,
             "chat_count": u.chat_count or 0,
             "character_count": row[1] or 0,
+            "language": u.language or "en",
             "created_at": u.created_at.isoformat() if u.created_at else None,
         })
     return users
