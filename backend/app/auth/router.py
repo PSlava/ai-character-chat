@@ -223,6 +223,11 @@ async def reset_password(
     return {"message": "Password has been reset successfully"}
 
 
+@router.get("/providers")
+async def auth_providers():
+    return {"google": bool(settings.google_client_id)}
+
+
 @router.get("/google")
 async def google_login(request: Request):
     if not settings.google_client_id:
