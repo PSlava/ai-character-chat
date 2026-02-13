@@ -156,8 +156,8 @@ async def import_seed_characters(
             avatar_url=avatar_url,
             is_public=True,
             preferred_model="auto",
-            base_chat_count={"ru": random.randint(100, 1000), "en": random.randint(100, 1000)},
-            base_like_count={"ru": random.randint(50, 100), "en": random.randint(50, 100)},
+            base_chat_count={"ru": random.randint(300, 3000), "en": random.randint(200, 2500)},
+            base_like_count={"ru": random.randint(100, 800), "en": random.randint(80, 600)},
         )
         db.add(char)
 
