@@ -306,20 +306,9 @@ export function CharacterPage() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="w-full">
-          {loading ? t('character.creatingChat') : t('character.startChat')}
-        </Button>
-        {isAuthenticated && (
-          <button
-            onClick={() => handleStartChat(true)}
-            disabled={loading}
-            className="w-full text-center text-sm text-neutral-400 hover:text-rose-400 transition-colors disabled:opacity-50"
-          >
-            {t('character.newChat')}
-          </button>
-        )}
-      </div>
+      <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="w-full">
+        {loading ? t('character.creatingChat') : t('character.startChat')}
+      </Button>
 
       {showDeleteConfirm && (
         <ConfirmDialog

@@ -104,7 +104,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **`hooks/useChat.ts`** — SSE streaming via `@microsoft/fetch-event-source`. `GenerationSettings` includes model, temperature, top_p, top_k, frequency_penalty, max_tokens. Updates user message ID from `done` event.
 - **`api/admin.ts`** — Admin API client: getPrompts, updatePrompt, resetPrompt.
 - **`store/`** — Zustand: `authStore` (with role), `chatStore`.
-- **`locales/`** — i18n via react-i18next. `en.json`, `ru.json`. Language stored in localStorage.
+- **`locales/`** — i18n via react-i18next. `en.json`, `es.json`, `ru.json` (~391 keys each). Default: English. Language stored in localStorage.
 - **`pages/`** — Home (tag filters, featured character), Chat (+ new chat button), CharacterPage (online dot, report, export), CreateCharacter (manual + story + SillyTavern import), EditCharacter, Auth (+ Google OAuth), OAuthCallbackPage, Profile, AdminPromptsPage, AdminUsersPage, AdminReportsPage, AboutPage, TermsPage, PrivacyPage, FAQPage.
 - **`components/layout/Footer.tsx`** — Site footer with links to About, Terms, Privacy, FAQ, contact email, copyright. In Layout.tsx inside `<main>` with `min-h-full flex` wrapper.
 - **`components/landing/HeroSection.tsx`** — Landing hero with stats bar (users/messages/online), fetched from `/api/stats` on mount.
@@ -139,8 +139,9 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **Appearance field**: Separate character field for physical description. Included in system prompt between structured tags and scenario sections.
 - **Template variables**: `{{char}}` and `{{user}}` in example dialogues are replaced with actual character and user names in system prompt.
 - **Cerebras limitations**: API does not support `frequency_penalty`/`presence_penalty` — params silently ignored. UI shows amber warning when Cerebras model selected.
-- **i18n**: react-i18next with `en.json`/`ru.json` locale files. Language stored in localStorage, applied to prompts via `language` param.
-- **Fake engagement counters**: `base_chat_count`/`base_like_count` are JSONB `{"ru": N, "en": M}`. Serializer inflates: `displayed = real + base[lang]`. Admin gets extra `real_chat_count`/`real_like_count` fields. Seed characters initialized with random(100-1000) chats, random(50-100) likes.
+- **i18n**: react-i18next with `en.json`/`es.json`/`ru.json` locale files (~391 keys each). Default language: English. Language stored in localStorage, applied to prompts via `language` param. LanguageSwitcher: EN | ES | RU.
+- **Fake engagement counters**: `base_chat_count`/`base_like_count` are JSONB `{"ru": N, "en": M}`. Serializer inflates: `displayed = real + base[lang]`. Admin gets extra `real_chat_count`/`real_like_count` fields. Seed characters initialized with random(300-3000) chats, random(100-800) likes. Characters sorted by displayed count (real + base) on homepage.
+- **Character translation**: Card fields (name, tagline, tags) translated in batch via LLM. Description fields (scenario, appearance, greeting_message) translated per-character on single character page (`include_descriptions=True`). All cached in JSONB `translations` column. Cache invalidated on edit of any translatable field.
 - **Email providers**: 3-tier fallback — Resend API (if `RESEND_API_KEY` set) → SMTP (if `SMTP_HOST` + `SMTP_FROM_EMAIL` set) → console (prints to logs). Config: `resend_api_key`, `resend_from_email`, `smtp_host/port/user/password/from_email`.
 - **Online status (fake)**: `isCharacterOnline(id)` in `lib/utils.ts` — deterministic hash of `id + currentHour`, ~33% show green dot. Used on CharacterCard and CharacterPage.
 - **Static pages**: About, Terms, Privacy, FAQ — pure i18n content, routes at `/about`, `/terms`, `/privacy`, `/faq`. Footer links to all four.
@@ -155,7 +156,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 
 ## API Routes
 
-Auth: `POST /api/auth/register` (username optional), `POST /api/auth/login`, `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`, `GET /api/auth/google` (OAuth redirect), `GET /api/auth/google/callback` — JWT includes role
+Auth: `POST /api/auth/register` (username optional), `POST /api/auth/login`, `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`, `GET /api/auth/providers` (available OAuth), `GET /api/auth/google` (OAuth redirect), `GET /api/auth/google/callback` — JWT includes role
 Characters: `GET/POST /api/characters`, `GET/PUT/DELETE /api/characters/{id}`, `GET /api/characters/my`, `GET /api/characters/structured-tags`, `POST /api/characters/generate-from-story`, `GET /api/characters/{id}/export` (SillyTavern card), `POST /api/characters/import` (SillyTavern card)
 Chats: `POST /api/chats` (get-or-create, `force_new` for multiple chats), `GET /api/chats`, `GET/DELETE /api/chats/{id}`, `GET /api/chats/{id}/messages?before=ID&limit=20` (pagination), `POST /api/chats/{id}/message` (SSE), `DELETE /api/chats/{id}/messages` (clear), `DELETE /api/chats/{id}/messages/{msg_id}`
 Users: `GET/PUT /api/users/me` (includes role, username), `GET /api/users/me/favorites`, `POST/DELETE /api/users/me/favorites/{id}`

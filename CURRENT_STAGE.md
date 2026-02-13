@@ -187,14 +187,15 @@ docker compose up -d
 - При удалении персоны — чаты продолжают работать (`persona_id` → NULL)
 - HTML-санитизация текстовых полей
 
-### Автоперевод карточек персонажей
-- **Batch-перевод через LLM** — до 15 персонажей за один вызов Groq/Cerebras/OpenRouter
+### Автоперевод персонажей
+- **Batch-перевод карточек через LLM** — name, tagline, tags до 15 персонажей за один вызов Groq/Cerebras/OpenRouter
+- **Перевод описаний** — scenario, appearance, greeting_message переводятся per-character при открытии страницы персонажа (timeout 15с, max_tokens 4096)
 - **Правила для имён**: собственные → транслитерация (Алина → Alina), описательные → перевод (Тёмный Лорд → Dark Lord), смешанные → комбинация (Князь Владимир → Prince Vladimir)
-- **JSONB кэш** — `translations` поле на Character: `{"en": {"name": "...", "tagline": "...", "tags": [...]}}`
+- **JSONB кэш** — `translations` поле на Character: `{"en": {"name": "...", "tagline": "...", "tags": [...], "scenario": "...", "appearance": "...", "greeting_message": "..."}}`
 - **Прозрачная подстановка** — бэкенд возвращает переведённые данные, фронтенд не знает о переводе
 - **Fire-and-forget сохранение** — перевод сохраняется в фоне через `asyncio.create_task()`, не блокирует ответ
-- **Сброс кэша** — при обновлении name/tagline/tags кэш очищается
-- **Fallback** — при ошибке перевода показывается оригинал, timeout 8с
+- **Сброс кэша** — при обновлении name/tagline/tags/scenario/appearance/greeting_message кэш очищается
+- **Fallback** — при ошибке перевода показывается оригинал
 - Поддержка 8 языков (en, ru, es, fr, de, ja, zh, ko)
 
 ### Чат
@@ -368,11 +369,14 @@ docker compose up -d
 - **Render wake-up** — автоматическое пробуждение сервера перед генерацией (free tier засыпает)
 
 ### i18n (интернационализация)
-- Двуязычный интерфейс: русский (по умолчанию) и английский
-- i18next + react-i18next
-- Переключатель языков в профиле
+- Трёхъязычный интерфейс: **английский** (по умолчанию), **испанский**, русский
+- i18next + react-i18next, ~391 ключ на язык
+- Переключатель языков EN | ES | RU в хедере и профиле
 - Язык пользователя сохраняется в БД и передаётся в system prompt
 - **Промпты на выбранном языке** — при выборе English все части system prompt берутся из английского набора, включая строгое указание «Write ONLY in English»
+- **Перевод карточек персонажей** — name, tagline, tags переводятся batch-запросом через LLM (Groq → Cerebras → OpenRouter), кэшируются в JSONB
+- **Перевод описаний персонажей** — scenario, appearance, greeting_message переводятся per-character через LLM при открытии страницы персонажа, кэшируются в JSONB
+- **`GET /api/auth/providers`** — возвращает доступные OAuth-провайдеры, кнопка Google скрыта если не настроен
 
 ### Фронтенд
 - React + TypeScript + Vite + Tailwind CSS
@@ -469,7 +473,7 @@ docker compose up -d
 
 ```
 Backend:  Python 3.12 + FastAPI + SQLAlchemy + PyJWT + bcrypt + Pillow + authlib + gunicorn + uvicorn
-Frontend: React 18 + TypeScript + Vite + Tailwind CSS + Zustand + i18next + react-markdown + react-hot-toast + vite-plugin-pwa
+Frontend: React 18 + TypeScript + Vite + Tailwind CSS + Zustand + i18next (EN/ES/RU) + react-markdown + react-hot-toast + vite-plugin-pwa
 Database: PostgreSQL 16 (Docker) / Supabase (облако) / SQLite (локально)
 AI:       OpenRouter + Groq + Cerebras + Together + DeepSeek + Qwen/DashScope + Anthropic + OpenAI + Google GenAI
 Streaming: SSE (Server-Sent Events)
@@ -594,7 +598,7 @@ chatbot/
 │   │   │   │   └── Footer.tsx            # Ссылки на About/Terms/Privacy/FAQ, копирайт
 │   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher, Logo, Skeleton
 │   │   ├── lib/                     # Утилиты (localStorage с role, isCharacterOnline)
-│   │   ├── locales/                 # i18n: en.json, ru.json
+│   │   ├── locales/                 # i18n: en.json, es.json, ru.json (~391 ключей каждый)
 │   │   └── types/                   # TypeScript типы (Message с model_used)
 │   ├── vercel.json
 │   └── package.json
