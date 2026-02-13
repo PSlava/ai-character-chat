@@ -179,8 +179,8 @@ export function CharacterPage() {
           {character.tagline && (
             <p className="text-neutral-400 mt-1">{character.tagline}</p>
           )}
-          <div className="flex items-center gap-4 mt-3 text-sm text-neutral-500">
-            <span className="flex items-center gap-1">
+          <div className="flex items-center gap-4 mt-3 text-sm text-neutral-500 min-w-0">
+            <span className="flex items-center gap-1 shrink-0">
               <MessageCircle className="w-4 h-4" />
               {character.chat_count}
               {isAdmin && character.real_chat_count !== undefined && (
@@ -201,7 +201,7 @@ export function CharacterPage() {
                   toast.success(t('toast.liked'));
                 }
               }}
-              className={`flex items-center gap-1 transition-colors ${
+              className={`flex items-center gap-1 shrink-0 transition-colors ${
                 favoriteIds.has(character.id)
                   ? 'text-rose-500 hover:text-rose-400'
                   : 'hover:text-rose-400'
@@ -214,9 +214,9 @@ export function CharacterPage() {
               )}
             </button>
             {character.profiles?.username && (
-              <span className="flex items-center gap-1">
-                <User className="w-4 h-4" />
-                @{character.profiles.username}
+              <span className="flex items-center gap-1 min-w-0">
+                <User className="w-4 h-4 shrink-0" />
+                <span className="truncate">@{character.profiles.username}</span>
               </span>
             )}
           </div>
