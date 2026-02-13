@@ -34,8 +34,10 @@ async def list_public_characters(
         visibility = Character.is_public == True
 
     if language and language.isalpha() and len(language) <= 10:
-        # Safe: language is validated to be alpha-only, no injection risk
-        order = text(f"COALESCE((characters.message_counts->>'{language}')::int, 0) DESC"), Character.created_at.desc()
+        # Sort by displayed chat count (real + base) for consistency with UI
+        order = text(
+            f"(COALESCE(characters.chat_count, 0) + COALESCE((characters.base_chat_count->>'{language}')::int, 0)) DESC"
+        ), Character.created_at.desc()
     else:
         order = (Character.created_at.desc(),)
 
