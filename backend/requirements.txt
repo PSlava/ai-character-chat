@@ -16,3 +16,4 @@ gunicorn>=21.2.0
 aiosmtplib>=3.0.0
 Pillow>=10.0.0
 authlib
+itsdangerous>=2.0
