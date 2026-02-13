@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Link } from 'react-router-dom';
+import { localePath } from '@/lib/lang';
 import { useAuth } from '@/hooks/useAuth';
 import { getReports, updateReport } from '@/api/reports';
 import type { Report } from '@/api/reports';
@@ -79,7 +80,7 @@ export function AdminReportsPage() {
             >
               <div className="flex items-start gap-3">
                 {report.character && (
-                  <Link to={report.character.slug ? `/c/${report.character.slug}` : `/character/${report.character.id}`}>
+                  <Link to={localePath(report.character.slug ? `/c/${report.character.slug}` : `/character/${report.character.id}`)}>
                     <Avatar src={report.character.avatar_url} name={report.character.name} size="sm" />
                   </Link>
                 )}

@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { SEO } from '@/components/seo/SEO';
+import { localePath } from '@/lib/lang';
 import { isCharacterOnline } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { MessageCircle, Heart, User, Pencil, Trash2, Star, Flag, Download } from 'lucide-react';
@@ -50,7 +51,7 @@ export function CharacterPage() {
         setCharacter(c);
         // Redirect old UUID URL to slug URL
         if (c.slug) {
-          navigate(`/c/${c.slug}`, { replace: true });
+          navigate(localePath(`/c/${c.slug}`), { replace: true });
         }
       });
     }
@@ -111,7 +112,7 @@ export function CharacterPage() {
     }
   };
 
-  const charUrl = character?.slug ? `/c/${character.slug}` : undefined;
+  const charUrl = character?.slug ? localePath(`/c/${character.slug}`) : undefined;
   const charDescription = character
     ? (character.scenario || character.tagline || character.name).slice(0, 160)
     : undefined;

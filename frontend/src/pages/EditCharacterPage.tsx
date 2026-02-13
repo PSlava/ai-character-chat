@@ -3,6 +3,7 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getCharacter, updateCharacter } from '@/api/characters';
 import { CharacterForm } from '@/components/characters/CharacterForm';
+import { localePath } from '@/lib/lang';
 import type { Character } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
@@ -29,7 +30,7 @@ export function EditCharacterPage() {
     if (!id) return;
     try {
       const updated = await updateCharacter(id, data);
-      navigate(updated.slug ? `/c/${updated.slug}` : `/character/${id}`);
+      navigate(localePath(updated.slug ? `/c/${updated.slug}` : `/character/${id}`));
     } catch {
       setError(t('edit.saveError'));
     }

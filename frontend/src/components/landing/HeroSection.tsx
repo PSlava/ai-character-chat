@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/Button';
+import { localePath } from '@/lib/lang';
 import { Sparkles, ShieldOff, Cpu, Pencil } from 'lucide-react';
 import { getStats, type SiteStats } from '@/api/stats';
 import type { Character } from '@/types';
@@ -82,7 +83,7 @@ export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
               </p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 {avatarChars.map((char) => (
-                  <Link to={char.slug ? `/c/${char.slug}` : `/character/${char.id}`} key={char.id} title={char.name}>
+                  <Link to={localePath(char.slug ? `/c/${char.slug}` : `/character/${char.id}`)} key={char.id} title={char.name}>
                     <img
                       src={char.avatar_url!}
                       alt={char.name}

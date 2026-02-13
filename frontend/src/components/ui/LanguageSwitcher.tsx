@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { updateProfile } from '@/api/users';
+import { SUPPORTED_LANGS } from '@/lib/lang';
 
 interface Props {
   compact?: boolean;
@@ -9,11 +11,21 @@ interface Props {
 export function LanguageSwitcher({ compact }: Props) {
   const { i18n, t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
+  const location = useLocation();
   const lang = i18n.language;
 
   const change = async (newLang: string) => {
     i18n.changeLanguage(newLang);
     localStorage.setItem('language', newLang);
+
+    // If on a lang-prefixed route, swap the prefix in URL
+    const parts = location.pathname.split('/');
+    if (parts.length >= 2 && SUPPORTED_LANGS.includes(parts[1])) {
+      parts[1] = newLang;
+      navigate(parts.join('/') + location.search + location.hash, { replace: true });
+    }
+
     if (user) {
       try { await updateProfile({ language: newLang }); } catch {}
     }

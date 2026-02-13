@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { createCharacter, generateFromStory, getOpenRouterModels, wakeUpServer } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { importCharacter } from '@/api/export';
+import { localePath } from '@/lib/lang';
 import { CharacterForm } from '@/components/characters/CharacterForm';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
@@ -56,7 +57,7 @@ export function CreateCharacterPage() {
       await wakeUpServer((s) => setStatusText(s));
       setStatusText('');
       const character = await createCharacter(data);
-      navigate(character.slug ? `/c/${character.slug}` : `/character/${character.id}`);
+      navigate(localePath(character.slug ? `/c/${character.slug}` : `/character/${character.id}`));
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ax = e as any;
@@ -126,7 +127,7 @@ export function CreateCharacterPage() {
       const card = JSON.parse(importJson);
       const result = await importCharacter(card);
       toast.success(t('create.importSuccess'));
-      navigate(result.slug ? `/c/${result.slug}` : `/character/${result.id}`);
+      navigate(localePath(result.slug ? `/c/${result.slug}` : `/character/${result.id}`));
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ax = e as any;

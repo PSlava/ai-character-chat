@@ -5,6 +5,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { isCharacterOnline } from '@/lib/utils';
+import { localePath } from '@/lib/lang';
 import { MessageCircle, Heart } from 'lucide-react';
 
 interface Props {
@@ -36,7 +37,7 @@ export function CharacterCard({ character }: Props) {
 
   return (
     <Link
-      to={character.slug ? `/c/${character.slug}` : `/character/${character.id}`}
+      to={localePath(character.slug ? `/c/${character.slug}` : `/character/${character.id}`)}
       className="block bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-4 hover:border-rose-500/50 transition-all hover:bg-neutral-800"
     >
       <div className="flex items-start gap-3">

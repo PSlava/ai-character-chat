@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { SEO } from '@/components/seo/SEO';
+import { localePath } from '@/lib/lang';
 
 export function FAQPage() {
   const { t } = useTranslation();
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
-      <SEO title={t('faq.title')} description={t('seo.faq.description')} url="/faq" />
+      <SEO title={t('faq.title')} description={t('seo.faq.description')} url={localePath('/faq')} />
       <h1 className="text-2xl font-bold mb-6">{t('faq.title')}</h1>
       <div className="space-y-6">
         {[1, 2, 3, 4, 5, 6].map((n) => (

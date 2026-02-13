@@ -5,6 +5,7 @@ import { getCharacters } from '@/api/characters';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { SEO } from '@/components/seo/SEO';
+import { localePath } from '@/lib/lang';
 import { useAuth } from '@/hooks/useAuth';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Character } from '@/types';
@@ -77,7 +78,7 @@ export function HomePage() {
     <>
       <SEO
         description={t('seo.home.description')}
-        url="/"
+        url={localePath('/')}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'WebSite',
@@ -133,7 +134,7 @@ export function HomePage() {
         {/* Featured character of the day */}
         {featuredCharacter && !search && !activeTag && !loading && (
           <Link
-            to={featuredCharacter.slug ? `/c/${featuredCharacter.slug}` : `/character/${featuredCharacter.id}`}
+            to={localePath(featuredCharacter.slug ? `/c/${featuredCharacter.slug}` : `/character/${featuredCharacter.id}`)}
             className="block mb-6 p-4 rounded-xl bg-gradient-to-r from-rose-950/50 to-neutral-800/50 border border-rose-500/20 hover:border-rose-500/40 transition-colors"
           >
             <p className="text-xs text-rose-400 uppercase tracking-wider mb-3 font-medium">

@@ -23,7 +23,7 @@ def character_jsonld(c: Character, language: str = "en") -> dict:
         "@type": "CreativeWork",
         "name": name,
         "description": tagline or scenario[:160] if scenario else name,
-        "url": f"{SITE_URL}/c/{c.slug}" if c.slug else f"{SITE_URL}/character/{c.id}",
+        "url": f"{SITE_URL}/{lang}/c/{c.slug}" if c.slug else f"{SITE_URL}/character/{c.id}",
         "datePublished": c.created_at.isoformat() if c.created_at else None,
         "dateModified": c.updated_at.isoformat() if c.updated_at else None,
         "keywords": ", ".join(tags) if isinstance(tags, list) else tags,

@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { SEO } from '@/components/seo/SEO';
+import { localePath } from '@/lib/lang';
 
 export function AboutPage() {
   const { t } = useTranslation();
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
-      <SEO title={t('about.title')} description={t('seo.about.description')} url="/about" />
+      <SEO title={t('about.title')} description={t('seo.about.description')} url={localePath('/about')} />
       <h1 className="text-2xl font-bold mb-6">{t('about.title')}</h1>
       <div className="space-y-4 text-neutral-300 leading-relaxed">
         <p>{t('about.p1')}</p>

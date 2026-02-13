@@ -11,6 +11,8 @@ from app.seo.jsonld import character_jsonld, website_jsonld, SITE_URL
 
 router = APIRouter(prefix="/api/seo", tags=["seo"])
 
+LANGS = ["en", "es", "ru"]
+
 
 def _escape(text: str | None) -> str:
     if not text:
@@ -29,6 +31,16 @@ def _truncate(text: str | None, length: int = 160) -> str:
     if len(text) <= length:
         return text
     return text[:length - 3] + "..."
+
+
+def _hreflang_tags(path: str) -> str:
+    """Generate hreflang link tags for all languages. path should NOT include lang prefix."""
+    tags = []
+    for l in LANGS:
+        url = f"{SITE_URL}/{l}{path}" if path else f"{SITE_URL}/{l}"
+        tags.append(f'<link rel="alternate" hreflang="{l}" href="{url}">')
+    tags.append(f'<link rel="alternate" hreflang="x-default" href="{SITE_URL}/en{path}">')
+    return "\n".join(tags)
 
 
 @router.get("/c/{slug}", response_class=HTMLResponse)
@@ -60,7 +72,7 @@ async def prerender_character(
 
     description = _escape(_truncate(scenario or tagline))
     keywords = _escape(", ".join(tags) if isinstance(tags, list) else tags)
-    canonical = f"{SITE_URL}/c/{slug}"
+    canonical = f"{SITE_URL}/{lang}/c/{slug}"
 
     avatar = character.avatar_url or ""
     if avatar and avatar.startswith("/"):
@@ -89,10 +101,7 @@ async def prerender_character(
 <meta name="twitter:title" content="{_escape(title)}">
 <meta name="twitter:description" content="{description}">
 <meta name="twitter:image" content="{_escape(avatar)}">
-<link rel="alternate" hreflang="en" href="{canonical}">
-<link rel="alternate" hreflang="es" href="{canonical}">
-<link rel="alternate" hreflang="ru" href="{canonical}">
-<link rel="alternate" hreflang="x-default" href="{canonical}">
+{_hreflang_tags(f"/c/{slug}")}
 <script type="application/ld+json">{ld_json}</script>
 </head>
 <body>
@@ -127,8 +136,10 @@ async def prerender_home(
     for c in characters:
         name = _escape(c.name)
         tagline = _escape(c.tagline or "")
-        url = f"{SITE_URL}/c/{c.slug}"
+        url = f"{SITE_URL}/{lang}/c/{c.slug}"
         char_links.append(f'<li><a href="{url}">{name}</a> — {tagline}</li>')
+
+    canonical = f"{SITE_URL}/{lang}"
 
     html = f"""<!DOCTYPE html>
 <html lang="{_escape(lang)}">
@@ -136,17 +147,14 @@ async def prerender_home(
 <meta charset="UTF-8">
 <title>SweetSin — AI Character Chat | Roleplay &amp; Fantasy</title>
 <meta name="description" content="Chat with unique AI characters without limits. Immersive roleplay, uncensored conversations, and endless fantasy.">
-<link rel="canonical" href="{SITE_URL}/">
+<link rel="canonical" href="{canonical}">
 <meta property="og:title" content="SweetSin — Where Fantasy Comes Alive">
 <meta property="og:description" content="AI Character Chat Platform. Immersive roleplay, uncensored conversations, no limits.">
 <meta property="og:image" content="{SITE_URL}/og-image.svg">
-<meta property="og:url" content="{SITE_URL}/">
+<meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="alternate" hreflang="en" href="{SITE_URL}/">
-<link rel="alternate" hreflang="es" href="{SITE_URL}/">
-<link rel="alternate" hreflang="ru" href="{SITE_URL}/">
-<link rel="alternate" hreflang="x-default" href="{SITE_URL}/">
+{_hreflang_tags("")}
 <script type="application/ld+json">{ld_json}</script>
 </head>
 <body>
@@ -171,22 +179,50 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
     characters = result.all()
 
     now = datetime.utcnow().strftime("%Y-%m-%d")
-    urls = [
-        f'<url><loc>{SITE_URL}/</loc><lastmod>{now}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>',
-        f'<url><loc>{SITE_URL}/about</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>',
-        f'<url><loc>{SITE_URL}/terms</loc><changefreq>monthly</changefreq><priority>0.2</priority></url>',
-        f'<url><loc>{SITE_URL}/privacy</loc><changefreq>monthly</changefreq><priority>0.2</priority></url>',
-        f'<url><loc>{SITE_URL}/faq</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>',
+
+    def alternates(path: str) -> str:
+        """xhtml:link alternates for all languages."""
+        links = []
+        for l in LANGS:
+            url = f"{SITE_URL}/{l}{path}" if path else f"{SITE_URL}/{l}"
+            links.append(f'<xhtml:link rel="alternate" hreflang="{l}" href="{url}"/>')
+        links.append(f'<xhtml:link rel="alternate" hreflang="x-default" href="{SITE_URL}/en{path}"/>')
+        return "".join(links)
+
+    urls = []
+
+    # Static pages × languages
+    static_pages = [
+        ("", "daily", "1.0", now),
+        ("/about", "monthly", "0.3", None),
+        ("/terms", "monthly", "0.2", None),
+        ("/privacy", "monthly", "0.2", None),
+        ("/faq", "monthly", "0.3", None),
     ]
+    for path, freq, prio, lastmod in static_pages:
+        for l in LANGS:
+            loc = f"{SITE_URL}/{l}{path}" if path else f"{SITE_URL}/{l}"
+            lm = f"<lastmod>{lastmod}</lastmod>" if lastmod else ""
+            urls.append(
+                f"<url><loc>{loc}</loc>{lm}"
+                f"<changefreq>{freq}</changefreq><priority>{prio}</priority>"
+                f"{alternates(path)}</url>"
+            )
+
+    # Character pages × languages
     for slug, updated_at in characters:
         lastmod = updated_at.strftime("%Y-%m-%d") if updated_at else now
-        urls.append(
-            f'<url><loc>{SITE_URL}/c/{slug}</loc><lastmod>{lastmod}</lastmod>'
-            f'<changefreq>weekly</changefreq><priority>0.8</priority></url>'
-        )
+        path = f"/c/{slug}"
+        for l in LANGS:
+            urls.append(
+                f"<url><loc>{SITE_URL}/{l}{path}</loc><lastmod>{lastmod}</lastmod>"
+                f"<changefreq>weekly</changefreq><priority>0.8</priority>"
+                f"{alternates(path)}</url>"
+            )
 
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 {"".join(urls)}
 </urlset>"""
     return Response(content=xml, media_type="application/xml")

@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { LangRoute } from '@/components/routing/LangRoute';
+import { LangRedirect } from '@/components/routing/LangRedirect';
 import { HomePage } from '@/pages/HomePage';
 import { AuthPage } from '@/pages/AuthPage';
 import { CharacterPage } from '@/pages/CharacterPage';
@@ -23,11 +25,29 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<HomePage />} />
+          {/* SEO pages — language-prefixed */}
+          <Route path="/:lang" element={<LangRoute />}>
+            <Route index element={<HomePage />} />
+            <Route path="c/:slug" element={<CharacterPage />} />
+            <Route path="character/:id" element={<CharacterPage />} />
+            <Route path="about" element={<AboutPage />} />
+            <Route path="terms" element={<TermsPage />} />
+            <Route path="privacy" element={<PrivacyPage />} />
+            <Route path="faq" element={<FAQPage />} />
+          </Route>
+
+          {/* Legacy bare paths → redirect to /:lang/... */}
+          <Route path="/" element={<LangRedirect />} />
+          <Route path="/c/:slug" element={<LangRedirect />} />
+          <Route path="/about" element={<LangRedirect />} />
+          <Route path="/terms" element={<LangRedirect />} />
+          <Route path="/privacy" element={<LangRedirect />} />
+          <Route path="/faq" element={<LangRedirect />} />
+
+          {/* Non-SEO pages — no language prefix */}
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/c/:slug" element={<CharacterPage />} />
-          <Route path="/character/:id" element={<CharacterPage />} />
+          <Route path="/auth/oauth-callback" element={<OAuthCallbackPage />} />
           <Route path="/character/:id/edit" element={<EditCharacterPage />} />
           <Route path="/chat/:chatId" element={<ChatPage />} />
           <Route path="/create" element={<CreateCharacterPage />} />
@@ -36,11 +56,6 @@ export default function App() {
           <Route path="/admin/prompts" element={<AdminPromptsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
-          <Route path="/auth/oauth-callback" element={<OAuthCallbackPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/faq" element={<FAQPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
