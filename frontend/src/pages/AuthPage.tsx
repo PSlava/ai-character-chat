@@ -14,6 +14,7 @@ const ERROR_MAP: Record<string, string> = {
   'Invalid email or password': 'auth.invalidCredentials',
   'Username must be 3-20 characters: letters, digits, underscore': 'auth.usernameInvalid',
   'Account is banned': 'auth.banned',
+  'Too many requests. Try again later.': 'auth.tooManyRequests',
 };
 
 export function AuthPage() {

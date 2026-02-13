@@ -26,6 +26,10 @@ auth_limiter = RateLimiter(max_requests=10, window_seconds=60)
 message_limiter = RateLimiter(max_requests=20, window_seconds=60)
 # 3 password reset requests per 5 minutes per IP
 reset_limiter = RateLimiter(max_requests=3, window_seconds=300)
+# 1 password reset per 2 minutes per email
+reset_email_limiter = RateLimiter(max_requests=1, window_seconds=120)
+# 10 password resets per hour per IP (anti-enumeration)
+reset_hourly_limiter = RateLimiter(max_requests=10, window_seconds=3600)
 
 
 def get_client_ip(request: Request) -> str:
@@ -52,9 +56,22 @@ def check_message_rate(user_id: str):
         )
 
 
-def check_reset_rate(request: Request):
+def check_reset_rate(request: Request, email: str | None = None):
     ip = get_client_ip(request)
+    # Short window: 3 per 5 min per IP
     if not reset_limiter.check(f"reset:{ip}"):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many requests. Try again later.",
+        )
+    # Long window: 10 per hour per IP (anti-enumeration)
+    if not reset_hourly_limiter.check(f"reset_h:{ip}"):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many requests. Try again later.",
+        )
+    # Per-email: 1 per 2 min (prevent spamming one mailbox)
+    if email and not reset_email_limiter.check(f"reset_e:{email}"):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many requests. Try again later.",

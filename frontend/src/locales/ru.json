@@ -27,6 +27,7 @@
   "auth.invalidCredentials": "Неверный email или пароль",
   "auth.usernameInvalid": "3-20 символов: буквы, цифры, подчёркивание",
   "auth.banned": "Аккаунт заблокирован",
+  "auth.tooManyRequests": "Слишком много запросов. Попробуйте позже.",
   "auth.usernameOptional": "имя пользователя (необязательно, сгенерируется)",
   "auth.forgotPassword": "Забыли пароль?",
   "auth.forgotPasswordTitle": "Сброс пароля",

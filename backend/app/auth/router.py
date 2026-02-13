@@ -153,9 +153,10 @@ async def forgot_password(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    check_reset_rate(request)
+    email = body.email.lower().strip()
+    check_reset_rate(request, email)
 
-    result = await db.execute(select(User).where(User.email == body.email.lower().strip()))
+    result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
     if user:
