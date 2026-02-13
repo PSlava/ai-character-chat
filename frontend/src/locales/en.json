@@ -299,8 +299,9 @@
   "favorites.empty": "You don't have any favorite characters yet",
   "favorites.emptyHint": "Click \u2764\ufe0f on any character card to add it to favorites",
 
-  "lang.ru": "Русский",
   "lang.en": "English",
+  "lang.es": "Español",
+  "lang.ru": "Русский",
 
   "stats.users": "users",
   "stats.messages": "messages",
