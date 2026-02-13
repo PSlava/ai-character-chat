@@ -221,11 +221,9 @@ async def _save_translations(
             for char_id, tr in char_translations.items():
                 await conn.execute(
                     text("""
-                        UPDATE characters SET translations = jsonb_set(
-                            COALESCE(translations, '{}'),
-                            ARRAY[:lang],
-                            :data::jsonb
-                        ) WHERE id = :cid
+                        UPDATE characters SET translations =
+                            COALESCE(translations, '{}'::jsonb) || jsonb_build_object(:lang, :data::jsonb)
+                        WHERE id = :cid
                     """),
                     {"lang": target_language, "data": json.dumps(tr, ensure_ascii=False), "cid": char_id},
                 )
