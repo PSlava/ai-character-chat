@@ -4,7 +4,7 @@ import ru from './locales/ru.json';
 import en from './locales/en.json';
 
 const savedLang = localStorage.getItem('language');
-const defaultLang = savedLang || (navigator.language.startsWith('ru') ? 'ru' : 'en');
+const defaultLang = savedLang || 'en';
 
 i18n.use(initReactI18next).init({
   resources: { ru: { translation: ru }, en: { translation: en } },
