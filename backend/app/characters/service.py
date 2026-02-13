@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import select, func, text
+from sqlalchemy import select, func, text, case
 from app.utils.sanitize import strip_html_tags
 
 _TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "scenario",
@@ -204,6 +204,41 @@ async def delete_character(db: AsyncSession, character_id: str, creator_id: str,
     await db.delete(character)
     await db.commit()
     return True
+
+
+async def get_similar_characters(db: AsyncSession, character_id: str, limit: int = 6) -> list:
+    """Find similar characters by matching tags. Exclude the given character."""
+    # Fetch the source character to get its tags
+    result = await db.execute(select(Character).where(Character.id == character_id))
+    character = result.scalar_one_or_none()
+    if not character or not character.tags:
+        return []
+
+    tags = [t.strip() for t in character.tags.split(",") if t.strip()]
+    if not tags:
+        return []
+
+    # Build a score expression: count how many of the source tags each candidate has
+    # Each tag contributes 1 to the score if it appears in the candidate's tags field
+    score = sum(
+        case((Character.tags.contains(tag), 1), else_=0)
+        for tag in tags
+    )
+
+    query = (
+        select(Character)
+        .options(selectinload(Character.creator))
+        .where(
+            Character.is_public == True,
+            Character.id != character_id,
+            score > 0,
+        )
+        .order_by(score.desc(), Character.chat_count.desc())
+        .limit(limit)
+    )
+
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
 async def list_my_characters(db: AsyncSession, creator_id: str):

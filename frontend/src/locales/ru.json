@@ -83,6 +83,7 @@
   "character.scenario": "Сценарий",
   "character.greeting": "Приветствие",
   "character.appearance": "Внешность",
+  "character.similar": "Похожие персонажи",
   "character.creatingChat": "Создание чата...",
   "character.startChat": "Начать общение",
   "character.deleteConfirm": "Удалить персонажа? Все чаты с ним тоже будут удалены.",
@@ -423,6 +424,11 @@
   "create.importError": "Ошибка импорта. Проверьте формат файла.",
   "create.importSuccess": "Персонаж импортирован!",
   "create.importing": "Импорт...",
+
+  "share.label": "Поделиться",
+  "share.copyLink": "Скопировать ссылку",
+  "share.linkCopied": "Ссылка скопирована!",
+  "share.copyFailed": "Не удалось скопировать ссылку",
 
   "seo.home.description": "Общайтесь с уникальными ИИ-персонажами без ограничений. Иммерсивный ролеплей, свободные разговоры и бесконечные фантазии. Создавайте своих персонажей или исследуйте тысячи других.",
   "seo.about.description": "О SweetSin — платформа чата с ИИ-персонажами для ролеплея и фантазийных разговоров.",

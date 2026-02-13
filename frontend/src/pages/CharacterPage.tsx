@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getCharacter, getCharacterBySlug, deleteCharacter } from '@/api/characters';
+import { getCharacter, getCharacterBySlug, deleteCharacter, getSimilarCharacters } from '@/api/characters';
 import { createChat } from '@/api/chat';
 import { getPersonas } from '@/api/personas';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +17,8 @@ import toast from 'react-hot-toast';
 import { MessageCircle, Heart, User, Pencil, Trash2, Star, Flag, Download } from 'lucide-react';
 import { getExportUrl } from '@/api/export';
 import { ReportModal } from '@/components/characters/ReportModal';
+import { ShareButtons } from '@/components/characters/ShareButtons';
+import { CharacterCard } from '@/components/characters/CharacterCard';
 import type { Character, Persona } from '@/types';
 
 export function CharacterPage() {
@@ -34,6 +36,7 @@ export function CharacterPage() {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [forceNewChat, setForceNewChat] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [similar, setSimilar] = useState<Character[]>([]);
 
   const isAdmin = user?.role === 'admin';
   const isOwner = isAuthenticated && character && (user?.id === character.creator_id || isAdmin);
@@ -56,6 +59,12 @@ export function CharacterPage() {
       });
     }
   }, [id, slug, i18n.language]);
+
+  useEffect(() => {
+    if (character?.id) {
+      getSimilarCharacters(character.id, i18n.language).then(setSimilar).catch(() => {});
+    }
+  }, [character?.id, i18n.language]);
 
   const startChatWithPersona = async (personaId?: string, forceNew = false) => {
     if (!character) return;
@@ -275,6 +284,16 @@ export function CharacterPage() {
         </div>
       )}
 
+      {character.is_public && (
+        <div className="mb-6">
+          <ShareButtons
+            name={character.name}
+            tagline={character.tagline || undefined}
+            url={`https://sweetsin.cc${charUrl || ''}`}
+          />
+        </div>
+      )}
+
       {character.scenario && (
         <div className="mb-6">
           <h2 className="text-sm font-medium text-neutral-400 mb-2 uppercase tracking-wider">
@@ -309,6 +328,19 @@ export function CharacterPage() {
       <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="w-full">
         {loading ? t('character.creatingChat') : t('character.startChat')}
       </Button>
+
+      {similar.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-medium text-neutral-400 mb-3 uppercase tracking-wider">
+            {t('character.similar')}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {similar.map((c) => (
+              <CharacterCard key={c.id} character={c} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {showDeleteConfirm && (
         <ConfirmDialog

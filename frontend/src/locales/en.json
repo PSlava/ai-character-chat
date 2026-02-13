@@ -83,6 +83,7 @@
   "character.scenario": "Scenario",
   "character.greeting": "Greeting",
   "character.appearance": "Appearance",
+  "character.similar": "Similar characters",
   "character.creatingChat": "Creating chat...",
   "character.startChat": "Start chatting",
   "character.deleteConfirm": "Delete character? All chats with it will be deleted too.",
@@ -423,6 +424,11 @@
   "create.importError": "Import failed. Check the file format.",
   "create.importSuccess": "Character imported!",
   "create.importing": "Importing...",
+
+  "share.label": "Share",
+  "share.copyLink": "Copy link",
+  "share.linkCopied": "Link copied!",
+  "share.copyFailed": "Failed to copy link",
 
   "seo.home.description": "Chat with unique AI characters without limits. Immersive roleplay, uncensored conversations, and endless fantasy. Create your own characters or explore thousands.",
   "seo.about.description": "About SweetSin — AI character chat platform for immersive roleplay and fantasy conversations.",

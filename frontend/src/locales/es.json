@@ -83,6 +83,7 @@
   "character.scenario": "Escenario",
   "character.greeting": "Saludo",
   "character.appearance": "Apariencia",
+  "character.similar": "Personajes similares",
   "character.creatingChat": "Creando chat...",
   "character.startChat": "Empezar a chatear",
   "character.deleteConfirm": "¿Eliminar personaje? Todos los chats con él también se eliminarán.",
@@ -423,6 +424,11 @@
   "create.importError": "Error al importar. Verifica el formato del archivo.",
   "create.importSuccess": "¡Personaje importado!",
   "create.importing": "Importando...",
+
+  "share.label": "Compartir",
+  "share.copyLink": "Copiar enlace",
+  "share.linkCopied": "¡Enlace copiado!",
+  "share.copyFailed": "Error al copiar el enlace",
 
   "seo.home.description": "Chatea con personajes de IA únicos sin límites. Juego de roles inmersivo, conversaciones sin censura y fantasía infinita. Crea tus propios personajes o explora miles.",
   "seo.about.description": "Acerca de SweetSin — plataforma de chat con personajes de IA para juego de roles y fantasía.",

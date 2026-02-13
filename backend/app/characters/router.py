@@ -253,6 +253,19 @@ async def get_character_by_slug(
     return character_to_dict(character, language=language, is_admin=is_admin)
 
 
+@router.get("/{character_id}/similar")
+async def get_similar(
+    character_id: str,
+    language: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    characters = await service.get_similar_characters(db, character_id)
+    if language:
+        from app.characters.translation import ensure_translations
+        await ensure_translations(characters, language)
+    return [character_to_dict(c, language=language) for c in characters]
+
+
 @router.get("/{character_id}/export")
 async def export_character(
     character_id: str,
