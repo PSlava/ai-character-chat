@@ -58,6 +58,10 @@ async def init_db():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider VARCHAR",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_id VARCHAR",
         "ALTER TABLE characters ADD COLUMN IF NOT EXISTS slug VARCHAR UNIQUE",
+        # Indexes for character browse performance
+        "CREATE INDEX IF NOT EXISTS idx_characters_public_created ON characters (is_public, created_at DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_characters_creator ON characters (creator_id)",
+        "CREATE INDEX IF NOT EXISTS idx_characters_public_chatcount ON characters (is_public, chat_count DESC)",
     ]
     for sql in migrations:
         try:

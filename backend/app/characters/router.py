@@ -262,7 +262,7 @@ async def get_similar(
     characters = await service.get_similar_characters(db, character_id)
     if language:
         from app.characters.translation import ensure_translations
-        await ensure_translations(characters, language)
+        await ensure_translations(characters, language, cached_only=True)
     return [character_to_dict(c, language=language) for c in characters]
 
 

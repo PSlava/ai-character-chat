@@ -233,11 +233,18 @@ async def _save_translations(
         logger.warning("Failed to save translations: %s", str(e)[:100])
 
 
-async def ensure_translations(characters, target_language: str, include_descriptions: bool = False):
+async def ensure_translations(
+    characters,
+    target_language: str,
+    include_descriptions: bool = False,
+    cached_only: bool = False,
+):
     """Translate card fields for characters whose original_language != target_language.
 
     Sets _active_translations attribute on each character object.
     If include_descriptions=True, also translates scenario/appearance/greeting_message.
+    If cached_only=True, only use DB-cached translations — never call LLM.
+    Uncached characters will get a background translation task instead.
     """
     need_card_translation = []
     need_desc_translation = []
@@ -256,6 +263,17 @@ async def ensure_translations(characters, target_language: str, include_descript
             need_card_translation.append(c)
             if include_descriptions:
                 need_desc_translation.append(c)
+
+    if cached_only:
+        # Fire background task to fill cache for uncached characters
+        if need_card_translation:
+            asyncio.create_task(_background_translate_cards(
+                [{"id": c.id, "name": c.name, "tagline": c.tagline or "",
+                  "tags": [t for t in (c.tags or "").split(",") if t]}
+                 for c in need_card_translation],
+                target_language,
+            ))
+        return
 
     # 1) Translate card fields (name, tagline, tags) in batch
     if need_card_translation:
@@ -295,3 +313,13 @@ async def ensure_translations(characters, target_language: str, include_descript
 
     if all_to_save:
         asyncio.create_task(_save_translations(all_to_save, target_language))
+
+
+async def _background_translate_cards(batch: list[dict], target_language: str):
+    """Background task: translate a batch of cards and save to DB."""
+    try:
+        results = await translate_batch(batch, target_language)
+        if results:
+            await _save_translations(results, target_language)
+    except Exception as e:
+        logger.warning("Background translation failed: %s", str(e)[:100])

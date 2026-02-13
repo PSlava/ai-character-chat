@@ -58,10 +58,11 @@ async def list_public_characters(
     result = await db.execute(query)
     characters = result.scalars().all()
 
-    # Translate card fields if language differs from original
+    # Apply cached translations only — never block on LLM calls during browse.
+    # Uncached characters get a background translation task.
     if language:
         from app.characters.translation import ensure_translations
-        await ensure_translations(characters, language)
+        await ensure_translations(characters, language, cached_only=True)
 
     return characters
 
