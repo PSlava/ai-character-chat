@@ -43,6 +43,7 @@ export function ProfilePage() {
   const [deletePersonaId, setDeletePersonaId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     getMyCharacters()
       .then(setMyCharacters)
       .finally(() => setLoading(false));
@@ -52,7 +53,7 @@ export function ProfilePage() {
       setUsername(p.username || '');
     });
     getPersonas().then(setPersonas).catch(() => {});
-  }, []);
+  }, [isAuthenticated]);
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
