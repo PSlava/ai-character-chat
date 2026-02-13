@@ -5,7 +5,8 @@ import { useChatStore } from '@/store/chatStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
-import { Flame, Home, Heart, Settings, X } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
+import { Home, Heart, Settings, X } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -97,7 +98,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
 
       {!isAuthenticated && (
         <div className="p-4 text-sm text-neutral-500">
-          <Flame className="w-8 h-8 mb-2 text-neutral-600" />
+          <Logo className="w-8 h-8 mb-2 text-neutral-600" />
           <p>{t('sidebar.loginPrompt')}</p>
         </div>
       )}
@@ -120,7 +121,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
           <aside className="relative w-64 h-full bg-neutral-900 border-r border-neutral-800 flex flex-col overflow-hidden">
             <div className="flex items-center justify-between p-3 border-b border-neutral-800">
               <span className="text-sm font-semibold flex items-center gap-1">
-                <Flame className="w-4 h-4 text-rose-500" />
+                <Logo className="w-5 h-5 text-rose-500" />
                 <span className="text-neutral-300">Sweet</span><span className="text-rose-500">Sin</span>
               </span>
               <button onClick={onClose} className="p-1 text-neutral-400 hover:text-white transition-colors">

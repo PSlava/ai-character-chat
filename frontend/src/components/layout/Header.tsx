@@ -5,7 +5,8 @@ import { useAuthStore } from '@/store/authStore';
 import { signOut } from '@/api/auth';
 import { Button } from '@/components/ui/Button';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
-import { Flame, Plus, LogOut, User, Menu } from 'lucide-react';
+import { Logo } from '@/components/ui/Logo';
+import { Plus, LogOut, User, Menu } from 'lucide-react';
 
 interface Props {
   onToggleSidebar?: () => void;
@@ -33,7 +34,7 @@ export function Header({ onToggleSidebar }: Props) {
           </button>
         )}
         <Link to="/" className="flex items-center gap-1.5 text-lg font-bold">
-          <Flame className="w-5 h-5 text-rose-500" />
+          <Logo className="w-6 h-6 text-rose-500" />
           <span className="hidden sm:inline">
             <span className="text-white">Sweet</span><span className="text-rose-500">Sin</span>
           </span>
