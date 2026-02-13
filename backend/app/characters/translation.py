@@ -60,7 +60,7 @@ RULES:
 INPUT JSON (translate each non-null field):"""
 
 _PROVIDER_ORDER = ("groq", "cerebras", "openrouter")
-_TIMEOUT = 8.0  # seconds
+_TIMEOUT = 15.0  # seconds
 
 # Rate limit: max 20 translation API calls per minute (global)
 _translation_calls: list[float] = []
@@ -217,15 +217,21 @@ async def _save_translations(
 ):
     """Save translation results to each character's translations JSONB column."""
     try:
+        from sqlalchemy import bindparam, String
+        stmt = text("""
+            UPDATE characters SET translations =
+                COALESCE(translations, CAST('{}' AS jsonb))
+                || jsonb_build_object(:lang, CAST(:data AS jsonb))
+            WHERE id = :cid
+        """).bindparams(
+            bindparam("lang", type_=String),
+            bindparam("data", type_=String),
+            bindparam("cid", type_=String),
+        )
         async with db_engine.begin() as conn:
             for char_id, tr in char_translations.items():
                 await conn.execute(
-                    text("""
-                        UPDATE characters SET translations =
-                            COALESCE(translations, CAST('{}' AS jsonb))
-                            || jsonb_build_object(:lang, CAST(:data AS jsonb))
-                        WHERE id = :cid
-                    """),
+                    stmt,
                     {"lang": target_language, "data": json.dumps(tr, ensure_ascii=False), "cid": char_id},
                 )
     except Exception as e:
