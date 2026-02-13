@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { signIn, signUp, forgotPassword } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+
+const RESET_COOLDOWN = 120; // 2 minutes, matches backend per-email limit
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -26,8 +28,26 @@ export function AuthPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval>>();
   const navigate = useNavigate();
   const { init } = useAuthStore();
+
+  const startCooldown = useCallback(() => {
+    setCooldown(RESET_COOLDOWN);
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => () => clearInterval(timerRef.current), []);
 
   const switchMode = (m: Mode) => {
     setMode(m);
@@ -43,6 +63,7 @@ export function AuthPage() {
       if (mode === 'forgot') {
         await forgotPassword(email);
         setResetSent(true);
+        startCooldown();
       } else if (mode === 'login') {
         await signIn(email, password);
         init();
@@ -89,9 +110,21 @@ export function AuthPage() {
         {mode === 'forgot' && resetSent ? (
           <div className="space-y-4 text-center">
             <p className="text-neutral-300 text-sm">{t('auth.resetLinkSent')}</p>
+            {cooldown > 0 ? (
+              <p className="text-neutral-500 text-sm">
+                {t('auth.resendIn', { seconds: cooldown })}
+              </p>
+            ) : (
+              <button
+                onClick={() => { setResetSent(false); setError(''); }}
+                className="text-rose-400 hover:text-rose-300 text-sm"
+              >
+                {t('auth.resendResetLink')}
+              </button>
+            )}
             <button
               onClick={() => switchMode('login')}
-              className="text-rose-400 hover:text-rose-300 text-sm"
+              className="text-neutral-400 hover:text-neutral-300 text-sm"
             >
               {t('auth.backToLogin')}
             </button>
@@ -143,11 +176,13 @@ export function AuthPage() {
                 <p className="text-red-400 text-sm">{error}</p>
               )}
 
-              <Button type="submit" disabled={loading} className="w-full">
+              <Button type="submit" disabled={loading || (mode === 'forgot' && cooldown > 0)} className="w-full">
                 {loading
                   ? t('common.loading')
                   : mode === 'forgot'
-                    ? t('auth.sendResetLink')
+                    ? cooldown > 0
+                      ? t('auth.resendIn', { seconds: cooldown })
+                      : t('auth.sendResetLink')
                     : mode === 'login'
                       ? t('auth.loginButton')
                       : t('auth.registerButton')}

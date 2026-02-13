@@ -34,6 +34,8 @@
   "auth.forgotPasswordSubtitle": "Введите email и мы отправим ссылку для сброса",
   "auth.sendResetLink": "Отправить ссылку",
   "auth.resetLinkSent": "Если этот email зарегистрирован, ссылка для сброса отправлена. Проверьте почту.",
+  "auth.resendIn": "Повторная отправка через {{seconds}} сек.",
+  "auth.resendResetLink": "Отправить повторно",
   "auth.backToLogin": "Назад к входу",
   "auth.resetPasswordTitle": "Новый пароль",
   "auth.resetPasswordSubtitle": "Введите новый пароль",
