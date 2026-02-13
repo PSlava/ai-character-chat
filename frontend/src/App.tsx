@@ -9,6 +9,7 @@ import { EditCharacterPage } from '@/pages/EditCharacterPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { FavoritesPage } from '@/pages/FavoritesPage';
 import { AdminPromptsPage } from '@/pages/AdminPromptsPage';
+import { AdminUsersPage } from '@/pages/AdminUsersPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/admin/prompts" element={<AdminPromptsPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

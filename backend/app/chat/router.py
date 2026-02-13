@@ -288,7 +288,7 @@ async def send_message(
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
                     saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
                     if not body.is_regenerate:
-                        await service.increment_message_count(character.id, language)
+                        await service.increment_message_count(character.id, language, user["id"])
                     yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
                     return
                 except Exception as e:
@@ -311,7 +311,7 @@ async def send_message(
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
                 saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
                 if not body.is_regenerate:
-                    await service.increment_message_count(character.id, language)
+                    await service.increment_message_count(character.id, language, user["id"])
                 yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'content': _user_error(str(e), is_admin), 'user_message_id': user_msg.id})}\n\n"

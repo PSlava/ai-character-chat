@@ -226,3 +226,115 @@ async def cleanup_orphan_avatars(
             kept += 1
 
     return {"deleted": deleted, "kept": kept}
+
+
+# ── User management ────────────────────────────────────────────
+
+
+@router.get("/users")
+async def list_users(
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all users with stats."""
+    from sqlalchemy.orm import aliased
+
+    char_count_sq = (
+        select(func.count(Character.id))
+        .where(Character.creator_id == User.id)
+        .correlate(User)
+        .scalar_subquery()
+    )
+
+    result = await db.execute(
+        select(User, char_count_sq.label("character_count"))
+        .order_by(User.created_at.desc())
+    )
+
+    users = []
+    for row in result.all():
+        u = row[0]
+        users.append({
+            "id": u.id,
+            "email": u.email,
+            "username": u.username,
+            "display_name": u.display_name,
+            "avatar_url": u.avatar_url,
+            "role": u.role or "user",
+            "is_banned": getattr(u, "is_banned", False) or False,
+            "message_count": u.message_count or 0,
+            "chat_count": u.chat_count or 0,
+            "character_count": row[1] or 0,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        })
+    return users
+
+
+@router.put("/users/{user_id}/ban")
+async def ban_user(
+    user_id: str,
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    if user_id == user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot ban yourself")
+    result = await db.execute(select(User).where(User.id == user_id))
+    u = result.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    u.is_banned = True
+    await db.commit()
+    return {"status": "banned"}
+
+
+@router.put("/users/{user_id}/unban")
+async def unban_user(
+    user_id: str,
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    u = result.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    u.is_banned = False
+    await db.commit()
+    return {"status": "unbanned"}
+
+
+@router.delete("/users/{user_id}", status_code=204)
+async def admin_delete_user(
+    user_id: str,
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    if user_id == user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+
+    from pathlib import Path
+    from sqlalchemy.orm import selectinload
+    from app.config import settings
+
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.characters))
+        .where(User.id == user_id)
+    )
+    u = result.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Delete avatar files
+    avatars_dir = Path(settings.upload_dir) / "avatars"
+    for char in u.characters:
+        if char.avatar_url and char.avatar_url.startswith("/api/uploads/avatars/"):
+            f = avatars_dir / char.avatar_url.split("/")[-1]
+            if f.exists():
+                f.unlink(missing_ok=True)
+    if u.avatar_url and u.avatar_url.startswith("/api/uploads/avatars/"):
+        f = avatars_dir / u.avatar_url.split("/")[-1]
+        if f.exists():
+            f.unlink(missing_ok=True)
+
+    await db.delete(u)
+    await db.commit()

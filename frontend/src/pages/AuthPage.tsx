@@ -13,6 +13,7 @@ const ERROR_MAP: Record<string, string> = {
   'Username already taken': 'auth.usernameTaken',
   'Invalid email or password': 'auth.invalidCredentials',
   'Username must be 3-20 characters: letters, digits, underscore': 'auth.usernameInvalid',
+  'Account is banned': 'auth.banned',
 };
 
 export function AuthPage() {

@@ -14,7 +14,7 @@ import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import type { Character, Persona } from '@/types';
-import { Plus, Star, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Plus, Star, Pencil, Trash2, Check, X, MessageCircle, MessagesSquare } from 'lucide-react';
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -159,6 +159,18 @@ export function ProfilePage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
         <p className="text-neutral-400 mt-1">{user?.email}</p>
+        {profile && (
+          <div className="flex items-center gap-4 mt-3 text-sm text-neutral-400">
+            <span className="flex items-center gap-1.5">
+              <MessageCircle className="w-4 h-4" />
+              {profile.message_count} {t('profile.messages')}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <MessagesSquare className="w-4 h-4" />
+              {profile.chat_count} {t('profile.chats')}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="mb-8 max-w-md">

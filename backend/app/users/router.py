@@ -41,6 +41,8 @@ async def get_profile(user=Depends(get_current_user), db: AsyncSession = Depends
         "bio": u.bio,
         "language": u.language or "ru",
         "role": u.role or "user",
+        "message_count": u.message_count or 0,
+        "chat_count": u.chat_count or 0,
     }
 
 
@@ -91,6 +93,8 @@ async def update_profile(
         "bio": u.bio,
         "language": u.language or "ru",
         "role": u.role or "user",
+        "message_count": u.message_count or 0,
+        "chat_count": u.chat_count or 0,
     }
 
 

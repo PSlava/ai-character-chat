@@ -34,3 +34,35 @@ export async function cleanupOrphanAvatars(): Promise<{ deleted: number; kept: n
   const { data } = await api.post<{ deleted: number; kept: number }>('/admin/cleanup-avatars');
   return data;
 }
+
+// User management
+export interface AdminUser {
+  id: string;
+  email: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: string;
+  is_banned: boolean;
+  message_count: number;
+  chat_count: number;
+  character_count: number;
+  created_at: string;
+}
+
+export async function getAdminUsers(): Promise<AdminUser[]> {
+  const { data } = await api.get<AdminUser[]>('/admin/users');
+  return data;
+}
+
+export async function banUser(userId: string): Promise<void> {
+  await api.put(`/admin/users/${userId}/ban`);
+}
+
+export async function unbanUser(userId: string): Promise<void> {
+  await api.put(`/admin/users/${userId}/unban`);
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  await api.delete(`/admin/users/${userId}`);
+}

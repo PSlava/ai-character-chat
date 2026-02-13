@@ -9,6 +9,8 @@ export interface UserProfile {
   bio: string | null;
   language: string;
   role: string;
+  message_count: number;
+  chat_count: number;
 }
 
 export async function getProfile() {

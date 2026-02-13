@@ -6,7 +6,7 @@ import { useFavoritesStore } from '@/store/favoritesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
-import { Home, Heart, Settings, X } from 'lucide-react';
+import { Home, Heart, Settings, Users, X } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -54,13 +54,22 @@ export function Sidebar({ isOpen, onClose }: Props) {
           </Link>
         )}
         {isAdmin && (
-          <Link
-            to="/admin/prompts"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
-          >
-            <Settings className="w-4 h-4" />
-            {t('admin.prompts')}
-          </Link>
+          <>
+            <Link
+              to="/admin/users"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+            >
+              <Users className="w-4 h-4" />
+              {t('admin.users')}
+            </Link>
+            <Link
+              to="/admin/prompts"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+            >
+              <Settings className="w-4 h-4" />
+              {t('admin.prompts')}
+            </Link>
+          </>
         )}
       </nav>
 

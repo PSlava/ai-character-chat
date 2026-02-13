@@ -68,6 +68,13 @@ async def get_or_create_chat(
     db.add(greeting)
 
     character.chat_count = (character.chat_count or 0) + 1
+
+    # Increment user chat count
+    user_result = await db.execute(select(User).where(User.id == user_id))
+    user_obj = user_result.scalar_one_or_none()
+    if user_obj:
+        user_obj.chat_count = (user_obj.chat_count or 0) + 1
+
     await db.commit()
 
     # Re-fetch with relationships loaded
@@ -222,8 +229,8 @@ async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_i
     return True
 
 
-async def increment_message_count(character_id: str, language: str):
-    """Atomically increment message_counts->{language} for a character."""
+async def increment_message_count(character_id: str, language: str, user_id: str | None = None):
+    """Atomically increment message_counts->{language} for a character and user message_count."""
     lang = language[:10]  # safety limit
     async with db_engine.begin() as conn:
         await conn.execute(
@@ -236,6 +243,11 @@ async def increment_message_count(character_id: str, language: str):
             """),
             {"lang": lang, "cid": character_id},
         )
+        if user_id:
+            await conn.execute(
+                text("UPDATE users SET message_count = COALESCE(message_count, 0) + 1 WHERE id = :uid"),
+                {"uid": user_id},
+            )
 
 
 async def build_conversation_messages(

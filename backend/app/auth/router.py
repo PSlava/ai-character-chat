@@ -130,6 +130,9 @@ async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    if getattr(user, 'is_banned', False):
+        raise HTTPException(status_code=403, detail="Account is banned")
+
     # Sync admin role from env (in case ADMIN_EMAILS changed)
     expected_role = "admin" if _is_admin_email(user.email) else "user"
     if (user.role or "user") != expected_role:

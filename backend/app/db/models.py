@@ -38,6 +38,9 @@ class User(Base):
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     language: Mapped[str | None] = mapped_column(String, nullable=True, default="ru")
     role: Mapped[str] = mapped_column(String, default="user")  # "admin" | "user"
+    is_banned: Mapped[bool] = mapped_column(Boolean, default=False)
+    message_count: Mapped[int] = mapped_column(Integer, default=0)
+    chat_count: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     characters: Mapped[list["Character"]] = relationship(back_populates="creator")
