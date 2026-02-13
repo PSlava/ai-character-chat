@@ -55,6 +55,7 @@ class Character(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
     creator_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    slug: Mapped[str | None] = mapped_column(String, nullable=True, unique=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     tagline: Mapped[str | None] = mapped_column(String, nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)

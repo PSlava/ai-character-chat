@@ -9,6 +9,7 @@ export interface Profile {
 export interface Character {
   id: string;
   creator_id: string;
+  slug?: string;
   name: string;
   tagline: string | null;
   avatar_url: string | null;

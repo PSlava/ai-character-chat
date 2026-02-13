@@ -220,10 +220,34 @@ async def import_character(
         **char_data,
     )
     db.add(character)
+    await db.flush()
+    from app.characters.slugify import generate_slug
+    character.slug = generate_slug(character.name, character.id)
     await db.commit()
-    await db.refresh(character)
 
-    return {"id": character.id, "name": character.name}
+    return {"id": character.id, "name": character.name, "slug": character.slug}
+
+
+@router.get("/by-slug/{slug}")
+async def get_character_by_slug(
+    slug: str,
+    language: str | None = None,
+    user=Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    character = await service.get_character_by_slug(db, slug)
+    if not character:
+        raise HTTPException(status_code=404, detail="Character not found")
+    if not character.is_public:
+        user_id = user["id"] if user else None
+        user_role = user.get("role") if user else None
+        if character.creator_id != user_id and user_role != "admin":
+            raise HTTPException(status_code=404, detail="Character not found")
+    if language:
+        from app.characters.translation import ensure_translations
+        await ensure_translations([character], language, include_descriptions=True)
+    is_admin = user.get("role") == "admin" if user else False
+    return character_to_dict(character, language=language, is_admin=is_admin)
 
 
 @router.get("/{character_id}/export")

@@ -82,7 +82,7 @@ export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
               </p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 {avatarChars.map((char) => (
-                  <Link to={`/character/${char.id}`} key={char.id} title={char.name}>
+                  <Link to={char.slug ? `/c/${char.slug}` : `/character/${char.id}`} key={char.id} title={char.name}>
                     <img
                       src={char.avatar_url!}
                       alt={char.name}

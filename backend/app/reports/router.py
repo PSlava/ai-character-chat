@@ -108,6 +108,7 @@ async def list_reports(
             "character": {
                 "id": character.id,
                 "name": character.name,
+                "slug": character.slug,
                 "avatar_url": character.avatar_url,
             } if character else None,
         })

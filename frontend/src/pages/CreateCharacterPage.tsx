@@ -56,7 +56,7 @@ export function CreateCharacterPage() {
       await wakeUpServer((s) => setStatusText(s));
       setStatusText('');
       const character = await createCharacter(data);
-      navigate(`/character/${character.id}`);
+      navigate(character.slug ? `/c/${character.slug}` : `/character/${character.id}`);
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ax = e as any;
@@ -126,7 +126,7 @@ export function CreateCharacterPage() {
       const card = JSON.parse(importJson);
       const result = await importCharacter(card);
       toast.success(t('create.importSuccess'));
-      navigate(`/character/${result.id}`);
+      navigate(result.slug ? `/c/${result.slug}` : `/character/${result.id}`);
     } catch (e: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const ax = e as any;

@@ -7,7 +7,7 @@ export interface Report {
   status: string;
   created_at: string;
   reporter: { id: string; username: string; email: string } | null;
-  character: { id: string; name: string; avatar_url: string | null } | null;
+  character: { id: string; name: string; slug?: string; avatar_url: string | null } | null;
 }
 
 export async function createReport(characterId: string, reason: string, details?: string) {

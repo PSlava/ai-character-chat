@@ -57,6 +57,7 @@ async def init_db():
         "ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_provider VARCHAR",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS oauth_id VARCHAR",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS slug VARCHAR UNIQUE",
     ]
     for sql in migrations:
         try:

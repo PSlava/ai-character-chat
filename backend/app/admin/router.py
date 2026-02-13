@@ -161,8 +161,36 @@ async def import_seed_characters(
         )
         db.add(char)
 
+    await db.flush()
+
+    # Generate slugs for all imported characters
+    from app.characters.slugify import generate_slug
+    result2 = await db.execute(
+        select(Character).where(Character.creator_id == sweetsin.id, Character.slug.is_(None))
+    )
+    for c in result2.scalars().all():
+        c.slug = generate_slug(c.name, c.id)
+
     await db.commit()
     return {"imported": len(SEED_CHARACTERS)}
+
+
+@router.post("/generate-slugs")
+async def generate_character_slugs(
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate slugs for all characters that don't have one."""
+    from app.characters.slugify import generate_slug
+
+    result = await db.execute(
+        select(Character).where(Character.slug.is_(None))
+    )
+    characters = result.scalars().all()
+    for c in characters:
+        c.slug = generate_slug(c.name, c.id)
+    await db.commit()
+    return {"updated": len(characters)}
 
 
 @router.delete("/seed-characters")

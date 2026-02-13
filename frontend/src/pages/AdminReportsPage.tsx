@@ -79,7 +79,7 @@ export function AdminReportsPage() {
             >
               <div className="flex items-start gap-3">
                 {report.character && (
-                  <Link to={`/character/${report.character.id}`}>
+                  <Link to={report.character.slug ? `/c/${report.character.slug}` : `/character/${report.character.id}`}>
                     <Avatar src={report.character.avatar_url} name={report.character.name} size="sm" />
                   </Link>
                 )}
@@ -87,7 +87,7 @@ export function AdminReportsPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     {report.character && (
                       <Link
-                        to={`/character/${report.character.id}`}
+                        to={report.character.slug ? `/c/${report.character.slug}` : `/character/${report.character.id}`}
                         className="font-medium text-white hover:text-rose-400 transition-colors"
                       >
                         {report.character.name}

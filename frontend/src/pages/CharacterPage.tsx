@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getCharacter, deleteCharacter } from '@/api/characters';
+import { getCharacter, getCharacterBySlug, deleteCharacter } from '@/api/characters';
 import { createChat } from '@/api/chat';
 import { getPersonas } from '@/api/personas';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,7 @@ import { useFavoritesStore } from '@/store/favoritesStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { SEO } from '@/components/seo/SEO';
 import { isCharacterOnline } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { MessageCircle, Heart, User, Pencil, Trash2, Star, Flag, Download } from 'lucide-react';
@@ -18,7 +19,7 @@ import { ReportModal } from '@/components/characters/ReportModal';
 import type { Character, Persona } from '@/types';
 
 export function CharacterPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -40,10 +41,20 @@ export function CharacterPage() {
     text.replace(/\{\{char\}\}/g, character?.name || '').replace(/\{\{user\}\}/g, user?.username || 'User');
 
   useEffect(() => {
-    if (id) {
-      getCharacter(id, i18n.language).then(setCharacter);
+    if (slug) {
+      getCharacterBySlug(slug, i18n.language).then((c) => {
+        setCharacter(c);
+      });
+    } else if (id) {
+      getCharacter(id, i18n.language).then((c) => {
+        setCharacter(c);
+        // Redirect old UUID URL to slug URL
+        if (c.slug) {
+          navigate(`/c/${c.slug}`, { replace: true });
+        }
+      });
     }
-  }, [id, i18n.language]);
+  }, [id, slug, i18n.language]);
 
   const startChatWithPersona = async (personaId?: string, forceNew = false) => {
     if (!character) return;
@@ -100,6 +111,11 @@ export function CharacterPage() {
     }
   };
 
+  const charUrl = character?.slug ? `/c/${character.slug}` : undefined;
+  const charDescription = character
+    ? (character.scenario || character.tagline || character.name).slice(0, 160)
+    : undefined;
+
   if (!character) {
     return (
       <div className="p-4 md:p-6 max-w-3xl mx-auto">
@@ -125,6 +141,21 @@ export function CharacterPage() {
 
   return (
     <div className="relative min-h-full">
+      <SEO
+        title={character.tagline ? `${character.name} — ${character.tagline}` : character.name}
+        description={charDescription}
+        image={character.avatar_url || undefined}
+        url={charUrl}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CreativeWork',
+          name: character.name,
+          description: character.tagline || character.scenario || '',
+          ...(character.avatar_url && { image: character.avatar_url.startsWith('/') ? `https://sweetsin.cc${character.avatar_url}` : character.avatar_url }),
+          url: charUrl ? `https://sweetsin.cc${charUrl}` : undefined,
+          keywords: character.tags.join(', '),
+        }}
+      />
       {character.avatar_url && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <img

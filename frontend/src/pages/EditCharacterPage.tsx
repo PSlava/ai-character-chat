@@ -28,8 +28,8 @@ export function EditCharacterPage() {
   const handleSubmit = async (data: Partial<Character>) => {
     if (!id) return;
     try {
-      await updateCharacter(id, data);
-      navigate(`/character/${id}`);
+      const updated = await updateCharacter(id, data);
+      navigate(updated.slug ? `/c/${updated.slug}` : `/character/${id}`);
     } catch {
       setError(t('edit.saveError'));
     }

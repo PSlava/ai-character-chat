@@ -99,7 +99,17 @@ async def get_character(db: AsyncSession, character_id: str):
     return result.scalar_one_or_none()
 
 
+async def get_character_by_slug(db: AsyncSession, slug: str):
+    result = await db.execute(
+        select(Character)
+        .options(selectinload(Character.creator))
+        .where(Character.slug == slug)
+    )
+    return result.scalar_one_or_none()
+
+
 async def create_character(db: AsyncSession, creator_id: str, data: dict):
+    from app.characters.slugify import generate_slug
     # Sanitize text fields
     for field in _TEXT_FIELDS_TO_SANITIZE:
         if field in data and isinstance(data[field], str):
@@ -114,6 +124,8 @@ async def create_character(db: AsyncSession, creator_id: str, data: dict):
         structured_tags=",".join(structured_tags) if isinstance(structured_tags, list) else structured_tags,
     )
     db.add(character)
+    await db.flush()  # get character.id
+    character.slug = generate_slug(data.get("name", "character"), character.id)
     await db.commit()
     # Re-fetch with creator loaded
     return await get_character(db, character.id)

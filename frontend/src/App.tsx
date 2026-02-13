@@ -26,6 +26,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/c/:slug" element={<CharacterPage />} />
           <Route path="/character/:id" element={<CharacterPage />} />
           <Route path="/character/:id/edit" element={<EditCharacterPage />} />
           <Route path="/chat/:chatId" element={<ChatPage />} />

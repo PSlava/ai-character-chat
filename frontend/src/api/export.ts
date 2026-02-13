@@ -5,6 +5,6 @@ export function getExportUrl(characterId: string): string {
 }
 
 export async function importCharacter(card: object) {
-  const { data } = await api.post<{ id: string; name: string }>('/characters/import', card);
+  const { data } = await api.post<{ id: string; name: string; slug?: string }>('/characters/import', card);
   return data;
 }

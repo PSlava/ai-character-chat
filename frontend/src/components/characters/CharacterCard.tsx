@@ -36,7 +36,7 @@ export function CharacterCard({ character }: Props) {
 
   return (
     <Link
-      to={`/character/${character.id}`}
+      to={character.slug ? `/c/${character.slug}` : `/character/${character.id}`}
       className="block bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-4 hover:border-rose-500/50 transition-all hover:bg-neutral-800"
     >
       <div className="flex items-start gap-3">

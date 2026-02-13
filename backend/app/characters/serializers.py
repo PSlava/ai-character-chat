@@ -9,6 +9,7 @@ def character_to_dict(c: Character, language: str = None, is_admin: bool = False
     d = {
         "id": c.id,
         "creator_id": c.creator_id,
+        "slug": getattr(c, 'slug', None),
         "name": tr["name"] if tr and "name" in tr else c.name,
         "tagline": tr["tagline"] if tr and "tagline" in tr else c.tagline,
         "avatar_url": c.avatar_url,

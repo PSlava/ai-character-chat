@@ -32,6 +32,13 @@ export async function getCharacter(id: string, language?: string) {
   return data;
 }
 
+export async function getCharacterBySlug(slug: string, language?: string) {
+  const { data } = await api.get<Character>(`/characters/by-slug/${slug}`, {
+    params: language ? { language } : undefined,
+  });
+  return data;
+}
+
 export async function getMyCharacters() {
   const { data } = await api.get<Character[]>('/characters/my');
   return data;
