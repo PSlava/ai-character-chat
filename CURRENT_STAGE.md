@@ -356,6 +356,7 @@ docker compose up -d
 - Zustand для стейт-менеджмента
 - 12 страниц: главная, авторизация, сброс пароля, персонаж (с размытым фоном аватара), чат, создание, редактирование, профиль, **избранное**, **админ-промпты**, **админ-пользователи**
 - **Брендинг**: логотип Sweet+Sin с SVG-иконкой сердца (дьявольские рожки/хвост), SEO мета-теги, Open Graph
+- **Landing page (hero section)** — для неавторизованных: большой логотип, слоган, 2 CTA-кнопки, аватары популярных персонажей, 4 feature-карточки (фантазии, без цензуры, 9 провайдеров, создайте своего). Gradient-фон rose-950/30. Для авторизованных — только каталог
 - **Scroll to top** — при навигации между страницами контент автоматически прокручивается вверх (через `useRef` + `useEffect` на `pathname`)
 - Стриминг сообщений в реальном времени
 - Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
@@ -411,7 +412,6 @@ docker compose up -d
 ### Высокий приоритет
 - [ ] Настроить SMTP (Gmail App Password) для отправки email (сброс пароля)
 - [ ] Протестировать качество ответов с литературным форматом на разных моделях
-- [ ] Landing page / hero section с примерами персонажей
 - [ ] Социальные мета-теги (og:image — preview card для шаринга)
 
 ### Средний приоритет
@@ -539,6 +539,8 @@ chatbot/
 │   │   │   │   └── GenerationSettingsModal.tsx  # Модель (7 групп) + 6 слайдеров + память
 │   │   │   ├── characters/
 │   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
+│   │   │   ├── landing/
+│   │   │   │   └── HeroSection.tsx        # Landing hero: логотип, слоган, CTA, аватары, feature-карточки
 │   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher, Logo
 │   │   ├── lib/                     # Утилиты (localStorage с role)
 │   │   ├── locales/                 # i18n: en.json, ru.json
