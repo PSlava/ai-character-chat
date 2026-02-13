@@ -155,7 +155,8 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
         character.structured_tags = ",".join(structured_tags) if isinstance(structured_tags, list) else structured_tags
 
     # Clear translation cache if translatable fields changed
-    if any(key in data and data[key] is not None for key in ("name", "tagline")) or tags is not None:
+    _translatable = ("name", "tagline", "scenario", "appearance", "greeting_message")
+    if any(key in data and data[key] is not None for key in _translatable) or tags is not None:
         character.translations = {}
 
     character.updated_at = datetime.utcnow()

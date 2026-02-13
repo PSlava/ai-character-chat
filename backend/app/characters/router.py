@@ -260,6 +260,10 @@ async def get_character(
         user_role = user.get("role") if user else None
         if character.creator_id != user_id and user_role != "admin":
             raise HTTPException(status_code=404, detail="Character not found")
+    # Translate card + description fields
+    if language:
+        from app.characters.translation import ensure_translations
+        await ensure_translations([character], language, include_descriptions=True)
     is_admin = user.get("role") == "admin" if user else False
     return character_to_dict(character, language=language, is_admin=is_admin)
 
