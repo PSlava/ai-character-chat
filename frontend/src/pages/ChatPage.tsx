@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { Trash2, RotateCcw, Settings } from 'lucide-react';
-import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages } from '@/api/chat';
+import toast from 'react-hot-toast';
+import { Trash2, RotateCcw, Settings, MessageSquarePlus } from 'lucide-react';
+import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages, createChat } from '@/api/chat';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
@@ -175,9 +176,10 @@ export function ChatPage() {
       try {
         await deleteChat(chatId);
         removeChat(chatId);
+        toast.success(t('toast.chatDeleted'));
         navigate('/');
       } catch {
-        setError(t('chat.deleteError'));
+        toast.error(t('toast.deleteError'));
       }
     } else if (action.type === 'clearChat') {
       try {
@@ -185,8 +187,9 @@ export function ChatPage() {
         const data = await getChat(chatId);
         setMessages(data.messages);
         setHasMore(data.has_more);
+        toast.success(t('toast.chatCleared'));
       } catch {
-        setError(t('chat.clearError'));
+        toast.error(t('toast.deleteError'));
       }
     } else if (action.type === 'deleteMessage') {
       try {
@@ -235,8 +238,28 @@ export function ChatPage() {
 
   if (!chatDetail) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse text-neutral-500">{t('common.loading')}</div>
+      <div className="h-full flex flex-col">
+        <div className="border-b border-neutral-800 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-neutral-700/50 animate-pulse" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-4 w-32 bg-neutral-700/50 rounded animate-pulse" />
+            <div className="h-3 w-20 bg-neutral-700/50 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="flex-1 p-4 space-y-4">
+          <div className="flex gap-2">
+            <div className="w-7 h-7 rounded-full bg-neutral-700/50 animate-pulse shrink-0" />
+            <div className="h-20 w-3/4 bg-neutral-800/50 rounded-2xl animate-pulse" />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <div className="h-12 w-1/2 bg-rose-600/20 rounded-2xl animate-pulse" />
+            <div className="w-7 h-7 rounded-full bg-neutral-700/50 animate-pulse shrink-0" />
+          </div>
+          <div className="flex gap-2">
+            <div className="w-7 h-7 rounded-full bg-neutral-700/50 animate-pulse shrink-0" />
+            <div className="h-28 w-2/3 bg-neutral-800/50 rounded-2xl animate-pulse" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -266,6 +289,22 @@ export function ChatPage() {
         >
           <span className="hidden sm:inline">{t('chat.modelAndSettings')}</span>
           <Settings size={16} />
+        </button>
+        <button
+          onClick={async () => {
+            if (!chatDetail?.chat.character_id) return;
+            try {
+              const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, undefined, true);
+              await useChatStore.getState().fetchChats();
+              navigate(`/chat/${newChat.id}`);
+            } catch {
+              toast.error(t('toast.networkError'));
+            }
+          }}
+          className="p-2 text-neutral-500 hover:text-green-400 transition-colors"
+          title={t('chat.newChatTooltip')}
+        >
+          <MessageSquarePlus size={18} />
         </button>
         <button
           onClick={handleClearChat}

@@ -1,11 +1,15 @@
 import json
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user, get_current_user_optional
 from app.db.session import get_db
+from app.db.models import Character, ContentRating
 from app.characters.schemas import CharacterCreate, CharacterUpdate, GenerateFromStoryRequest
 from app.characters import service
 from app.characters.serializers import character_to_dict
+from app.characters.export_import import character_to_card, card_to_character_data
 from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
 
@@ -193,6 +197,51 @@ async def my_characters(
 async def list_structured_tags():
     from app.characters.structured_tags import CATEGORIES, get_tags_by_category
     return {"categories": CATEGORIES, "tags": get_tags_by_category()}
+
+
+@router.post("/import")
+async def import_character(
+    request: Request,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        card = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    char_data = card_to_character_data(card)
+
+    content_rating_enum = ContentRating(char_data.pop("content_rating", "sfw"))
+
+    character = Character(
+        creator_id=user["id"],
+        content_rating=content_rating_enum,
+        **char_data,
+    )
+    db.add(character)
+    await db.commit()
+    await db.refresh(character)
+
+    return {"id": character.id, "name": character.name}
+
+
+@router.get("/{character_id}/export")
+async def export_character(
+    character_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Character).where(Character.id == character_id))
+    character = result.scalar_one_or_none()
+    if not character:
+        raise HTTPException(status_code=404, detail="Character not found")
+    card = character_to_card(character)
+    return JSONResponse(
+        content=card,
+        headers={
+            "Content-Disposition": f'attachment; filename="{character.name}.json"',
+        },
+    )
 
 
 @router.get("/{character_id}")

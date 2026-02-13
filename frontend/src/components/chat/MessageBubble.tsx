@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2, RefreshCw, EllipsisVertical } from 'lucide-react';
+import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
+import { Trash2, RefreshCw, EllipsisVertical, Copy } from 'lucide-react';
 import type { Message } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
 
@@ -82,6 +85,17 @@ export function MessageBubble({ message, characterName, characterAvatar, userNam
                     }`}
                   >
                     <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(message.content);
+                        toast.success(t('toast.copied'));
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors"
+                    >
+                      <Copy size={14} />
+                      {t('chat.copyMessage')}
+                    </button>
+                    <button
                       onClick={() => { onDelete!(message.id); setMenuOpen(false); }}
                       className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-neutral-300 hover:bg-neutral-700 hover:text-red-400 transition-colors"
                     >
@@ -112,9 +126,30 @@ export function MessageBubble({ message, characterName, characterAvatar, userNam
               }`
         }`}
       >
-        <p className="whitespace-pre-wrap break-words">
-          {message.content || (isAssistant ? '...' : '')}
-        </p>
+{isUser ? (
+          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        ) : (
+          <ReactMarkdown
+            rehypePlugins={[rehypeSanitize]}
+            components={{
+              p: ({ children }) => <p className="mb-2 last:mb-0 whitespace-pre-wrap">{children}</p>,
+              strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+              em: ({ children }) => <em className="italic text-neutral-300">{children}</em>,
+              code: ({ children, className }) => className ? (
+                <code className={`${className} text-sm`}>{children}</code>
+              ) : (
+                <code className="bg-neutral-700 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
+              ),
+              pre: ({ children }) => <pre className="bg-neutral-700 rounded-lg p-3 my-2 overflow-x-auto text-sm font-mono">{children}</pre>,
+              ul: ({ children }) => <ul className="list-disc list-inside mb-2">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
+              li: ({ children }) => <li className="mb-0.5">{children}</li>,
+              blockquote: ({ children }) => <blockquote className="border-l-2 border-rose-500 pl-3 my-2 text-neutral-300 italic">{children}</blockquote>,
+            }}
+          >
+            {message.content || '...'}
+          </ReactMarkdown>
+        )}
       </div>
 
       {isAdmin && isAssistant && message.model_used && (

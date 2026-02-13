@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 from app.config import settings
 from app.llm.registry import init_providers
 from app.db.session import init_db
@@ -37,6 +38,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="SweetSin", lifespan=lifespan)
+
+app.add_middleware(SessionMiddleware, secret_key=settings.jwt_secret)
 
 app.add_middleware(
     CORSMiddleware,
@@ -91,6 +94,7 @@ from app.admin.router import router as admin_router  # noqa: E402
 from app.uploads.router import router as uploads_router  # noqa: E402
 from app.personas.router import router as personas_router  # noqa: E402
 from app.stats.router import router as stats_router  # noqa: E402
+from app.reports.router import router as reports_router  # noqa: E402
 
 app.include_router(auth_router)
 app.include_router(characters_router)
@@ -101,6 +105,7 @@ app.include_router(admin_router)
 app.include_router(uploads_router)
 app.include_router(personas_router)
 app.include_router(stats_router)
+app.include_router(reports_router)
 
 # Serve uploaded files (avatars etc.) — must be after routers
 # Create directory before mounting (StaticFiles checks at import time)

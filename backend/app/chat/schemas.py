@@ -5,6 +5,7 @@ class CreateChatRequest(BaseModel):
     character_id: str = Field(max_length=100)
     model: str | None = Field(default=None, max_length=200)
     persona_id: str | None = Field(default=None, max_length=100)
+    force_new: bool = False
 
 
 class SendMessageRequest(BaseModel):

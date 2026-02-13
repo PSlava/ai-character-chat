@@ -11,7 +11,10 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { isCharacterOnline } from '@/lib/utils';
-import { MessageCircle, Heart, User, Pencil, Trash2, Star } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { MessageCircle, Heart, User, Pencil, Trash2, Star, Flag, Download } from 'lucide-react';
+import { getExportUrl } from '@/api/export';
+import { ReportModal } from '@/components/characters/ReportModal';
 import type { Character, Persona } from '@/types';
 
 export function CharacterPage() {
@@ -27,6 +30,8 @@ export function CharacterPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPersonaModal, setShowPersonaModal] = useState(false);
   const [personas, setPersonas] = useState<Persona[]>([]);
+  const [forceNewChat, setForceNewChat] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const isAdmin = user?.role === 'admin';
   const isOwner = isAuthenticated && character && (user?.id === character.creator_id || isAdmin);
@@ -40,12 +45,13 @@ export function CharacterPage() {
     }
   }, [id, i18n.language]);
 
-  const startChatWithPersona = async (personaId?: string) => {
+  const startChatWithPersona = async (personaId?: string, forceNew = false) => {
     if (!character) return;
     setShowPersonaModal(false);
     setLoading(true);
     try {
-      const { chat } = await createChat(character.id, undefined, personaId);
+      const { chat } = await createChat(character.id, undefined, personaId, forceNew);
+      setForceNewChat(false);
       await fetchChats();
       navigate(`/chat/${chat.id}`);
     } finally {
@@ -53,7 +59,7 @@ export function CharacterPage() {
     }
   };
 
-  const handleStartChat = async () => {
+  const handleStartChat = async (forceNew = false) => {
     if (!character || !isAuthenticated) {
       navigate('/auth');
       return;
@@ -64,17 +70,18 @@ export function CharacterPage() {
       setPersonas(list);
       if (list.length === 0) {
         // No personas — start directly
-        startChatWithPersona();
+        startChatWithPersona(undefined, forceNew);
       } else if (list.length === 1 && list[0].is_default) {
         // Single default persona — use automatically
-        startChatWithPersona(list[0].id);
+        startChatWithPersona(list[0].id, forceNew);
       } else {
         // Multiple personas — show picker
+        setForceNewChat(forceNew);
         setShowPersonaModal(true);
       }
     } catch {
       // API error — start without persona
-      startChatWithPersona();
+      startChatWithPersona(undefined, forceNew);
     }
   };
 
@@ -84,18 +91,34 @@ export function CharacterPage() {
     setDeleting(true);
     try {
       await deleteCharacter(character.id);
+      toast.success(t('toast.characterDeleted'));
       navigate('/');
     } catch (e: unknown) {
       const ax = e as { response?: { data?: { detail?: string } }; message?: string };
-      alert(ax?.response?.data?.detail || ax?.message || t('character.deleteError'));
+      toast.error(ax?.response?.data?.detail || ax?.message || t('character.deleteError'));
       setDeleting(false);
     }
   };
 
   if (!character) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse text-neutral-500">{t('common.loading')}</div>
+      <div className="p-4 md:p-6 max-w-3xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6">
+          <div className="w-20 h-20 rounded-full bg-neutral-700/50 animate-pulse shrink-0" />
+          <div className="flex-1 space-y-3 w-full">
+            <div className="h-6 w-48 bg-neutral-700/50 rounded animate-pulse" />
+            <div className="h-4 w-64 bg-neutral-700/50 rounded animate-pulse" />
+            <div className="flex gap-4">
+              <div className="h-4 w-16 bg-neutral-700/50 rounded animate-pulse" />
+              <div className="h-4 w-16 bg-neutral-700/50 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div className="h-24 bg-neutral-800/50 rounded-xl animate-pulse" />
+          <div className="h-32 bg-neutral-800/50 rounded-xl animate-pulse" />
+          <div className="h-12 bg-neutral-700/50 rounded-xl animate-pulse" />
+        </div>
       </div>
     );
   }
@@ -139,9 +162,11 @@ export function CharacterPage() {
                 if (favoriteIds.has(character.id)) {
                   removeFav(character.id);
                   setCharacter((c) => c ? { ...c, like_count: Math.max(0, c.like_count - 1) } : c);
+                  toast.success(t('toast.unliked'));
                 } else {
                   addFav(character.id);
                   setCharacter((c) => c ? { ...c, like_count: c.like_count + 1 } : c);
+                  toast.success(t('toast.liked'));
                 }
               }}
               className={`flex items-center gap-1 transition-colors ${
@@ -183,6 +208,25 @@ export function CharacterPage() {
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
+        )}
+        {character.is_public && (
+          <a
+            href={getExportUrl(character.id)}
+            download={`${character.name}.json`}
+            className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-blue-400 transition-colors"
+            title="Export (SillyTavern)"
+          >
+            <Download className="w-4 h-4" />
+          </a>
+        )}
+        {isAuthenticated && !isOwner && (
+          <button
+            onClick={() => setShowReport(true)}
+            className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-orange-400 transition-colors"
+            title={t('report.title')}
+          >
+            <Flag className="w-4 h-4" />
+          </button>
         )}
       </div>
 
@@ -230,9 +274,20 @@ export function CharacterPage() {
         </div>
       </div>
 
-      <Button onClick={handleStartChat} disabled={loading} size="lg" className="w-full">
-        {loading ? t('character.creatingChat') : t('character.startChat')}
-      </Button>
+      <div className="space-y-2">
+        <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="w-full">
+          {loading ? t('character.creatingChat') : t('character.startChat')}
+        </Button>
+        {isAuthenticated && (
+          <button
+            onClick={() => handleStartChat(true)}
+            disabled={loading}
+            className="w-full text-center text-sm text-neutral-400 hover:text-rose-400 transition-colors disabled:opacity-50"
+          >
+            {t('character.newChat')}
+          </button>
+        )}
+      </div>
 
       {showDeleteConfirm && (
         <ConfirmDialog
@@ -255,7 +310,7 @@ export function CharacterPage() {
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {/* No persona option */}
               <button
-                onClick={() => startChatWithPersona()}
+                onClick={() => startChatWithPersona(undefined, forceNewChat)}
                 className="w-full text-left p-3 rounded-xl bg-neutral-800/50 border border-neutral-700 hover:border-neutral-500 transition-colors"
               >
                 <span className="font-medium text-neutral-300">{t('persona.none')}</span>
@@ -265,7 +320,7 @@ export function CharacterPage() {
               {personas.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => startChatWithPersona(p.id)}
+                  onClick={() => startChatWithPersona(p.id, forceNewChat)}
                   className="w-full text-left p-3 rounded-xl bg-neutral-800/50 border border-neutral-700 hover:border-rose-500/50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
@@ -282,6 +337,9 @@ export function CharacterPage() {
             </div>
           </div>
         </div>
+      )}
+      {showReport && character && (
+        <ReportModal characterId={character.id} onClose={() => setShowReport(false)} />
       )}
       </div>
     </div>

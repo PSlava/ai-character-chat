@@ -10,6 +10,8 @@ import { ProfilePage } from '@/pages/ProfilePage';
 import { FavoritesPage } from '@/pages/FavoritesPage';
 import { AdminPromptsPage } from '@/pages/AdminPromptsPage';
 import { AdminUsersPage } from '@/pages/AdminUsersPage';
+import { AdminReportsPage } from '@/pages/AdminReportsPage';
+import { OAuthCallbackPage } from '@/pages/OAuthCallbackPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { AboutPage } from '@/pages/AboutPage';
 import { TermsPage } from '@/pages/TermsPage';
@@ -32,6 +34,8 @@ export default function App() {
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/admin/prompts" element={<AdminPromptsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
+          <Route path="/auth/oauth-callback" element={<OAuthCallbackPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

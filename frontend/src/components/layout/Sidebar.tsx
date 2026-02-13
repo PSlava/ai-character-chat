@@ -6,7 +6,7 @@ import { useFavoritesStore } from '@/store/favoritesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
-import { Home, Heart, Settings, Users, X } from 'lucide-react';
+import { Home, Heart, Settings, Users, Flag, X } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -69,6 +69,13 @@ export function Sidebar({ isOpen, onClose }: Props) {
               <Settings className="w-4 h-4" />
               {t('admin.prompts')}
             </Link>
+            <Link
+              to="/admin/reports"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+            >
+              <Flag className="w-4 h-4" />
+              {t('admin.reports')}
+            </Link>
           </>
         )}
       </nav>
@@ -80,26 +87,38 @@ export function Sidebar({ isOpen, onClose }: Props) {
               {t('sidebar.myChats')}
             </p>
             <div className="space-y-1">
-              {chats.map((chat) => (
-                <Link
-                  key={chat.id}
-                  to={`/chat/${chat.id}`}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    chatId === chat.id
-                      ? 'bg-rose-600/20 text-rose-300'
-                      : 'hover:bg-neutral-800 text-neutral-400'
-                  }`}
-                >
-                  <Avatar
-                    src={chat.characters?.avatar_url}
-                    name={chat.characters?.name || '?'}
-                    size="sm"
-                  />
-                  <span className="truncate">
-                    {chat.characters?.name || chat.title}
-                  </span>
-                </Link>
-              ))}
+              {(() => {
+                // Group chats by character_id
+                const grouped = new Map<string, typeof chats>();
+                for (const chat of chats) {
+                  const key = chat.character_id;
+                  if (!grouped.has(key)) grouped.set(key, []);
+                  grouped.get(key)!.push(chat);
+                }
+                return Array.from(grouped.values()).flatMap((group) =>
+                  group.map((chat, idx) => (
+                    <Link
+                      key={chat.id}
+                      to={`/chat/${chat.id}`}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        chatId === chat.id
+                          ? 'bg-rose-600/20 text-rose-300'
+                          : 'hover:bg-neutral-800 text-neutral-400'
+                      }`}
+                    >
+                      <Avatar
+                        src={chat.characters?.avatar_url}
+                        name={chat.characters?.name || '?'}
+                        size="sm"
+                      />
+                      <span className="truncate">
+                        {chat.characters?.name || chat.title}
+                        {group.length > 1 && ` #${idx + 1}`}
+                      </span>
+                    </Link>
+                  ))
+                );
+              })()}
             </div>
           </div>
         </div>

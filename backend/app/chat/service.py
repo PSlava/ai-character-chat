@@ -14,17 +14,19 @@ DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/t
 async def get_or_create_chat(
     db: AsyncSession, user_id: str, character_id: str,
     model: str | None = None, persona_id: str | None = None,
+    force_new: bool = False,
 ):
     """Return existing chat with this character, or create a new one."""
-    # Check for existing chat
-    existing = await db.execute(
-        select(Chat)
-        .options(selectinload(Chat.character))
-        .where(Chat.user_id == user_id, Chat.character_id == character_id)
-    )
-    chat = existing.scalar_one_or_none()
-    if chat:
-        return chat, chat.character, False  # False = not newly created
+    if not force_new:
+        # Check for existing chat
+        existing = await db.execute(
+            select(Chat)
+            .options(selectinload(Chat.character))
+            .where(Chat.user_id == user_id, Chat.character_id == character_id)
+        )
+        chat = existing.scalar_one_or_none()
+        if chat:
+            return chat, chat.character, False  # False = not newly created
 
     result = await db.execute(select(Character).where(Character.id == character_id))
     character = result.scalar_one_or_none()

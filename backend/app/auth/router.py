@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import secrets
 import jwt
 import bcrypt as _bcrypt
+from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
 import re
@@ -11,11 +12,24 @@ from app.auth.rate_limit import check_auth_rate, check_reset_rate
 from app.utils.email import send_reset_email
 import logging
 
+from authlib.integrations.starlette_client import OAuth as AuthlibOAuth
+from starlette.responses import RedirectResponse
+
 from app.config import settings
 from app.db.session import get_db
 from app.db.models import User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+_oauth = AuthlibOAuth()
+if settings.google_client_id:
+    _oauth.register(
+        name='google',
+        client_id=settings.google_client_id,
+        client_secret=settings.google_client_secret,
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'},
+    )
 
 
 _EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
@@ -127,7 +141,7 @@ async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends
     result = await db.execute(select(User).where(User.email == body.email))
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(body.password, user.password_hash):
+    if not user or not user.password_hash or not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     if getattr(user, 'is_banned', False):
@@ -159,7 +173,7 @@ async def forgot_password(
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
-    if user:
+    if user and user.password_hash:
         reset_payload = {
             "sub": user.id,
             "purpose": "reset",
@@ -200,10 +214,104 @@ async def reset_password(
     if not user:
         raise HTTPException(status_code=400, detail="Invalid reset link")
 
-    if user.password_hash[:8] != payload.get("pwd"):
+    if not user.password_hash or user.password_hash[:8] != payload.get("pwd"):
         raise HTTPException(status_code=400, detail="This reset link has already been used")
 
     user.password_hash = hash_password(body.password)
     await db.commit()
 
     return {"message": "Password has been reset successfully"}
+
+
+@router.get("/google")
+async def google_login(request: Request):
+    if not settings.google_client_id:
+        raise HTTPException(status_code=404, detail="Google OAuth is not configured")
+    redirect_uri = f"{settings.frontend_url}/api/auth/google/callback"
+    return await _oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@router.get("/google/callback")
+async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
+    if not settings.google_client_id:
+        raise HTTPException(status_code=404, detail="Google OAuth is not configured")
+
+    try:
+        token = await _oauth.google.authorize_access_token(request)
+    except Exception:
+        raise HTTPException(status_code=400, detail="OAuth authentication failed")
+
+    userinfo = token.get("userinfo")
+    if not userinfo:
+        raise HTTPException(status_code=400, detail="Could not retrieve user info from Google")
+
+    email = userinfo.get("email", "").lower().strip()
+    oauth_id = userinfo.get("sub")
+    name = userinfo.get("name") or email.split("@")[0]
+
+    if not email or not oauth_id:
+        raise HTTPException(status_code=400, detail="Missing email or ID from Google")
+
+    # Find existing user by oauth_id or email
+    result = await db.execute(
+        select(User).where(User.oauth_provider == "google", User.oauth_id == oauth_id)
+    )
+    user = result.scalar_one_or_none()
+
+    if not user:
+        # Check if user with this email already exists (link accounts)
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+        if user:
+            # Link existing account to Google
+            user.oauth_provider = "google"
+            user.oauth_id = oauth_id
+            await db.commit()
+            await db.refresh(user)
+
+    if not user:
+        # Create new user
+        username = None
+        for _ in range(10):
+            candidate = _generate_username()
+            check = await db.execute(select(User).where(User.username == candidate))
+            if not check.scalar_one_or_none():
+                username = candidate
+                break
+        if not username:
+            username = f"user_{secrets.token_hex(6)}"
+
+        role = "admin" if _is_admin_email(email) else "user"
+        user = User(
+            email=email,
+            username=username,
+            display_name=name,
+            oauth_provider="google",
+            oauth_id=oauth_id,
+            role=role,
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+
+    if getattr(user, 'is_banned', False):
+        raise HTTPException(status_code=403, detail="Account is banned")
+
+    # Sync admin role
+    expected_role = "admin" if _is_admin_email(user.email) else "user"
+    if (user.role or "user") != expected_role:
+        user.role = expected_role
+        await db.commit()
+        await db.refresh(user)
+
+    jwt_token = create_token(user)
+
+    params = urlencode({
+        "token": jwt_token,
+        "id": user.id,
+        "email": user.email,
+        "username": user.username,
+        "role": user.role or "user",
+    })
+    redirect_url = f"{settings.frontend_url}/auth/oauth-callback?{params}"
+    return RedirectResponse(url=redirect_url)

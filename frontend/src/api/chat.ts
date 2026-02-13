@@ -2,11 +2,12 @@ import api from './client';
 import { getToken } from '@/lib/supabase';
 import type { Chat, ChatDetail, Message } from '@/types';
 
-export async function createChat(characterId: string, model?: string, personaId?: string) {
+export async function createChat(characterId: string, model?: string, personaId?: string, forceNew?: boolean) {
   const { data } = await api.post<ChatDetail>('/chats', {
     character_id: characterId,
     model,
     persona_id: personaId,
+    force_new: forceNew || false,
   });
   return data;
 }

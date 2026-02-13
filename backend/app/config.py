@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     smtp_from_email: str | None = None
     resend_api_key: str | None = None
     resend_from_email: str = "SweetSin <noreply@sweetsin.cc>"
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
     frontend_url: str = "http://localhost:5173"
     cors_origins: str = "*"
     upload_dir: str = "data/uploads"

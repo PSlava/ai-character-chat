@@ -72,6 +72,7 @@ async def create_chat(
 ):
     chat, character, created = await service.get_or_create_chat(
         db, user["id"], body.character_id, body.model, persona_id=body.persona_id,
+        force_new=body.force_new,
     )
     if not chat:
         raise HTTPException(status_code=404, detail="Character not found")

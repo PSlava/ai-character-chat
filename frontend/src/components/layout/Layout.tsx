@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
@@ -29,6 +30,13 @@ export function Layout() {
         </main>
       </div>
       <AgeGate />
+      <Toaster
+        position="bottom-center"
+        toastOptions={{
+          style: { background: '#262626', color: '#f5f5f5', border: '1px solid #404040' },
+          duration: 3000,
+        }}
+      />
     </div>
   );
 }
