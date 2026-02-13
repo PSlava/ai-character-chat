@@ -14,11 +14,16 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
     -o /usr/local/lib/docker/cli-plugins/docker-compose && \
     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
+RUN groupadd -g 999 docker && useradd -m -u 1000 -G docker webhook
+
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY server.py .
+RUN mkdir -p /var/log && chown webhook:webhook /var/log
+
+USER webhook
 
 EXPOSE 9000
 CMD ["python", "server.py"]

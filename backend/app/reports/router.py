@@ -103,7 +103,6 @@ async def list_reports(
             "reporter": {
                 "id": reporter.id,
                 "username": reporter.username,
-                "email": reporter.email,
             } if reporter else None,
             "character": {
                 "id": character.id,

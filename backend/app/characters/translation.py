@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import time
 
 from sqlalchemy import text
 
@@ -61,6 +62,23 @@ INPUT JSON (translate each non-null field):"""
 _PROVIDER_ORDER = ("groq", "cerebras", "openrouter")
 _TIMEOUT = 8.0  # seconds
 
+# Rate limit: max 20 translation API calls per minute (global)
+_translation_calls: list[float] = []
+_TRANSLATION_RATE_LIMIT = 20
+_TRANSLATION_RATE_WINDOW = 60.0  # seconds
+
+
+def _check_translation_rate() -> bool:
+    """Return True if under rate limit, False if exceeded."""
+    now = time.monotonic()
+    # Remove old entries
+    while _translation_calls and _translation_calls[0] < now - _TRANSLATION_RATE_WINDOW:
+        _translation_calls.pop(0)
+    if len(_translation_calls) >= _TRANSLATION_RATE_LIMIT:
+        return False
+    _translation_calls.append(now)
+    return True
+
 
 async def translate_batch(
     characters: list[dict],
@@ -72,6 +90,9 @@ async def translate_batch(
     Returns {} on any failure.
     """
     if not characters:
+        return {}
+    if not _check_translation_rate():
+        logger.warning("Translation rate limit exceeded, skipping batch")
         return {}
 
     lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",
@@ -143,6 +164,9 @@ async def translate_descriptions(
         if val:
             fields[f] = val
     if not fields:
+        return {}
+    if not _check_translation_rate():
+        logger.warning("Translation rate limit exceeded, skipping descriptions")
         return {}
 
     lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",

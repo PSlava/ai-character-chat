@@ -1,4 +1,6 @@
 import json
+import logging
+import re
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
@@ -127,7 +129,8 @@ async def generate_from_story(
     try:
         raw = await provider.generate(messages, config)
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"LLM error: {str(e)}")
+        logging.getLogger(__name__).error("LLM generation failed: %s", str(e)[:200])
+        raise HTTPException(status_code=502, detail="Character generation failed. Please try again.")
 
     # Strip markdown code fences if present
     text = raw.strip()
@@ -255,15 +258,17 @@ async def export_character(
     character_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Character).where(Character.id == character_id))
+    result = await db.execute(select(Character).where(Character.id == character_id, Character.is_public == True))
     character = result.scalar_one_or_none()
     if not character:
         raise HTTPException(status_code=404, detail="Character not found")
     card = character_to_card(character)
+    # Sanitize filename: remove quotes and non-ASCII, fallback to "character"
+    safe_name = re.sub(r'[^\w\s\-.]', '', character.name.replace('"', '')).strip() or "character"
     return JSONResponse(
         content=card,
         headers={
-            "Content-Disposition": f'attachment; filename="{character.name}.json"',
+            "Content-Disposition": f'attachment; filename="{safe_name}.json"',
         },
     )
 

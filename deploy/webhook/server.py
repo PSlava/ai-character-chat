@@ -15,6 +15,8 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 SECRET = os.environ.get("WEBHOOK_SECRET", "")
+if not SECRET:
+    raise RuntimeError("WEBHOOK_SECRET must be set. Refusing to start without authentication.")
 REPO_DIR = os.environ.get("HOST_REPO_DIR", "/opt/ai-chat")
 DEPLOY_SCRIPT = os.path.join(REPO_DIR, "deploy", "deploy.sh")
 
@@ -24,8 +26,6 @@ _deploy_lock = threading.Lock()
 
 
 def verify_signature(payload: bytes, signature: str) -> bool:
-    if not SECRET:
-        return True  # no secret configured — skip verification
     expected = "sha256=" + hmac.new(
         SECRET.encode(), payload, hashlib.sha256
     ).hexdigest()
@@ -38,7 +38,7 @@ def _run_deploy():
         result = subprocess.run(
             ["bash", DEPLOY_SCRIPT],
             cwd=REPO_DIR,
-            stdout=open("/tmp/deploy.log", "a"),
+            stdout=open("/var/log/deploy.log", "a"),
             stderr=subprocess.STDOUT,
             timeout=600,  # 10 min max
         )
@@ -114,10 +114,10 @@ _STARTED_AT = datetime.now(timezone.utc).isoformat()
 
 @app.route("/health")
 def health():
-    info = {"status": "ok", "started_at": _STARTED_AT, **_get_git_info()}
+    info = {"status": "ok"}
     if _last_deploy:
         with _deploy_lock:
-            info["last_deploy"] = dict(_last_deploy)
+            info["last_deploy"] = {"status": _last_deploy.get("status"), "finished_at": _last_deploy.get("finished_at")}
     return jsonify(info)
 
 

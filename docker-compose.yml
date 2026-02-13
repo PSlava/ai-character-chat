@@ -49,7 +49,7 @@ services:
       MAX_AVATAR_SIZE: ${MAX_AVATAR_SIZE:-4194304}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      CORS_ORIGINS: "*"
+      CORS_ORIGINS: "https://sweetsin.cc"
       ENVIRONMENT: production
     volumes:
       - uploads:/app/data/uploads

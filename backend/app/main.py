@@ -39,7 +39,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="SweetSin", lifespan=lifespan)
 
-app.add_middleware(SessionMiddleware, secret_key=settings.jwt_secret)
+# Use a derived key for session middleware (separate from JWT secret)
+import hashlib as _hashlib
+_session_key = _hashlib.sha256(b"session:" + settings.jwt_secret.encode()).hexdigest()
+app.add_middleware(SessionMiddleware, secret_key=_session_key)
 
 app.add_middleware(
     CORSMiddleware,
@@ -68,12 +71,12 @@ _STARTED_AT = __import__("datetime").datetime.now(
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "commit": _COMMIT, "started_at": _STARTED_AT}
+    return {"status": "ok", "commit": _COMMIT}
 
 
 @app.get("/api/health/db")
 async def health_db():
-    """Test database connectivity and return diagnostic info."""
+    """Test database connectivity."""
     from app.db.session import engine
     try:
         from sqlalchemy import text
@@ -81,8 +84,8 @@ async def health_db():
             result = await conn.execute(text("SELECT 1"))
             result.fetchone()
         return {"status": "ok", "db": "connected"}
-    except Exception as e:
-        return {"status": "error", "db": str(type(e).__name__), "detail": str(e)[:500]}
+    except Exception:
+        return {"status": "error", "db": "disconnected"}
 
 
 from app.auth.router import router as auth_router  # noqa: E402

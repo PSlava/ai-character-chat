@@ -174,10 +174,15 @@ async def forgot_password(
     user = result.scalar_one_or_none()
 
     if user and user.password_hash:
+        # HMAC of password hash — changes when password is reset, but never exposes hash
+        import hashlib, hmac as _hmac
+        pwd_fingerprint = _hmac.new(
+            settings.jwt_secret.encode(), user.password_hash.encode(), hashlib.sha256
+        ).hexdigest()[:16]
         reset_payload = {
             "sub": user.id,
             "purpose": "reset",
-            "pwd": user.password_hash[:8],
+            "pfp": pwd_fingerprint,
             "exp": datetime.utcnow() + timedelta(hours=1),
         }
         reset_token = jwt.encode(reset_payload, settings.jwt_secret, algorithm="HS256")
@@ -214,7 +219,14 @@ async def reset_password(
     if not user:
         raise HTTPException(status_code=400, detail="Invalid reset link")
 
-    if not user.password_hash or user.password_hash[:8] != payload.get("pwd"):
+    # Verify password fingerprint — ensures token is invalidated after password change
+    import hashlib, hmac as _hmac
+    if not user.password_hash:
+        raise HTTPException(status_code=400, detail="This reset link has already been used")
+    expected_pfp = _hmac.new(
+        settings.jwt_secret.encode(), user.password_hash.encode(), hashlib.sha256
+    ).hexdigest()[:16]
+    if expected_pfp != payload.get("pfp"):
         raise HTTPException(status_code=400, detail="This reset link has already been used")
 
     user.password_hash = hash_password(body.password)
