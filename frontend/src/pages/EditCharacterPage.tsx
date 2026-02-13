@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getCharacter, updateCharacter } from '@/api/characters';
 import { CharacterForm } from '@/components/characters/CharacterForm';
 import type { Character } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 
 export function EditCharacterPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const authUser = useAuthStore((s) => s.user);
   const isAdmin = authUser?.role === 'admin';
   const [character, setCharacter] = useState<Character | null>(null);
@@ -32,6 +34,10 @@ export function EditCharacterPage() {
       setError(t('edit.saveError'));
     }
   };
+
+  if (!authLoading && !isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   if (error) {
     return (

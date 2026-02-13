@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { createCharacter, generateFromStory, getOpenRouterModels, wakeUpServer } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Input';
 import { Input } from '@/components/ui/Input';
 import type { Character } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 
 type Tab = 'manual' | 'from-story';
 
 export function CreateCharacterPage() {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const authUser = useAuthStore((s) => s.user);
   const isAdmin = authUser?.role === 'admin';
   const { t } = useTranslation();
@@ -96,6 +98,10 @@ export function CreateCharacterPage() {
       setStatusText('');
     }
   };
+
+  if (!authLoading && !isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">

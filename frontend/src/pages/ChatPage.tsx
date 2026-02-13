@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { Trash2, RotateCcw, Settings } from 'lucide-react';
 import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages } from '@/api/chat';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels } from '@/api/characters';
@@ -13,6 +13,7 @@ import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ChatDetail } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 
@@ -31,6 +32,7 @@ const MODEL_ALIASES: Record<string, string> = {
 type ConfirmAction = { type: 'deleteChat' } | { type: 'clearChat' } | { type: 'deleteMessage'; messageId: string };
 
 export function ChatPage() {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const { chatId } = useParams<{ chatId: string }>();
   const [chatDetail, setChatDetail] = useState<ChatDetail | null>(null);
   const [error, setError] = useState('');
@@ -218,6 +220,10 @@ export function ChatPage() {
         };
     }
   };
+
+  if (!authLoading && !isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   if (error) {
     return (

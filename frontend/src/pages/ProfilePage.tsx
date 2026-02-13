@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { getMyCharacters } from '@/api/characters';
 import { getProfile, updateProfile, deleteAccount } from '@/api/users';
 import type { UserProfile } from '@/api/users';
@@ -19,8 +19,12 @@ import { Plus, Star, Pencil, Trash2, Check, X, MessageCircle, MessagesSquare } f
 export function ProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const logout = useAuthStore((s) => s.logout);
+
+  if (!authLoading && !isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
   const [myCharacters, setMyCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
