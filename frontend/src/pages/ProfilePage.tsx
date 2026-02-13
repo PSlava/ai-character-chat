@@ -21,10 +21,6 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const logout = useAuthStore((s) => s.logout);
-
-  if (!authLoading && !isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
   const [myCharacters, setMyCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -157,6 +153,10 @@ export function ProfilePage() {
       setSaving(false);
     }
   };
+
+  if (!authLoading && !isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">

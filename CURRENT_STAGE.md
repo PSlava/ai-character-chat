@@ -11,8 +11,9 @@
 | **Подзаголовок EN** | Where fantasy comes alive. Chat with AI characters — no limits, no filters. |
 | **Подзаголовок RU** | Где фантазии оживают. ИИ-персонажи без ограничений и фильтров. |
 | **Цветовая схема** | Rose (rose-500/600/700) — ранее purple |
-| **Иконка** | Flame (lucide-react) |
-| **Логотип** | Текстовый: **Sweet** (белый) + **Sin** (rose-500) |
+| **Иконка** | SVG сердце с дьявольскими рожками и хвостом (компонент `Logo.tsx`) |
+| **Логотип** | SVG-иконка + текст: **Sweet** (белый) + **Sin** (rose-500) |
+| **Favicon** | SVG favicon в том же стиле (`public/favicon.svg`) |
 
 **SEO (index.html):**
 - Title: `SweetSin — AI Character Chat | Roleplay & Fantasy`
@@ -127,7 +128,9 @@ docker compose up -d
 - **Роли пользователей**: admin и user
 - **ADMIN_EMAILS** — автоназначение роли admin по email (при регистрации и синхронизация при логине)
 - **Админ-роль проверяется из БД** (не только из JWT) в `require_admin`
+- **Бан пользователей** — поле `is_banned` на User, проверка при логине (403 "Account is banned"), ошибка переводится на фронтенде
 - Защищённые эндпоинты через middleware
+- **Редирект при выходе** — все защищённые страницы (профиль, чат, создание, редактирование) редиректят на главную при logout
 - Опциональная авторизация (`get_current_user_optional`) для публичных эндпоинтов
 - Хранение токена и роли в localStorage
 - **Восстановление пароля** — полный флоу:
@@ -211,6 +214,7 @@ docker compose up -d
 - **Смена модели mid-chat** — сохраняется в БД на чате
 - **Синхронизация ID сообщений** — фронтенд обновляет локальные UUID на реальные из БД (в т.ч. при ошибках)
 - **Фильтрация thinking-токенов** — `<think>...</think>` блоки вырезаются из стриминга (Qwen3, DeepSeek R1)
+- **Счётчик сообщений/чатов пользователя** — атомарный инкремент `message_count` и `chat_count` на User при каждом сообщении/новом чате
 
 ### Аватары
 - **Загрузка аватаров** — `POST /api/upload/avatar` (multipart, auth required)
@@ -243,8 +247,15 @@ docker compose up -d
   - `POST /api/admin/seed-characters` — импорт (автоматически удаляет старые перед импортом, нет дублей)
   - `DELETE /api/admin/seed-characters` — удаление всех персонажей @sweetsin
   - Кнопки «Импортировать» / «Удалить все» на странице админки
+- **Управление пользователями** — страница `/admin/users` с полным контролем:
+  - Таблица всех пользователей: аватар, имя, email, роль, кол-во сообщений/чатов/персонажей, дата регистрации, статус
+  - Поиск по email/username/display_name (фронтенд-фильтрация)
+  - Ban/Unban — toggle с optimistic UI (забаненный не может войти, 403)
+  - Удаление пользователя — каскадное удаление всех данных + аватаров, с ConfirmDialog
+  - Нельзя забанить/удалить себя
+  - Мобильная адаптация — карточки вместо таблицы
 - **Очистка файлов** — кнопка для удаления сиротских аватаров (не привязанных к персонажам/пользователям)
-- Ссылка в сайдбаре видна только админу
+- Ссылки в сайдбаре: «Пользователи» + «Промпты» видны только админу
 
 ### LLM-провайдеры (9 штук)
 
@@ -342,8 +353,9 @@ docker compose up -d
 - React + TypeScript + Vite + Tailwind CSS
 - Тёмная тема, **цветовая схема rose** (бренд SweetSin)
 - Zustand для стейт-менеджмента
-- 10 страниц: главная, авторизация, сброс пароля, персонаж (с размытым фоном аватара), чат, создание, редактирование, профиль, **избранное**, **админ-промпты**
-- **Брендинг**: логотип Sweet+Sin с иконкой Flame, SEO мета-теги, Open Graph
+- 12 страниц: главная, авторизация, сброс пароля, персонаж (с размытым фоном аватара), чат, создание, редактирование, профиль, **избранное**, **админ-промпты**, **админ-пользователи**
+- **Брендинг**: логотип Sweet+Sin с SVG-иконкой сердца (дьявольские рожки/хвост), SEO мета-теги, Open Graph
+- **Scroll to top** — при навигации между страницами контент автоматически прокручивается вверх (через `useRef` + `useEffect` на `pathname`)
 - Стриминг сообщений в реальном времени
 - Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
 - **NSFW-модели визуально отключены** в настройках для NSFW-персонажей
@@ -354,7 +366,7 @@ docker compose up -d
 - **Мобильные действия с сообщениями** — вертикальное троеточие (⋮) вместо hover-кнопок, dropdown-меню
 - **Дизайн сообщений** — header row (аватар + имя + кнопки действий) над баблом, имя пользователя из профиля
 - Автоматическое пробуждение Render (wake-up) с индикатором статуса
-- **Профиль**: смена display name, username (с валидацией), языка, аватар, удаление аккаунта (danger zone с ConfirmDialog)
+- **Профиль**: смена display name, username (с валидацией), языка, аватар, статистика (сообщения + чаты), удаление аккаунта (danger zone с ConfirmDialog)
 - **Перевод ошибок бэкенда** — `ERROR_MAP` в AuthPage маппит английские ошибки на i18n-ключи (emailTaken, usernameTaken, invalidCredentials, usernameInvalid)
 - **Age gate (18+)** — полноэкранный оверлей с backdrop blur для неавторизованных, подтверждение в localStorage, отказ → google.com
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
@@ -419,13 +431,18 @@ docker compose up -d
 - [x] Счётчик сообщений по языкам + сортировка по популярности
 - [x] Пользовательские персоны (до 10 альтернативных личностей)
 - [x] Избранное — кликабельные ❤️ на карточках и странице, страница /favorites, optimistic updates
+- [x] Статистика пользователя — message_count + chat_count на профиле
+- [x] Админ: управление пользователями — список, поиск, ban/unban, удаление (/admin/users)
+- [x] Favicon (SVG сердце с рожками, rose цвет)
+- [x] Логотип — SVG сердце с дьявольскими рожками и хвостом (вместо Flame)
+- [x] Scroll to top при навигации между страницами
+- [x] Auth guards — все защищённые страницы редиректят на главную при logout
 - [ ] Настроить SMTP (Gmail / Resend) для отправки email (сброс пароля)
 - [ ] Протестировать качество ответов с литературным форматом на разных моделях
 
 ### Средний приоритет
 - [ ] Уведомления/тосты при ошибках и успехах
 - [ ] Больше структурированных тегов (расширить реестр, добавить новые категории)
-- [ ] Favicon (SVG flame icon в rose цвете)
 - [ ] Landing page / hero section с примерами персонажей
 - [ ] Социальные мета-теги (og:image — preview card)
 - [ ] Множественные чаты с одним персонажем (история чатов)
@@ -468,7 +485,7 @@ chatbot/
 │   │   │   ├── middleware.py        # get_current_user (с role), get_current_user_optional
 │   │   │   └── rate_limit.py        # In-memory rate limiter (auth, messages, reset)
 │   │   ├── admin/                   # Админ-панель
-│   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete + cleanup-avatars (admin only)
+│   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete + cleanup-avatars + users list/ban/unban/delete (admin only)
 │   │   │   ├── seed_data.py         # 40 seed-персонажей (определения)
 │   │   │   └── seed_avatars/        # 40 DALL-E 3 аватаров (00–39.webp, 512×512)
 │   │   ├── characters/              # CRUD + генерация + теги + перевод
@@ -507,12 +524,12 @@ chatbot/
 │   │   │   └── schemas.py           # PersonaCreate, PersonaUpdate
 │   │   ├── uploads/                 # Загрузка файлов (аватары)
 │   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP)
-│   │   ├── users/                   # Профиль (username update), избранное, удаление аккаунта
+│   │   ├── users/                   # Профиль (username, stats: message_count/chat_count), избранное, удаление аккаунта
 │   │   ├── utils/                   # Утилиты
 │   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
 │   │   │   └── email.py             # Async email sender (SMTP + dev console fallback)
 │   │   └── db/                      # Модели, сессии, миграции
-│   │       ├── models.py            # User, Character (translations, message_counts), Chat (persona_id), Message, Favorite, Persona, PromptTemplate
+│   │       ├── models.py            # User (is_banned, message_count, chat_count), Character (translations, message_counts), Chat (persona_id), Message, Favorite, Persona, PromptTemplate
 │   │       └── session.py           # Engine, init_db + auto-migrations
 │   ├── scripts/
 │   │   └── generate_seed_avatars.py # Генерация аватаров через DALL-E 3
@@ -523,7 +540,7 @@ chatbot/
 │   ├── src/
 │   │   ├── api/                     # HTTP клиент, API функции
 │   │   │   ├── client.ts            # Axios с JWT
-│   │   │   ├── admin.ts             # Промпт-шаблоны + seed import/delete + cleanup (admin)
+│   │   │   ├── admin.ts             # Промпт-шаблоны + seed import/delete + cleanup + users list/ban/unban/delete (admin)
 │   │   │   ├── characters.ts        # CRUD + generate + wake-up + models
 │   │   │   ├── users.ts             # Profile (username, role), deleteAccount
 │   │   │   ├── uploads.ts           # uploadAvatar (multipart)
@@ -532,12 +549,13 @@ chatbot/
 │   │   │   ├── useAuth.ts           # Авторизация
 │   │   │   └── useChat.ts           # SSE стриминг + GenerationSettings + model_used + is_regenerate
 │   │   ├── store/                   # Zustand (auth с role, chat, favorites)
-│   │   ├── pages/                   # 11 страниц
+│   │   ├── pages/                   # 12 страниц
 │   │   │   ├── AuthPage.tsx         # Вход / регистрация / забыли пароль (3 режима)
 │   │   │   ├── ResetPasswordPage.tsx # Установка нового пароля (по ссылке из email)
 │   │   │   ├── ChatPage.tsx         # Чат + настройки + модель + isAdmin
 │   │   │   ├── FavoritesPage.tsx    # Страница избранных персонажей
 │   │   │   ├── AdminPromptsPage.tsx # Админ: редактор промптов
+│   │   │   ├── AdminUsersPage.tsx   # Админ: управление пользователями (ban/unban/delete)
 │   │   │   ├── CreateCharacterPage.tsx  # Создание (ручное + из текста)
 │   │   │   ├── EditCharacterPage.tsx    # Редактирование персонажа
 │   │   │   └── ...
@@ -549,7 +567,7 @@ chatbot/
 │   │   │   │   └── GenerationSettingsModal.tsx  # Модель (7 групп) + 6 слайдеров + память
 │   │   │   ├── characters/
 │   │   │   │   └── CharacterForm.tsx     # Форма (name, personality, structured tags pills, appearance, model, NSFW disable)
-│   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher
+│   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher, Logo
 │   │   ├── lib/                     # Утилиты (localStorage с role)
 │   │   ├── locales/                 # i18n: en.json, ru.json
 │   │   └── types/                   # TypeScript типы (Message с model_used)
