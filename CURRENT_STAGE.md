@@ -139,7 +139,8 @@ docker compose up -d
   - Отправка email через SMTP (`aiosmtplib`), в dev-режиме — ссылка выводится в консоль
   - `POST /api/auth/reset-password` — валидация токена, смена пароля
   - Фронтенд: «Забыли пароль?» на странице логина, отдельная страница `/auth/reset-password?token=...`
-  - Rate limiting: 3 запроса на сброс за 5 минут на IP
+  - Rate limiting: 3/5мин на IP + 10/час на IP (анти-перебор) + 1/2мин на email (анти-спам)
+  - Фронтенд: 2-минутный таймер кулдауна после отправки, кнопка «Отправить повторно» после истечения
 
 ### Персонажи
 - Полный CRUD: создание, просмотр, редактирование, удаление (с cascade на чаты)
@@ -367,14 +368,14 @@ docker compose up -d
 - **Дизайн сообщений** — header row (аватар + имя + кнопки действий) над баблом, имя пользователя из профиля
 - Автоматическое пробуждение Render (wake-up) с индикатором статуса
 - **Профиль**: смена display name, username (с валидацией), языка, аватар, статистика (сообщения + чаты), удаление аккаунта (danger zone с ConfirmDialog)
-- **Перевод ошибок бэкенда** — `ERROR_MAP` в AuthPage маппит английские ошибки на i18n-ключи (emailTaken, usernameTaken, invalidCredentials, usernameInvalid)
+- **Перевод ошибок бэкенда** — `ERROR_MAP` в AuthPage маппит английские ошибки на i18n-ключи (emailTaken, usernameTaken, invalidCredentials, usernameInvalid, banned, tooManyRequests)
 - **Age gate (18+)** — полноэкранный оверлей с backdrop blur для неавторизованных, подтверждение в localStorage, отказ → google.com
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
 
 ### Безопасность
 - **Rate limiting** — in-memory (без зависимостей):
   - Auth (login/register): 10 запросов/мин на IP
-  - Сброс пароля: 3 запроса/5 мин на IP
+  - Сброс пароля: 3/5мин на IP + 10/час на IP (анти-перебор email) + 1/2мин на email (анти-спам)
   - Сообщения чата: 20/мин на пользователя
 - **Input validation** — Pydantic `Field(max_length=...)` на всех входных данных (schemas)
 - **Mass assignment protection** — allowlists (`_ALLOWED_FIELDS`) для `setattr` в characters и users
@@ -437,6 +438,7 @@ docker compose up -d
 - [x] Логотип — SVG сердце с дьявольскими рожками и хвостом (вместо Flame)
 - [x] Scroll to top при навигации между страницами
 - [x] Auth guards — все защищённые страницы редиректят на главную при logout
+- [x] Rate limiting сброса пароля — тройная защита (IP short/long + per-email) + таймер на фронте
 - [ ] Настроить SMTP (Gmail / Resend) для отправки email (сброс пароля)
 - [ ] Протестировать качество ответов с литературным форматом на разных моделях
 
