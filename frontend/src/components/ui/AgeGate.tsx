@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 const STORAGE_KEY = 'age-verified';
 
@@ -23,6 +24,9 @@ export function AgeGate() {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-8 w-full max-w-md mx-4 shadow-2xl text-center">
+        <div className="flex justify-center mb-4">
+          <LanguageSwitcher compact />
+        </div>
         <div className="text-4xl mb-4">18+</div>
         <h2 className="text-xl font-bold text-white mb-2">{t('ageGate.title')}</h2>
         <p className="text-neutral-400 text-sm mb-6 leading-relaxed">{t('ageGate.message')}</p>

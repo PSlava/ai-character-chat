@@ -9,7 +9,9 @@ const SUPPORTED = ['en', 'es', 'ru'];
 const pathLang = window.location.pathname.split('/')[1];
 const urlLang = SUPPORTED.includes(pathLang) ? pathLang : null;
 const savedLang = localStorage.getItem('language');
-const defaultLang = urlLang || savedLang || 'en';
+const browserLangs = navigator.languages || [navigator.language];
+const browserLang = browserLangs.map((l) => l.split('-')[0]).find((l) => SUPPORTED.includes(l));
+const defaultLang = urlLang || savedLang || browserLang || 'en';
 
 i18n.use(initReactI18next).init({
   resources: { en: { translation: en }, es: { translation: es }, ru: { translation: ru } },
