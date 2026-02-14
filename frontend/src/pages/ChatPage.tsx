@@ -13,6 +13,7 @@ import { GenerationSettingsModal, loadModelSettings } from '@/components/chat/Ge
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Avatar } from '@/components/ui/Avatar';
+import { SEO } from '@/components/seo/SEO';
 import type { ChatDetail } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
@@ -269,6 +270,7 @@ export function ChatPage() {
 
   return (
     <div className="h-full flex flex-col">
+      {character?.name && <SEO title={`${t('chat.chatWith')} ${character.name}`} />}
       {/* Chat header */}
       <div className="border-b border-neutral-800 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
         <Avatar

@@ -93,6 +93,7 @@
 
   "chat.placeholder": "Напишите сообщение...",
   "chat.modelAndSettings": "Модель и настройки",
+  "chat.chatWith": "Чат с",
   "chat.clearChat": "Очистить чат",
   "chat.clearConfirm": "Очистить чат? Все сообщения будут удалены, останется только приветствие.",
   "chat.clearError": "Не удалось очистить чат",

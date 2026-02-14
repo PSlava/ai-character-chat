@@ -93,6 +93,7 @@
 
   "chat.placeholder": "Escribe un mensaje...",
   "chat.modelAndSettings": "Modelo y ajustes",
+  "chat.chatWith": "Chat con",
   "chat.clearChat": "Limpiar chat",
   "chat.clearConfirm": "¿Limpiar el chat? Se eliminarán todos los mensajes, solo quedará el saludo.",
   "chat.clearError": "Error al limpiar el chat",

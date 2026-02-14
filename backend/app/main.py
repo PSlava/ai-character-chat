@@ -75,7 +75,7 @@ _STARTED_AT = __import__("datetime").datetime.now(
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "commit": _COMMIT}
+    return {"status": "ok", "commit": _COMMIT, "started_at": _STARTED_AT}
 
 
 @app.get("/api/health/db")

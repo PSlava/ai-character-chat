@@ -93,6 +93,7 @@
 
   "chat.placeholder": "Type a message...",
   "chat.modelAndSettings": "Model & Settings",
+  "chat.chatWith": "Chat with",
   "chat.clearChat": "Clear chat",
   "chat.clearConfirm": "Clear chat? All messages will be deleted, only the greeting will remain.",
   "chat.clearError": "Failed to clear chat",

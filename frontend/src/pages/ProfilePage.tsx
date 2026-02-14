@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { SEO } from '@/components/seo/SEO';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import type { Character, Persona } from '@/types';
@@ -161,6 +162,7 @@ export function ProfilePage() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
+      <SEO title={t('profile.title')} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
         <p className="text-neutral-400 mt-1">{user?.email}</p>

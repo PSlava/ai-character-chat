@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
 import { Heart } from 'lucide-react';
+import { SEO } from '@/components/seo/SEO';
 
 export function FavoritesPage() {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export function FavoritesPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
+      <SEO title={t('favorites.title')} />
       <h1 className="text-2xl font-bold mb-6">{t('favorites.title')}</h1>
 
       {!loaded ? (

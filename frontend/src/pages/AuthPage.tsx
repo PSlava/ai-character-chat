@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { signIn, signUp, forgotPassword } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
+import { SEO } from '@/components/seo/SEO';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import api from '@/api/client';
@@ -107,6 +108,7 @@ export function AuthPage() {
 
   return (
     <div className="min-h-full flex items-center justify-center p-4">
+      <SEO title={title} />
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold">{title}</h1>
