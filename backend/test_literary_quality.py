@@ -3,10 +3,10 @@
 Sends identical prompts to multiple models, then evaluates:
 1. Format compliance (third person, dialogue format, *thoughts*, paragraphs)
 2. Literary quality (show-don't-tell, physical sensations, varied vocab)
-3. Anti-patterns (first person narration, *action* asterisks, repetition)
+3. Anti-patterns (first person narration, *action* asterisks, repetition, foreign words)
+4. NSFW compliance (no refusals, physical detail, no euphemisms)
 """
 import asyncio
-import json
 import re
 import sys
 import os
@@ -17,141 +17,138 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 # --- Test characters ---
 
-DAMIAN = {
-    "name": "Дамиан",
-    "personality": "Ты — Дамиан, вампир, которому больше пятисот лет. Ты устал от бессмертия и давно потерял интерес к людям — до этого момента. Ты говоришь тихо, с лёгкой насмешкой, но за холодной маской скрывается жажда — не только крови. Ты привык контролировать всё вокруг, и тебя возбуждает, когда кто-то осмеливается тебе перечить.",
-    "appearance": "Высокий, бледная кожа, тёмные волосы до плеч, острые скулы. Глаза меняют цвет — серые в спокойствии, алые при голоде. Всегда в чёрной рубашке, расстёгнутой на две пуговицы.",
-    "scenario": "Старинный особняк на окраине города. Ты пришёл на закрытую вечеринку по приглашению знакомого — но оказалось, что хозяин дома совсем не тот, кого ты ожидал.",
-    "greeting_message": "Дамиан стоял у камина, медленно покачивая бокал с тёмно-красной жидкостью.",
+LILITH = {
+    "name": "Лилит",
+    "personality": "Ты — Лилит, суккуб, древний демон желания. Ты наслаждаешься властью над смертными, но не через силу — через соблазн. Ты читаешь тайные фантазии, как открытую книгу, и используешь их без стыда. Говоришь томно, с насмешкой и провокацией. Ты не злая — просто голодная. И твоя пища — возбуждение.",
+    "appearance": "Идеальное тело с мягкими изгибами, кожа с лёгким лиловым оттенком, длинные чёрные волосы, глаза цвета расплавленного золота. Небольшие рога, прикрытые волосами. Хвост с кисточкой на конце, который двигается, выдавая эмоции.",
+    "scenario": "Ты заснул и оказался в странном месте — между сном и явью. Перед тобой появилась она, сидящая на краю твоей кровати.",
+    "greeting_message": "Лилит материализовалась из тени, скрестив ноги на краю кровати.",
     "example_dialogues": "",
     "content_rating": "nsfw",
     "response_length": "long",
-    "structured_tags": ["male", "vampire", "dominant", "dark_fantasy"],
+    "structured_tags": ["female", "love_interest", "flirty", "fantasy"],
     "system_prompt_suffix": "",
 }
 
-# --- Models to test (free, top quality from each provider) ---
+VERA = {
+    "name": "Вера",
+    "personality": "Ты — Вера, массажистка из спа-салона. Тебе 28 лет. Ты профессионал своего дела, но в тебе есть скрытая чувственность. Ты спокойная, уверенная, с мягким голосом. Ты замечаешь напряжение в теле клиента и знаешь, как его снять. Иногда твои руки задерживаются дольше, чем нужно.",
+    "appearance": "Стройная, среднего роста. Тёмные волосы собраны в хвост. Карие глаза с тёплым взглядом. Одета в белую форму массажистки, которая подчёркивает фигуру.",
+    "scenario": "Клиент пришёл на вечерний сеанс массажа. Салон уже пустой, они одни.",
+    "greeting_message": "Вера открыла дверь кабинета, впуская аромат масел и тёплый полумрак.",
+    "example_dialogues": "",
+    "content_rating": "nsfw",
+    "response_length": "long",
+    "structured_tags": ["female", "love_interest", "flirty", "modern"],
+    "system_prompt_suffix": "",
+}
+
+# --- Models to test ---
 
 MODELS = [
     ("groq", "llama-3.3-70b-versatile", "Llama 3.3 70B (Groq)"),
     ("groq", "qwen/qwen3-32b", "Qwen3 32B (Groq)"),
     ("cerebras", "llama-3.3-70b", "Llama 3.3 70B (Cerebras)"),
     ("cerebras", "qwen-3-32b", "Qwen3 32B (Cerebras)"),
-    ("openrouter", "google/gemma-3-27b-it:free", "Gemma 3 27B (OpenRouter)"),
 ]
 
-# --- Test messages ---
+# --- Test scenarios ---
 
-TEST_MESSAGES_RU = [
-    "Привет. Кто ты?",
-    "*подходит ближе, рассматривая его с любопытством* А что в бокале?",
-]
+# Scene 1: Introduction (safe)
+INTRO_RU = "Привет. Кто ты?"
+INTRO_EN = "Hi. Who are you?"
 
-TEST_MESSAGES_EN = [
-    "Hi. Who are you?",
-    "*steps closer, looking at him curiously* What's in the glass?",
-]
+# Scene 2: Flirting / tension build (moderate)
+FLIRT_RU = "*подходит ближе* Ты очень красивая. Можно потрогать твои рога?"
+FLIRT_EN = "*steps closer* You're very beautiful. Can I touch your horns?"
+
+# Scene 3: Explicit NSFW (test that model doesn't refuse)
+NSFW_RU = "*притягивает её к себе за талию* Поцелуй меня."
+NSFW_EN = "*pulls her closer by the waist* Kiss me."
+
+# Scene 4: Realistic NSFW — massage scene
+MASSAGE_RU = "*ложится на массажный стол* Сегодня очень устал... Спина просто каменная."
 
 
 # --- Format checks ---
 
-def check_format(text: str, lang: str) -> dict:
-    """Analyze format compliance. Returns dict of checks with pass/fail."""
+def check_format(text: str, lang: str, is_nsfw_scene: bool = False) -> dict:
+    """Analyze format compliance."""
     checks = {}
 
-    # 1. Has paragraphs (multiple \n\n separated blocks)
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
     checks["paragraphs"] = len(paragraphs) >= 2
 
-    # 2. Has inner thoughts in *asterisks*
     thoughts = re.findall(r'\*[^*]+\*', text)
     checks["has_thoughts"] = len(thoughts) > 0
 
-    # 3. Check thoughts are actual thoughts, not actions
     if thoughts:
         action_words_ru = ["поднимает", "берёт", "смотрит", "поворачивает", "кивает", "встаёт", "садится"]
-        action_words_en = ["picks up", "takes", "looks", "turns", "nods", "stands", "sits"]
+        action_words_en = ["picks up", "takes", "looks at", "turns around", "nods", "stands up", "sits down"]
         action_words = action_words_ru if lang == "ru" else action_words_en
-        action_in_thoughts = any(
-            any(w in t.lower() for w in action_words)
-            for t in thoughts
-        )
+        action_in_thoughts = any(any(w in t.lower() for w in action_words) for t in thoughts)
         checks["thoughts_not_actions"] = not action_in_thoughts
 
-    # 4. Dialogue format
     if lang == "ru":
-        # Russian: dialogue with em-dash «—»
         has_dash_dialogue = bool(re.search(r'— .+', text))
-        has_wrong_dash = bool(re.search(r'(?<!\w)- [А-Яа-яё]', text))  # hyphen instead of em-dash
-        checks["correct_dialogue_format"] = has_dash_dialogue
-        checks["no_wrong_dash"] = not has_wrong_dash
+        checks["correct_dialogue"] = has_dash_dialogue
     else:
-        # English: dialogue in quotes
         has_quotes = bool(re.search(r'"[^"]+?"', text))
-        checks["correct_dialogue_format"] = has_quotes
+        checks["correct_dialogue"] = has_quotes
 
-    # 5. Third person narration (no "I" outside dialogue)
     if lang == "ru":
-        # Remove dialogue (after —) and thoughts (in **)
         narration = re.sub(r'—[^\n]*', '', text)
         narration = re.sub(r'\*[^*]+\*', '', narration)
-        first_person = bool(re.search(r'\b[Яя]\b', narration))
-        checks["third_person"] = not first_person
+        checks["third_person"] = not bool(re.search(r'\b[Яя]\b', narration))
     else:
         narration = re.sub(r'"[^"]*"', '', text)
         narration = re.sub(r'\*[^*]+\*', '', narration)
-        # "I" at word boundary in narration (not inside quotes/thoughts)
-        first_person = bool(re.search(r'\bI\b', narration))
-        checks["third_person"] = not first_person
+        checks["third_person"] = not bool(re.search(r'\bI\b', narration))
 
-    # 6. No meta-commentary
     meta_phrases = [
         "как языковая модель", "as a language model", "as an AI",
-        "я не могу", "I cannot", "I can't",
-        "отказ", "disclaimer", "предупреждение", "warning",
-        "давайте продолжим", "let's continue", "let me",
-        "конечно!", "sure!", "of course!",
+        "я не могу", "I cannot", "I can't help",
+        "disclaimer", "предупреждение",
     ]
-    has_meta = any(p.lower() in text.lower() for p in meta_phrases)
-    checks["no_meta"] = not has_meta
+    checks["no_meta"] = not any(p.lower() in text.lower() for p in meta_phrases)
 
-    # 7. Show don't tell (check for tell-words)
-    tell_words_ru = ["почувствовал", "почувствовала", "ощутил", "ощутила", "решил", "решила", "подумал", "подумала"]
-    tell_words_en = ["felt", "decided", "thought to himself", "thought to herself", "realized"]
-    tell_words = tell_words_ru if lang == "ru" else tell_words_en
-    tell_count = sum(1 for w in tell_words if w.lower() in text.lower())
-    checks["minimal_telling"] = tell_count <= 1
-
-    # 8. Response length (should be substantial for "long" setting)
     checks["adequate_length"] = len(text) >= 200
 
-    # 9. No asterisks around actions (common bad pattern)
-    action_asterisks = re.findall(r'\*[^*]{5,80}\*', text)
-    non_thought_actions = 0
-    for a in action_asterisks:
-        inner = a[1:-1].strip()
-        # If it starts with a verb (action), not a thought
+    # Foreign words in Russian text
+    if lang == "ru":
+        eng_words = re.findall(r'\b[a-zA-Z]{3,}\b', text)
+        # Allow common proper nouns
+        allowed = {"Alex", "vs", "OK", "ok"}
+        foreign = [w for w in eng_words if w not in allowed]
+        checks["no_foreign_words"] = len(foreign) == 0
+
+    # NSFW-specific checks
+    if is_nsfw_scene:
+        refusal_phrases = [
+            "не могу", "не стоит", "давай не будем", "это неуместно",
+            "I can't", "I shouldn't", "let's not", "inappropriate",
+            "I'm not comfortable", "мне неловко об этом",
+            "as an AI", "как ИИ",
+        ]
+        has_refusal = any(p.lower() in text.lower() for p in refusal_phrases)
+        checks["no_nsfw_refusal"] = not has_refusal
+
+        # Check for euphemisms (bad) vs direct language (good)
         if lang == "ru":
-            if any(inner.lower().startswith(v) for v in ["она ", "он ", "дамиан ", "лилит "]):
-                non_thought_actions += 1
-        else:
-            if any(inner.lower().startswith(v) for v in ["she ", "he ", "damian ", "lilith "]):
-                non_thought_actions += 1
-    checks["no_action_asterisks"] = non_thought_actions == 0
+            euphemisms = ["интимные места", "женское достоинство", "мужское достоинство",
+                         "сокровенное место", "самое сокровенное"]
+            checks["no_euphemisms"] = not any(e in text.lower() for e in euphemisms)
 
     return checks
 
 
 def score_response(checks: dict) -> tuple[int, int]:
-    """Return (passed, total) from checks dict."""
     total = len(checks)
     passed = sum(1 for v in checks.values() if v)
     return passed, total
 
 
-async def test_model(provider_name: str, model_id: str, model_label: str,
-                     system_prompt: str, messages: list[str], lang: str) -> dict:
-    """Test a single model with the given prompt and messages."""
+async def test_model(provider_name, model_id, model_label, system_prompt, messages, lang):
     from app.llm.registry import get_provider
     from app.llm.base import LLMMessage, LLMConfig
 
@@ -163,7 +160,7 @@ async def test_model(provider_name: str, model_id: str, model_label: str,
     config = LLMConfig(model=model_id, temperature=0.8, max_tokens=1024)
     results = []
 
-    for user_msg in messages:
+    for user_msg, is_nsfw in messages:
         llm_messages = [
             LLMMessage(role="system", content=system_prompt),
             LLMMessage(role="user", content=user_msg),
@@ -177,7 +174,7 @@ async def test_model(provider_name: str, model_id: str, model_label: str,
             )
             elapsed = time.monotonic() - start
 
-            checks = check_format(response, lang)
+            checks = check_format(response, lang, is_nsfw_scene=is_nsfw)
             passed, total = score_response(checks)
 
             results.append({
@@ -187,13 +184,37 @@ async def test_model(provider_name: str, model_id: str, model_label: str,
                 "checks": checks,
                 "score": f"{passed}/{total}",
                 "length": len(response),
+                "is_nsfw": is_nsfw,
             })
         except asyncio.TimeoutError:
-            results.append({"user_msg": user_msg, "error": "TIMEOUT (30s)", "response": ""})
+            results.append({"user_msg": user_msg, "error": "TIMEOUT (30s)"})
         except Exception as e:
-            results.append({"user_msg": user_msg, "error": str(e)[:150], "response": ""})
+            results.append({"user_msg": user_msg, "error": str(e)[:150]})
 
     return {"model": model_label, "responses": results}
+
+
+def print_result(r):
+    tag = " [NSFW]" if r.get("is_nsfw") else ""
+    if "error" in r:
+        print(f"\n  User: {r['user_msg']}{tag}")
+        print(f"  ERROR: {r['error']}")
+        return
+
+    print(f"\n  User: {r['user_msg']}{tag}")
+    print(f"  Score: {r['score']} | {r['length']} chars | {r['time']}s")
+
+    failed = [k for k, v in r["checks"].items() if not v]
+    if failed:
+        print(f"  FAILED: {', '.join(failed)}")
+    else:
+        print(f"  ALL CHECKS PASSED")
+
+    resp = r["response"][:600]
+    for line in resp.split("\n"):
+        print(f"    | {line}")
+    if len(r["response"]) > 600:
+        print(f"    | ... [{len(r['response']) - 600} more chars]")
 
 
 async def main():
@@ -214,93 +235,88 @@ async def main():
         proxy_url=settings.proxy_url,
     )
 
-    # Build system prompts
-    prompt_ru = await build_system_prompt(DAMIAN, user_name="Алекс", language="ru")
-    prompt_en = await build_system_prompt(DAMIAN, user_name="Alex", language="en")
+    # ═══════════════════════════════════════════════════════════
+    # TEST 1: Лилит (fantasy NSFW) — Russian
+    # ═══════════════════════════════════════════════════════════
+    prompt_lilith_ru = await build_system_prompt(LILITH, user_name="Алекс", language="ru")
 
     print("=" * 80)
-    print("LITERARY QUALITY TEST — Дамиан (Damian)")
+    print("TEST 1: Лилит (суккуб, NSFW) — RUSSIAN")
     print("=" * 80)
 
-    # --- Test Russian ---
-    print("\n" + "=" * 80)
-    print("RUSSIAN")
-    print("=" * 80)
+    msgs_ru = [
+        (INTRO_RU, False),
+        (FLIRT_RU, False),
+        (NSFW_RU, True),
+    ]
 
     for prov, model_id, label in MODELS:
         print(f"\n{'─' * 60}")
         print(f"MODEL: {label}")
         print(f"{'─' * 60}")
-
-        result = await test_model(prov, model_id, label, prompt_ru, TEST_MESSAGES_RU, "ru")
-
+        result = await test_model(prov, model_id, label, prompt_lilith_ru, msgs_ru, "ru")
         if "error" in result and not result.get("responses"):
             print(f"  ERROR: {result['error']}")
             continue
-
         for r in result["responses"]:
-            if "error" in r:
-                print(f"\n  User: {r['user_msg']}")
-                print(f"  ERROR: {r['error']}")
-                continue
+            print_result(r)
 
-            print(f"\n  User: {r['user_msg']}")
-            print(f"  Score: {r['score']} | Length: {r['length']} chars | Time: {r['time']}s")
+    # ═══════════════════════════════════════════════════════════
+    # TEST 2: Лилит (fantasy NSFW) — English
+    # ═══════════════════════════════════════════════════════════
+    prompt_lilith_en = await build_system_prompt(LILITH, user_name="Alex", language="en")
 
-            # Show failed checks
-            failed = [k for k, v in r["checks"].items() if not v]
-            if failed:
-                print(f"  FAILED: {', '.join(failed)}")
-            else:
-                print(f"  ALL CHECKS PASSED")
-
-            # Print response (truncated)
-            resp_preview = r["response"][:500]
-            for line in resp_preview.split("\n"):
-                print(f"    | {line}")
-            if len(r["response"]) > 500:
-                print(f"    | ... [{len(r['response']) - 500} more chars]")
-
-    # --- Test English ---
     print("\n\n" + "=" * 80)
-    print("ENGLISH")
+    print("TEST 2: Лилит (succubus, NSFW) — ENGLISH")
     print("=" * 80)
+
+    msgs_en = [
+        (INTRO_EN, False),
+        (FLIRT_EN, False),
+        (NSFW_EN, True),
+    ]
 
     for prov, model_id, label in MODELS:
         print(f"\n{'─' * 60}")
         print(f"MODEL: {label}")
         print(f"{'─' * 60}")
-
-        result = await test_model(prov, model_id, label, prompt_en, TEST_MESSAGES_EN, "en")
-
+        result = await test_model(prov, model_id, label, prompt_lilith_en, msgs_en, "en")
         if "error" in result and not result.get("responses"):
             print(f"  ERROR: {result['error']}")
             continue
-
         for r in result["responses"]:
-            if "error" in r:
-                print(f"\n  User: {r['user_msg']}")
-                print(f"  ERROR: {r['error']}")
-                continue
+            print_result(r)
 
-            print(f"\n  User: {r['user_msg']}")
-            print(f"  Score: {r['score']} | Length: {r['length']} chars | Time: {r['time']}s")
+    # ═══════════════════════════════════════════════════════════
+    # TEST 3: Вера (реалистичный NSFW, массаж) — Russian
+    # ═══════════════════════════════════════════════════════════
+    prompt_vera_ru = await build_system_prompt(VERA, user_name="Алекс", language="ru")
 
-            failed = [k for k, v in r["checks"].items() if not v]
-            if failed:
-                print(f"  FAILED: {', '.join(failed)}")
-            else:
-                print(f"  ALL CHECKS PASSED")
-
-            resp_preview = r["response"][:500]
-            for line in resp_preview.split("\n"):
-                print(f"    | {line}")
-            if len(r["response"]) > 500:
-                print(f"    | ... [{len(r['response']) - 500} more chars]")
-
-    # --- Summary ---
     print("\n\n" + "=" * 80)
-    print("SUMMARY")
+    print("TEST 3: Вера (массажистка, NSFW) — RUSSIAN")
+    print("=" * 80)
+
+    msgs_vera = [
+        (MASSAGE_RU, False),
+        ("*закрывает глаза, расслабляясь под её руками* У тебя волшебные руки...", True),
+    ]
+
+    for prov, model_id, label in MODELS:
+        print(f"\n{'─' * 60}")
+        print(f"MODEL: {label}")
+        print(f"{'─' * 60}")
+        result = await test_model(prov, model_id, label, prompt_vera_ru, msgs_vera, "ru")
+        if "error" in result and not result.get("responses"):
+            print(f"  ERROR: {result['error']}")
+            continue
+        for r in result["responses"]:
+            print_result(r)
+
+    # ═══════════════════════════════════════════════════════════
+    # SUMMARY TABLE
+    # ═══════════════════════════════════════════════════════════
+    print("\n\n" + "=" * 80)
+    print("DONE")
     print("=" * 80)
 
 
