@@ -98,7 +98,8 @@ from app.uploads.router import router as uploads_router  # noqa: E402
 from app.personas.router import router as personas_router  # noqa: E402
 from app.stats.router import router as stats_router  # noqa: E402
 from app.reports.router import router as reports_router  # noqa: E402
-from app.seo.router import router as seo_router  # noqa: E402  # noqa: E402
+from app.seo.router import router as seo_router  # noqa: E402
+from app.analytics.router import router as analytics_router  # noqa: E402
 
 app.include_router(auth_router)
 app.include_router(characters_router)
@@ -111,6 +112,7 @@ app.include_router(personas_router)
 app.include_router(stats_router)
 app.include_router(reports_router)
 app.include_router(seo_router)
+app.include_router(analytics_router)
 
 # Serve uploaded files (avatars etc.) — must be after routers
 # Create directory before mounting (StaticFiles checks at import time)

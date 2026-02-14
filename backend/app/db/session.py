@@ -62,6 +62,10 @@ async def init_db():
         "CREATE INDEX IF NOT EXISTS idx_characters_public_created ON characters (is_public, created_at DESC)",
         "CREATE INDEX IF NOT EXISTS idx_characters_creator ON characters (creator_id)",
         "CREATE INDEX IF NOT EXISTS idx_characters_public_chatcount ON characters (is_public, chat_count DESC)",
+        # Indexes for analytics
+        "CREATE INDEX IF NOT EXISTS idx_pageviews_created ON page_views (created_at DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_pageviews_ip_date ON page_views (ip_hash, created_at)",
+        "CREATE INDEX IF NOT EXISTS idx_pageviews_path ON page_views (path)",
     ]
     for sql in migrations:
         try:

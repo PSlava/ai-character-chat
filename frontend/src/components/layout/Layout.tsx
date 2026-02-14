@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { AgeGate } from '@/components/ui/AgeGate';
+import { trackPageView } from '@/api/analytics';
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -13,6 +14,7 @@ export function Layout() {
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
+    trackPageView(pathname);
   }, [pathname]);
 
   return (

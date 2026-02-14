@@ -189,13 +189,15 @@ docker compose up -d
 
 ### Автоперевод персонажей
 - **Batch-перевод карточек через LLM** — name, tagline, tags до 15 персонажей за один вызов Groq/Cerebras/OpenRouter
-- **Перевод описаний** — scenario, appearance, greeting_message переводятся per-character при открытии страницы персонажа (timeout 15с, max_tokens 4096)
+- **Перевод описаний** — personality, scenario, appearance, greeting_message переводятся per-character как plain text (каждое поле отдельным LLM-вызовом, без JSON — надёжнее для длинных текстов с кавычками и переносами)
 - **Правила для имён**: собственные → транслитерация (Алина → Alina), описательные → перевод (Тёмный Лорд → Dark Lord), смешанные → комбинация (Князь Владимир → Prince Vladimir)
-- **JSONB кэш** — `translations` поле на Character: `{"en": {"name": "...", "tagline": "...", "tags": [...], "scenario": "...", "appearance": "...", "greeting_message": "..."}}`
-- **Прозрачная подстановка** — бэкенд возвращает переведённые данные, фронтенд не знает о переводе
+- **JSONB кэш** — `translations` поле на Character: `{"en": {"name": "...", "tagline": "...", "tags": [...], "personality": "...", "scenario": "...", "appearance": "...", "greeting_message": "..."}}`
+- **Прозрачная подстановка** — бэкенд возвращает переведённые данные (включая personality), фронтенд не знает о переводе
 - **Fire-and-forget сохранение** — перевод сохраняется в фоне через `asyncio.create_task()`, не блокирует ответ
-- **Сброс кэша** — при обновлении name/tagline/tags/scenario/appearance/greeting_message кэш очищается
+- **Сброс кэша** — при обновлении name/tagline/personality/scenario/appearance/greeting_message кэш очищается
 - **Fallback** — при ошибке перевода показывается оригинал
+- **Rate limit** — 60 вызовов/мин (глобальный), provider fallback Groq → Cerebras → OpenRouter
+- **Warmup-скрипт** (`warmup_translations.py`) — двухпроходный прогрев кэша: Pass 1 — batch-перевод карточек (15 шт/батч), Pass 2 — per-character описания (3с задержка между персонажами)
 - Поддержка 8 языков (en, ru, es, fr, de, ja, zh, ko)
 
 ### Чат
@@ -254,7 +256,7 @@ docker compose up -d
   - Override перекрывает дефолт; кнопка «Сбросить» удаляет override → возврат к дефолту
   - In-memory кэш (60 сек TTL) для минимизации запросов к БД
   - 21 ключ × 3 языка (ru/en/es): вступление, правила контента, длина ответа, формат с примером, структурированные теги, внешность, правила и др.
-  - Страница `/admin/prompts` с табами RU/EN, expandable карточки, метки «Изменён»/«По умолчанию»
+  - Страница `/admin/prompts` с табами RU/EN (ES пока только в коде, таб в UI не добавлен), expandable карточки, метки «Изменён»/«По умолчанию»
 - **Seed-персонажи** — 40 готовых персонажей от @sweetsin для непустого каталога
   - Основаны на популярных архетипах конкурентов (SpicyChat, CrushOn, JanitorAI, Chub, WetDreams)
   - **30 фэнтези/архетипы** (25 NSFW, 5 moderate): вампир, суккуб, мафия, яндере, профессор, демон, сосед, цундере, CEO, оборотень, нэко, тёмная эльфийка, фембой, сводный брат, инкуб, якудза, призрак, дракон, сталкер-бывший, андроид, доминатрикс, байкер, эльф-целитель, sugar mommy, рыцарь, Люцифер, ревнивый парень, ведьма, друг детства, пиратка
@@ -375,7 +377,8 @@ docker compose up -d
 - Язык пользователя сохраняется в БД и передаётся в system prompt
 - **Промпты на выбранном языке** — при выборе English все части system prompt берутся из английского набора, включая строгое указание «Write ONLY in English»
 - **Перевод карточек персонажей** — name, tagline, tags переводятся batch-запросом через LLM (Groq → Cerebras → OpenRouter), кэшируются в JSONB
-- **Перевод описаний персонажей** — scenario, appearance, greeting_message переводятся per-character через LLM при открытии страницы персонажа, кэшируются в JSONB
+- **Перевод описаний персонажей** — personality, scenario, appearance, greeting_message переводятся per-character через LLM (каждое поле отдельно как plain text), кэшируются в JSONB
+- **System prompts на 3 языках** — 21 ключ × 3 языка (ru/en/es) в prompt_builder.py: полный набор промптов включая литературный формат, диалоги, NSFW-правила
 - **`GET /api/auth/providers`** — возвращает доступные OAuth-провайдеры, кнопка Google скрыта если не настроен
 
 ### Фронтенд
@@ -387,7 +390,7 @@ docker compose up -d
 - **Landing page (hero section)** — для неавторизованных: большой логотип, слоган, **статистика** (пользователи/сообщения/онлайн), 2 CTA-кнопки, аватары популярных персонажей, 4 feature-карточки. Gradient-фон rose-950/30. Для авторизованных — только каталог
 - **Статистика на лендинге** — `GET /api/stats` возвращает users (+1200), messages (+45000), characters, online_now (15–45, pseudo-random stable per 5-min window)
 - **Footer** — ссылки на О проекте, Условия, Конфиденциальность, FAQ, контакт (support@sweetsin.cc), copyright. Прижат к низу через min-h-full flex
-- **Онлайн-точки** — зелёная точка на аватарах ~33% персонажей. Детерминистично: `hash(id + currentHour) % 3 === 0`. На CharacterCard и CharacterPage
+- **Онлайн-точки** — зелёная точка на аватарах всех персонажей (всегда online). На CharacterCard и CharacterPage
 - **Фильтры по тегам** — пиллы (Все / Фэнтези / Романтика / Современность / Аниме) над поиском на главной. Используют существующий backend `tag` query param
 - **Персонаж дня** — gradient-баннер между фильтрами и гридом. `characters[daysSinceEpoch % count]`, меняется раз в день. Скрыт при поиске/фильтрации
 - **Статические страницы** — О проекте (`/about`), Условия (`/terms`), Конфиденциальность (`/privacy`), FAQ (`/faq`). Двуязычный контент через i18n
@@ -453,7 +456,8 @@ docker compose up -d
 - [x] ~~Уведомления/тосты при ошибках и успехах~~
 - [x] ~~Множественные чаты с одним персонажем~~
 - [x] ~~OAuth авторизация (Google)~~
-- [x] ~~Протестировать качество ответов с литературным форматом на разных моделях~~
+- [x] ~~Протестировать качество ответов с литературным форматом на разных моделях (RU/EN/ES — все 4 модели 100%)~~
+- [ ] SEO продвижение (см. `SEO.md`)
 
 ### Средний приоритет
 - [ ] Больше структурированных тегов (расширить реестр, добавить новые категории)
@@ -503,13 +507,13 @@ chatbot/
 │   │   │   ├── service.py           # Бизнес-логика (is_admin, сортировка по популярности)
 │   │   │   ├── schemas.py           # Pydantic модели
 │   │   │   ├── serializers.py       # ORM → dict (username, active_translations)
-│   │   │   ├── translation.py       # Batch LLM-перевод карточек (name, tagline, tags) + JSONB кэш
+│   │   │   ├── translation.py       # Batch-перевод карточек + per-field plain text перевод описаний (personality, scenario, appearance, greeting) + JSONB кэш
 │   │   │   └── structured_tags.py   # Реестр 33 тегов × 5 категорий (с промпт-сниппетами ru/en)
 │   │   ├── chat/                    # SSE стриминг, контекст, счётчики, множественные чаты
 │   │   │   ├── router.py            # send_message (SSE + model_used + message count), delete, clear
 │   │   │   ├── service.py           # Контекстное окно, сохранение, increment_message_count, force_new
 │   │   │   ├── schemas.py           # SendMessageRequest (model, temp, top_p, is_regenerate), CreateChatRequest (force_new)
-│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 21 ключ × ru/en, литературный формат с примером, 60s cache
+│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 21 ключ × ru/en/es, литературный формат с примером, 60s cache
 │   │   ├── llm/                     # 9 провайдеров + реестр + модели + кулдаун
 │   │   │   ├── base.py              # BaseLLMProvider, LLMConfig (+ content_rating)
 │   │   │   ├── registry.py          # init_providers + get_provider

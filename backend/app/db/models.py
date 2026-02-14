@@ -160,3 +160,17 @@ class PromptTemplate(Base):
     key: Mapped[str] = mapped_column(String, primary_key=True)  # "ru.intro", "en.length_long"
     value: Mapped[str] = mapped_column(Text, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class PageView(Base):
+    __tablename__ = "page_views"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    path: Mapped[str] = mapped_column(String, nullable=False)
+    ip_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(String, nullable=True)
+    device: Mapped[str | None] = mapped_column(String(10), nullable=True)  # mobile/desktop/tablet
+    referrer: Mapped[str | None] = mapped_column(String, nullable=True)
+    language: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

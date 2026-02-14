@@ -6,7 +6,7 @@ import { useFavoritesStore } from '@/store/favoritesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
-import { Home, Heart, Settings, Users, Flag, X } from 'lucide-react';
+import { Home, Heart, Settings, Users, Flag, BarChart3, X } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -75,6 +75,13 @@ export function Sidebar({ isOpen, onClose }: Props) {
             >
               <Flag className="w-4 h-4" />
               {t('admin.reports')}
+            </Link>
+            <Link
+              to="/admin/analytics"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+            >
+              <BarChart3 className="w-4 h-4" />
+              {t('admin.analytics')}
             </Link>
           </>
         )}
