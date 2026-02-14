@@ -9,7 +9,8 @@ import re
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.rate_limit import check_auth_rate, check_reset_rate
-from app.utils.email import send_reset_email
+from app.utils.email import send_reset_email, send_registration_notification
+import asyncio
 import logging
 
 from authlib.integrations.starlette_client import OAuth as AuthlibOAuth
@@ -84,6 +85,34 @@ def _generate_username() -> str:
     return f"user_{secrets.token_hex(3)}"
 
 
+async def _notify_registration(email: str, username: str, method: str = "email") -> None:
+    """Send registration notification to all admin emails if enabled."""
+    from app.db.session import engine as db_engine
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy import select, text
+
+    try:
+        async with AsyncSession(db_engine) as session:
+            result = await session.execute(
+                text("SELECT value FROM prompt_templates WHERE key = 'setting.notify_registration'")
+            )
+            row = result.scalar_one_or_none()
+            enabled = (row or "true").lower() == "true"
+
+        if not enabled:
+            return
+
+        admin_list = settings.admin_emails
+        if not admin_list:
+            return
+
+        admin_emails = [e.strip() for e in admin_list.split(",") if e.strip()]
+        for admin_email in admin_emails:
+            await send_registration_notification(admin_email, email, username, method)
+    except Exception:
+        logging.getLogger(__name__).exception("Failed to send registration notification")
+
+
 def _is_admin_email(email: str) -> bool:
     admin_list = settings.admin_emails
     if not admin_list:
@@ -127,6 +156,10 @@ async def register(body: RegisterRequest, request: Request, db: AsyncSession = D
     db.add(user)
     await db.commit()
     await db.refresh(user)
+
+    # Notify admins about new registration (fire-and-forget)
+    if role != "admin":
+        asyncio.create_task(_notify_registration(user.email, user.username, "email"))
 
     token = create_token(user)
     return {
@@ -310,6 +343,10 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
         db.add(user)
         await db.commit()
         await db.refresh(user)
+
+        # Notify admins about new OAuth registration
+        if role != "admin":
+            asyncio.create_task(_notify_registration(user.email, user.username, "google"))
 
     if getattr(user, 'is_banned', False):
         raise HTTPException(status_code=403, detail="Account is banned")

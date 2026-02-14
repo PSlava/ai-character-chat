@@ -438,6 +438,9 @@
   "admin.analyticsSource": "Source",
   "admin.analyticsRegistrations": "Registrations",
 
+  "admin.notifyRegistration": "Email on registration",
+  "admin.notifyRegistrationHint": "Send email to admin when a new user registers",
+
   "create.tabImport": "Import",
   "create.importTitle": "Import Character Card",
   "create.importHint": "Upload a SillyTavern/Chub character card (.json) or paste JSON below",

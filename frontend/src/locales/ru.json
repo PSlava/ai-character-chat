@@ -438,6 +438,9 @@
   "admin.analyticsSource": "Источник",
   "admin.analyticsRegistrations": "Регистрации",
 
+  "admin.notifyRegistration": "Email о регистрации",
+  "admin.notifyRegistrationHint": "Отправлять email админу при регистрации нового пользователя",
+
   "create.tabImport": "Импорт",
   "create.importTitle": "Импорт карточки персонажа",
   "create.importHint": "Загрузите карточку SillyTavern/Chub (.json) или вставьте JSON",

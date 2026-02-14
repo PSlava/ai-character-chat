@@ -50,6 +50,33 @@ async def _send_via_smtp(to_email: str, subject: str, text: str) -> None:
     )
 
 
+async def send_registration_notification(admin_email: str, new_user_email: str, username: str, method: str = "email") -> None:
+    """Notify admin about a new user registration."""
+    subject = "New Registration — SweetSin"
+    text = (
+        f"New user registered on SweetSin:\n\n"
+        f"  Email:    {new_user_email}\n"
+        f"  Username: {username}\n"
+        f"  Method:   {method}\n\n"
+        f"— SweetSin\n"
+    )
+
+    provider = _get_provider()
+
+    if provider == "console":
+        logger.info("New registration: %s (%s) via %s", new_user_email, username, method)
+        return
+
+    try:
+        if provider == "resend":
+            await _send_via_resend(admin_email, subject, text)
+        else:
+            await _send_via_smtp(admin_email, subject, text)
+        logger.info("Registration notification sent to %s about %s", admin_email, new_user_email)
+    except Exception:
+        logger.exception("Failed to send registration notification to %s", admin_email)
+
+
 async def send_reset_email(to_email: str, reset_url: str) -> None:
     """Send a password reset email via the configured provider."""
     subject = "Password Reset — SweetSin"

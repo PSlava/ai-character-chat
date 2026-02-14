@@ -27,6 +27,53 @@ class PromptUpdateBody(BaseModel):
     value: str
 
 
+# ── Admin settings (stored in prompt_templates as setting.*) ──────────
+
+_SETTING_DEFAULTS: dict[str, str] = {
+    "setting.notify_registration": "true",
+}
+
+
+@router.get("/settings")
+async def get_admin_settings(
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return admin settings (key-value)."""
+    result = await db.execute(
+        select(PromptTemplate).where(PromptTemplate.key.like("setting.%"))
+    )
+    overrides = {row.key: row.value for row in result.scalars().all()}
+    settings_out = {}
+    for key, default_val in _SETTING_DEFAULTS.items():
+        short_key = key.removeprefix("setting.")
+        settings_out[short_key] = overrides.get(key, default_val)
+    return settings_out
+
+
+@router.put("/settings/{key}")
+async def update_admin_setting(
+    key: str,
+    body: PromptUpdateBody,
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Update an admin setting."""
+    full_key = f"setting.{key}"
+    if full_key not in _SETTING_DEFAULTS:
+        raise HTTPException(status_code=404, detail="Unknown setting")
+    existing = await db.execute(select(PromptTemplate).where(PromptTemplate.key == full_key))
+    row = existing.scalar_one_or_none()
+    if row:
+        row.value = body.value
+        row.updated_at = datetime.utcnow()
+    else:
+        row = PromptTemplate(key=full_key, value=body.value)
+        db.add(row)
+    await db.commit()
+    return {"key": key, "value": body.value}
+
+
 @router.get("/prompts")
 async def list_prompts(
     user=Depends(require_admin),

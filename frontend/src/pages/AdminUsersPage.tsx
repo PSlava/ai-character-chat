@@ -2,11 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { getAdminUsers, banUser, unbanUser, deleteUser } from '@/api/admin';
+import { getAdminUsers, banUser, unbanUser, deleteUser, getAdminSettings, updateAdminSetting } from '@/api/admin';
 import type { AdminUser } from '@/api/admin';
 import { Avatar } from '@/components/ui/Avatar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users } from 'lucide-react';
+import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff } from 'lucide-react';
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
@@ -17,13 +17,27 @@ export function AdminUsersPage() {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [notifyRegistration, setNotifyRegistration] = useState(true);
 
   useEffect(() => {
     if (!isAdmin) return;
     getAdminUsers()
       .then(setUsers)
       .finally(() => setLoadingUsers(false));
+    getAdminSettings()
+      .then((s) => setNotifyRegistration(s.notify_registration === 'true'))
+      .catch(() => {});
   }, [isAdmin]);
+
+  const toggleNotify = async () => {
+    const newVal = !notifyRegistration;
+    setNotifyRegistration(newVal);
+    try {
+      await updateAdminSetting('notify_registration', newVal ? 'true' : 'false');
+    } catch {
+      setNotifyRegistration(!newVal);
+    }
+  };
 
   const filtered = useMemo(() => {
     if (!search.trim()) return users;
@@ -83,11 +97,25 @@ export function AdminUsersPage() {
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{t('admin.usersTitle')}</h1>
-        <p className="text-neutral-400 text-sm mt-1">
-          {users.length} {t('admin.usersTotal')}
-        </p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">{t('admin.usersTitle')}</h1>
+          <p className="text-neutral-400 text-sm mt-1">
+            {users.length} {t('admin.usersTotal')}
+          </p>
+        </div>
+        <button
+          onClick={toggleNotify}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+            notifyRegistration
+              ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+              : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'
+          }`}
+          title={t('admin.notifyRegistrationHint')}
+        >
+          {notifyRegistration ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+          <span className="hidden sm:inline">{t('admin.notifyRegistration')}</span>
+        </button>
       </div>
 
       <div className="relative mb-4 max-w-md">

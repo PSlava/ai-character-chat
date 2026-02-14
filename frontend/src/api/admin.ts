@@ -67,3 +67,17 @@ export async function unbanUser(userId: string): Promise<void> {
 export async function deleteUser(userId: string): Promise<void> {
   await api.delete(`/admin/users/${userId}`);
 }
+
+// Admin settings
+export interface AdminSettings {
+  notify_registration: string;
+}
+
+export async function getAdminSettings(): Promise<AdminSettings> {
+  const { data } = await api.get<AdminSettings>('/admin/settings');
+  return data;
+}
+
+export async function updateAdminSetting(key: string, value: string): Promise<void> {
+  await api.put(`/admin/settings/${key}`, { value });
+}

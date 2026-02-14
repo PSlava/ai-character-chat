@@ -438,6 +438,9 @@
   "admin.analyticsSource": "Fuente",
   "admin.analyticsRegistrations": "Registros",
 
+  "admin.notifyRegistration": "Email de registro",
+  "admin.notifyRegistrationHint": "Enviar email al admin cuando un nuevo usuario se registre",
+
   "create.tabImport": "Importar",
   "create.importTitle": "Importar tarjeta de personaje",
   "create.importHint": "Sube una tarjeta de personaje de SillyTavern/Chub (.json) o pega el JSON abajo",
