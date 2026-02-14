@@ -48,38 +48,53 @@ async def main():
         characters = list(result.scalars().all())
         print(f"Found {len(characters)} characters")
 
+        # Pass 1: Translate card fields (name, tagline, tags) — batched, fast
         for lang in target_languages:
-            # Filter characters that need translation (original != target)
             need = [c for c in characters if (c.original_language or "ru") != lang]
-            cached = [c for c in need if (c.translations or {}).get(lang)]
             uncached = [c for c in need if not (c.translations or {}).get(lang)]
-            # Also find chars with cached cards but missing description fields
-            need_desc = [c for c in cached
-                         if not (c.translations or {}).get(lang, {}).get("personality")
-                         and getattr(c, "personality", None)]
-            print(f"\n[{lang}] {len(need)} need translation, {len(cached)} cached, {len(uncached)} uncached, {len(need_desc)} need descriptions")
+            print(f"\n[{lang}] CARDS: {len(uncached)} uncached of {len(need)}")
 
-            # 1) Translate uncached characters (cards + descriptions)
-            if uncached:
-                BATCH = 15
-                for i in range(0, len(uncached), BATCH):
-                    batch = uncached[i:i + BATCH]
-                    print(f"[{lang}] Cards batch {i // BATCH + 1} ({len(batch)} chars)...")
-                    await ensure_translations(batch, lang, include_descriptions=True, cached_only=False)
-                    translated = sum(1 for c in batch if getattr(c, '_active_translations', None))
-                    print(f"[{lang}] Translated {translated}/{len(batch)}")
-                    if i + BATCH < len(uncached):
-                        await asyncio.sleep(2)
+            if not uncached:
+                print(f"[{lang}] All cards cached, skipping")
+                continue
 
-            # 2) Translate descriptions for chars that have cards but missing descriptions
-            if need_desc:
-                for i, c in enumerate(need_desc):
-                    print(f"[{lang}] Descriptions {i + 1}/{len(need_desc)}: {c.name}...")
-                    await ensure_translations([c], lang, include_descriptions=True, cached_only=False)
-                    has_tr = bool(getattr(c, '_active_translations', {}).get("personality"))
-                    print(f"[{lang}]   {'OK' if has_tr else 'FAILED'}")
-                    if (i + 1) % 5 == 0:
-                        await asyncio.sleep(2)
+            BATCH = 15
+            for i in range(0, len(uncached), BATCH):
+                batch = uncached[i:i + BATCH]
+                print(f"[{lang}] Cards batch {i // BATCH + 1} ({len(batch)} chars)...")
+                await ensure_translations(batch, lang, include_descriptions=False, cached_only=False)
+                translated = sum(1 for c in batch if getattr(c, '_active_translations', None))
+                print(f"[{lang}] Translated {translated}/{len(batch)}")
+                if i + BATCH < len(uncached):
+                    await asyncio.sleep(2)
+
+        # Pass 2: Translate descriptions (personality, scenario, appearance, greeting)
+        # One character at a time with delays to stay within rate limits
+        for lang in target_languages:
+            need = [c for c in characters if (c.original_language or "ru") != lang]
+            # Re-read from DB to get fresh translations column
+            result2 = await db.execute(
+                select(Character).options(selectinload(Character.creator))
+            )
+            fresh_chars = {c.id: c for c in result2.scalars().all()}
+
+            need_desc = []
+            for c in need:
+                fresh = fresh_chars.get(c.id, c)
+                cached_tr = (fresh.translations or {}).get(lang, {})
+                if not cached_tr.get("personality") and getattr(fresh, "personality", None):
+                    need_desc.append(fresh)
+
+            print(f"\n[{lang}] DESCRIPTIONS: {len(need_desc)} need translation")
+
+            for i, c in enumerate(need_desc):
+                print(f"[{lang}] {i + 1}/{len(need_desc)}: {c.name}...", end=" ", flush=True)
+                await ensure_translations([c], lang, include_descriptions=True, cached_only=False)
+                has_tr = bool(getattr(c, '_active_translations', {}).get("personality"))
+                print("OK" if has_tr else "FAILED")
+                # 3s delay between characters (4 API calls each → ~13/min, well within 60/min)
+                if i + 1 < len(need_desc):
+                    await asyncio.sleep(3)
 
     print("\nDone!")
 

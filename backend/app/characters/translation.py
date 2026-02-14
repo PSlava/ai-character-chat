@@ -52,7 +52,7 @@ _TIMEOUT = 15.0  # seconds
 
 # Rate limit: max 20 translation API calls per minute (global)
 _translation_calls: list[float] = []
-_TRANSLATION_RATE_LIMIT = 30
+_TRANSLATION_RATE_LIMIT = 60
 _TRANSLATION_RATE_WINDOW = 60.0  # seconds
 
 
