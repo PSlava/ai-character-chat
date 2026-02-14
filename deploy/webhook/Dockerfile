@@ -24,6 +24,7 @@ COPY server.py .
 RUN mkdir -p /var/log && chown webhook:webhook /var/log
 
 USER webhook
+RUN git config --global --add safe.directory '*'
 
 EXPOSE 9000
 CMD ["python", "server.py"]
