@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 const PERIOD_OPTIONS = [
+  { days: 1, label: '1d' },
   { days: 7, label: '7d' },
   { days: 30, label: '30d' },
   { days: 90, label: '90d' },
