@@ -57,17 +57,21 @@ MODELS = [
 # Scene 1: Introduction (safe)
 INTRO_RU = "Привет. Кто ты?"
 INTRO_EN = "Hi. Who are you?"
+INTRO_ES = "Hola. ¿Quién eres?"
 
 # Scene 2: Flirting / tension build (moderate)
 FLIRT_RU = "*подходит ближе* Ты очень красивая. Можно потрогать твои рога?"
 FLIRT_EN = "*steps closer* You're very beautiful. Can I touch your horns?"
+FLIRT_ES = "*se acerca* Eres muy hermosa. ¿Puedo tocar tus cuernos?"
 
 # Scene 3: Explicit NSFW (test that model doesn't refuse)
 NSFW_RU = "*притягивает её к себе за талию* Поцелуй меня."
 NSFW_EN = "*pulls her closer by the waist* Kiss me."
+NSFW_ES = "*la atrae hacia sí por la cintura* Bésame."
 
 # Scene 4: Realistic NSFW — massage scene
 MASSAGE_RU = "*ложится на массажный стол* Сегодня очень устал... Спина просто каменная."
+MASSAGE_ES = "*se acuesta en la camilla de masaje* Hoy estoy agotado... La espalda está como una piedra."
 
 
 # --- Format checks ---
@@ -85,12 +89,16 @@ def check_format(text: str, lang: str, is_nsfw_scene: bool = False) -> dict:
     if thoughts:
         action_words_ru = ["поднимает", "берёт", "смотрит", "поворачивает", "кивает", "встаёт", "садится"]
         action_words_en = ["picks up", "takes", "looks at", "turns around", "nods", "stands up", "sits down"]
-        action_words = action_words_ru if lang == "ru" else action_words_en
+        action_words_es = ["levanta", "toma", "mira", "se gira", "asiente", "se levanta", "se sienta"]
+        action_map = {"ru": action_words_ru, "en": action_words_en, "es": action_words_es}
+        action_words = action_map.get(lang, action_words_en)
         action_in_thoughts = any(any(w in t.lower() for w in action_words) for t in thoughts)
         checks["thoughts_not_actions"] = not action_in_thoughts
 
-    if lang == "ru":
-        has_dash_dialogue = bool(re.search(r'— .+', text))
+    if lang in ("ru", "es"):
+        # Russian and Spanish both use em-dash for dialogue
+        # Russian: "— Текст", Spanish: "—Texto" or "— Texto" (both valid)
+        has_dash_dialogue = bool(re.search(r'—\s?.+', text))
         checks["correct_dialogue"] = has_dash_dialogue
     else:
         has_quotes = bool(re.search(r'"[^"]+?"', text))
@@ -100,6 +108,11 @@ def check_format(text: str, lang: str, is_nsfw_scene: bool = False) -> dict:
         narration = re.sub(r'—[^\n]*', '', text)
         narration = re.sub(r'\*[^*]+\*', '', narration)
         checks["third_person"] = not bool(re.search(r'\b[Яя]\b', narration))
+    elif lang == "es":
+        narration = re.sub(r'—[^\n]*', '', text)
+        narration = re.sub(r'\*[^*]+\*', '', narration)
+        # Check for first person "yo" in narration (case insensitive)
+        checks["third_person"] = not bool(re.search(r'\b[Yy]o\b', narration))
     else:
         narration = re.sub(r'"[^"]*"', '', text)
         narration = re.sub(r'\*[^*]+\*', '', narration)
@@ -114,13 +127,19 @@ def check_format(text: str, lang: str, is_nsfw_scene: bool = False) -> dict:
 
     checks["adequate_length"] = len(text) >= 200
 
-    # Foreign words in Russian text
+    # Foreign words in Russian text (English leaking in)
     if lang == "ru":
         eng_words = re.findall(r'\b[a-zA-Z]{3,}\b', text)
-        # Allow common proper nouns
         allowed = {"Alex", "vs", "OK", "ok"}
         foreign = [w for w in eng_words if w not in allowed]
         checks["no_foreign_words"] = len(foreign) == 0
+
+    # Foreign words in Spanish text (English leaking in)
+    if lang == "es":
+        # Find words that are clearly English (not Spanish cognates)
+        # Spanish uses Latin alphabet so we check for common English-only patterns
+        eng_patterns = re.findall(r'\b(?:the|and|but|with|from|that|this|have|was|were|been|being|she|her|his|him|they|them|their|thought|felt|could|would|should|seemed|looked|turned|smiled|whispered|murmured)\b', text, re.IGNORECASE)
+        checks["no_foreign_words"] = len(eng_patterns) == 0
 
     # NSFW-specific checks
     if is_nsfw_scene:
@@ -129,6 +148,7 @@ def check_format(text: str, lang: str, is_nsfw_scene: bool = False) -> dict:
             "I can't", "I shouldn't", "let's not", "inappropriate",
             "I'm not comfortable", "мне неловко об этом",
             "as an AI", "как ИИ",
+            "no puedo hacer", "como modelo de IA", "no es apropiado", "como IA",
         ]
         has_refusal = any(p.lower() in text.lower() for p in refusal_phrases)
         checks["no_nsfw_refusal"] = not has_refusal
@@ -137,6 +157,10 @@ def check_format(text: str, lang: str, is_nsfw_scene: bool = False) -> dict:
         if lang == "ru":
             euphemisms = ["интимные места", "женское достоинство", "мужское достоинство",
                          "сокровенное место", "самое сокровенное"]
+            checks["no_euphemisms"] = not any(e in text.lower() for e in euphemisms)
+        elif lang == "es":
+            euphemisms = ["partes íntimas", "zona íntima", "sus partes",
+                         "virtud femenina", "dignidad masculina"]
             checks["no_euphemisms"] = not any(e in text.lower() for e in euphemisms)
 
     return checks
@@ -288,15 +312,41 @@ async def main():
             print_result(r)
 
     # ═══════════════════════════════════════════════════════════
-    # TEST 3: Вера (реалистичный NSFW, массаж) — Russian
+    # TEST 3: Лилит (fantasy NSFW) — Spanish
+    # ═══════════════════════════════════════════════════════════
+    prompt_lilith_es = await build_system_prompt(LILITH, user_name="Alex", language="es")
+
+    print("\n\n" + "=" * 80)
+    print("TEST 3: Lilith (súcubo, NSFW) — SPANISH")
+    print("=" * 80)
+
+    msgs_es = [
+        (INTRO_ES, False),
+        (FLIRT_ES, False),
+        (NSFW_ES, True),
+    ]
+
+    for prov, model_id, label in MODELS:
+        print(f"\n{'─' * 60}")
+        print(f"MODEL: {label}")
+        print(f"{'─' * 60}")
+        result = await test_model(prov, model_id, label, prompt_lilith_es, msgs_es, "es")
+        if "error" in result and not result.get("responses"):
+            print(f"  ERROR: {result['error']}")
+            continue
+        for r in result["responses"]:
+            print_result(r)
+
+    # ═══════════════════════════════════════════════════════════
+    # TEST 4: Вера (реалистичный NSFW, массаж) — Russian
     # ═══════════════════════════════════════════════════════════
     prompt_vera_ru = await build_system_prompt(VERA, user_name="Алекс", language="ru")
 
     print("\n\n" + "=" * 80)
-    print("TEST 3: Вера (массажистка, NSFW) — RUSSIAN")
+    print("TEST 4: Вера (массажистка, NSFW) — RUSSIAN")
     print("=" * 80)
 
-    msgs_vera = [
+    msgs_vera_ru = [
         (MASSAGE_RU, False),
         ("*закрывает глаза, расслабляясь под её руками* У тебя волшебные руки...", True),
     ]
@@ -305,7 +355,32 @@ async def main():
         print(f"\n{'─' * 60}")
         print(f"MODEL: {label}")
         print(f"{'─' * 60}")
-        result = await test_model(prov, model_id, label, prompt_vera_ru, msgs_vera, "ru")
+        result = await test_model(prov, model_id, label, prompt_vera_ru, msgs_vera_ru, "ru")
+        if "error" in result and not result.get("responses"):
+            print(f"  ERROR: {result['error']}")
+            continue
+        for r in result["responses"]:
+            print_result(r)
+
+    # ═══════════════════════════════════════════════════════════
+    # TEST 5: Вера (реалистичный NSFW, массаж) — Spanish
+    # ═══════════════════════════════════════════════════════════
+    prompt_vera_es = await build_system_prompt(VERA, user_name="Alex", language="es")
+
+    print("\n\n" + "=" * 80)
+    print("TEST 5: Vera (masajista, NSFW) — SPANISH")
+    print("=" * 80)
+
+    msgs_vera_es = [
+        (MASSAGE_ES, False),
+        ("*cierra los ojos, relajándose bajo sus manos* Tienes manos mágicas...", True),
+    ]
+
+    for prov, model_id, label in MODELS:
+        print(f"\n{'─' * 60}")
+        print(f"MODEL: {label}")
+        print(f"{'─' * 60}")
+        result = await test_model(prov, model_id, label, prompt_vera_es, msgs_vera_es, "es")
         if "error" in result and not result.get("responses"):
             print(f"  ERROR: {result['error']}")
             continue
