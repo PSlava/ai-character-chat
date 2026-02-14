@@ -44,27 +44,15 @@ OUTPUT: Return ONLY a JSON array with the same structure. No markdown, no explan
 
 # --- Description fields (scenario, appearance, greeting_message) — per-character ---
 
-TRANSLATE_DESCRIPTION_PROMPT = """You are a literary translator for a character roleplay chat application.
 
-Translate the following character description fields from the original language to {target_lang}.
 
-RULES:
-- Preserve the literary style, tone, and formatting exactly
-- Keep proper names transliterated (not translated): Алина → Alina, Кира → Kira
-- Keep title/epithet names translated: Тёмный Лорд → Dark Lord
-- Preserve all formatting: line breaks, em-dashes (—), *asterisks for thoughts*, paragraph spacing
-- Preserve template variables as-is: {{{{char}}}}, {{{{user}}}}
-- Translate naturally and fluently, not word-by-word
-- Return ONLY a JSON object with the translated fields, no markdown, no explanation
-
-INPUT JSON (translate each non-null field):"""
 
 _PROVIDER_ORDER = ("groq", "cerebras", "openrouter")
 _TIMEOUT = 15.0  # seconds
 
 # Rate limit: max 20 translation API calls per minute (global)
 _translation_calls: list[float] = []
-_TRANSLATION_RATE_LIMIT = 20
+_TRANSLATION_RATE_LIMIT = 30
 _TRANSLATION_RATE_WINDOW = 60.0  # seconds
 
 
@@ -149,71 +137,31 @@ async def translate_batch(
 _DESCRIPTION_FIELDS = ("personality", "scenario", "appearance", "greeting_message")
 _DESCRIPTION_TIMEOUT = 20.0
 
+TRANSLATE_SINGLE_FIELD_PROMPT = """You are a literary translator for a character roleplay chat application.
 
-def _repair_json(text: str) -> str:
-    """Fix common LLM JSON issues: unescaped newlines inside string values."""
-    # Fix literal newlines inside JSON string values by replacing them with \\n
-    import re
-    # Match content between quotes, fix newlines inside
-    result = []
-    in_string = False
-    escape_next = False
-    for ch in text:
-        if escape_next:
-            result.append(ch)
-            escape_next = False
-            continue
-        if ch == '\\':
-            result.append(ch)
-            escape_next = True
-            continue
-        if ch == '"':
-            in_string = not in_string
-            result.append(ch)
-            continue
-        if in_string and ch == '\n':
-            result.append('\\n')
-            continue
-        if in_string and ch == '\r':
-            continue
-        if in_string and ch == '\t':
-            result.append('\\t')
-            continue
-        result.append(ch)
-    return ''.join(result)
+Translate the following text from its original language to {target_lang}.
+
+RULES:
+- Preserve the literary style, tone, and formatting exactly
+- Keep proper names transliterated (not translated): Алина → Alina, Кира → Kira
+- Keep title/epithet names translated: Тёмный Лорд → Dark Lord
+- Preserve all formatting: line breaks, em-dashes (—), *asterisks for thoughts*, paragraph spacing
+- Preserve template variables as-is: {{{{char}}}}, {{{{user}}}}
+- Translate naturally and fluently, not word-by-word
+- Return ONLY the translated text, nothing else. No quotes, no explanation, no markdown."""
 
 
-async def translate_descriptions(
-    character,
+async def _translate_single_field(
+    text: str,
     target_language: str,
-) -> dict:
-    """Translate description fields (personality, scenario, appearance, greeting_message).
-
-    Returns {"personality": ..., "scenario": ..., ...} or {}.
-    """
-    fields = {}
-    for f in _DESCRIPTION_FIELDS:
-        val = getattr(character, f, None)
-        if val:
-            fields[f] = val
-    if not fields:
-        return {}
-    if not _check_translation_rate():
-        logger.warning("Translation rate limit exceeded, skipping descriptions")
-        return {}
-
-    lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",
-                  "de": "German", "ja": "Japanese", "zh": "Chinese", "ko": "Korean"}
-    lang_name = lang_names.get(target_language, target_language)
-
-    system = TRANSLATE_DESCRIPTION_PROMPT.format(target_lang=lang_name)
-    user_msg = json.dumps(fields, ensure_ascii=False)
-
+    lang_name: str,
+) -> str | None:
+    """Translate a single text field via LLM. Returns translated text or None."""
     messages = [
-        LLMMessage(role="system", content=system),
-        LLMMessage(role="user", content=user_msg),
+        LLMMessage(role="system", content=TRANSLATE_SINGLE_FIELD_PROMPT.format(target_lang=lang_name)),
+        LLMMessage(role="user", content=text),
     ]
-    config = LLMConfig(model="", temperature=0.3, max_tokens=8192)
+    config = LLMConfig(model="", temperature=0.3, max_tokens=4096)
 
     for provider_name in _PROVIDER_ORDER:
         try:
@@ -226,27 +174,54 @@ async def translate_descriptions(
                 provider.generate(messages, config),
                 timeout=_DESCRIPTION_TIMEOUT,
             )
-            text_clean = raw.strip()
-            if text_clean.startswith("```"):
-                text_clean = text_clean.split("\n", 1)[1] if "\n" in text_clean else text_clean[3:]
-                if text_clean.endswith("```"):
-                    text_clean = text_clean[:-3].strip()
-
-            # Try parsing as-is first, then with repair
-            try:
-                result = json.loads(text_clean)
-            except json.JSONDecodeError:
-                result = json.loads(_repair_json(text_clean))
-
-            if not isinstance(result, dict):
-                continue
-
-            return {k: result[k] for k in _DESCRIPTION_FIELDS if k in result and result[k]}
+            result = raw.strip()
+            # Remove markdown fences if present
+            if result.startswith("```"):
+                result = result.split("\n", 1)[1] if "\n" in result else result[3:]
+                if result.endswith("```"):
+                    result = result[:-3].strip()
+            if result:
+                return result
         except Exception as e:
-            logger.warning("Description translation via %s failed: %s", provider_name, str(e)[:100])
+            logger.warning("Field translation via %s failed: %s", provider_name, str(e)[:100])
             continue
 
-    return {}
+    return None
+
+
+async def translate_descriptions(
+    character,
+    target_language: str,
+) -> dict:
+    """Translate description fields (personality, scenario, appearance, greeting_message).
+
+    Translates each field individually as plain text (no JSON) for robustness.
+    Returns {"personality": ..., "scenario": ..., ...} or {}.
+    """
+    fields_to_translate = {}
+    for f in _DESCRIPTION_FIELDS:
+        val = getattr(character, f, None)
+        if val:
+            fields_to_translate[f] = val
+    if not fields_to_translate:
+        return {}
+    if not _check_translation_rate():
+        logger.warning("Translation rate limit exceeded, skipping descriptions")
+        return {}
+
+    lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",
+                  "de": "German", "ja": "Japanese", "zh": "Chinese", "ko": "Korean"}
+    lang_name = lang_names.get(target_language, target_language)
+
+    result = {}
+    for field_name, field_text in fields_to_translate.items():
+        if not _check_translation_rate():
+            break
+        translated = await _translate_single_field(field_text, target_language, lang_name)
+        if translated:
+            result[field_name] = translated
+
+    return result
 
 
 async def _save_translations(
