@@ -46,7 +46,7 @@ export function MessageBubble({ message, characterName, characterAvatar, userNam
   }, [menuOpen]);
 
   return (
-    <div>
+    <div className="group">
       {/* Header: avatar + name + action buttons */}
       <div className={`flex items-center gap-2 mb-1 ${isUser ? 'flex-row-reverse' : ''}`}>
         {isUser ? (
@@ -152,9 +152,16 @@ export function MessageBubble({ message, characterName, characterAvatar, userNam
         )}
       </div>
 
-      {isAdmin && isAssistant && message.model_used && (
-        <span className="text-[10px] text-neutral-600 mt-0.5 block">{message.model_used}</span>
-      )}
+      <div className={`flex items-center gap-2 mt-0.5 ${isUser ? 'justify-end' : ''}`}>
+        {message.created_at && (
+          <span className="text-[10px] text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity">
+            {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+        {isAdmin && isAssistant && message.model_used && (
+          <span className="text-[10px] text-neutral-600">{message.model_used}</span>
+        )}
+      </div>
     </div>
   );
 }
