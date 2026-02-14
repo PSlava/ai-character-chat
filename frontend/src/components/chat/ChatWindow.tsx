@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCw, Pencil, Send, Loader2 } from 'lucide-react';
+import { RefreshCw, Pencil, Send, Loader2, ArrowDown } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageBubble } from './MessageBubble';
 
@@ -25,6 +25,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
   const bottomRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState('');
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const prevScrollHeightRef = useRef<number>(0);
   const isPrependingRef = useRef(false);
   const prevMsgCountRef = useRef(messages.length);
@@ -45,10 +46,16 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
     prevMsgCountRef.current = messages.length;
   }, [messages, isStreaming]);
 
-  // Detect scroll to top for loading more messages
+  // Detect scroll to top for loading more + show/hide scroll-to-bottom button
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
-    if (!container || !hasMore || loadingMore) return;
+    if (!container) return;
+
+    // Show scroll-to-bottom when user is >300px from bottom
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    setShowScrollBtn(distanceFromBottom > 300);
+
+    if (!hasMore || loadingMore) return;
     if (container.scrollTop < 100 && onLoadMore) {
       prevScrollHeightRef.current = container.scrollHeight;
       isPrependingRef.current = true;
@@ -77,8 +84,12 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
     }
   }
 
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-2 sm:p-4">
+    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 relative">
       <div className="max-w-3xl mx-auto space-y-4">
         {loadingMore && (
           <div className="flex justify-center py-2">
@@ -183,6 +194,16 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
 
         <div ref={bottomRef} />
       </div>
+
+      {showScrollBtn && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-4 right-4 sm:right-6 w-10 h-10 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-full flex items-center justify-center text-neutral-300 hover:text-white shadow-lg transition-all"
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDown size={18} />
+        </button>
+      )}
     </div>
   );
 }
