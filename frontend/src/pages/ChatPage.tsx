@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Trash2, RotateCcw, Settings, MessageSquarePlus } from 'lucide-react';
+import { Trash2, Eraser, Settings, MessageSquarePlus } from 'lucide-react';
 import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages, createChat } from '@/api/chat';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels } from '@/api/characters';
 import type { OpenRouterModel } from '@/api/characters';
@@ -312,7 +312,7 @@ export function ChatPage() {
           className="p-2 text-neutral-500 hover:text-yellow-400 transition-colors disabled:opacity-50"
           title={t('chat.clearChat')}
         >
-          <RotateCcw size={18} />
+          <Eraser size={18} />
         </button>
         <button
           onClick={handleDeleteChat}
