@@ -1,4 +1,8 @@
-"""One-time script to pre-translate all characters into EN and ES."""
+"""One-time script to pre-translate all characters into EN and ES.
+
+Translates both card fields (name, tagline, tags) and description fields
+(personality, scenario, appearance, greeting_message).
+"""
 import asyncio
 import logging
 import sys
@@ -49,24 +53,33 @@ async def main():
             need = [c for c in characters if (c.original_language or "ru") != lang]
             cached = [c for c in need if (c.translations or {}).get(lang)]
             uncached = [c for c in need if not (c.translations or {}).get(lang)]
-            print(f"\n[{lang}] {len(need)} need translation, {len(cached)} cached, {len(uncached)} uncached")
+            # Also find chars with cached cards but missing description fields
+            need_desc = [c for c in cached
+                         if not (c.translations or {}).get(lang, {}).get("personality")
+                         and getattr(c, "personality", None)]
+            print(f"\n[{lang}] {len(need)} need translation, {len(cached)} cached, {len(uncached)} uncached, {len(need_desc)} need descriptions")
 
-            if not uncached:
-                print(f"[{lang}] All cached, skipping")
-                continue
+            # 1) Translate uncached characters (cards + descriptions)
+            if uncached:
+                BATCH = 15
+                for i in range(0, len(uncached), BATCH):
+                    batch = uncached[i:i + BATCH]
+                    print(f"[{lang}] Cards batch {i // BATCH + 1} ({len(batch)} chars)...")
+                    await ensure_translations(batch, lang, include_descriptions=True, cached_only=False)
+                    translated = sum(1 for c in batch if getattr(c, '_active_translations', None))
+                    print(f"[{lang}] Translated {translated}/{len(batch)}")
+                    if i + BATCH < len(uncached):
+                        await asyncio.sleep(2)
 
-            # Translate in batches of 15
-            BATCH = 15
-            for i in range(0, len(uncached), BATCH):
-                batch = uncached[i:i + BATCH]
-                print(f"[{lang}] Translating batch {i // BATCH + 1} ({len(batch)} chars)...")
-                # Use ensure_translations with cached_only=False to trigger LLM
-                await ensure_translations(batch, lang, cached_only=False)
-                translated = sum(1 for c in batch if getattr(c, '_active_translations', None))
-                print(f"[{lang}] Translated {translated}/{len(batch)}")
-                # Small delay between batches to respect rate limits
-                if i + BATCH < len(uncached):
-                    await asyncio.sleep(2)
+            # 2) Translate descriptions for chars that have cards but missing descriptions
+            if need_desc:
+                for i, c in enumerate(need_desc):
+                    print(f"[{lang}] Descriptions {i + 1}/{len(need_desc)}: {c.name}...")
+                    await ensure_translations([c], lang, include_descriptions=True, cached_only=False)
+                    has_tr = bool(getattr(c, '_active_translations', {}).get("personality"))
+                    print(f"[{lang}]   {'OK' if has_tr else 'FAILED'}")
+                    if (i + 1) % 5 == 0:
+                        await asyncio.sleep(2)
 
     print("\nDone!")
 

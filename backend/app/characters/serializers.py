@@ -13,7 +13,7 @@ def character_to_dict(c: Character, language: str = None, is_admin: bool = False
         "name": tr["name"] if tr and "name" in tr else c.name,
         "tagline": tr["tagline"] if tr and "tagline" in tr else c.tagline,
         "avatar_url": c.avatar_url,
-        "personality": c.personality,
+        "personality": tr["personality"] if tr and "personality" in tr else c.personality,
         "scenario": tr["scenario"] if tr and "scenario" in tr else c.scenario,
         "greeting_message": tr["greeting_message"] if tr and "greeting_message" in tr else c.greeting_message,
         "example_dialogues": c.example_dialogues,

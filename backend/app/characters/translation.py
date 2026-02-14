@@ -146,7 +146,7 @@ async def translate_batch(
     return {}
 
 
-_DESCRIPTION_FIELDS = ("scenario", "appearance", "greeting_message")
+_DESCRIPTION_FIELDS = ("personality", "scenario", "appearance", "greeting_message")
 _DESCRIPTION_TIMEOUT = 15.0  # longer timeout for longer texts
 
 
@@ -262,7 +262,7 @@ async def ensure_translations(
         if cached:
             c._active_translations = cached
             # Check if description fields are missing from cache
-            if include_descriptions and not cached.get("scenario") and getattr(c, "scenario", None):
+            if include_descriptions and not cached.get("personality") and getattr(c, "personality", None):
                 need_desc_translation.append(c)
         else:
             need_card_translation.append(c)
