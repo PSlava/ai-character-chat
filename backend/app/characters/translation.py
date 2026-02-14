@@ -147,16 +147,49 @@ async def translate_batch(
 
 
 _DESCRIPTION_FIELDS = ("personality", "scenario", "appearance", "greeting_message")
-_DESCRIPTION_TIMEOUT = 15.0  # longer timeout for longer texts
+_DESCRIPTION_TIMEOUT = 20.0
+
+
+def _repair_json(text: str) -> str:
+    """Fix common LLM JSON issues: unescaped newlines inside string values."""
+    # Fix literal newlines inside JSON string values by replacing them with \\n
+    import re
+    # Match content between quotes, fix newlines inside
+    result = []
+    in_string = False
+    escape_next = False
+    for ch in text:
+        if escape_next:
+            result.append(ch)
+            escape_next = False
+            continue
+        if ch == '\\':
+            result.append(ch)
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            result.append(ch)
+            continue
+        if in_string and ch == '\n':
+            result.append('\\n')
+            continue
+        if in_string and ch == '\r':
+            continue
+        if in_string and ch == '\t':
+            result.append('\\t')
+            continue
+        result.append(ch)
+    return ''.join(result)
 
 
 async def translate_descriptions(
     character,
     target_language: str,
 ) -> dict:
-    """Translate description fields (scenario, appearance, greeting_message) for a single character.
+    """Translate description fields (personality, scenario, appearance, greeting_message).
 
-    Returns {"scenario": ..., "appearance": ..., "greeting_message": ...} or {}.
+    Returns {"personality": ..., "scenario": ..., ...} or {}.
     """
     fields = {}
     for f in _DESCRIPTION_FIELDS:
@@ -180,7 +213,7 @@ async def translate_descriptions(
         LLMMessage(role="system", content=system),
         LLMMessage(role="user", content=user_msg),
     ]
-    config = LLMConfig(model="", temperature=0.3, max_tokens=4096)
+    config = LLMConfig(model="", temperature=0.3, max_tokens=8192)
 
     for provider_name in _PROVIDER_ORDER:
         try:
@@ -199,7 +232,12 @@ async def translate_descriptions(
                 if text_clean.endswith("```"):
                     text_clean = text_clean[:-3].strip()
 
-            result = json.loads(text_clean)
+            # Try parsing as-is first, then with repair
+            try:
+                result = json.loads(text_clean)
+            except json.JSONDecodeError:
+                result = json.loads(_repair_json(text_clean))
+
             if not isinstance(result, dict):
                 continue
 
