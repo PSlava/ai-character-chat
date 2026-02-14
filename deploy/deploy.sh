@@ -17,7 +17,8 @@ DC="docker compose"
 
 # Build images first (no containers affected)
 echo "Building images..."
-$DC build backend nginx
+GIT_COMMIT=$(git rev-parse --short HEAD)
+$DC build --build-arg GIT_COMMIT="$GIT_COMMIT" backend nginx
 
 # Restart backend, wait for healthy, then restart nginx
 echo "Restarting backend..."

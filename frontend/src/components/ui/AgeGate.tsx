@@ -33,7 +33,7 @@ export function AgeGate() {
         <div className="flex flex-col gap-3">
           <button
             onClick={handleConfirm}
-            className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+            className="w-full px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-medium transition-colors"
           >
             {t('ageGate.confirm')}
           </button>

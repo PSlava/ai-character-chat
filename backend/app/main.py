@@ -54,6 +54,10 @@ app.add_middleware(
 
 
 def _git_commit() -> str:
+    # Prefer GIT_COMMIT env (baked into Docker image at build time)
+    env_commit = os.environ.get("GIT_COMMIT", "").strip()
+    if env_commit and env_commit != "unknown":
+        return env_commit
     import subprocess
     try:
         return subprocess.check_output(
