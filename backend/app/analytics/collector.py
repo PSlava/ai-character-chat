@@ -1,8 +1,11 @@
 """Page view collection utilities — IP hashing, device detection, GeoIP, async recording."""
 
+import gzip
 import hashlib
 import logging
 import os
+import time
+import urllib.request
 from datetime import date
 
 import maxminddb
@@ -20,6 +23,43 @@ _country_cache: dict[str, str | None] = {}
 _GEOIP_DB_PATH = os.environ.get("GEOIP_DB_PATH", "/app/geoip.mmdb")
 _geoip_reader: maxminddb.Reader | None = None
 _geoip_tried = False
+
+
+_GEOIP_MAX_AGE_DAYS = 30
+_GEOIP_URL = "https://download.db-ip.com/free/dbip-country-lite-{month}.mmdb.gz"
+
+
+def refresh_geoip_db() -> None:
+    """Download fresh GeoIP DB if missing or older than 30 days."""
+    try:
+        if os.path.exists(_GEOIP_DB_PATH):
+            age_days = (time.time() - os.path.getmtime(_GEOIP_DB_PATH)) / 86400
+            if age_days < _GEOIP_MAX_AGE_DAYS:
+                logger.info("GeoIP DB is fresh (%.0f days old)", age_days)
+                return
+
+        month = date.today().strftime("%Y-%m")
+        url = _GEOIP_URL.format(month=month)
+        logger.info("Downloading GeoIP DB: %s", url)
+
+        tmp_path = _GEOIP_DB_PATH + ".tmp.gz"
+        urllib.request.urlretrieve(url, tmp_path)
+        with gzip.open(tmp_path, "rb") as f:
+            data = f.read()
+        with open(_GEOIP_DB_PATH, "wb") as f:
+            f.write(data)
+        os.remove(tmp_path)
+
+        # Reset reader so it reloads on next lookup
+        global _geoip_reader, _geoip_tried
+        if _geoip_reader:
+            _geoip_reader.close()
+        _geoip_reader = None
+        _geoip_tried = False
+
+        logger.info("GeoIP DB updated: %d KB", len(data) // 1024)
+    except Exception as e:
+        logger.warning("Failed to update GeoIP DB: %s", e)
 
 
 def _get_geoip_reader() -> maxminddb.Reader | None:

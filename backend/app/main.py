@@ -21,6 +21,10 @@ async def lifespan(app: FastAPI):
     # Ensure upload directories exist
     Path(settings.upload_dir, "avatars").mkdir(parents=True, exist_ok=True)
 
+    # Update GeoIP database if older than 30 days
+    from app.analytics.collector import refresh_geoip_db
+    refresh_geoip_db()
+
     await init_db()
     init_providers(
         anthropic_key=settings.anthropic_api_key,
