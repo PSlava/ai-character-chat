@@ -51,6 +51,12 @@ export interface ModelUsage {
   count: number;
 }
 
+export interface CountryStats {
+  country: string;
+  views: number;
+  unique: number;
+}
+
 export interface AnalyticsOverview {
   summary: AnalyticsSummary;
   daily: DailyStats[];
@@ -59,6 +65,7 @@ export interface AnalyticsOverview {
   top_characters: TopCharacter[];
   devices: { mobile: number; desktop: number; tablet: number };
   models: ModelUsage[];
+  countries: CountryStats[];
 }
 
 export async function getAnalyticsOverview(days: number = 7): Promise<AnalyticsOverview> {

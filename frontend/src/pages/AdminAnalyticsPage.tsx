@@ -166,14 +166,42 @@ export function AdminAnalyticsPage() {
               )}
             </Section>
 
-            {/* Devices + Models */}
+            {/* Devices + Countries */}
             <div className="space-y-6">
               {/* Devices */}
               <Section title={t('admin.analyticsDevices')}>
                 <DevicePills devices={data.devices} />
               </Section>
 
-              {/* Models */}
+              {/* Countries */}
+              <Section title={t('admin.analyticsCountries')}>
+                {!data.countries || data.countries.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  <div className="space-y-1.5">
+                    {data.countries.slice(0, 10).map((c) => {
+                      const maxUniq = data.countries[0]?.unique || 1;
+                      return (
+                        <div key={c.country} className="flex items-center gap-2">
+                          <span className="text-sm w-7">{countryFlag(c.country)}</span>
+                          <span className="text-xs text-neutral-400 w-8">{c.country}</span>
+                          <div className="flex-1 h-1.5 bg-neutral-800 rounded-full">
+                            <div
+                              className="h-full bg-blue-500/60 rounded-full"
+                              style={{ width: `${(c.unique / maxUniq) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-neutral-500 tabular-nums w-10 text-right">{c.unique}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Section>
+            </div>
+
+            {/* Models */}
+            <div className="grid md:grid-cols-1 gap-6">
               <Section title={t('admin.analyticsModels')}>
                 {data.models.length === 0 ? (
                   <EmptyState />
@@ -316,6 +344,15 @@ function DevicePills({ devices }: { devices: AnalyticsOverview['devices'] }) {
       <DevicePill icon={<Smartphone className="w-3.5 h-3.5" />} label="Mobile" count={devices.mobile} percent={pct(devices.mobile)} />
       <DevicePill icon={<Tablet className="w-3.5 h-3.5" />} label="Tablet" count={devices.tablet} percent={pct(devices.tablet)} />
     </div>
+  );
+}
+
+/** Convert 2-letter country code to flag emoji via regional indicator symbols */
+function countryFlag(code: string): string {
+  const upper = code.toUpperCase();
+  if (upper.length !== 2) return upper;
+  return String.fromCodePoint(
+    ...Array.from(upper).map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)
   );
 }
 

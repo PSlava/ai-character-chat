@@ -71,6 +71,7 @@ async def analytics_overview(
         top_chars_res,
         devices_res,
         models_res,
+        countries_res,
     ) = await asyncio.gather(
         _query_summary(db, since),
         _query_daily_pageviews(db, since),
@@ -82,6 +83,7 @@ async def analytics_overview(
         _query_top_characters(db, since),
         _query_devices(db, since),
         _query_models(db, since),
+        _query_countries(db, since),
     )
 
     # Merge daily stats into single list
@@ -95,6 +97,7 @@ async def analytics_overview(
         "top_characters": top_chars_res,
         "devices": devices_res,
         "models": models_res,
+        "countries": countries_res,
     }
 
 
@@ -220,6 +223,17 @@ async def _query_devices(db: AsyncSession, since: datetime) -> dict:
         if r[0] in result:
             result[r[0]] = r[1]
     return result
+
+
+async def _query_countries(db: AsyncSession, since: datetime) -> list[dict]:
+    rows = (await db.execute(text(f"""
+        SELECT country, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniq
+        FROM page_views
+        WHERE created_at >= :since AND country IS NOT NULL
+        {_PV_NO_ADMIN}
+        GROUP BY country ORDER BY uniq DESC LIMIT 20
+    """), {"since": since})).fetchall()
+    return [{"country": r[0], "views": r[1], "unique": r[2]} for r in rows]
 
 
 async def _query_models(db: AsyncSession, since: datetime) -> list[dict]:

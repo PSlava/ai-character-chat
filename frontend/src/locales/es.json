@@ -432,6 +432,7 @@
   "admin.analyticsTopReferrers": "Fuentes de tráfico",
   "admin.analyticsTopChars": "Top personajes",
   "admin.analyticsDevices": "Dispositivos",
+  "admin.analyticsCountries": "Países",
   "admin.analyticsModels": "Modelos utilizados",
   "admin.analyticsPath": "Página",
   "admin.analyticsViews": "Visitas",

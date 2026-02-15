@@ -432,6 +432,7 @@
   "admin.analyticsTopReferrers": "Traffic sources",
   "admin.analyticsTopChars": "Top characters",
   "admin.analyticsDevices": "Devices",
+  "admin.analyticsCountries": "Countries",
   "admin.analyticsModels": "Models used",
   "admin.analyticsPath": "Page",
   "admin.analyticsViews": "Views",

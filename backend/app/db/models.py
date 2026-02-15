@@ -173,4 +173,5 @@ class PageView(Base):
     device: Mapped[str | None] = mapped_column(String(10), nullable=True)  # mobile/desktop/tablet
     referrer: Mapped[str | None] = mapped_column(String, nullable=True)
     language: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(2), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

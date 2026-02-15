@@ -1,14 +1,20 @@
-"""Page view collection utilities — IP hashing, device detection, async recording."""
+"""Page view collection utilities — IP hashing, device detection, GeoIP, async recording."""
 
 import hashlib
 import logging
 from datetime import date
+
+import httpx
 
 from app.config import settings
 from app.db.session import engine as db_engine
 from app.db.models import PageView
 
 logger = logging.getLogger(__name__)
+
+# In-memory IP → country cache (IP never changes country, so no TTL needed)
+_country_cache: dict[str, str | None] = {}
+_GEOIP_URL = "http://ip-api.com/json/{ip}?fields=countryCode"
 
 
 def hash_ip(ip: str) -> str:
@@ -42,6 +48,34 @@ def parse_language(accept_language: str | None) -> str | None:
     return lang if lang else None
 
 
+async def lookup_country(ip: str) -> str | None:
+    """Resolve IP → 2-letter country code via ip-api.com. Uses in-memory cache."""
+    if ip in _country_cache:
+        return _country_cache[ip]
+
+    # Skip private/local IPs
+    if ip.startswith(("127.", "10.", "192.168.", "172.16.", "::1", "fe80")):
+        _country_cache[ip] = None
+        return None
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                _GEOIP_URL.format(ip=ip),
+                timeout=3.0,
+            )
+            if resp.status_code == 200:
+                code = resp.json().get("countryCode")
+                if code and len(code) == 2:
+                    _country_cache[ip] = code
+                    return code
+    except Exception:
+        pass
+
+    _country_cache[ip] = None
+    return None
+
+
 async def record_pageview(
     path: str,
     ip: str,
@@ -56,6 +90,7 @@ async def record_pageview(
         ip_hashed = hash_ip(ip)
         device = parse_device(user_agent)
         language = parse_language(accept_language)
+        country = await lookup_country(ip)
 
         # Truncate fields to prevent DB errors
         if referrer and len(referrer) > 1000:
@@ -73,6 +108,7 @@ async def record_pageview(
                     device=device,
                     referrer=referrer,
                     language=language,
+                    country=country,
                 )
             )
     except Exception as e:

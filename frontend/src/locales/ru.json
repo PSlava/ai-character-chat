@@ -432,6 +432,7 @@
   "admin.analyticsTopReferrers": "Источники трафика",
   "admin.analyticsTopChars": "Топ персонажей",
   "admin.analyticsDevices": "Устройства",
+  "admin.analyticsCountries": "Страны",
   "admin.analyticsModels": "Используемые модели",
   "admin.analyticsPath": "Страница",
   "admin.analyticsViews": "Просмотры",
