@@ -2,53 +2,58 @@
 
 ## Tier 1 — Автоматизация (код)
 
-### 1. Технический SEO ✅ частично
-- [x] hreflang + language prefixes
-- [x] Sitemap с xhtml:link alternates
+### 1. Технический SEO ✅
+- [x] hreflang + language prefixes (3 языка: en/es/ru)
+- [x] Sitemap с xhtml:link alternates (статика + все персонажи × 3 языка)
 - [x] JSON-LD CreativeWork на персонажах
-- [x] Prerender для ботов (nginx)
-- [ ] Open Graph + Twitter Cards мета-теги
-- [ ] `<meta name="description">` на всех страницах
-- [ ] JSON-LD: FAQPage, Organization, BreadcrumbList
-- [ ] Расширить robots.txt
+- [x] Prerender для ботов (nginx user-agent match → backend HTML)
+- [x] Open Graph + Twitter Cards мета-теги (SEO компонент + prerender)
+- [x] `<meta name="description">` на всех страницах (SEO компонент)
+- [x] robots.txt (Disallow /api/, /chat/, /profile, /admin/, /auth, /create)
+- [x] JSON-LD: FAQPage (на /faq), BreadcrumbList (на персонажах и тег-страницах)
+- [x] JSON-LD: Organization (на главной, @graph с WebSite)
 
-### 2. Лендинги под категории/теги
-- [ ] Страницы `/en/tag/{tag}` — подборки персонажей
-- [ ] SEO title/description/JSON-LD CollectionPage
-- [ ] Nginx prerender для ботов
-- [ ] Добавить в sitemap
+### 2. Лендинги под категории/теги ✅
+- [x] Страницы `/en/tags/{tag}` — fantasy, romance, anime, modern
+- [x] SEO title/description/JSON-LD CollectionPage + BreadcrumbList
+- [x] Nginx prerender для ботов
+- [x] Добавлено в sitemap (priority 0.7, weekly)
 
-### 3. Скорость загрузки
-- [ ] Lazy loading аватаров
-- [ ] WebP конвертация при загрузке
-- [ ] Preload критичных ресурсов
-- [ ] Bundle analysis и оптимизация
+### 3. Скорость загрузки ✅ частично
+- [x] Lazy loading аватаров (native `loading="lazy"` + `decoding="async"`)
+- [x] WebP конвертация при загрузке аватаров (Pillow, quality=85, 512x512 max)
+- [ ] Preload критичных ресурсов (fonts, CSS)
+- [ ] Bundle analysis и code splitting
 
-### 4. Социальные шеры
-- [ ] Кнопки "Поделиться" на CharacterPage (Twitter, Telegram, Reddit, Copy)
-- [ ] Текст шера с именем и tagline
+### 4. Социальные шеры ✅
+- [x] Кнопки "Поделиться" на CharacterPage (X, Telegram, WhatsApp, Reddit, Copy)
+- [x] Native Web Share API (мобильный share-диалог)
+- [x] Текст шера с именем и tagline
 
-### 5. RSS / Atom фид
-- [ ] `/feed.xml` — последние персонажи
+### 5. RSS / Atom фид ✅
+- [x] `/feed.xml` — RSS 2.0, 30 последних персонажей, enclosure с аватарами
 
 ### 6. Email-маркетинг
-- [ ] Welcome email при регистрации (3 персонажа)
+- [x] Email при регистрации нового пользователя (уведомление админам)
+- [ ] Welcome email пользователю при регистрации (3 популярных персонажа)
 - [ ] Weekly digest "Новые персонажи" (крон)
 
-### 7. Внутренняя перелинковка
-- [ ] "Похожие персонажи" блок на CharacterPage (по тегам)
+### 7. Внутренняя перелинковка ✅
+- [x] "Похожие персонажи" блок на CharacterPage (по тегам)
 - [ ] "Популярные" блок в футере/сайдбаре
 
 ### 8. Рейтинги
-- [ ] Отзывы/рейтинги на персонажей
+- [ ] Отзывы/рейтинги на персонажей (1-5 звёзд)
 - [ ] AggregateRating в JSON-LD
 
 ### 9. Автопостинг
 - [ ] Telegram бот — новые персонажи
 - [ ] Twitter/X бот (нужен dev account)
 
-### 10. Многоязычный контент
-- [ ] SEO-тексты на главной для каждого языка
+### 10. Многоязычный контент ✅
+- [x] SEO-тексты на главной для каждого языка (hero section)
+- [x] Автоопределение языка из navigator.language
+- [x] Переключение языка в AgeGate
 
 ---
 
@@ -56,14 +61,15 @@
 
 ### 11. Google Search Console + Analytics
 - Нужно: доступ к GSC, подтверждение домена
-- Сделаю: submit sitemap, gtag.js, мониторинг
+- Сделаю: submit sitemap, мониторинг индексации
+- (Своя аналитика уже есть: pageviews, unique visitors, страны, устройства, модели)
 
 ### 12. Bing Webmaster Tools
 - Submit sitemap
 
 ### 13. Twitter/X dev account
 - Нужно: создать аккаунт + API ключи
-- Сделаю: бот автопостинга
+- Сделаю: бот автопостинга новых персонажей
 
 ### 14. Telegram канал
 - Нужно: создать канал + бота
@@ -78,26 +84,32 @@
 ## Tier 3 — Ручная работа
 
 ### 16. Reddit / форумы
-- r/CharacterAI, r/SillyTavern, r/AIDungeon
+- r/CharacterAI, r/SillyTavern, r/AIDungeon, r/NSFW_AI
+- Посты с примерами персонажей, AMA, отзывы
 
 ### 17. Контент-маркетинг
 - Статьи/гайды на Medium, Dev.to, Habr
+- "How to create the perfect AI character", "Best AI roleplay platforms 2026"
 
 ### 18. Линкбилдинг
-- Гостевые посты, обмен ссылками
+- Гостевые посты, обмен ссылками с AI-блогами
 
 ### 19. Платная реклама
 - Google Ads, Twitter ads, Reddit ads
 
 ---
 
-## Порядок выполнения
+## Приоритеты — что делать дальше
 
-| Неделя | Задачи |
-|--------|--------|
-| 1 | OG-теги, Twitter Cards, мета-descriptions, кнопки шеринга |
-| 2 | Лендинги по тегам + sitemap, похожие персонажи, RSS |
-| 3 | Google Search Console, image optimization, bundle analysis |
-| 4 | Email welcome + weekly digest, Telegram бот |
-| 5 | Автопостинг Twitter/Telegram, каталоги AI |
-| 6+ | Reddit, контент, линкбилдинг |
+| # | Задача | Усилие | Эффект |
+|---|--------|--------|--------|
+| 1 | **Google Search Console** — submit sitemap, следить за индексацией | Низкое (нужен доступ) | Высокий |
+| 2 | **Лендинги по тегам** `/tag/fantasy`, `/tag/romance` — SEO-страницы | Среднее (код) | Высокий |
+| 3 | **JSON-LD FAQPage** на /faq, **BreadcrumbList** на персонажах | Низкое (код) | Средний |
+| 4 | **Lazy loading аватаров** + WebP | Низкое (код) | Средний |
+| 5 | **RSS/Atom фид** — индексация новых персонажей | Низкое (код) | Средний |
+| 6 | **Welcome email** с 3 популярными персонажами | Среднее (код) | Средний |
+| 7 | **Каталоги AI** — подача на 4-5 платформ | Низкое (ручная) | Высокий |
+| 8 | **Reddit посты** — r/CharacterAI, r/SillyTavern | Низкое (ручная) | Высокий |
+| 9 | **Telegram канал** + автопостинг | Среднее (код + канал) | Средний |
+| 10 | **Рейтинги персонажей** + AggregateRating | Среднее (код) | Средний |

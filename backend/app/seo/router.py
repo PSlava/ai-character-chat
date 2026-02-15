@@ -417,6 +417,56 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
     return Response(content=xml, media_type="application/xml")
 
 
+@router.get("/feed.xml")
+async def rss_feed(db: AsyncSession = Depends(get_db)):
+    """RSS 2.0 feed of latest public characters."""
+    result = await db.execute(
+        select(Character)
+        .where(Character.is_public == True, Character.slug.isnot(None))
+        .order_by(Character.created_at.desc())
+        .limit(30)
+    )
+    characters = result.scalars().all()
+
+    now = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S +0000")
+
+    items = []
+    for c in characters:
+        name = _escape(c.name)
+        tagline = _escape(c.tagline or "")
+        desc = _escape(_truncate(c.scenario or c.tagline or "", 300))
+        link = f"{SITE_URL}/en/c/{c.slug}"
+        pub_date = c.created_at.strftime("%a, %d %b %Y %H:%M:%S +0000") if c.created_at else now
+        avatar = ""
+        if c.avatar_url:
+            avatar_url = c.avatar_url if c.avatar_url.startswith("http") else f"{SITE_URL}{c.avatar_url}"
+            avatar = f'<enclosure url="{_escape(avatar_url)}" type="image/webp" />'
+        tags_xml = "".join(f"<category>{_escape(t)}</category>" for t in (c.tags.split(",") if c.tags else []) if t.strip())
+        items.append(f"""<item>
+<title>{name}{f' — {tagline}' if tagline else ''}</title>
+<link>{link}</link>
+<guid isPermaLink="true">{link}</guid>
+<description>{desc}</description>
+<pubDate>{pub_date}</pubDate>
+{avatar}
+{tags_xml}
+</item>""")
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+<title>SweetSin — New AI Characters</title>
+<link>{SITE_URL}</link>
+<description>Latest AI characters for roleplay and chat on SweetSin</description>
+<language>en</language>
+<lastBuildDate>{now}</lastBuildDate>
+<atom:link href="{SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
+{"".join(items)}
+</channel>
+</rss>"""
+    return Response(content=xml, media_type="application/rss+xml; charset=utf-8")
+
+
 @router.get("/robots.txt")
 async def robots():
     content = f"""User-agent: *

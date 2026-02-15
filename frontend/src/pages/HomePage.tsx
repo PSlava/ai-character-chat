@@ -81,10 +81,26 @@ export function HomePage() {
         url={localePath('/')}
         jsonLd={{
           '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          name: 'SweetSin',
-          url: 'https://sweetsin.cc',
-          description: 'AI Character Chat Platform — Roleplay & Fantasy',
+          '@graph': [
+            {
+              '@type': 'WebSite',
+              name: 'SweetSin',
+              url: 'https://sweetsin.cc',
+              description: 'AI Character Chat Platform — Roleplay & Fantasy',
+            },
+            {
+              '@type': 'Organization',
+              name: 'SweetSin',
+              url: 'https://sweetsin.cc',
+              logo: 'https://sweetsin.cc/favicon.svg',
+              sameAs: [],
+              contactPoint: {
+                '@type': 'ContactPoint',
+                contactType: 'customer support',
+                email: 'support@sweetsin.cc',
+              },
+            },
+          ],
         }}
       />
       {!authLoading && !isAuthenticated && (
