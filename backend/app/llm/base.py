@@ -16,8 +16,8 @@ class LLMConfig:
     max_tokens: int = 1024
     top_p: float = 0.95
     top_k: int = 0  # 0 = disabled
-    frequency_penalty: float = 0.0
-    presence_penalty: float = 0.0
+    frequency_penalty: float = 0.3
+    presence_penalty: float = 0.3
     content_rating: str = "sfw"  # "sfw" | "moderate" | "nsfw"
 
 

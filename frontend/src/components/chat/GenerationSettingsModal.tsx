@@ -109,7 +109,7 @@ const GEN_DEFAULTS = {
   temperature: 0.8,
   top_p: 0.95,
   top_k: 0,
-  frequency_penalty: 0,
+  frequency_penalty: 0.3,
   presence_penalty: 0.3,
   max_tokens: 2048,
   context_limit: 0,

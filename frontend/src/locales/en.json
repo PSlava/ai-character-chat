@@ -226,7 +226,7 @@
   "settings.topK": "Top-K",
   "settings.topKTooltip": "Limits word selection by count: the model only picks from K most probable options.\n\n0 — disabled, all words available.\n10 — only top 10 words, very predictable.\n40–50 — good balance.\n100 — almost no restrictions.\n\nDefault: 0 (disabled)",
   "settings.frequencyPenalty": "Frequency Penalty",
-  "settings.frequencyPenaltyTooltip": "Reduces probability of repeating the same words within a single response.\n\n0.0 — no penalty, model may repeat.\n0.3–0.5 — light penalty, removes obsessive repeats.\n1.0 — noticeable penalty, more diverse text.\n2.0 — strong penalty (may hurt coherence).\n\nDefault: 0",
+  "settings.frequencyPenaltyTooltip": "Reduces probability of repeating the same words within a single response.\n\n0.0 — no penalty, model may repeat.\n0.3–0.5 — light penalty, removes obsessive repeats.\n1.0 — noticeable penalty, more diverse text.\n2.0 — strong penalty (may hurt coherence).\n\nDefault: 0.3",
   "settings.presencePenalty": "Presence Penalty",
   "settings.presencePenaltyTooltip": "Penalizes words and phrases that already appeared in the dialogue context. Helps avoid repeating the same descriptions from message to message.\n\n0.0 — no penalty.\n0.3 — light penalty, fewer cross-message repeats (recommended).\n0.6 — noticeable penalty, more diverse responses.\n1.0+ — strong penalty, model actively avoids previously mentioned topics.\n\nDefault: 0.3",
   "settings.maxTokens": "Max Tokens",

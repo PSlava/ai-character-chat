@@ -226,7 +226,7 @@
   "settings.topK": "Top-K",
   "settings.topKTooltip": "Limita la selección de palabras por cantidad: el modelo solo elige entre las K opciones más probables.\n\n0 — desactivado, todas las palabras disponibles.\n10 — solo las 10 mejores, muy predecible.\n40–50 — buen equilibrio.\n100 — casi sin restricciones.\n\nPor defecto: 0 (desactivado)",
   "settings.frequencyPenalty": "Penalización de frecuencia",
-  "settings.frequencyPenaltyTooltip": "Reduce la probabilidad de repetir las mismas palabras dentro de una respuesta.\n\n0.0 — sin penalización, el modelo puede repetir.\n0.3–0.5 — penalización ligera, elimina repeticiones obsesivas.\n1.0 — penalización notable, texto más diverso.\n2.0 — penalización fuerte (puede afectar la coherencia).\n\nPor defecto: 0",
+  "settings.frequencyPenaltyTooltip": "Reduce la probabilidad de repetir las mismas palabras dentro de una respuesta.\n\n0.0 — sin penalización, el modelo puede repetir.\n0.3–0.5 — penalización ligera, elimina repeticiones obsesivas.\n1.0 — penalización notable, texto más diverso.\n2.0 — penalización fuerte (puede afectar la coherencia).\n\nPor defecto: 0.3",
   "settings.presencePenalty": "Penalización de presencia",
   "settings.presencePenaltyTooltip": "Penaliza palabras y frases que ya aparecieron en el contexto del diálogo. Ayuda a evitar repetir las mismas descripciones de mensaje en mensaje.\n\n0.0 — sin penalización.\n0.3 — penalización ligera, menos repeticiones entre mensajes (recomendado).\n0.6 — penalización notable, respuestas más diversas.\n1.0+ — penalización fuerte, el modelo evita activamente temas ya mencionados.\n\nPor defecto: 0.3",
   "settings.maxTokens": "Tokens máximos",
