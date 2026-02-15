@@ -453,6 +453,8 @@
 
   "admin.notifyRegistration": "Email on registration",
   "admin.notifyRegistrationHint": "Send email to admin when a new user registers",
+  "admin.paidMode": "Paid mode",
+  "admin.paidModeHint": "Paid LLM providers (Groq+Together), no rate limits",
 
   "create.tabImport": "Import",
   "create.importTitle": "Import Character Card",

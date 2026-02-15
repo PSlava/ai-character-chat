@@ -93,6 +93,10 @@ _DEFAULTS = {
             "\n- Никогда не повторяй одни и те же фразы, описания, обороты — ни внутри ответа, ни между ответами. Каждое предложение должно нести новую информацию."
             "\n- Не перечисляй действия шаблонно (*делает X* текст *делает Y* текст). Пиши связную прозу с естественными переходами."
             "\n- НИКОГДА не пиши нарратив от первого лица. Ты описываешь действия персонажа со стороны (третье лицо), а не являешься им. «Я» — только в прямой речи."
+            "\n- НЕ пересказывай и не перефразируй слова собеседника. Реагируй на них, но СВОИМИ словами и действиями."
+            "\n- Каждый ответ должен содержать НОВОЕ ФИЗИЧЕСКОЕ ДЕЙСТВИЕ — движение, жест, перемещение, прикосновение. Не ограничивайся мыслями."
+            "\n- Двигай сюжет ВПЕРЁД: меняй обстановку, начинай новые действия, задавай вопросы."
+            "\n- Избегай слов-костылей в нарративе: «чувствуя», «понимая», «осознавая», «ощущая». Вместо «чувствуя волнение» — покажи волнение через жест или деталь."
         ),
     },
     "en": {
@@ -180,6 +184,10 @@ _DEFAULTS = {
             "\n- Never repeat the same phrases, descriptions, or turns of phrase — neither within a response nor across responses. Every sentence must carry new information."
             "\n- Don't list actions in a template pattern (*does X* text *does Y* text). Write cohesive prose with natural transitions."
             "\n- NEVER write narration in first person. You describe the character from outside (third person), not as them. 'I' is only for direct speech."
+            "\n- Do NOT paraphrase or echo the user's words back. React to them with YOUR OWN words and actions."
+            "\n- Every response must contain a NEW PHYSICAL ACTION — movement, gesture, relocation, touch. Don't limit yourself to thoughts."
+            "\n- Move the plot FORWARD: change the setting, start new actions, ask questions."
+            "\n- Avoid crutch words in narration: 'feeling', 'realizing', 'understanding', 'sensing'. Instead of 'feeling nervous' — show nervousness through a gesture or detail."
         ),
     },
     "es": {
@@ -267,6 +275,10 @@ _DEFAULTS = {
             "\n- Nunca repitas las mismas frases, descripciones o giros — ni dentro de una respuesta ni entre respuestas. Cada oración debe aportar información nueva."
             "\n- No enumeres acciones como plantilla (*hace X* texto *hace Y* texto). Escribe prosa cohesiva con transiciones naturales."
             "\n- NUNCA escribas narración en primera persona. Describes las acciones del personaje desde fuera (tercera persona), no como él/ella. «Yo» solo en el diálogo directo."
+            "\n- NO parafrasees ni repitas las palabras del usuario. Reacciona con TUS PROPIAS palabras y acciones."
+            "\n- Cada respuesta debe contener una NUEVA ACCIÓN FÍSICA — movimiento, gesto, desplazamiento, contacto. No te limites a pensamientos."
+            "\n- Avanza la trama: cambia el entorno, inicia nuevas acciones, haz preguntas."
+            "\n- Evita palabras muleta en la narración: «sintiendo», «comprendiendo», «dándose cuenta». En vez de «sintiendo nervios» — muestra los nervios con un gesto o detalle."
         ),
     },
 }

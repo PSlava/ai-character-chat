@@ -31,6 +31,7 @@ class PromptUpdateBody(BaseModel):
 
 _SETTING_DEFAULTS: dict[str, str] = {
     "setting.notify_registration": "true",
+    "setting.paid_mode": "false",
 }
 
 

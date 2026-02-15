@@ -453,6 +453,8 @@
 
   "admin.notifyRegistration": "Email de registro",
   "admin.notifyRegistrationHint": "Enviar email al admin cuando un nuevo usuario se registre",
+  "admin.paidMode": "Modo pago",
+  "admin.paidModeHint": "Proveedores LLM de pago (Groq+Together), sin límites",
 
   "create.tabImport": "Importar",
   "create.importTitle": "Importar tarjeta de personaje",

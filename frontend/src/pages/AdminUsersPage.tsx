@@ -6,7 +6,7 @@ import { getAdminUsers, banUser, unbanUser, deleteUser, getAdminSettings, update
 import type { AdminUser } from '@/api/admin';
 import { Avatar } from '@/components/ui/Avatar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff } from 'lucide-react';
+import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign } from 'lucide-react';
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
@@ -18,6 +18,7 @@ export function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [notifyRegistration, setNotifyRegistration] = useState(true);
+  const [paidMode, setPaidMode] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -25,7 +26,10 @@ export function AdminUsersPage() {
       .then(setUsers)
       .finally(() => setLoadingUsers(false));
     getAdminSettings()
-      .then((s) => setNotifyRegistration(s.notify_registration === 'true'))
+      .then((s) => {
+        setNotifyRegistration(s.notify_registration === 'true');
+        setPaidMode(s.paid_mode === 'true');
+      })
       .catch(() => {});
   }, [isAdmin]);
 
@@ -36,6 +40,16 @@ export function AdminUsersPage() {
       await updateAdminSetting('notify_registration', newVal ? 'true' : 'false');
     } catch {
       setNotifyRegistration(!newVal);
+    }
+  };
+
+  const togglePaidMode = async () => {
+    const newVal = !paidMode;
+    setPaidMode(newVal);
+    try {
+      await updateAdminSetting('paid_mode', newVal ? 'true' : 'false');
+    } catch {
+      setPaidMode(!newVal);
     }
   };
 
@@ -104,18 +118,32 @@ export function AdminUsersPage() {
             {users.length} {t('admin.usersTotal')}
           </p>
         </div>
-        <button
-          onClick={toggleNotify}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-            notifyRegistration
-              ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
-              : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'
-          }`}
-          title={t('admin.notifyRegistrationHint')}
-        >
-          {notifyRegistration ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-          <span className="hidden sm:inline">{t('admin.notifyRegistration')}</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={togglePaidMode}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              paidMode
+                ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+                : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'
+            }`}
+            title={t('admin.paidModeHint')}
+          >
+            <DollarSign className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('admin.paidMode')}</span>
+          </button>
+          <button
+            onClick={toggleNotify}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              notifyRegistration
+                ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+                : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'
+            }`}
+            title={t('admin.notifyRegistrationHint')}
+          >
+            {notifyRegistration ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+            <span className="hidden sm:inline">{t('admin.notifyRegistration')}</span>
+          </button>
+        </div>
       </div>
 
       <div className="relative mb-4 max-w-md">

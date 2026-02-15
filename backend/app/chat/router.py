@@ -1,9 +1,10 @@
 import json
+import time as _time
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text as sa_text
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from app.chat.schemas import CreateChatRequest, SendMessageRequest
@@ -15,6 +16,24 @@ from app.config import settings
 from app.auth.rate_limit import check_message_rate
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
+
+# ── Paid mode cache (60s TTL) ─────────────────────────────────
+_paid_mode_cache: tuple[bool, float] = (False, 0.0)
+_PAID_CACHE_TTL = 60
+
+
+async def _is_paid_mode(db: AsyncSession) -> bool:
+    global _paid_mode_cache
+    now = _time.monotonic()
+    if now - _paid_mode_cache[1] < _PAID_CACHE_TTL:
+        return _paid_mode_cache[0]
+    try:
+        row = await db.execute(sa_text("SELECT value FROM prompt_templates WHERE key = 'setting.paid_mode'"))
+        val = (row.scalar_one_or_none() or "false").lower() == "true"
+    except Exception:
+        val = False
+    _paid_mode_cache = (val, now)
+    return val
 
 _GENERIC_ERROR_RU = "Ошибка генерации ответа. Попробуйте позже."
 _MODERATION_KEYWORDS = ("data_inspection_failed", "content_policy", "content_filter", "moderation", "safety system")
@@ -270,7 +289,11 @@ async def send_message(
     is_admin = user.get("role") == "admin"
 
     if is_auto:
-        auto_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip()]
+        paid_mode = await _is_paid_mode(db)
+        if paid_mode:
+            auto_order = ["groq", "together"]
+        else:
+            auto_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip()]
 
         async def event_stream():
             errors: list[str] = []
