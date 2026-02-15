@@ -2,9 +2,10 @@
 
 import hashlib
 import logging
+import os
 from datetime import date
 
-import httpx
+import maxminddb
 
 from app.config import settings
 from app.db.session import engine as db_engine
@@ -14,10 +15,26 @@ logger = logging.getLogger(__name__)
 
 # In-memory IP → country cache (IP never changes country, so no TTL needed)
 _country_cache: dict[str, str | None] = {}
-_GEOIP_URLS = [
-    ("https://api.country.is/{ip}", "country"),         # HTTPS, free, fast
-    ("http://ip-api.com/json/{ip}?fields=countryCode", "countryCode"),  # fallback
-]
+
+# Local GeoIP database (DB-IP Lite Country MMDB)
+_GEOIP_DB_PATH = os.environ.get("GEOIP_DB_PATH", "/app/geoip.mmdb")
+_geoip_reader: maxminddb.Reader | None = None
+_geoip_tried = False
+
+
+def _get_geoip_reader() -> maxminddb.Reader | None:
+    global _geoip_reader, _geoip_tried
+    if _geoip_reader is not None:
+        return _geoip_reader
+    if _geoip_tried:
+        return None
+    _geoip_tried = True
+    try:
+        _geoip_reader = maxminddb.open_database(_GEOIP_DB_PATH)
+        logger.info("GeoIP database loaded: %s", _GEOIP_DB_PATH)
+    except Exception as e:
+        logger.warning("GeoIP database not available: %s", e)
+    return _geoip_reader
 
 
 def hash_ip(ip: str) -> str:
@@ -55,7 +72,6 @@ def _is_private_ip(ip: str) -> bool:
     """Check if IP is private/local (including Docker 172.16-31 range)."""
     if ip.startswith(("127.", "10.", "192.168.", "::1", "fe80", "0.")):
         return True
-    # 172.16.0.0 - 172.31.255.255 (private + Docker)
     if ip.startswith("172."):
         parts = ip.split(".")
         if len(parts) >= 2 and parts[1].isdigit():
@@ -65,8 +81,8 @@ def _is_private_ip(ip: str) -> bool:
     return False
 
 
-async def lookup_country(ip: str) -> str | None:
-    """Resolve IP → 2-letter country code. Tries multiple GeoIP APIs with fallback."""
+def lookup_country(ip: str) -> str | None:
+    """Resolve IP → 2-letter country code via local MMDB database. Instant, no network."""
     if ip in _country_cache:
         return _country_cache[ip]
 
@@ -74,23 +90,20 @@ async def lookup_country(ip: str) -> str | None:
         _country_cache[ip] = None
         return None
 
-    for url_template, json_key in _GEOIP_URLS:
+    reader = _get_geoip_reader()
+    if reader:
         try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(
-                    url_template.format(ip=ip),
-                    timeout=5.0,
-                )
-                if resp.status_code == 200:
-                    code = resp.json().get(json_key)
+            data = reader.get(ip)
+            if data and isinstance(data, dict):
+                country = data.get("country")
+                if isinstance(country, dict):
+                    code = country.get("iso_code")
                     if code and isinstance(code, str) and len(code) == 2:
                         _country_cache[ip] = code.upper()
                         return code.upper()
         except Exception as e:
-            logger.debug("GeoIP lookup failed for %s via %s: %s", ip, url_template, e)
-            continue
+            logger.debug("GeoIP lookup failed for %s: %s", ip, e)
 
-    logger.warning("All GeoIP lookups failed for IP %s", ip[:20])
     _country_cache[ip] = None
     return None
 
@@ -109,7 +122,7 @@ async def record_pageview(
         ip_hashed = hash_ip(ip)
         device = parse_device(user_agent)
         language = parse_language(accept_language)
-        country = await lookup_country(ip)
+        country = lookup_country(ip)
 
         # Truncate fields to prevent DB errors
         if referrer and len(referrer) > 1000:

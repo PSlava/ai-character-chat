@@ -17,3 +17,4 @@ aiosmtplib>=3.0.0
 Pillow>=10.0.0
 authlib
 itsdangerous>=2.0
+maxminddb>=2.6.0

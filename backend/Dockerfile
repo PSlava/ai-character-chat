@@ -5,6 +5,18 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Download free GeoIP database (DB-IP Lite Country, ~5MB, updated monthly)
+RUN python -c "\
+import urllib.request, gzip, datetime, os;\
+m = datetime.date.today().strftime('%Y-%m');\
+url = f'https://download.db-ip.com/free/dbip-country-lite-{m}.mmdb.gz';\
+print(f'Downloading GeoIP: {url}');\
+urllib.request.urlretrieve(url, '/tmp/geo.gz');\
+data = gzip.open('/tmp/geo.gz', 'rb').read();\
+open('/app/geoip.mmdb', 'wb').write(data);\
+os.remove('/tmp/geo.gz');\
+print(f'GeoIP DB: {len(data)//1024}KB')"
+
 COPY . .
 
 ARG GIT_COMMIT=unknown
