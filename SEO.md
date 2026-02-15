@@ -19,7 +19,7 @@
 - [x] Nginx prerender для ботов
 - [x] Добавлено в sitemap (priority 0.7, weekly)
 
-### 3. Скорость загрузки ✅ частично
+### 3. Скорость загрузки ✅
 - [x] Lazy loading аватаров (native `loading="lazy"` + `decoding="async"`)
 - [x] WebP конвертация при загрузке аватаров (Pillow, quality=85, 512x512 max)
 - [x] Preload: Inter font (Google Fonts + preconnect), Tailwind fontFamily
@@ -59,9 +59,8 @@
 
 ## Tier 2 — Нужна помощь (аккаунты/доступы)
 
-### 11. Google Search Console + Analytics
-- Нужно: доступ к GSC, подтверждение домена
-- Сделаю: submit sitemap, мониторинг индексации
+### 11. Google Search Console + Analytics ✅
+- [x] Домен подтверждён, sitemap отправлен
 - (Своя аналитика уже есть: pageviews, unique visitors, страны, устройства, модели)
 
 ### 12. Bing Webmaster Tools

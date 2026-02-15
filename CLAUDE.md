@@ -106,11 +106,12 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **`store/`** — Zustand: `authStore` (with role), `chatStore`.
 - **`locales/`** — i18n via react-i18next. `en.json`, `es.json`, `ru.json` (~391 keys each). Default: English. Language stored in localStorage.
 - **`pages/`** — Home (tag filters, featured character), Chat (+ new chat button), CharacterPage (online dot, report, export), CreateCharacter (manual + story + SillyTavern import), EditCharacter, Auth (+ Google OAuth), OAuthCallbackPage, Profile, AdminPromptsPage, AdminUsersPage, AdminReportsPage, AboutPage, TermsPage, PrivacyPage, FAQPage.
-- **`components/layout/Footer.tsx`** — Site footer with links to About, Terms, Privacy, FAQ, contact email, copyright. In Layout.tsx inside `<main>` with `min-h-full flex` wrapper.
+- **`components/layout/Footer.tsx`** — Site footer with links to About, Terms, Privacy, FAQ, contact email, copyright, and "Popular Characters" section (8 top characters, module-level cache). In Layout.tsx inside `<main>` with `min-h-full flex` wrapper.
 - **`components/landing/HeroSection.tsx`** — Landing hero with stats bar (users/messages/online), fetched from `/api/stats` on mount.
 - **`components/chat/GenerationSettingsModal.tsx`** — Modal with model card grid (auto, openrouter, groq, cerebras, together, direct, paid groups) + 6 sliders + context memory. Per-model settings stored in `localStorage model-settings:{modelId}`. `loadModelSettings()` exported for ChatPage. Switching model in modal loads saved params for that model.
 - **`components/chat/MessageBubble.tsx`** — Message with delete/regenerate/copy buttons on hover. Markdown rendering (react-markdown + rehype-sanitize) for assistant messages. Error messages in red. Admin sees `model_used` under assistant messages.
 - **`components/characters/ReportModal.tsx`** — Modal with 5 radio button reasons + details textarea. Handles duplicate report (409).
+- **`components/ui/CookieConsent.tsx`** — Cookie consent banner (bottom, localStorage `cookie-consent`, link to Privacy Policy).
 - **`components/ui/Skeleton.tsx`** — Pulse animation skeleton helper for loading states.
 - **`components/chat/ChatWindow.tsx`** — Message list with infinite scroll (loads older messages on scroll-to-top, preserves scroll position). Persistent regenerate button below last assistant message.
 - **`components/characters/CharacterForm.tsx`** — Full character form with appearance, structured tag pills (fetched from API, grouped by category), response_length dropdown, max_tokens slider, and `{{char}}`/`{{user}}` hint in example dialogues placeholder.
@@ -156,7 +157,7 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **GeoIP**: Local MMDB database (DB-IP Lite Country, ~5MB) via `maxminddb`. Downloaded at Docker build time, auto-refreshed on app startup if >30 days old. `GEOIP_DB_PATH` env var. Country stored on `page_views`, displayed as flag emojis on analytics dashboard.
 - **RSS feed**: `/feed.xml` — RSS 2.0, 30 latest characters with avatar enclosures. Nginx proxies to `/api/seo/feed.xml`. `<link rel="alternate">` in index.html.
 - **JSON-LD schemas**: WebSite + Organization (@graph) on home, CreativeWork on characters, FAQPage on /faq, BreadcrumbList on characters and tags, CollectionPage on tag pages.
-- **Performance**: React.memo on CharacterCard, explicit img width/height (CLS), request dedup in chatStore (module-level promise), stale-while-revalidate, sidebar skeleton + useMemo for grouping.
+- **Performance**: React.memo on CharacterCard, explicit img width/height (CLS), request dedup in chatStore (module-level promise), stale-while-revalidate, sidebar skeleton + useMemo for grouping. Code splitting via React.lazy (11 pages). Inter font with Google Fonts preconnect.
 - **SEO prerender**: Nginx user-agent match (Googlebot, Bingbot etc.) → backend HTML for /:lang/c/:slug, /:lang/tags/:slug, /:lang/faq, /:lang (home).
 - **Tag landing pages**: `/en/tags/{fantasy,romance,anime,modern}` with SEO, JSON-LD, prerender, sitemap.
 

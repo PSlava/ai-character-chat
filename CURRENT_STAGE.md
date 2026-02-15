@@ -405,7 +405,7 @@ docker compose up -d
 - **Брендинг**: логотип Sweet+Sin с SVG-иконкой сердца (дьявольские рожки/хвост), SEO мета-теги, Open Graph
 - **Landing page (hero section)** — для неавторизованных: большой логотип, слоган, **статистика** (пользователи/сообщения/онлайн), 2 CTA-кнопки, аватары популярных персонажей, 4 feature-карточки. Gradient-фон rose-950/30. Для авторизованных — только каталог
 - **Статистика на лендинге** — `GET /api/stats` возвращает users (+1200), messages (+45000), characters, online_now (15–45, pseudo-random stable per 5-min window)
-- **Footer** — ссылки на О проекте, Условия, Конфиденциальность, FAQ, контакт (support@sweetsin.cc), copyright. Прижат к низу через min-h-full flex
+- **Footer** — ссылки на О проекте, Условия, Конфиденциальность, FAQ, контакт (support@sweetsin.cc), copyright. Прижат к низу через min-h-full flex. **Популярные персонажи** — 8 топ-персонажей как ссылки (SEO internal linking, module-level кеш)
 - **Онлайн-точки** — зелёная точка на аватарах всех персонажей (всегда online). На CharacterCard и CharacterPage
 - **Фильтры по тегам** — пиллы (Все / Фэнтези / Романтика / Современность / Аниме) над поиском на главной. Используют существующий backend `tag` query param
 - **Персонаж дня** — gradient-баннер между фильтрами и гридом. `characters[daysSinceEpoch % count]`, меняется раз в день. Скрыт при поиске/фильтрации
@@ -424,6 +424,7 @@ docker compose up -d
 - **Профиль**: смена display name, username (с валидацией), языка, аватар, статистика (сообщения + чаты), удаление аккаунта (danger zone с ConfirmDialog)
 - **Перевод ошибок бэкенда** — `ERROR_MAP` в AuthPage маппит английские ошибки на i18n-ключи (emailTaken, usernameTaken, invalidCredentials, usernameInvalid, banned, tooManyRequests)
 - **Age gate (18+)** — полноэкранный оверлей с backdrop blur для неавторизованных, подтверждение в localStorage, отказ → google.com
+- **Cookie consent** — баннер внизу экрана с кнопкой «Понятно» и ссылкой на Privacy Policy, localStorage, i18n (en/ru/es)
 - **Toast notifications** — react-hot-toast (bottom-center, dark theme neutral-800). Тосты при: like/unlike, delete, copy message, report, import, ошибках
 - **Skeleton loading** — детальные скелетоны для карточек персонажей (аватар-круг + линии текста + теги), страницы персонажа и чата
 - **PWA (Progressive Web App)** — vite-plugin-pwa, manifest (standalone, theme #171717), service worker с NetworkFirst для `/api/`, установка на домашний экран
@@ -439,6 +440,8 @@ docker compose up -d
 - Request dedup + stale-while-revalidate в chatStore
 - Skeleton loading в Sidebar
 - useMemo для группировки чатов
+- **Code splitting** — React.lazy для 11 тяжёлых страниц (Chat, Admin, Create, Profile и др.), Suspense fallback=null
+- **Inter font** — Google Fonts с preconnect, Tailwind fontFamily.sans
 
 ### Безопасность
 - **Rate limiting** — in-memory (без зависимостей):
