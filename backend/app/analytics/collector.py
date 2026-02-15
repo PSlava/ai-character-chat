@@ -14,7 +14,10 @@ logger = logging.getLogger(__name__)
 
 # In-memory IP → country cache (IP never changes country, so no TTL needed)
 _country_cache: dict[str, str | None] = {}
-_GEOIP_URL = "http://ip-api.com/json/{ip}?fields=countryCode"
+_GEOIP_URLS = [
+    ("https://api.country.is/{ip}", "country"),         # HTTPS, free, fast
+    ("http://ip-api.com/json/{ip}?fields=countryCode", "countryCode"),  # fallback
+]
 
 
 def hash_ip(ip: str) -> str:
@@ -48,30 +51,46 @@ def parse_language(accept_language: str | None) -> str | None:
     return lang if lang else None
 
 
+def _is_private_ip(ip: str) -> bool:
+    """Check if IP is private/local (including Docker 172.16-31 range)."""
+    if ip.startswith(("127.", "10.", "192.168.", "::1", "fe80", "0.")):
+        return True
+    # 172.16.0.0 - 172.31.255.255 (private + Docker)
+    if ip.startswith("172."):
+        parts = ip.split(".")
+        if len(parts) >= 2 and parts[1].isdigit():
+            second = int(parts[1])
+            if 16 <= second <= 31:
+                return True
+    return False
+
+
 async def lookup_country(ip: str) -> str | None:
-    """Resolve IP → 2-letter country code via ip-api.com. Uses in-memory cache."""
+    """Resolve IP → 2-letter country code. Tries multiple GeoIP APIs with fallback."""
     if ip in _country_cache:
         return _country_cache[ip]
 
-    # Skip private/local IPs
-    if ip.startswith(("127.", "10.", "192.168.", "172.16.", "::1", "fe80")):
+    if _is_private_ip(ip):
         _country_cache[ip] = None
         return None
 
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                _GEOIP_URL.format(ip=ip),
-                timeout=3.0,
-            )
-            if resp.status_code == 200:
-                code = resp.json().get("countryCode")
-                if code and len(code) == 2:
-                    _country_cache[ip] = code
-                    return code
-    except Exception:
-        pass
+    for url_template, json_key in _GEOIP_URLS:
+        try:
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    url_template.format(ip=ip),
+                    timeout=5.0,
+                )
+                if resp.status_code == 200:
+                    code = resp.json().get(json_key)
+                    if code and isinstance(code, str) and len(code) == 2:
+                        _country_cache[ip] = code.upper()
+                        return code.upper()
+        except Exception as e:
+            logger.debug("GeoIP lookup failed for %s via %s: %s", ip, url_template, e)
+            continue
 
+    logger.warning("All GeoIP lookups failed for IP %s", ip[:20])
     _country_cache[ip] = None
     return None
 
