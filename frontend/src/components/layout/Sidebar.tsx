@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
@@ -17,7 +17,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
   const isAdmin = user?.role === 'admin';
-  const { chats, fetchChats } = useChatStore();
+  const { chats, loading: chatsLoading, fetchChats } = useChatStore();
   const { fetchFavorites } = useFavoritesStore();
   const { chatId } = useParams();
   const location = useLocation();
@@ -33,6 +33,17 @@ export function Sidebar({ isOpen, onClose }: Props) {
   useEffect(() => {
     onClose();
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Memoize chat grouping to avoid re-computing on every render
+  const groupedChats = useMemo(() => {
+    const grouped = new Map<string, typeof chats>();
+    for (const chat of chats) {
+      const key = chat.character_id;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(chat);
+    }
+    return Array.from(grouped.values());
+  }, [chats]);
 
   const sidebarContent = (
     <>
@@ -87,22 +98,24 @@ export function Sidebar({ isOpen, onClose }: Props) {
         )}
       </nav>
 
-      {isAuthenticated && chats.length > 0 && (
+      {isAuthenticated && (chatsLoading || chats.length > 0) && (
         <div className="flex-1 overflow-y-auto border-t border-neutral-800">
           <div className="p-3">
             <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 px-3">
               {t('sidebar.myChats')}
             </p>
-            <div className="space-y-1">
-              {(() => {
-                // Group chats by character_id
-                const grouped = new Map<string, typeof chats>();
-                for (const chat of chats) {
-                  const key = chat.character_id;
-                  if (!grouped.has(key)) grouped.set(key, []);
-                  grouped.get(key)!.push(chat);
-                }
-                return Array.from(grouped.values()).flatMap((group) =>
+            {chatsLoading && chats.length === 0 ? (
+              <div className="space-y-1">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-2">
+                    <div className="w-8 h-8 rounded-full animate-pulse bg-neutral-700/50 shrink-0" />
+                    <div className="h-4 rounded animate-pulse bg-neutral-700/50 flex-1" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {groupedChats.flatMap((group) =>
                   group.map((chat, idx) => (
                     <Link
                       key={chat.id}
@@ -124,9 +137,9 @@ export function Sidebar({ isOpen, onClose }: Props) {
                       </span>
                     </Link>
                   ))
-                );
-              })()}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

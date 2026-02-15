@@ -13,6 +13,9 @@ const sizeMap = {
   lg: 'w-20 h-20 text-xl',
 };
 
+// Pixel dimensions for width/height attributes (prevents CLS)
+const sizePx = { sm: 32, md: 48, lg: 80 };
+
 function Fallback({ name, size = 'md' }: { name: string; size?: string }) {
   return (
     <div
@@ -32,6 +35,8 @@ export function Avatar({ src, name, size = 'md' }: Props) {
       <img
         src={safeSrc}
         alt={name}
+        width={sizePx[size]}
+        height={sizePx[size]}
         loading="lazy"
         decoding="async"
         onError={() => setErrored(true)}

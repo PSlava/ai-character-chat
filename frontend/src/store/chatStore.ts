@@ -9,18 +9,27 @@ interface ChatState {
   removeChat: (id: string) => void;
 }
 
-export const useChatStore = create<ChatState>((set) => ({
+// Deduplication: prevent concurrent fetches
+let _fetchPromise: Promise<void> | null = null;
+
+export const useChatStore = create<ChatState>((set, get) => ({
   chats: [],
   loading: false,
 
   fetchChats: async () => {
-    set({ loading: true });
-    try {
-      const chats = await chatApi.getChats();
-      set({ chats, loading: false });
-    } catch {
-      set({ loading: false });
-    }
+    // Dedup: if already fetching, return existing promise
+    if (_fetchPromise) return _fetchPromise;
+
+    // Stale-while-revalidate: show existing data while refreshing
+    const hasData = get().chats.length > 0;
+    if (!hasData) set({ loading: true });
+
+    _fetchPromise = chatApi.getChats()
+      .then((chats) => set({ chats, loading: false }))
+      .catch(() => set({ loading: false }))
+      .finally(() => { _fetchPromise = null; });
+
+    return _fetchPromise;
   },
 
   removeChat: (id) => {

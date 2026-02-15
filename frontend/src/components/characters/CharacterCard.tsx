@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Character } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
@@ -12,7 +12,7 @@ interface Props {
   character: Character;
 }
 
-export function CharacterCard({ character }: Props) {
+export const CharacterCard = memo(function CharacterCard({ character }: Props) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const isAdmin = user?.role === 'admin';
@@ -93,4 +93,4 @@ export function CharacterCard({ character }: Props) {
       )}
     </Link>
   );
-}
+});
