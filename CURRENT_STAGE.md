@@ -229,7 +229,7 @@ docker compose up -d
 - **Настройки генерации** — модалка «Модель и настройки» с:
   - Выбор модели (карточки с категориями: OpenRouter / Groq / Cerebras / Together / Прямой API / Платные)
   - Temperature (0–2), Top-P (0–1), Top-K (0–100)
-  - Frequency penalty (0–2), Presence penalty (0–2)
+  - Frequency penalty (0–2, **дефолт 0.3**), Presence penalty (0–2)
   - Макс. токенов (256–4096)
   - **Память** (контекст): 4K / 8K / 16K / ∞
 - **Сохранение настроек** — настройки генерации сохраняются в localStorage **per-model** (`model-settings:{modelId}`), модель per-chat (`chat-model:{chatId}`). При смене модели в модалке — слайдеры переключаются на сохранённые настройки этой модели
@@ -239,6 +239,7 @@ docker compose up -d
 - **Счётчик сообщений/чатов пользователя** — атомарный инкремент `message_count` и `chat_count` на User при каждом сообщении/новом чате
 - **Markdown рендеринг** — react-markdown + rehype-sanitize для сообщений ассистента (bold, italic, code, списки, blockquote). Пользовательские сообщения — plain text
 - **Копирование сообщений** — кнопка Copy на каждом сообщении ассистента (clipboard + toast)
+- **Auto-resize textarea** — поле ввода автоматически растёт по высоте (от 1 строки до 192px max), сбрасывается после отправки
 
 ### Аватары
 - **Загрузка аватаров** — `POST /api/upload/avatar` (multipart, auth required)
@@ -295,6 +296,7 @@ docker compose up -d
   - CSS bar chart трафика по дням (просмотры + уникальные + регистрации)
   - Топ страниц, источники трафика, топ персонажей, устройства (mobile/desktop/tablet), модели
   - Админы полностью исключены из статистики (page views, регистрации, сообщения, чаты)
+  - **GeoIP страны посетителей** — локальная база DB-IP Lite (MMDB, ~5MB), instant lookup через maxminddb. Автообновление при старте если база старше 30 дней. Страны с флагами на дашборде. `country` колонка на `page_views`
 - **Email-уведомления о регистрации** — при новой регистрации (email или Google OAuth) администратору отправляется email с данными нового пользователя (email, username, метод регистрации). Toggle вкл/выкл на странице `/admin/users` (кнопка Bell). Настройка хранится в `prompt_templates` как `setting.notify_registration`. Админы не получают уведомление о своей регистрации
 - **Настройки админа** — API `GET /api/admin/settings` и `PUT /api/admin/settings/{key}` для key-value настроек (хранятся в `prompt_templates` с префиксом `setting.`)
 - Ссылки в сайдбаре: «Пользователи» + «Промпты» + «Жалобы» + «Аналитика» видны только админу
@@ -426,7 +428,17 @@ docker compose up -d
 - **Skeleton loading** — детальные скелетоны для карточек персонажей (аватар-круг + линии текста + теги), страницы персонажа и чата
 - **PWA (Progressive Web App)** — vite-plugin-pwa, manifest (standalone, theme #171717), service worker с NetworkFirst для `/api/`, установка на домашний экран
 - **Open Graph / SEO** — og:image (1200×630), og:url, og:type, twitter:card/title/description/image мета-теги
+- **RSS фид** — `/feed.xml` (RSS 2.0, 30 последних персонажей с аватарами). `<link rel="alternate">` в HTML
+- **JSON-LD Organization** — на главной (@graph с WebSite)
+- **WhatsApp шер** — кнопка поделиться в WhatsApp на странице персонажа
+- **Native Web Share API** — мобильный share-диалог (navigator.share) на странице персонажа
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
+
+### Performance оптимизации
+- React.memo на CharacterCard, explicit width/height на Avatar (CLS prevention)
+- Request dedup + stale-while-revalidate в chatStore
+- Skeleton loading в Sidebar
+- useMemo для группировки чатов
 
 ### Безопасность
 - **Rate limiting** — in-memory (без зависимостей):
@@ -460,6 +472,7 @@ docker compose up -d
 - **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`), настройка email (Resend/SMTP), ADMIN_EMAILS, авто-определение FRONTEND_URL
 - **SSL** — Certbot (Let's Encrypt), настроен для sweetsin.cc, авто-обновление через cron
 - **WEB_WORKERS** — настраиваемое кол-во gunicorn workers через env (дефолт 2, для 888MB RAM используется 1)
+- **GeoIP DB в Dockerfile** — DB-IP Lite Country скачивается при docker build, авто-обновление при старте приложения каждые 30 дней
 - render.yaml + vercel.json для облачного деплоя
 - Прокси для обхода региональных ограничений API
 

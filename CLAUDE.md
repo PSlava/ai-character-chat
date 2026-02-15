@@ -153,6 +153,12 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **Toast notifications**: react-hot-toast, bottom-center, dark theme. Used for: like/unlike, delete, copy, report, import, errors.
 - **PWA**: vite-plugin-pwa with registerType autoUpdate, standalone display, NetworkFirst for `/api/` via workbox.
 - **Skeleton loading**: Detailed skeletons matching real component shapes for character cards, character page, and chat page.
+- **GeoIP**: Local MMDB database (DB-IP Lite Country, ~5MB) via `maxminddb`. Downloaded at Docker build time, auto-refreshed on app startup if >30 days old. `GEOIP_DB_PATH` env var. Country stored on `page_views`, displayed as flag emojis on analytics dashboard.
+- **RSS feed**: `/feed.xml` — RSS 2.0, 30 latest characters with avatar enclosures. Nginx proxies to `/api/seo/feed.xml`. `<link rel="alternate">` in index.html.
+- **JSON-LD schemas**: WebSite + Organization (@graph) on home, CreativeWork on characters, FAQPage on /faq, BreadcrumbList on characters and tags, CollectionPage on tag pages.
+- **Performance**: React.memo on CharacterCard, explicit img width/height (CLS), request dedup in chatStore (module-level promise), stale-while-revalidate, sidebar skeleton + useMemo for grouping.
+- **SEO prerender**: Nginx user-agent match (Googlebot, Bingbot etc.) → backend HTML for /:lang/c/:slug, /:lang/tags/:slug, /:lang/faq, /:lang (home).
+- **Tag landing pages**: `/en/tags/{fantasy,romance,anime,modern}` with SEO, JSON-LD, prerender, sitemap.
 
 ## API Routes
 
@@ -163,5 +169,7 @@ Users: `GET/PUT /api/users/me` (includes role, username), `GET /api/users/me/fav
 Reports: `POST /api/characters/{id}/report` (rate limit 5/hr), `GET /api/admin/reports?status=` (admin), `PUT /api/admin/reports/{id}` (admin)
 Admin: `GET /api/admin/prompts`, `PUT /api/admin/prompts/{key}`, `DELETE /api/admin/prompts/{key}` — admin role required
 Models: `GET /api/models/openrouter`, `GET /api/models/groq`, `GET /api/models/cerebras`, `GET /api/models/together`
+Analytics: `POST /api/analytics/pageview` (public, rate-limited), `GET /api/admin/analytics/overview?days=7` (admin — traffic, countries, devices, models)
+SEO: `GET /api/seo/sitemap.xml`, `GET /api/seo/robots.txt`, `GET /api/seo/feed.xml` (RSS 2.0), `GET /api/seo/c/{slug}` (prerender), `GET /api/seo/tags/{slug}` (prerender), `GET /api/seo/faq` (prerender), `GET /api/seo/home` (prerender)
 Stats: `GET /api/stats` — public, returns inflated counters + online_now
 Health: `GET /api/health`
