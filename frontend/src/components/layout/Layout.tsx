@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { AgeGate } from '@/components/ui/AgeGate';
+import { CookieConsent } from '@/components/ui/CookieConsent';
 import { trackPageView } from '@/api/analytics';
 
 export function Layout() {
@@ -32,6 +33,7 @@ export function Layout() {
         </main>
       </div>
       <AgeGate />
+      <CookieConsent />
       <Toaster
         position="bottom-center"
         toastOptions={{

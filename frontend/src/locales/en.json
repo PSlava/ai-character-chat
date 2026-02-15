@@ -279,6 +279,10 @@
   "ageGate.decline": "I am under 18 — Leave",
   "ageGate.disclaimer": "By entering this site, you agree that you are responsible for viewing this content in accordance with the laws of your country.",
 
+  "cookie.message": "We use cookies and local storage to improve your experience.",
+  "cookie.learnMore": "Privacy Policy",
+  "cookie.accept": "Got it",
+
   "persona.title": "My Personas",
   "persona.subtitle": "Create descriptions of yourself so characters adapt to your persona",
   "persona.create": "Create Persona",

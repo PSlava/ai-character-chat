@@ -279,6 +279,10 @@
   "ageGate.decline": "Soy menor de 18 — Salir",
   "ageGate.disclaimer": "Al ingresar a este sitio, aceptas que eres responsable de ver este contenido de acuerdo con las leyes de tu país.",
 
+  "cookie.message": "Usamos cookies y almacenamiento local para mejorar tu experiencia.",
+  "cookie.learnMore": "Política de privacidad",
+  "cookie.accept": "Entendido",
+
   "persona.title": "Mis personas",
   "persona.subtitle": "Crea descripciones de ti mismo para que los personajes se adapten a tu persona",
   "persona.create": "Crear persona",
