@@ -2,11 +2,27 @@ import { useTranslation } from 'react-i18next';
 import { SEO } from '@/components/seo/SEO';
 import { localePath } from '@/lib/lang';
 
+const FAQ_COUNT = 6;
+
 export function FAQPage() {
   const { t } = useTranslation();
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: Array.from({ length: FAQ_COUNT }, (_, i) => ({
+      '@type': 'Question',
+      name: t(`faq.q${i + 1}`),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: t(`faq.a${i + 1}`),
+      },
+    })),
+  };
+
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
-      <SEO title={t('faq.title')} description={t('seo.faq.description')} url={localePath('/faq')} />
+      <SEO title={t('faq.title')} description={t('seo.faq.description')} url={localePath('/faq')} jsonLd={faqJsonLd} />
       <h1 className="text-2xl font-bold mb-6">{t('faq.title')}</h1>
       <div className="space-y-6">
         {[1, 2, 3, 4, 5, 6].map((n) => (

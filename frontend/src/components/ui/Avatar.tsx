@@ -32,6 +32,8 @@ export function Avatar({ src, name, size = 'md' }: Props) {
       <img
         src={safeSrc}
         alt={name}
+        loading="lazy"
+        decoding="async"
         onError={() => setErrored(true)}
         className={`${sizeMap[size]} rounded-full object-cover`}
       />

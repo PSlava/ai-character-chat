@@ -316,6 +316,12 @@
   "tags.modern": "Modern",
   "tags.anime": "Anime",
 
+  "tagPage.count": "{{count}} characters",
+  "tagPage.fantasyDesc": "Explore fantasy AI characters — elves, mages, dragons, and mythical worlds. Immersive roleplay without limits.",
+  "tagPage.romanceDesc": "Chat with romantic AI characters — love stories, dating simulation, and intimate conversations.",
+  "tagPage.animeDesc": "Anime-inspired AI characters — waifu, shonen heroes, isekai adventures. Your favorite anime worlds come alive.",
+  "tagPage.modernDesc": "Modern-day AI characters — realistic scenarios, everyday life, contemporary settings and stories.",
+
   "featured.title": "Character of the Day",
 
   "footer.about": "About",

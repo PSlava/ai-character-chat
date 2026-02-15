@@ -158,12 +158,24 @@ export function CharacterPage() {
         url={charUrl}
         jsonLd={{
           '@context': 'https://schema.org',
-          '@type': 'CreativeWork',
-          name: character.name,
-          description: character.tagline || character.scenario || '',
-          ...(character.avatar_url && { image: character.avatar_url.startsWith('/') ? `https://sweetsin.cc${character.avatar_url}` : character.avatar_url }),
-          url: charUrl ? `https://sweetsin.cc${charUrl}` : undefined,
-          keywords: character.tags.join(', '),
+          '@graph': [
+            {
+              '@type': 'CreativeWork',
+              name: character.name,
+              description: character.tagline || character.scenario || '',
+              ...(character.avatar_url && { image: character.avatar_url.startsWith('/') ? `https://sweetsin.cc${character.avatar_url}` : character.avatar_url }),
+              url: charUrl ? `https://sweetsin.cc${charUrl}` : undefined,
+              keywords: character.tags.join(', '),
+            },
+            {
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'SweetSin', item: 'https://sweetsin.cc' },
+                { '@type': 'ListItem', position: 2, name: t('home.title'), item: `https://sweetsin.cc${localePath('/')}` },
+                { '@type': 'ListItem', position: 3, name: character.name },
+              ],
+            },
+          ],
         }}
       />
       {character.avatar_url && (

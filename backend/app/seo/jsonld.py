@@ -51,3 +51,49 @@ def website_jsonld() -> dict:
         "url": SITE_URL,
         "description": "AI Character Chat Platform — Roleplay & Fantasy",
     }
+
+
+def faq_jsonld(qa_pairs: list[tuple[str, str]]) -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": q,
+                "acceptedAnswer": {"@type": "Answer", "text": a},
+            }
+            for q, a in qa_pairs
+        ],
+    }
+
+
+def breadcrumb_jsonld(items: list[tuple[str, str | None]]) -> dict:
+    """items = [(name, url), ...]. Last item may have url=None."""
+    return {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": i + 1,
+                "name": name,
+                **({"item": url} if url else {}),
+            }
+            for i, (name, url) in enumerate(items)
+        ],
+    }
+
+
+def collection_jsonld(
+    tag_name: str, tag_slug: str, language: str, total: int
+) -> dict:
+    return {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": f"{tag_name} — AI Characters",
+        "url": f"{SITE_URL}/{language}/tags/{tag_slug}",
+        "description": f"Chat with {tag_name} AI characters on SweetSin. {total} characters available.",
+        "numberOfItems": total,
+        "isPartOf": {"@type": "WebSite", "name": "SweetSin", "url": SITE_URL},
+    }
