@@ -22,7 +22,7 @@
 ### 3. Скорость загрузки ✅ частично
 - [x] Lazy loading аватаров (native `loading="lazy"` + `decoding="async"`)
 - [x] WebP конвертация при загрузке аватаров (Pillow, quality=85, 512x512 max)
-- [ ] Preload критичных ресурсов (fonts, CSS)
+- [x] Preload: Inter font (Google Fonts + preconnect), Tailwind fontFamily
 - [x] Code splitting — React.lazy для 11 тяжёлых страниц
 
 ### 4. Социальные шеры ✅
@@ -109,5 +109,5 @@
 | 4 | **Welcome email** с 3 популярными персонажами | Среднее (код) | Средний | Не начато |
 | 5 | **Telegram канал** + автопостинг | Среднее (код + канал) | Средний | Нужен канал |
 | 6 | **Рейтинги персонажей** + AggregateRating | Среднее (код) | Средний | Не начато |
-| 7 | **Preload ресурсов** + code splitting | Низкое (код) | Средний | ✅ Code splitting готово |
+| 7 | **Preload ресурсов** + code splitting | Низкое (код) | Средний | ✅ Готово |
 | 8 | **Блок "Популярные"** в футере | Низкое (код) | Низкий | ✅ Готово |
