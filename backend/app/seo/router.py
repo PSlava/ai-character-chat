@@ -288,9 +288,9 @@ async def prerender_faq(lang: str = Query("en")):
             ("Ist SweetSin kostenlos?", "Ja! Die Kernfunktionen sind kostenlos. Wir bieten mehrere kostenlose Anbieter an."),
             ("Welche Modelle sind verfügbar?", "Wir unterstützen OpenRouter, Groq, Cerebras, Together, DeepSeek und direkten Zugang zu Claude, GPT-4o und Gemini."),
             ("Kann ich NSFW-Inhalte erstellen?", "Ja, für Nutzer ab 18 Jahren. Sie können die Inhaltsbewertung pro Charakter festlegen."),
-            ("Wie erstelle ich einen Charakter?", "Klicken Sie auf „Erstellen" in der Kopfzeile. Sie können manuell erstellen oder Text einfügen, um automatisch zu generieren."),
+            ("Wie erstelle ich einen Charakter?", 'Klicken Sie auf "Erstellen" in der Kopfzeile. Sie können manuell erstellen oder Text einfügen, um automatisch zu generieren.'),
             ("Ist mein Chatverlauf privat?", "Ja. Ihre Gespräche sind privat und nur für Sie sichtbar."),
-            ("Kann ich meine Daten löschen?", "Ja. Gehen Sie zu Profil und verwenden Sie „Konto löschen" im Bereich Gefahrenzone."),
+            ("Kann ich meine Daten löschen?", 'Ja. Gehen Sie zu Profil und verwenden Sie "Konto löschen" im Bereich Gefahrenzone.'),
         ],
     }
     pairs = _faq.get(lang, _faq["en"])
