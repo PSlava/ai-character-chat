@@ -38,7 +38,15 @@ async def lifespan(app: FastAPI):
         together_key=settings.together_api_key,
         proxy_url=settings.proxy_url,
     )
+
+    # Start autonomous scheduler (daily character gen, counter growth, cleanup)
+    import asyncio
+    from app.autonomous.scheduler import run_scheduler
+    scheduler_task = asyncio.create_task(run_scheduler())
+
     yield
+
+    scheduler_task.cancel()
 
 
 app = FastAPI(title="SweetSin", lifespan=lifespan)

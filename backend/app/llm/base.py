@@ -19,6 +19,7 @@ class LLMConfig:
     frequency_penalty: float = 0.3
     presence_penalty: float = 0.3
     content_rating: str = "sfw"  # "sfw" | "moderate" | "nsfw"
+    use_flex: bool = False  # Groq Flex tier (10x rate limits, same price)
 
 
 class BaseLLMProvider(ABC):

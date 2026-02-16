@@ -2,7 +2,7 @@ from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
-from app.llm.thinking_filter import ThinkingFilter, strip_thinking
+from app.llm.thinking_filter import ThinkingFilter, strip_thinking, has_foreign_chars
 from app.llm.groq_models import get_fallback_models, refresh_models, is_cache_stale
 from app.llm import model_cooldown
 
@@ -26,6 +26,22 @@ class GroqProvider(BaseLLMProvider):
         if is_cache_stale():
             await refresh_models(self.client)
 
+    def _build_params(self, model: str, api_messages: list, config: LLMConfig, stream: bool = False, flex: bool = False) -> dict:
+        """Build common params for chat.completions.create."""
+        params = {
+            "model": model,
+            "messages": api_messages,
+            "max_tokens": config.max_tokens,
+            "temperature": config.temperature,
+            "top_p": config.top_p,
+            "frequency_penalty": config.frequency_penalty,
+            "presence_penalty": config.presence_penalty,
+            "stream": stream,
+        }
+        if flex:
+            params["extra_body"] = {"service_tier": "flex"}
+        return params
+
     async def generate_stream(
         self,
         messages: list[LLMMessage],
@@ -35,39 +51,36 @@ class GroqProvider(BaseLLMProvider):
         models = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
+        # Try flex first (10x limits), then normal on 498
+        tiers = [True, False] if config.use_flex else [False]
 
         for model in models:
             self.last_model_used = model
-            try:
-                stream = await self.client.chat.completions.create(
-                    model=model,
-                    messages=api_messages,
-                    max_tokens=config.max_tokens,
-                    temperature=config.temperature,
-                    top_p=config.top_p,
-                    frequency_penalty=config.frequency_penalty,
-                    presence_penalty=config.presence_penalty,
-                    stream=True,
-                )
-                has_content = False
-                thinking_filter = ThinkingFilter()
-                async for chunk in stream:
-                    delta = chunk.choices[0].delta if chunk.choices else None
-                    if delta and delta.content:
-                        clean = thinking_filter.process(delta.content)
-                        if clean:
-                            has_content = True
-                            yield clean
-                if not has_content:
-                    raise RuntimeError("Модель вернула пустой ответ")
-                return
-            except Exception as e:
-                model_cooldown.mark_failed(PROVIDER, model)
-                reason = self._extract_reason(e)
-                errors.append((model, reason))
-                if self._is_retryable(e):
-                    continue
-                raise RuntimeError(self._format_errors(errors))
+            for use_flex in tiers:
+                try:
+                    params = self._build_params(model, api_messages, config, stream=True, flex=use_flex)
+                    stream = await self.client.chat.completions.create(**params)
+                    has_content = False
+                    thinking_filter = ThinkingFilter()
+                    async for chunk in stream:
+                        delta = chunk.choices[0].delta if chunk.choices else None
+                        if delta and delta.content:
+                            clean = thinking_filter.process(delta.content)
+                            if clean:
+                                has_content = True
+                                yield clean
+                    if not has_content:
+                        raise RuntimeError("Модель вернула пустой ответ")
+                    return
+                except Exception as e:
+                    if use_flex and self._is_flex_unavailable(e):
+                        continue  # retry same model without flex
+                    model_cooldown.mark_failed(PROVIDER, model)
+                    reason = self._extract_reason(e)
+                    errors.append((model, reason))
+                    if self._is_retryable(e):
+                        break  # try next model
+                    raise RuntimeError(self._format_errors(errors))
 
         raise RuntimeError(self._format_errors(errors))
 
@@ -80,30 +93,30 @@ class GroqProvider(BaseLLMProvider):
         models = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
+        tiers = [True, False] if config.use_flex else [False]
 
         for model in models:
             self.last_model_used = model
-            try:
-                response = await self.client.chat.completions.create(
-                    model=model,
-                    messages=api_messages,
-                    max_tokens=config.max_tokens,
-                    temperature=config.temperature,
-                    top_p=config.top_p,
-                    frequency_penalty=config.frequency_penalty,
-                    presence_penalty=config.presence_penalty,
-                )
-                content = response.choices[0].message.content if response.choices else None
-                if not content:
-                    raise RuntimeError("Модель вернула пустой ответ")
-                return strip_thinking(content)
-            except Exception as e:
-                model_cooldown.mark_failed(PROVIDER, model)
-                reason = self._extract_reason(e)
-                errors.append((model, reason))
-                if self._is_retryable(e):
-                    continue
-                raise RuntimeError(self._format_errors(errors))
+            for use_flex in tiers:
+                try:
+                    params = self._build_params(model, api_messages, config, stream=False, flex=use_flex)
+                    response = await self.client.chat.completions.create(**params)
+                    content = response.choices[0].message.content if response.choices else None
+                    if not content:
+                        raise RuntimeError("Модель вернула пустой ответ")
+                    result = strip_thinking(content)
+                    if has_foreign_chars(result):
+                        raise RuntimeError(f"CJK/foreign chars in response from {model}")
+                    return result
+                except Exception as e:
+                    if use_flex and self._is_flex_unavailable(e):
+                        continue  # retry same model without flex
+                    model_cooldown.mark_failed(PROVIDER, model)
+                    reason = self._extract_reason(e)
+                    errors.append((model, reason))
+                    if self._is_retryable(e):
+                        break  # try next model
+                    raise RuntimeError(self._format_errors(errors))
 
         raise RuntimeError(self._format_errors(errors))
 
@@ -128,6 +141,12 @@ class GroqProvider(BaseLLMProvider):
             pass
         err = str(e)
         return err[:150] + "..." if len(err) > 150 else err
+
+    @staticmethod
+    def _is_flex_unavailable(e: Exception) -> bool:
+        """Flex tier returns 498 when capacity is exceeded."""
+        err = str(e)
+        return "498" in err or "capacity_exceeded" in err.lower()
 
     @staticmethod
     def _is_retryable(e: Exception) -> bool:

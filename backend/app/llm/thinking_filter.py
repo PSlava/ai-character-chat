@@ -1,12 +1,42 @@
-"""Filter out <think>...</think> blocks from LLM output.
+"""Filter out <think>...</think> blocks and foreign characters from LLM output.
 
 Qwen3 and other thinking models wrap chain-of-thought in <think> tags.
 These should not be shown to the user in chat responses.
+
+Some models (especially Qwen) mix CJK/Vietnamese characters into
+Russian/English text — these are detected and cleaned.
 """
 
 import re
 
 _THINK_RE = re.compile(r"<think>[\s\S]*?</think>\s*", re.DOTALL)
+
+# CJK Unified Ideographs, Hiragana, Katakana, CJK Ext, Korean, Vietnamese diacritics
+_FOREIGN_CHARS_RE = re.compile(r'[\u2E80-\u9FFF\uAC00-\uD7AF\u1E00-\u1EFF]')
+
+
+def has_foreign_chars(text: str) -> bool:
+    """Detect CJK/Vietnamese characters that shouldn't be in ru/en/es text."""
+    return bool(_FOREIGN_CHARS_RE.search(text))
+
+
+_LATIN_WORDS_RE = re.compile(r'\b[a-zA-Z]{3,}\b')
+_ALLOWED_LATIN = {'ok', 'lol', 'vip', 'sms', 'wifi', 'url', 'http', 'https', 'www', 'nsfw', 'sfw'}
+
+
+def has_mixed_languages(text: str, target_lang: str = "ru") -> bool:
+    """Detect English words mixed into non-English text (model language bleed).
+
+    Only checks when target language is Russian or Spanish.
+    Returns False for English target (mixing is expected).
+    """
+    if target_lang == "en":
+        return False
+    latin_words = _LATIN_WORDS_RE.findall(text)
+    if not latin_words:
+        return False
+    foreign = [w for w in latin_words if w.lower() not in _ALLOWED_LATIN]
+    return len(foreign) >= 2
 
 
 def strip_thinking(text: str) -> str:

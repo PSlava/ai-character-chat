@@ -19,6 +19,10 @@ const ERROR_MAP: Record<string, string> = {
   'Username must be 3-20 characters: letters, digits, underscore': 'auth.usernameInvalid',
   'Account is banned': 'auth.banned',
   'Too many requests. Try again later.': 'auth.tooManyRequests',
+  'Too many registrations. Try again later.': 'auth.tooManyRegistrations',
+  'Challenge required': 'auth.error',
+  'Invalid challenge': 'auth.error',
+  'Registration failed': 'auth.error',
 };
 
 export function AuthPage() {
@@ -27,6 +31,7 @@ export function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -76,7 +81,7 @@ export function AuthPage() {
         init();
         navigate('/');
       } else {
-        await signUp(email, password, username || undefined);
+        await signUp(email, password, username || undefined, honeypot || undefined);
         init();
         navigate('/');
       }
@@ -141,12 +146,23 @@ export function AuthPage() {
           <>
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === 'register' && (
-                <Input
-                  label={t('auth.username')}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder={t('auth.usernameOptional')}
-                />
+                <>
+                  <Input
+                    label={t('auth.username')}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder={t('auth.usernameOptional')}
+                  />
+                  <input
+                    name="website"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    style={{ position: 'absolute', left: '-9999px' }}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                  />
+                </>
               )}
               <Input
                 label="Email"

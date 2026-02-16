@@ -10,11 +10,10 @@ logger = logging.getLogger(__name__)
 # Llama models are preferred — GPT-OSS has strict content moderation
 QUALITY_SCORES: dict[str, int] = {
     "llama-3.3-70b-versatile": 9,
-    "qwen/qwen3-32b": 8,
     "meta-llama/llama-4-scout-17b-16e-instruct": 7,
     "meta-llama/llama-4-maverick-17b-128e-instruct": 7,
-    "deepseek-r1-distill-llama-70b": 7,
     "openai/gpt-oss-120b": 6,
+    "qwen/qwen3-32b": 5,  # produces CJK garbage in Russian, below auto-fallback threshold
     "openai/gpt-oss-20b": 5,
 }
 
@@ -23,7 +22,7 @@ NSFW_BLOCKED: set[str] = {"openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/g
 
 # Models to exclude (not useful for chat)
 EXCLUDE_PREFIXES = ("whisper", "meta-llama/llama-guard", "meta-llama/llama-prompt-guard")
-EXCLUDE_IDS = {"groq/compound", "groq/compound-mini", "openai/gpt-oss-safeguard-20b"}
+EXCLUDE_IDS = {"groq/compound", "groq/compound-mini", "openai/gpt-oss-safeguard-20b", "deepseek-r1-distill-llama-70b"}
 
 # Min quality to include in auto-fallback (skip 8B and similar tiny models)
 MIN_QUALITY_FOR_FALLBACK = 6

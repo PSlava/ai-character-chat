@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field, field_validator
 import re
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.auth.rate_limit import check_auth_rate, check_reset_rate
+from app.auth.rate_limit import check_auth_rate, check_register_rate, check_reset_rate
+from app.auth.pow import create_challenge, verify_pow
 from app.utils.email import send_reset_email, send_registration_notification
 import asyncio
 import logging
@@ -40,6 +41,9 @@ class RegisterRequest(BaseModel):
     email: str = Field(max_length=254)
     password: str = Field(min_length=6, max_length=128)
     username: str | None = Field(default=None, max_length=20)
+    website: str | None = Field(default=None, max_length=200)  # honeypot
+    pow_challenge: str | None = Field(default=None, max_length=64)
+    pow_nonce: str | None = Field(default=None, max_length=32)
 
     @field_validator("email")
     @classmethod
@@ -120,9 +124,36 @@ def _is_admin_email(email: str) -> bool:
     return email.lower() in [e.strip().lower() for e in admin_list.split(",") if e.strip()]
 
 
+async def _bot_delay(request: Request):
+    """Add delay for suspicious requests (missing typical browser headers)."""
+    has_lang = bool(request.headers.get("accept-language"))
+    has_referer = bool(request.headers.get("referer"))
+    if not has_lang or not has_referer:
+        await asyncio.sleep(2)
+
+
+@router.get("/challenge")
+async def get_challenge():
+    """Return a PoW challenge for registration."""
+    return {"challenge": create_challenge()}
+
+
 @router.post("/register")
 async def register(body: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
     check_auth_rate(request)
+    check_register_rate(request)
+    await _bot_delay(request)
+
+    # Honeypot — bots fill hidden fields
+    if body.website:
+        raise HTTPException(status_code=400, detail="Registration failed")
+
+    # Proof-of-Work — require valid solution
+    if not body.pow_challenge or not body.pow_nonce:
+        raise HTTPException(status_code=400, detail="Challenge required")
+    if not verify_pow(body.pow_challenge, body.pow_nonce):
+        raise HTTPException(status_code=400, detail="Invalid challenge")
+
     # Check email uniqueness
     existing = await db.execute(select(User).where(User.email == body.email))
     if existing.scalar_one_or_none():
@@ -171,6 +202,7 @@ async def register(body: RegisterRequest, request: Request, db: AsyncSession = D
 @router.post("/login")
 async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     check_auth_rate(request)
+    await _bot_delay(request)
     result = await db.execute(select(User).where(User.email == body.email))
     user = result.scalar_one_or_none()
 

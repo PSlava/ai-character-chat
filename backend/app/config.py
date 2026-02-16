@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
     upload_dir: str = "data/uploads"
     max_avatar_size: int = 4 * 1024 * 1024  # 4MB default, override via MAX_AVATAR_SIZE env
+    auto_character_enabled: bool = True  # daily auto-generation of characters
     environment: str = "development"  # development | production
 
     class Config:

@@ -147,6 +147,12 @@ docker compose up -d
 - **Редирект при выходе** — все защищённые страницы (профиль, чат, создание, редактирование) редиректят на главную при logout
 - Опциональная авторизация (`get_current_user_optional`) для публичных эндпоинтов
 - Хранение токена и роли в localStorage
+- **Anti-bot защита** (без CAPTCHA, 5 слоёв):
+  - **Honeypot** — скрытое поле `website`, боты автозаполняют → 400 "Registration failed"
+  - **Proof-of-Work** — SHA256 challenge (difficulty=4, ~100ms в браузере), одноразовый, TTL 5мин
+  - **Rate limit регистрации** — 3/час на IP
+  - **Интервал сообщений** — минимум 5с между сообщениями
+  - **Валидация заголовков** — 2с задержка для запросов без Accept-Language/Referer
 - **Восстановление пароля** — полный флоу:
   - `POST /api/auth/forgot-password` — всегда возвращает одинаковый ответ (не раскрывает наличие email в БД)
   - JWT-based reset token (1 час, одноразовый — привязан к хешу пароля)
@@ -216,6 +222,7 @@ docker compose up -d
   - **Конкретный пример формата** в промпте — модели следуют примерам лучше, чем абстрактным правилам
   - **Нарратив от третьего лица** — «она сказала», а не «я сказала»; правило в intro, format_rules и rules
   - Show-don't-tell, физические ощущения, анти-шаблонность, запрет повторов
+  - **Анти-повтор правила** (на 3 языках: ru/en/es): запрет эхо/пересказа слов собеседника, обязательное новое физическое действие в каждом ответе, продвижение сюжета вперёд, запрет слов-костылей («чувствуя», «понимая», «осознавая» / "feeling", "realizing", "understanding")
   - Обязательные пустые строки между нарративом, диалогом и мыслями
 - **Ленивая подгрузка сообщений** — загружаются последние 20, остальные при скролле вверх (infinite scroll)
 - **Отслеживание модели** — каждое сообщение сохраняет `model_used` (напр. `openrouter:google/gemma-3-27b-it:free`)
@@ -236,6 +243,8 @@ docker compose up -d
 - **Смена модели mid-chat** — сохраняется в БД на чате
 - **Синхронизация ID сообщений** — фронтенд обновляет локальные UUID на реальные из БД (в т.ч. при ошибках)
 - **Фильтрация thinking-токенов** — `<think>...</think>` блоки вырезаются из стриминга (Qwen3, DeepSeek R1)
+- **Фильтрация иероглифов** — CJK/вьетнамские символы в ответе → retry с другой моделью (Qwen artifact). `has_foreign_chars()` в `thinking_filter.py`
+- **Фильтрация подмешивания языков** — 2+ латинских слова в ru/es тексте → retry. `has_mixed_languages()` в `thinking_filter.py`
 - **Счётчик сообщений/чатов пользователя** — атомарный инкремент `message_count` и `chat_count` на User при каждом сообщении/новом чате
 - **Markdown рендеринг** — react-markdown + rehype-sanitize для сообщений ассистента (bold, italic, code, списки, blockquote). Пользовательские сообщения — plain text
 - **Копирование сообщений** — кнопка Copy на каждом сообщении ассистента (clipboard + toast)
@@ -298,8 +307,18 @@ docker compose up -d
   - Админы полностью исключены из статистики (page views, регистрации, сообщения, чаты)
   - **GeoIP страны посетителей** — локальная база DB-IP Lite (MMDB, ~5MB), instant lookup через maxminddb. Автообновление при старте если база старше 30 дней. Страны с флагами на дашборде. `country` колонка на `page_views`
 - **Email-уведомления о регистрации** — при новой регистрации (email или Google OAuth) администратору отправляется email с данными нового пользователя (email, username, метод регистрации). Toggle вкл/выкл на странице `/admin/users` (кнопка Bell). Настройка хранится в `prompt_templates` как `setting.notify_registration`. Админы не получают уведомление о своей регистрации
+- **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.paid_mode` (bool) — платный режим LLM
 - **Настройки админа** — API `GET /api/admin/settings` и `PUT /api/admin/settings/{key}` для key-value настроек (хранятся в `prompt_templates` с префиксом `setting.`)
+- **Платный режим (Paid Mode)** — админ-тоггл на странице пользователей (иконка DollarSign). Когда включён: auto-fallback использует `["groq", "together"]` (платные, без rate limits) вместо `groq → cerebras → openrouter`. Настройка `setting.paid_mode` с 60-секундным in-memory кэшем. UI: зелёная кнопка когда вкл, серая когда выкл
 - Ссылки в сайдбаре: «Пользователи» + «Промпты» + «Жалобы» + «Аналитика» видны только админу
+
+### Автономный планировщик
+
+- **Scheduler** (`autonomous/scheduler.py`) — `asyncio.create_task()` в lifespan, hourly check, 24ч между задачами. Состояние в `prompt_templates` с `scheduler.*` ключами. 5 мин задержка при старте
+- **Генерация персонажей** (`autonomous/character_generator.py`) — 50 архетипов (фэнтези/современность/аниме/sci-fi, ~90% NSFW). Каждый день: `random.choice()` из неиспользованных → LLM генерация текста (Groq→Cerebras→OpenRouter) → DALL-E 3 аватар (512×512, WebP, ~$0.04) → сохранение под @sweetsin → авто-перевод EN/ES. При ошибке — email админам
+- **Рост счётчиков** (`autonomous/counter_growth.py`) — ежедневный bump `base_chat_count`/`base_like_count` на всех публичных персонажах (+3-15 чатов, +1-5 лайков на язык)
+- **Очистка** (`autonomous/cleanup.py`) — удаление `page_views` >90 дней, orphan avatar файлов
+- Конфиг: `AUTO_CHARACTER_ENABLED` env (по умолчанию `true`)
 
 ### LLM-провайдеры (9 штук)
 
@@ -363,7 +382,7 @@ docker compose up -d
 **Together AI**: платный (pay-per-token, от $0.02/M), OpenAI-совместимый. **Без модерации контента** — Qwen и Llama работают без NSFW-ограничений. Поддерживает все параметры генерации.
 
 **Режимы выбора модели:**
-- **Auto (Все провайдеры)** — кросс-провайдерный fallback: Groq → Cerebras → OpenRouter (настраиваемый порядок через `AUTO_PROVIDER_ORDER`). Дефолт для новых персонажей
+- **Auto (Все провайдеры)** — кросс-провайдерный fallback: Groq → Cerebras → OpenRouter (настраиваемый порядок через `AUTO_PROVIDER_ORDER`). **Paid mode**: Groq → Together (без rate limits). Дефолт для новых персонажей
 - **Auto (OpenRouter / Groq / Cerebras / Together)** — автоматический перебор топ-3 по качеству внутри одного провайдера, с NSFW-фильтрацией
 - **Конкретная модель** — выбор конкретной модели провайдера (напр. `groq:llama-3.3-70b-versatile`)
 - **Прямой провайдер** (DeepSeek, Qwen) — напрямую через API, минуя агрегаторы
@@ -444,10 +463,17 @@ docker compose up -d
 - **Inter font** — Google Fonts с preconnect, Tailwind fontFamily.sans
 
 ### Безопасность
+- **Anti-bot защита** (без CAPTCHA, 5 слоёв):
+  - **Honeypot** — скрытое поле `website` на регистрации, боты автозаполняют → 400
+  - **Proof-of-Work** — `GET /api/auth/challenge` → клиент решает SHA256 puzzle (difficulty=4, ~100ms в браузере) → отправляет решение с регистрацией. `backend/app/auth/pow.py`, `frontend/src/lib/pow.ts`
+  - **Rate limit регистрации** — 3 регистрации в час на IP
+  - **Интервал сообщений** — минимум 5с между сообщениями на пользователя
+  - **Валидация заголовков** — 2с задержка для запросов без Accept-Language или Referer
 - **Rate limiting** — in-memory (без зависимостей):
   - Auth (login/register): 10 запросов/мин на IP
+  - Регистрация: 3/час на IP (анти-спам ботов)
   - Сброс пароля: 3/5мин на IP + 10/час на IP (анти-перебор email) + 1/2мин на email (анти-спам)
-  - Сообщения чата: 20/мин на пользователя
+  - Сообщения чата: 20/мин на пользователя + минимум 5с между сообщениями
 - **Input validation** — Pydantic `Field(max_length=...)` на всех входных данных (schemas)
 - **Mass assignment protection** — allowlists (`_ALLOWED_FIELDS`) для `setattr` в characters и users
 - **ILIKE injection** — экранирование `%`, `_`, `\` при поиске персонажей
@@ -488,9 +514,11 @@ docker compose up -d
 - [x] ~~Множественные чаты с одним персонажем~~
 - [x] ~~OAuth авторизация (Google)~~
 - [x] ~~Протестировать качество ответов с литературным форматом на разных моделях (RU/EN/ES — все 4 модели 100%)~~
+- [x] ~~Anti-bot защита (honeypot + PoW + rate limit + message interval + header delay)~~
 - [ ] SEO продвижение (см. `SEO.md`)
 
 ### Средний приоритет
+- [x] ~~Автономный планировщик (daily character gen + counter growth + cleanup)~~
 - [ ] Больше структурированных тегов (расширить реестр, добавить новые категории)
 - [x] ~~Перевод описаний персонажей целиком (personality, scenario, appearance, greeting) — personality добавлен~~
 - [ ] Выбор персоны в UI чата (сейчас только API)
@@ -524,10 +552,11 @@ chatbot/
 │   ├── app/
 │   │   ├── main.py                  # FastAPI, CORS, lifespan
 │   │   ├── config.py                # Настройки из env
-│   │   ├── auth/                    # JWT аутентификация + OAuth + роли + rate limiting
-│   │   │   ├── router.py            # register, login, forgot/reset-password, Google OAuth
+│   │   ├── auth/                    # JWT аутентификация + OAuth + роли + rate limiting + anti-bot
+│   │   │   ├── router.py            # register, login, forgot/reset-password, Google OAuth, PoW challenge
+│   │   │   ├── pow.py               # Proof-of-Work challenge (SHA256, difficulty=4)
 │   │   │   ├── middleware.py        # get_current_user (с role), get_current_user_optional
-│   │   │   └── rate_limit.py        # In-memory rate limiter (auth, messages, reset)
+│   │   │   └── rate_limit.py        # In-memory rate limiter (auth, register, messages, interval, reset)
 │   │   ├── admin/                   # Админ-панель
 │   │   │   ├── router.py            # CRUD промпт-шаблонов + seed import/delete + cleanup-avatars + users list/ban/unban/delete (admin only)
 │   │   │   ├── seed_data.py         # 40 seed-персонажей (определения)
@@ -544,7 +573,7 @@ chatbot/
 │   │   │   ├── router.py            # send_message (SSE + model_used + message count), delete, clear
 │   │   │   ├── service.py           # Контекстное окно, сохранение, increment_message_count, force_new
 │   │   │   ├── schemas.py           # SendMessageRequest (model, temp, top_p, is_regenerate), CreateChatRequest (force_new)
-│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 21 ключ × ru/en/es, литературный формат с примером, 60s cache
+│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 21 ключ × ru/en/es, литературный формат с примером, 60s cache, anti-repetition rules
 │   │   ├── llm/                     # 9 провайдеров + реестр + модели + кулдаун
 │   │   │   ├── base.py              # BaseLLMProvider, LLMConfig (+ content_rating)
 │   │   │   ├── registry.py          # init_providers + get_provider
@@ -577,6 +606,11 @@ chatbot/
 │   │   │   ├── router.py            # POST /api/analytics/pageview + GET /api/admin/analytics/overview
 │   │   │   ├── collector.py         # IP-хеширование, device detection, async запись page views
 │   │   │   └── schemas.py           # PageViewRequest
+│   │   ├── autonomous/              # Автономные задачи (без cron/Celery)
+│   │   │   ├── scheduler.py         # Hourly check loop, state в prompt_templates
+│   │   │   ├── character_generator.py # ~50 архетипов + LLM + DALL-E аватар + перевод
+│   │   │   ├── counter_growth.py    # Ежедневный bump base_chat/like_count
+│   │   │   └── cleanup.py           # page_views >90 дней, orphan avatars
 │   │   ├── stats/                   # Публичная статистика
 │   │   │   └── router.py            # GET /api/stats (users, messages, characters, online_now)
 │   │   ├── utils/                   # Утилиты
@@ -636,7 +670,7 @@ chatbot/
 │   │   │   ├── layout/
 │   │   │   │   └── Footer.tsx            # Ссылки на About/Terms/Privacy/FAQ, копирайт
 │   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher, Logo, Skeleton
-│   │   ├── lib/                     # Утилиты (localStorage с role, isCharacterOnline)
+│   │   ├── lib/                     # Утилиты (localStorage с role, isCharacterOnline, PoW solver)
 │   │   ├── locales/                 # i18n: en.json, es.json, ru.json (~391 ключей каждый)
 │   │   └── types/                   # TypeScript типы (Message с model_used)
 │   ├── vercel.json
@@ -652,6 +686,12 @@ chatbot/
 │       ├── Dockerfile               # Python + docker CLI + docker compose v2 + buildx
 │       ├── server.py                # Flask webhook server (HOST_REPO_DIR aware)
 │       └── requirements.txt
+├── scripts/
+│   ├── wdio_bot.py                  # WetDreams.io auto-chat bot (Playwright + Groq LLM)
+│   ├── WD.md                        # Документация бота
+│   ├── CLAUDE.md                    # Claude Code контекст для скриптов
+│   ├── MEMORY.md                    # Заметки и отладка
+│   └── CURRENT_STAGE.md             # Статус и changelog
 ├── docker-compose.yml               # PostgreSQL + Backend + Nginx + Webhook + uploads volume
 ├── .env.example                     # Шаблон переменных (cp → .env → nano → setup --auto)
 ├── render.yaml

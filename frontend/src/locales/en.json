@@ -28,6 +28,7 @@
   "auth.usernameInvalid": "3-20 characters: letters, digits, underscore",
   "auth.banned": "Account is banned",
   "auth.tooManyRequests": "Too many requests. Try again later.",
+  "auth.tooManyRegistrations": "Too many registrations. Try again later.",
   "auth.usernameOptional": "username (optional, auto-generated)",
   "auth.forgotPassword": "Forgot password?",
   "auth.forgotPasswordTitle": "Reset Password",

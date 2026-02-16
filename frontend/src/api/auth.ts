@@ -1,8 +1,20 @@
 import api from './client';
 import { setToken, setUser, removeToken, removeUser } from '@/lib/supabase';
+import { solveChallenge } from '@/lib/pow';
 
-export async function signUp(email: string, password: string, username?: string) {
-  const { data } = await api.post('/auth/register', { email, password, ...(username && { username }) });
+export async function signUp(email: string, password: string, username?: string, website?: string) {
+  // Get PoW challenge from server
+  const { data: challengeData } = await api.get('/auth/challenge');
+  const nonce = await solveChallenge(challengeData.challenge);
+
+  const { data } = await api.post('/auth/register', {
+    email,
+    password,
+    ...(username && { username }),
+    ...(website && { website }),
+    pow_challenge: challengeData.challenge,
+    pow_nonce: nonce,
+  });
   setToken(data.token);
   setUser(data.user);
   return data;

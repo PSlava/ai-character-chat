@@ -2,7 +2,7 @@ from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
-from app.llm.thinking_filter import ThinkingFilter, strip_thinking
+from app.llm.thinking_filter import ThinkingFilter, strip_thinking, has_foreign_chars
 from app.llm.together_models import get_fallback_models, refresh_models, is_cache_stale
 from app.llm import model_cooldown
 
@@ -96,7 +96,10 @@ class TogetherProvider(BaseLLMProvider):
                 content = response.choices[0].message.content if response.choices else None
                 if not content:
                     raise RuntimeError("Модель вернула пустой ответ")
-                return strip_thinking(content)
+                result = strip_thinking(content)
+                if has_foreign_chars(result):
+                    raise RuntimeError(f"CJK/foreign chars in response from {model}")
+                return result
             except Exception as e:
                 model_cooldown.mark_failed(PROVIDER, model)
                 reason = self._extract_reason(e)

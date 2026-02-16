@@ -13,7 +13,7 @@ from app.db.models import User, Persona
 from app.llm.base import LLMConfig
 from app.llm.registry import get_provider
 from app.config import settings
-from app.auth.rate_limit import check_message_rate
+from app.auth.rate_limit import check_message_rate, check_message_interval
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
 
@@ -196,6 +196,7 @@ async def send_message(
     db: AsyncSession = Depends(get_db),
 ):
     check_message_rate(user["id"])
+    check_message_interval(user["id"])
 
     chat = await service.get_chat(db, chat_id, user["id"])
     if not chat:
@@ -302,7 +303,7 @@ async def send_message(
                     prov = get_provider(pname)
                 except ValueError:
                     continue  # provider not configured
-                config = LLMConfig(model="", **base_config)
+                config = LLMConfig(model="", use_flex=paid_mode and pname == "groq", **base_config)
                 full_response: list[str] = []
                 try:
                     async for chunk in prov.generate_stream(messages, config):

@@ -28,6 +28,7 @@
   "auth.usernameInvalid": "3-20 caracteres: letras, dígitos, guion bajo",
   "auth.banned": "La cuenta está suspendida",
   "auth.tooManyRequests": "Demasiadas solicitudes. Inténtalo más tarde.",
+  "auth.tooManyRegistrations": "Demasiados registros. Inténtalo más tarde.",
   "auth.usernameOptional": "nombre de usuario (opcional, se genera automáticamente)",
   "auth.forgotPassword": "¿Olvidaste tu contraseña?",
   "auth.forgotPasswordTitle": "Restablecer contraseña",
