@@ -106,7 +106,7 @@ docker compose up -d
 | GEMINI_API_KEY | Да | Вручную | Gemini (квота=0) |
 | DEFAULT_MODEL | auto | Настраиваемый | Модель по умолчанию (auto = все провайдеры) |
 | AUTO_PROVIDER_ORDER | groq,cerebras,openrouter | Настраиваемый | Порядок провайдеров для auto-fallback (чат) |
-| AUTONOMOUS_PROVIDER_ORDER | claude,openai,...,openrouter | Настраиваемый | Порядок провайдеров для автономных задач (платные первые) |
+| AUTONOMOUS_PROVIDER_ORDER | openai,gemini,...,openrouter | Настраиваемый | Порядок провайдеров для автономных задач (платные первые). На проде без claude (нет кредитов) |
 | NGINX_CONF | nginx-ssl.conf | nginx-ssl-test.conf | Конфиг nginx (prod vs test) |
 | ADMIN_EMAILS | — | Вручную | Список email-ов админов (через запятую) |
 | PROXY_URL | Да | Вручную | HTTP прокси |
@@ -342,7 +342,7 @@ docker compose up -d
 | **DeepSeek** | deepseek-chat, deepseek-reasoner | api.deepseek.com/v1 | **Готов** — нужен ключ |
 | **Qwen (DashScope)** | qwen3-32b, qwen3-235b и др. | dashscope-intl.aliyuncs.com | **Готов** — нужен ключ |
 | Gemini | gemini-2.0-flash | generativelanguage.googleapis.com | Не работает (квота=0) |
-| Claude | claude-sonnet-4-5 | api.anthropic.com | Не работает (нужны кредиты) |
+| Claude | claude-sonnet-4-5 | api.anthropic.com | Не работает (нет кредитов, убран из AUTONOMOUS_PROVIDER_ORDER на проде) |
 | OpenAI | gpt-4o | api.openai.com | Не работает (нет кредитов) |
 
 **Бесплатные модели через OpenRouter (с оценкой качества для RP):**
