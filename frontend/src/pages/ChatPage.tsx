@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Trash2, Eraser, Settings, MessageSquarePlus, Brain, Star } from 'lucide-react';
 import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages, createChat, generatePersonaReply } from '@/api/chat';
@@ -14,6 +14,7 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import { GenerationSettingsModal, loadModelSettings } from '@/components/chat/GenerationSettingsModal';
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { AnonLimitModal } from '@/components/chat/AnonLimitModal';
 import { Avatar } from '@/components/ui/Avatar';
 import { SEO } from '@/components/seo/SEO';
 import type { ChatDetail } from '@/types';
@@ -57,9 +58,11 @@ export function ChatPage() {
   const removeChat = useChatStore((s) => s.removeChat);
   const isAdmin = authUser?.role === 'admin';
 
-  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast } = useChat(
+  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
     chatId || ''
   );
+  const [showAnonLimit, setShowAnonLimit] = useState(false);
+  const isAnon = !isAuthenticated;
 
   useEffect(() => {
     getOpenRouterModels().then(setOrModels).catch(() => {});
@@ -69,12 +72,18 @@ export function ChatPage() {
   }, []);
 
   useEffect(() => {
-    if (!chatId || !isAuthenticated) return;
+    if (!chatId) return;
+    if (authLoading) return; // Wait for auth state to settle
     getChat(chatId)
-      .then((data) => {
+      .then((data: any) => {
         setChatDetail(data);
         setMessages(data.messages);
         setHasMore(data.has_more);
+
+        // Track anon messages left
+        if (data.anon_messages_left !== undefined) {
+          setAnonMessagesLeft(data.anon_messages_left);
+        }
 
         // Migrate old format: chat-settings:{chatId} → chat-model:{chatId}
         let savedModel: string | null = null;
@@ -102,7 +111,7 @@ export function ChatPage() {
         setGenerationSettings(loadModelSettings(model));
       })
       .catch(() => setError(t('chat.notFound')));
-  }, [chatId, isAuthenticated, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [chatId, authLoading, setMessages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLoadMore = useCallback(async () => {
     if (!chatId || loadingMore || !hasMore) return;
@@ -275,9 +284,10 @@ export function ChatPage() {
     }
   };
 
-  if (!authLoading && !isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
+  // Show anon limit modal when limit reached
+  useEffect(() => {
+    if (anonLimitReached) setShowAnonLimit(true);
+  }, [anonLimitReached]);
 
   if (error) {
     return (
@@ -352,29 +362,33 @@ export function ChatPage() {
           <span className="hidden sm:inline">{t('chat.modelAndSettings')}</span>
           <Settings size={16} />
         </button>
-        <button
-          onClick={handleNewChat}
-          className="p-2 text-neutral-500 hover:text-green-400 transition-colors"
-          title={t('chat.newChatTooltip')}
-        >
-          <MessageSquarePlus size={18} />
-        </button>
-        <button
-          onClick={handleClearChat}
-          disabled={isStreaming}
-          className="p-2 text-neutral-500 hover:text-yellow-400 transition-colors disabled:opacity-50"
-          title={t('chat.clearChat')}
-        >
-          <Eraser size={18} />
-        </button>
-        <button
-          onClick={handleDeleteChat}
-          disabled={isStreaming}
-          className="p-2 text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-50"
-          title={t('chat.deleteChat')}
-        >
-          <Trash2 size={18} />
-        </button>
+        {!isAnon && (
+          <>
+            <button
+              onClick={handleNewChat}
+              className="p-2 text-neutral-500 hover:text-green-400 transition-colors"
+              title={t('chat.newChatTooltip')}
+            >
+              <MessageSquarePlus size={18} />
+            </button>
+            <button
+              onClick={handleClearChat}
+              disabled={isStreaming}
+              className="p-2 text-neutral-500 hover:text-yellow-400 transition-colors disabled:opacity-50"
+              title={t('chat.clearChat')}
+            >
+              <Eraser size={18} />
+            </button>
+            <button
+              onClick={handleDeleteChat}
+              disabled={isStreaming}
+              className="p-2 text-neutral-500 hover:text-red-400 transition-colors disabled:opacity-50"
+              title={t('chat.deleteChat')}
+            >
+              <Trash2 size={18} />
+            </button>
+          </>
+        )}
       </div>
 
       <ChatWindow
@@ -413,6 +427,17 @@ export function ChatPage() {
           onClose={() => setShowSettings(false)}
         />
       )}
+
+      {/* Anonymous messages remaining indicator */}
+      {isAnon && anonMessagesLeft !== null && anonMessagesLeft > 0 && (
+        <div className="px-3 py-1.5 bg-amber-900/30 border-t border-amber-800/50 text-center text-xs text-amber-400">
+          {t('anon.messagesLeft', { count: anonMessagesLeft })}
+          {' · '}
+          <a href="/auth" className="underline hover:text-amber-300">{t('anon.registerLink')}</a>
+        </div>
+      )}
+
+      {showAnonLimit && <AnonLimitModal onClose={() => setShowAnonLimit(false)} />}
 
       {confirmProps && (
         <ConfirmDialog

@@ -86,11 +86,28 @@ export function CharacterPage() {
   };
 
   const handleStartChat = async (forceNew = false) => {
-    if (!character || !isAuthenticated) {
-      navigate('/auth');
+    if (!character) return;
+
+    // Anonymous user — create chat directly (no personas)
+    if (!isAuthenticated) {
+      setLoading(true);
+      try {
+        const { chat } = await createChat(character.id);
+        navigate(`/chat/${chat.id}`);
+      } catch (err: any) {
+        if (err?.response?.status === 403) {
+          // Anon chat disabled or limit reached — redirect to register
+          navigate('/auth');
+        } else {
+          toast.error(t('toast.networkError'));
+        }
+      } finally {
+        setLoading(false);
+      }
       return;
     }
-    // Fetch personas and decide flow
+
+    // Authenticated user — fetch personas and decide flow
     try {
       const list = await getPersonas();
       setPersonas(list);

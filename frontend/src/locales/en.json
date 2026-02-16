@@ -508,6 +508,12 @@
   "admin.analyticsUniq": "Unique",
   "admin.analyticsSource": "Source",
   "admin.analyticsRegistrations": "Registrations",
+  "admin.analyticsAnon": "Anonymous guests",
+  "admin.analyticsAnonSessionsNew": "Unique sessions (period)",
+  "admin.analyticsAnonSessionsTotal": "Unique sessions (total)",
+  "admin.analyticsAnonMessages": "Messages (period)",
+  "admin.analyticsAnonChats": "Chats (period)",
+  "admin.analyticsAnonMessagesTotal": "Messages (total)",
 
   "admin.notifyRegistration": "Email on registration",
   "admin.notifyRegistrationHint": "Send email to admin when a new user registers",
@@ -517,6 +523,8 @@
   "admin.dailyMessageLimitHint": "Max messages per user per day (0 = unlimited)",
   "admin.maxPersonas": "Persona limit",
   "admin.maxPersonasHint": "Max personas per user (0 = unlimited)",
+  "admin.anonLimit": "Anon limit",
+  "admin.anonLimitHint": "Max messages for anonymous users (0 = disabled)",
 
   "create.tabImport": "Import",
   "create.importTitle": "Import Character Card",
@@ -561,5 +569,12 @@
   "seo.about.description": "About SweetSin — AI character chat platform for immersive roleplay and fantasy conversations.",
   "seo.terms.description": "Terms of service for SweetSin — AI character chat platform.",
   "seo.privacy.description": "Privacy policy for SweetSin — how we handle your data and protect your privacy.",
-  "seo.faq.description": "Frequently asked questions about SweetSin — AI character chat, roleplay, and creating characters."
+  "seo.faq.description": "Frequently asked questions about SweetSin — AI character chat, roleplay, and creating characters.",
+
+  "anon.limitTitle": "Registration Required",
+  "anon.limitMessage": "You've used all your free messages. Create a free account to continue chatting with characters — it takes just a few seconds!",
+  "anon.register": "Create Free Account",
+  "anon.later": "Maybe later",
+  "anon.messagesLeft": "{{count}} free messages left",
+  "anon.registerLink": "Register for unlimited access"
 }

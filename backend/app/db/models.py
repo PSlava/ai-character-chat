@@ -130,6 +130,7 @@ class Chat(Base):
     model_used: Mapped[str | None] = mapped_column(String, nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)  # LLM-generated summary of older messages
     summary_up_to_id: Mapped[str | None] = mapped_column(String, nullable=True)  # last message ID included in summary
+    anon_session_id: Mapped[str | None] = mapped_column(String, nullable=True)  # anonymous guest session
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

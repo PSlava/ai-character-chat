@@ -6,7 +6,7 @@ import { getAdminUsers, banUser, unbanUser, deleteUser, getAdminSettings, update
 import type { AdminUser } from '@/api/admin';
 import { Avatar } from '@/components/ui/Avatar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle } from 'lucide-react';
+import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle, UserPlus } from 'lucide-react';
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
@@ -23,6 +23,8 @@ export function AdminUsersPage() {
   const [editingLimit, setEditingLimit] = useState(false);
   const [maxPersonas, setMaxPersonas] = useState('5');
   const [editingPersonas, setEditingPersonas] = useState(false);
+  const [anonLimit, setAnonLimit] = useState('50');
+  const [editingAnonLimit, setEditingAnonLimit] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -35,6 +37,7 @@ export function AdminUsersPage() {
         setPaidMode(s.paid_mode === 'true');
         setDailyLimit(s.daily_message_limit || '1000');
         setMaxPersonas(s.max_personas || '5');
+        setAnonLimit(s.anon_message_limit || '50');
       })
       .catch(() => {});
   }, [isAdmin]);
@@ -78,6 +81,18 @@ export function AdminUsersPage() {
     setEditingPersonas(false);
     try {
       await updateAdminSetting('max_personas', String(num));
+    } catch {
+      // revert on error
+    }
+  };
+
+  const saveAnonLimit = async (val: string) => {
+    const num = parseInt(val, 10);
+    if (isNaN(num) || num < 0) return;
+    setAnonLimit(String(num));
+    setEditingAnonLimit(false);
+    try {
+      await updateAdminSetting('anon_message_limit', String(num));
     } catch {
       // revert on error
     }
@@ -209,6 +224,40 @@ export function AdminUsersPage() {
                   onClick={(e) => {
                     const input = (e.currentTarget.parentElement as HTMLElement).querySelector('input');
                     if (input) saveMaxPersonas(input.value);
+                  }}
+                  className="px-2 py-1 bg-rose-600 text-white text-xs rounded hover:bg-rose-700"
+                >
+                  OK
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <button
+              onClick={() => setEditingAnonLimit(!editingAnonLimit)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors bg-neutral-800 text-neutral-400 hover:bg-neutral-700"
+              title={t('admin.anonLimitHint')}
+            >
+              <UserPlus className="w-4 h-4" />
+              <span className="hidden sm:inline">{anonLimit}</span>
+            </button>
+            {editingAnonLimit && (
+              <div className="absolute right-0 top-full mt-1 bg-neutral-800 border border-neutral-700 rounded-lg p-2 z-10 flex gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  defaultValue={anonLimit}
+                  className="w-24 px-2 py-1 bg-neutral-900 border border-neutral-600 rounded text-sm text-white focus:outline-none focus:border-rose-500"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveAnonLimit((e.target as HTMLInputElement).value);
+                    if (e.key === 'Escape') setEditingAnonLimit(false);
+                  }}
+                  autoFocus
+                />
+                <button
+                  onClick={(e) => {
+                    const input = (e.currentTarget.parentElement as HTMLElement).querySelector('input');
+                    if (input) saveAnonLimit(input.value);
                   }}
                   className="px-2 py-1 bg-rose-600 text-white text-xs rounded hover:bg-rose-700"
                 >

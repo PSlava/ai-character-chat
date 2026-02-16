@@ -508,6 +508,12 @@
   "admin.analyticsUniq": "Únicos",
   "admin.analyticsSource": "Fuente",
   "admin.analyticsRegistrations": "Registros",
+  "admin.analyticsAnon": "Invitados anónimos",
+  "admin.analyticsAnonSessionsNew": "Sesiones únicas (período)",
+  "admin.analyticsAnonSessionsTotal": "Sesiones únicas (total)",
+  "admin.analyticsAnonMessages": "Mensajes (período)",
+  "admin.analyticsAnonChats": "Chats (período)",
+  "admin.analyticsAnonMessagesTotal": "Mensajes (total)",
 
   "admin.notifyRegistration": "Email de registro",
   "admin.notifyRegistrationHint": "Enviar email al admin cuando un nuevo usuario se registre",
@@ -517,6 +523,8 @@
   "admin.dailyMessageLimitHint": "Máx. mensajes por usuario al día (0 = ilimitado)",
   "admin.maxPersonas": "Límite de personas",
   "admin.maxPersonasHint": "Máx. personas por usuario (0 = ilimitado)",
+  "admin.anonLimit": "Límite anónimos",
+  "admin.anonLimitHint": "Máx. mensajes para usuarios anónimos (0 = desactivado)",
 
   "create.tabImport": "Importar",
   "create.importTitle": "Importar tarjeta de personaje",
@@ -561,5 +569,12 @@
   "seo.about.description": "Acerca de SweetSin — plataforma de chat con personajes de IA para juego de roles y fantasía.",
   "seo.terms.description": "Términos de servicio de SweetSin — plataforma de chat con personajes de IA.",
   "seo.privacy.description": "Política de privacidad de SweetSin — cómo manejamos tus datos y protegemos tu privacidad.",
-  "seo.faq.description": "Preguntas frecuentes sobre SweetSin — chat con personajes de IA, juego de roles y creación de personajes."
+  "seo.faq.description": "Preguntas frecuentes sobre SweetSin — chat con personajes de IA, juego de roles y creación de personajes.",
+
+  "anon.limitTitle": "Se requiere registro",
+  "anon.limitMessage": "Has usado todos tus mensajes gratuitos. Crea una cuenta gratuita para seguir chateando con los personajes — ¡solo toma unos segundos!",
+  "anon.register": "Crear cuenta gratis",
+  "anon.later": "Quizás después",
+  "anon.messagesLeft": "{{count}} mensajes gratuitos restantes",
+  "anon.registerLink": "Regístrate para acceso ilimitado"
 }

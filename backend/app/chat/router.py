@@ -1,14 +1,15 @@
 import json
 import time as _time
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from starlette.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text as sa_text
-from app.auth.middleware import get_current_user
+from app.auth.middleware import get_current_user, get_current_user_optional
 from app.db.session import get_db
 from app.chat.schemas import CreateChatRequest, SendMessageRequest
 from app.chat import service
+from app.chat.anon import get_anon_user_id, check_anon_limit, get_anon_remaining, get_anon_message_limit
 from app.db.models import User, Persona, Message
 from app.llm.base import LLMConfig
 from app.llm.registry import get_provider
@@ -91,25 +92,43 @@ def chat_to_dict(c):
 @router.post("")
 async def create_chat(
     body: CreateChatRequest,
-    user=Depends(get_current_user),
+    request: Request,
+    user=Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    chat, character, created = await service.get_or_create_chat(
-        db, user["id"], body.character_id, body.model, persona_id=body.persona_id,
-        force_new=body.force_new,
-    )
+    anon_session_id = None
+    if user:
+        chat, character, created = await service.get_or_create_chat(
+            db, user["id"], body.character_id, body.model, persona_id=body.persona_id,
+            force_new=body.force_new,
+        )
+    else:
+        anon_session_id = request.headers.get("x-anon-session")
+        if not anon_session_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        # Check if anonymous chat is enabled
+        limit = await get_anon_message_limit()
+        if limit <= 0:
+            raise HTTPException(status_code=403, detail="anon_chat_disabled")
+        anon_uid = await get_anon_user_id(db)
+        chat, character, created = await service.get_or_create_chat(
+            db, anon_uid, body.character_id, body.model,
+            force_new=body.force_new,
+            anon_session_id=anon_session_id,
+        )
+
     if not chat:
         raise HTTPException(status_code=404, detail="Character not found")
 
     msgs, has_more = await service.get_chat_messages(db, chat.id, limit=20)
-    return JSONResponse(
-        content={
-            "chat": chat_to_dict(chat),
-            "messages": [message_to_dict(m) for m in msgs],
-            "has_more": has_more,
-        },
-        status_code=201 if created else 200,
-    )
+    resp = {
+        "chat": chat_to_dict(chat),
+        "messages": [message_to_dict(m) for m in msgs],
+        "has_more": has_more,
+    }
+    if anon_session_id:
+        resp["anon_messages_left"] = await get_anon_remaining(anon_session_id)
+    return JSONResponse(content=resp, status_code=201 if created else 200)
 
 
 @router.get("")
@@ -121,21 +140,52 @@ async def list_chats(
     return [chat_to_dict(c) for c in chats]
 
 
+@router.get("/anon-limit")
+async def anon_limit(request: Request):
+    """Public endpoint: returns anonymous chat limit and remaining messages."""
+    limit = await get_anon_message_limit()
+    session_id = request.headers.get("x-anon-session")
+    remaining = limit
+    if session_id and limit > 0:
+        remaining = await get_anon_remaining(session_id)
+    return {"limit": limit, "remaining": remaining, "enabled": limit > 0}
+
+
+@router.get("/daily-usage")
+async def daily_usage(
+    user=Depends(get_current_user),
+):
+    """Return daily message usage for the current user."""
+    return await get_daily_usage(user["id"])
+
+
 @router.get("/{chat_id}")
 async def get_chat(
     chat_id: str,
-    user=Depends(get_current_user),
+    request: Request,
+    user=Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    chat = await service.get_chat(db, chat_id, user["id"])
+    anon_session_id = None
+    if user:
+        chat = await service.get_chat(db, chat_id, user_id=user["id"])
+    else:
+        anon_session_id = request.headers.get("x-anon-session")
+        if not anon_session_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        chat = await service.get_chat(db, chat_id, anon_session_id=anon_session_id)
+
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     msgs, has_more = await service.get_chat_messages(db, chat_id, limit=20)
-    return {
+    resp = {
         "chat": chat_to_dict(chat),
         "messages": [message_to_dict(m) for m in msgs],
         "has_more": has_more,
     }
+    if anon_session_id:
+        resp["anon_messages_left"] = await get_anon_remaining(anon_session_id)
+    return resp
 
 
 @router.delete("/{chat_id}", status_code=204)
@@ -152,13 +202,21 @@ async def delete_chat(
 @router.get("/{chat_id}/messages")
 async def get_messages(
     chat_id: str,
+    request: Request,
     before: str | None = None,
     limit: int = 20,
-    user=Depends(get_current_user),
+    user=Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """Load older messages for infinite scroll."""
-    chat = await service.get_chat(db, chat_id, user["id"])
+    if user:
+        chat = await service.get_chat(db, chat_id, user_id=user["id"])
+    else:
+        anon_session_id = request.headers.get("x-anon-session")
+        if not anon_session_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        chat = await service.get_chat(db, chat_id, anon_session_id=anon_session_id)
+
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     msgs, has_more = await service.get_chat_messages(db, chat_id, limit=limit, before_id=before)
@@ -191,14 +249,6 @@ async def delete_message(
     deleted = await service.delete_message(db, chat_id, message_id, user["id"])
     if not deleted:
         raise HTTPException(status_code=404, detail="Message not found or cannot be deleted")
-
-
-@router.get("/daily-usage")
-async def daily_usage(
-    user=Depends(get_current_user),
-):
-    """Return daily message usage for the current user."""
-    return await get_daily_usage(user["id"])
 
 
 @router.post("/{chat_id}/generate-persona-reply")
@@ -307,14 +357,27 @@ async def generate_persona_reply(
 async def send_message(
     chat_id: str,
     body: SendMessageRequest,
-    user=Depends(get_current_user),
+    request: Request,
+    user=Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    check_message_rate(user["id"])
-    check_message_interval(user["id"])
-    await check_daily_limit(user["id"], user.get("role", "user"))
+    anon_session_id = None
+    anon_remaining = None
 
-    chat = await service.get_chat(db, chat_id, user["id"])
+    if user:
+        check_message_rate(user["id"])
+        check_message_interval(user["id"])
+        await check_daily_limit(user["id"], user.get("role", "user"))
+        chat = await service.get_chat(db, chat_id, user_id=user["id"])
+    else:
+        anon_session_id = request.headers.get("x-anon-session")
+        if not anon_session_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        check_message_rate(f"anon:{anon_session_id}")
+        check_message_interval(f"anon:{anon_session_id}")
+        anon_remaining = await check_anon_limit(anon_session_id)  # raises 403 if exceeded
+        chat = await service.get_chat(db, chat_id, anon_session_id=anon_session_id)
+
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
 
@@ -332,13 +395,16 @@ async def send_message(
     user_msg = await service.save_message(db, chat_id, "user", body.content)
 
     # Get user display name and language for system prompt
-    user_result = await db.execute(select(User).where(User.id == user["id"]))
-    user_obj = user_result.scalar_one_or_none()
-    language = body.language or (user_obj.language if user_obj else None) or "ru"
-
-    # Use persona snapshot from chat (not FK lookup)
-    user_name = getattr(chat, 'persona_name', None) or (user_obj.display_name if user_obj else None)
-    user_description = getattr(chat, 'persona_description', None)
+    if user:
+        user_result = await db.execute(select(User).where(User.id == user["id"]))
+        user_obj = user_result.scalar_one_or_none()
+        language = body.language or (user_obj.language if user_obj else None) or "ru"
+        user_name = getattr(chat, 'persona_name', None) or (user_obj.display_name if user_obj else None)
+        user_description = getattr(chat, 'persona_description', None)
+    else:
+        language = body.language or "en"
+        user_name = None
+        user_description = None
 
     # Build context
     messages = await service.build_conversation_messages(
@@ -397,7 +463,8 @@ async def send_message(
         "content_rating": content_rating,
     }
 
-    is_admin = user.get("role") == "admin"
+    is_admin = user.get("role") == "admin" if user else False
+    user_id_for_increment = user["id"] if user else None
 
     if is_auto:
         paid_mode = await _is_paid_mode(db)
@@ -422,9 +489,12 @@ async def send_message(
                     complete_text = "".join(full_response)
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
                     saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
-                    await service.increment_message_count(character.id, language, user["id"])
+                    await service.increment_message_count(character.id, language, user_id_for_increment)
                     _asyncio.create_task(maybe_summarize(chat_id))
-                    yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
+                    done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
+                    if anon_session_id and anon_remaining is not None:
+                        done_data['anon_messages_left'] = anon_remaining - 1
+                    yield f"data: {json.dumps(done_data)}\n\n"
                     return
                 except Exception as e:
                     errors.append(f"{pname}: {e}")
@@ -445,9 +515,12 @@ async def send_message(
                 complete_text = "".join(full_response)
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
                 saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
-                await service.increment_message_count(character.id, language, user["id"])
+                await service.increment_message_count(character.id, language, user_id_for_increment)
                 _asyncio.create_task(maybe_summarize(chat_id))
-                yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
+                done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
+                if anon_session_id and anon_remaining is not None:
+                    done_data['anon_messages_left'] = anon_remaining - 1
+                yield f"data: {json.dumps(done_data)}\n\n"
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'content': _user_error(str(e), is_admin), 'user_message_id': user_msg.id})}\n\n"
 

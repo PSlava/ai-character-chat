@@ -29,3 +29,12 @@ export function setUser(user: { id: string; email: string; username: string; rol
 export function removeUser() {
   localStorage.removeItem('user');
 }
+
+export function getAnonSessionId(): string {
+  let id = localStorage.getItem('anon_session_id');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('anon_session_id', id);
+  }
+  return id;
+}

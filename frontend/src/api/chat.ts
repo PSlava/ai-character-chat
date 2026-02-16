@@ -1,6 +1,12 @@
 import api from './client';
-import { getToken } from '@/lib/supabase';
+import { getToken, getAnonSessionId } from '@/lib/supabase';
 import type { Chat, ChatDetail, Message } from '@/types';
+
+export interface AnonLimit {
+  limit: number;
+  remaining: number;
+  enabled: boolean;
+}
 
 export async function createChat(characterId: string, model?: string, personaId?: string, forceNew?: boolean) {
   const { data } = await api.post<ChatDetail>('/chats', {
@@ -54,4 +60,16 @@ export async function generatePersonaReply(chatId: string): Promise<{ content: s
 
 export async function getAuthToken(): Promise<string | null> {
   return getToken();
+}
+
+/** Returns token or anon session ID for SSE requests */
+export function getAuthOrAnonToken(): { token: string | null; anonSessionId: string | null } {
+  const token = getToken();
+  if (token) return { token, anonSessionId: null };
+  return { token: null, anonSessionId: getAnonSessionId() };
+}
+
+export async function getAnonLimit(): Promise<AnonLimit> {
+  const { data } = await api.get<AnonLimit>('/chats/anon-limit');
+  return data;
 }

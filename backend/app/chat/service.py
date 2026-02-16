@@ -14,16 +14,21 @@ DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/t
 async def get_or_create_chat(
     db: AsyncSession, user_id: str, character_id: str,
     model: str | None = None, persona_id: str | None = None,
-    force_new: bool = False,
+    force_new: bool = False, anon_session_id: str | None = None,
 ):
     """Return existing chat with this character, or create a new one."""
     if not force_new:
         # Check for existing chat
-        existing = await db.execute(
+        q = (
             select(Chat)
             .options(selectinload(Chat.character))
-            .where(Chat.user_id == user_id, Chat.character_id == character_id)
+            .where(Chat.character_id == character_id)
         )
+        if anon_session_id:
+            q = q.where(Chat.anon_session_id == anon_session_id)
+        else:
+            q = q.where(Chat.user_id == user_id)
+        existing = await db.execute(q)
         chat = existing.scalar_one_or_none()
         if chat:
             return chat, chat.character, False  # False = not newly created
@@ -35,10 +40,10 @@ async def get_or_create_chat(
 
     model_used = model or character.preferred_model or "claude"
 
-    # Load persona snapshot if persona_id provided
+    # Load persona snapshot if persona_id provided (not for anonymous)
     p_name = None
     p_description = None
-    if persona_id:
+    if persona_id and not anon_session_id:
         persona_result = await db.execute(select(Persona).where(Persona.id == persona_id))
         persona_obj = persona_result.scalar_one_or_none()
         if persona_obj:
@@ -48,11 +53,12 @@ async def get_or_create_chat(
     chat = Chat(
         user_id=user_id,
         character_id=character_id,
-        persona_id=persona_id,
+        persona_id=persona_id if not anon_session_id else None,
         persona_name=p_name,
         persona_description=p_description,
         title=character.name,
         model_used=model_used,
+        anon_session_id=anon_session_id,
     )
     db.add(chat)
     await db.flush()
@@ -60,11 +66,14 @@ async def get_or_create_chat(
     # Apply {{char}}/{{user}} template variables in greeting
     greeting_text = character.greeting_message
     if "{{char}}" in greeting_text or "{{user}}" in greeting_text:
-        u_name = p_name
-        if not u_name:
-            user_result = await db.execute(select(User).where(User.id == user_id))
-            user_obj = user_result.scalar_one_or_none()
-            u_name = user_obj.display_name if user_obj and user_obj.display_name else "User"
+        if anon_session_id:
+            u_name = "User"
+        else:
+            u_name = p_name
+            if not u_name:
+                user_result = await db.execute(select(User).where(User.id == user_id))
+                user_obj = user_result.scalar_one_or_none()
+                u_name = user_obj.display_name if user_obj and user_obj.display_name else "User"
         greeting_text = greeting_text.replace("{{char}}", character.name).replace("{{user}}", u_name)
 
     greeting = Message(
@@ -77,11 +86,12 @@ async def get_or_create_chat(
 
     character.chat_count = (character.chat_count or 0) + 1
 
-    # Increment user chat count
-    user_result = await db.execute(select(User).where(User.id == user_id))
-    user_obj = user_result.scalar_one_or_none()
-    if user_obj:
-        user_obj.chat_count = (user_obj.chat_count or 0) + 1
+    # Increment user chat count (skip for anonymous)
+    if not anon_session_id:
+        user_result = await db.execute(select(User).where(User.id == user_id))
+        user_obj = user_result.scalar_one_or_none()
+        if user_obj:
+            user_obj.chat_count = (user_obj.chat_count or 0) + 1
 
     await db.commit()
 
@@ -95,12 +105,19 @@ async def get_or_create_chat(
     return chat, chat.character, True  # True = newly created
 
 
-async def get_chat(db: AsyncSession, chat_id: str, user_id: str):
-    result = await db.execute(
+async def get_chat(db: AsyncSession, chat_id: str, user_id: str | None = None, anon_session_id: str | None = None):
+    q = (
         select(Chat)
         .options(selectinload(Chat.character).selectinload(Character.creator))
-        .where(Chat.id == chat_id, Chat.user_id == user_id)
+        .where(Chat.id == chat_id)
     )
+    if anon_session_id:
+        q = q.where(Chat.anon_session_id == anon_session_id)
+    elif user_id:
+        q = q.where(Chat.user_id == user_id)
+    else:
+        return None
+    result = await db.execute(q)
     return result.scalar_one_or_none()
 
 

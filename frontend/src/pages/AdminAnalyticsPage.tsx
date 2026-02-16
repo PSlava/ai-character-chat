@@ -84,6 +84,19 @@ export function AdminAnalyticsPage() {
             <SummaryCard icon={<MessagesSquare className="w-4 h-4" />} label={t('admin.analyticsChats')} value={s?.new_chats ?? 0} />
           </div>
 
+          {/* Anonymous stats */}
+          {data.anon_stats && (
+            <Section title={t('admin.analyticsAnon')}>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <AnonStat label={t('admin.analyticsAnonSessionsNew')} value={data.anon_stats.unique_sessions} />
+                <AnonStat label={t('admin.analyticsAnonSessionsTotal')} value={data.anon_stats.total_sessions} />
+                <AnonStat label={t('admin.analyticsAnonMessages')} value={data.anon_stats.messages} />
+                <AnonStat label={t('admin.analyticsAnonChats')} value={data.anon_stats.chats} />
+                <AnonStat label={t('admin.analyticsAnonMessagesTotal')} value={data.anon_stats.total_messages} />
+              </div>
+            </Section>
+          )}
+
           {/* Daily chart */}
           <DailyChart daily={data.daily} />
 
@@ -353,6 +366,15 @@ function countryFlag(code: string): string {
   if (upper.length !== 2) return upper;
   return String.fromCodePoint(
     ...Array.from(upper).map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)
+  );
+}
+
+function AnonStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="text-center">
+      <div className="text-xl font-bold text-amber-400 tabular-nums">{value.toLocaleString()}</div>
+      <div className="text-xs text-neutral-500 mt-0.5">{label}</div>
+    </div>
   );
 }
 

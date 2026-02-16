@@ -72,6 +72,7 @@ async def analytics_overview(
         devices_res,
         models_res,
         countries_res,
+        anon_res,
     ) = await asyncio.gather(
         _query_summary(db, since),
         _query_daily_pageviews(db, since),
@@ -84,6 +85,7 @@ async def analytics_overview(
         _query_devices(db, since),
         _query_models(db, since),
         _query_countries(db, since),
+        _query_anon_stats(db, since),
     )
 
     # Merge daily stats into single list
@@ -98,35 +100,36 @@ async def analytics_overview(
         "devices": devices_res,
         "models": models_res,
         "countries": countries_res,
+        "anon_stats": anon_res,
     }
 
 
 # --- Query helpers ---
 
-_EXCLUDE_ADMINS = "AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id = {user_col} AND u.role = 'admin')"
-_PV_NO_ADMIN = "AND (user_id IS NULL OR NOT EXISTS (SELECT 1 FROM users u WHERE u.id = page_views.user_id AND u.role = 'admin'))"
+_EXCLUDE_SYSTEM = "AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id = {user_col} AND (u.role = 'admin' OR u.email IN ('system@sweetsin.cc', 'anonymous@system.local')))"
+_PV_NO_SYSTEM = "AND (user_id IS NULL OR NOT EXISTS (SELECT 1 FROM users u WHERE u.id = page_views.user_id AND (u.role = 'admin' OR u.email IN ('system@sweetsin.cc', 'anonymous@system.local'))))"
 
 
 async def _query_summary(db: AsyncSession, since: datetime) -> dict:
-    """Summary card numbers (excluding admins)."""
+    """Summary card numbers (excluding admins and system users)."""
     users_total = (await db.execute(text(
-        "SELECT COUNT(*) FROM users WHERE role != 'admin'"
+        "SELECT COUNT(*) FROM users WHERE role != 'admin' AND email NOT IN ('system@sweetsin.cc', 'anonymous@system.local')"
     ))).scalar() or 0
     users_new = (await db.execute(text(
-        "SELECT COUNT(*) FROM users WHERE created_at >= :since AND role != 'admin'"
+        "SELECT COUNT(*) FROM users WHERE created_at >= :since AND role != 'admin' AND email NOT IN ('system@sweetsin.cc', 'anonymous@system.local')"
     ), {"since": since})).scalar() or 0
     pageviews = (await db.execute(text(
-        f"SELECT COUNT(*) FROM page_views WHERE created_at >= :since {_PV_NO_ADMIN}"
+        f"SELECT COUNT(*) FROM page_views WHERE created_at >= :since {_PV_NO_SYSTEM}"
     ), {"since": since})).scalar() or 0
     unique_visitors = (await db.execute(text(
-        f"SELECT COUNT(DISTINCT ip_hash) FROM page_views WHERE created_at >= :since {_PV_NO_ADMIN}"
+        f"SELECT COUNT(DISTINCT ip_hash) FROM page_views WHERE created_at >= :since {_PV_NO_SYSTEM}"
     ), {"since": since})).scalar() or 0
     messages = (await db.execute(text(
         "SELECT COUNT(*) FROM messages m JOIN chats ch ON ch.id = m.chat_id WHERE m.created_at >= :since AND m.role = 'user'"
-        f" {_EXCLUDE_ADMINS.format(user_col='ch.user_id')}"
+        f" {_EXCLUDE_SYSTEM.format(user_col='ch.user_id')}"
     ), {"since": since})).scalar() or 0
     new_chats = (await db.execute(text(
-        f"SELECT COUNT(*) FROM chats WHERE created_at >= :since {_EXCLUDE_ADMINS.format(user_col='chats.user_id')}"
+        f"SELECT COUNT(*) FROM chats WHERE created_at >= :since {_EXCLUDE_SYSTEM.format(user_col='chats.user_id')}"
     ), {"since": since})).scalar() or 0
 
     return {
@@ -142,7 +145,7 @@ async def _query_summary(db: AsyncSession, since: datetime) -> dict:
 async def _query_daily_pageviews(db: AsyncSession, since: datetime) -> dict[str, dict]:
     rows = (await db.execute(text(f"""
         SELECT DATE(created_at) as d, COUNT(*) as pv, COUNT(DISTINCT ip_hash) as uv
-        FROM page_views WHERE created_at >= :since {_PV_NO_ADMIN}
+        FROM page_views WHERE created_at >= :since {_PV_NO_SYSTEM}
         GROUP BY DATE(created_at) ORDER BY d
     """), {"since": since})).fetchall()
     return {str(r[0]): {"pageviews": r[1], "unique_visitors": r[2]} for r in rows}
@@ -152,6 +155,7 @@ async def _query_daily_registrations(db: AsyncSession, since: datetime) -> dict[
     rows = (await db.execute(text("""
         SELECT DATE(created_at) as d, COUNT(*) as cnt
         FROM users WHERE created_at >= :since AND role != 'admin'
+        AND email NOT IN ('system@sweetsin.cc', 'anonymous@system.local')
         GROUP BY DATE(created_at) ORDER BY d
     """), {"since": since})).fetchall()
     return {str(r[0]): r[1] for r in rows}
@@ -162,7 +166,7 @@ async def _query_daily_messages(db: AsyncSession, since: datetime) -> dict[str, 
         SELECT DATE(m.created_at) as d, COUNT(*) as cnt
         FROM messages m JOIN chats ch ON ch.id = m.chat_id
         WHERE m.created_at >= :since AND m.role = 'user'
-        {_EXCLUDE_ADMINS.format(user_col='ch.user_id')}
+        {_EXCLUDE_SYSTEM.format(user_col='ch.user_id')}
         GROUP BY DATE(m.created_at) ORDER BY d
     """), {"since": since})).fetchall()
     return {str(r[0]): r[1] for r in rows}
@@ -172,7 +176,7 @@ async def _query_daily_chats(db: AsyncSession, since: datetime) -> dict[str, int
     rows = (await db.execute(text(f"""
         SELECT DATE(created_at) as d, COUNT(*) as cnt
         FROM chats WHERE created_at >= :since
-        {_EXCLUDE_ADMINS.format(user_col='chats.user_id')}
+        {_EXCLUDE_SYSTEM.format(user_col='chats.user_id')}
         GROUP BY DATE(created_at) ORDER BY d
     """), {"since": since})).fetchall()
     return {str(r[0]): r[1] for r in rows}
@@ -181,7 +185,7 @@ async def _query_daily_chats(db: AsyncSession, since: datetime) -> dict[str, int
 async def _query_top_pages(db: AsyncSession, since: datetime) -> list[dict]:
     rows = (await db.execute(text(f"""
         SELECT path, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniq
-        FROM page_views WHERE created_at >= :since {_PV_NO_ADMIN}
+        FROM page_views WHERE created_at >= :since {_PV_NO_SYSTEM}
         GROUP BY path ORDER BY views DESC LIMIT 20
     """), {"since": since})).fetchall()
     return [{"path": r[0], "views": r[1], "unique": r[2]} for r in rows]
@@ -191,7 +195,7 @@ async def _query_top_referrers(db: AsyncSession, since: datetime) -> list[dict]:
     rows = (await db.execute(text(f"""
         SELECT referrer, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniq
         FROM page_views WHERE created_at >= :since AND referrer IS NOT NULL AND referrer != ''
-        {_PV_NO_ADMIN}
+        {_PV_NO_SYSTEM}
         GROUP BY referrer ORDER BY views DESC LIMIT 20
     """), {"since": since})).fetchall()
     return [{"referrer": r[0], "views": r[1], "unique": r[2]} for r in rows]
@@ -204,7 +208,7 @@ async def _query_top_characters(db: AsyncSession, since: datetime) -> list[dict]
         JOIN chats ch ON ch.character_id = c.id
         JOIN messages m ON m.chat_id = ch.id
         WHERE m.created_at >= :since AND m.role = 'user'
-        {_EXCLUDE_ADMINS.format(user_col='ch.user_id')}
+        {_EXCLUDE_SYSTEM.format(user_col='ch.user_id')}
         GROUP BY c.id, c.name, c.avatar_url
         ORDER BY msg_count DESC LIMIT 10
     """), {"since": since})).fetchall()
@@ -215,7 +219,7 @@ async def _query_devices(db: AsyncSession, since: datetime) -> dict:
     rows = (await db.execute(text(f"""
         SELECT device, COUNT(*) as cnt
         FROM page_views WHERE created_at >= :since AND device IS NOT NULL
-        {_PV_NO_ADMIN}
+        {_PV_NO_SYSTEM}
         GROUP BY device
     """), {"since": since})).fetchall()
     result = {"mobile": 0, "desktop": 0, "tablet": 0}
@@ -230,7 +234,7 @@ async def _query_countries(db: AsyncSession, since: datetime) -> list[dict]:
         SELECT country, COUNT(*) as views, COUNT(DISTINCT ip_hash) as uniq
         FROM page_views
         WHERE created_at >= :since AND country IS NOT NULL
-        {_PV_NO_ADMIN}
+        {_PV_NO_SYSTEM}
         GROUP BY country ORDER BY uniq DESC LIMIT 20
     """), {"since": since})).fetchall()
     return [{"country": r[0], "views": r[1], "unique": r[2]} for r in rows]
@@ -244,6 +248,37 @@ async def _query_models(db: AsyncSession, since: datetime) -> list[dict]:
         GROUP BY model_used ORDER BY cnt DESC
     """), {"since": since})).fetchall()
     return [{"model": r[0], "count": r[1]} for r in rows]
+
+
+async def _query_anon_stats(db: AsyncSession, since: datetime) -> dict:
+    """Anonymous user statistics — unique sessions, messages, chats."""
+    unique_sessions = (await db.execute(text(
+        "SELECT COUNT(DISTINCT anon_session_id) FROM chats "
+        "WHERE anon_session_id IS NOT NULL AND created_at >= :since"
+    ), {"since": since})).scalar() or 0
+    total_sessions = (await db.execute(text(
+        "SELECT COUNT(DISTINCT anon_session_id) FROM chats "
+        "WHERE anon_session_id IS NOT NULL"
+    ))).scalar() or 0
+    anon_messages = (await db.execute(text(
+        "SELECT COUNT(*) FROM messages m JOIN chats c ON c.id = m.chat_id "
+        "WHERE c.anon_session_id IS NOT NULL AND m.role = 'user' AND m.created_at >= :since"
+    ), {"since": since})).scalar() or 0
+    anon_chats = (await db.execute(text(
+        "SELECT COUNT(*) FROM chats "
+        "WHERE anon_session_id IS NOT NULL AND created_at >= :since"
+    ), {"since": since})).scalar() or 0
+    total_anon_messages = (await db.execute(text(
+        "SELECT COUNT(*) FROM messages m JOIN chats c ON c.id = m.chat_id "
+        "WHERE c.anon_session_id IS NOT NULL AND m.role = 'user'"
+    ))).scalar() or 0
+    return {
+        "unique_sessions": unique_sessions,
+        "total_sessions": total_sessions,
+        "messages": anon_messages,
+        "chats": anon_chats,
+        "total_messages": total_anon_messages,
+    }
 
 
 def _merge_daily(

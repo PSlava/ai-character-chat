@@ -34,6 +34,7 @@ _SETTING_DEFAULTS: dict[str, str] = {
     "setting.paid_mode": "false",
     "setting.daily_message_limit": "1000",
     "setting.max_personas": "5",
+    "setting.anon_message_limit": "50",
 }
 
 

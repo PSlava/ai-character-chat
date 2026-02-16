@@ -81,6 +81,9 @@ async def init_db():
         # Persona snapshot in chat
         "ALTER TABLE chats ADD COLUMN IF NOT EXISTS persona_name VARCHAR(50)",
         "ALTER TABLE chats ADD COLUMN IF NOT EXISTS persona_description TEXT",
+        # Anonymous guest chat
+        "ALTER TABLE chats ADD COLUMN IF NOT EXISTS anon_session_id VARCHAR",
+        "CREATE INDEX IF NOT EXISTS idx_chats_anon_session ON chats (anon_session_id) WHERE anon_session_id IS NOT NULL",
     ]
     for sql in migrations:
         try:

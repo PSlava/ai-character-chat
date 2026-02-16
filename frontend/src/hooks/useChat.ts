@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { getAuthToken, deleteChatMessage } from '@/api/chat';
+import { getAuthOrAnonToken, deleteChatMessage } from '@/api/chat';
 import type { Message } from '@/types';
 
 export interface GenerationSettings {
@@ -19,6 +19,8 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
   const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [anonLimitReached, setAnonLimitReached] = useState(false);
+  const [anonMessagesLeft, setAnonMessagesLeft] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const settingsRef = useRef<GenerationSettings>({});
 
@@ -28,8 +30,8 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
 
   const sendMessage = useCallback(
     async (content: string, opts?: { is_regenerate?: boolean }) => {
-      const token = await getAuthToken();
-      if (!token) return;
+      const { token, anonSessionId } = getAuthOrAnonToken();
+      if (!token && !anonSessionId) return;
 
       // Add user message optimistically
       const userMsg: Message = {
@@ -55,13 +57,17 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
 
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      } else if (anonSessionId) {
+        headers['X-Anon-Session'] = anonSessionId;
+      }
+
       const s = settingsRef.current;
       await fetchEventSource(`/api/chats/${chatId}/message`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           content,
           language: i18n.language,
@@ -111,6 +117,13 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               }
               return updated;
             });
+            // Track anonymous messages remaining
+            if (data.anon_messages_left !== undefined) {
+              setAnonMessagesLeft(data.anon_messages_left);
+              if (data.anon_messages_left <= 0) {
+                setAnonLimitReached(true);
+              }
+            }
             setIsStreaming(false);
           }
           if (data.type === 'error') {
@@ -139,7 +152,25 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
             setIsStreaming(false);
           }
         },
-        onerror() {
+        async onopen(response) {
+          if (response.ok) return;
+          if (response.status === 403) {
+            let detail = '';
+            try { const body = await response.json(); detail = body.detail || ''; } catch {}
+            if (detail === 'anon_limit_reached' || detail === 'anon_chat_disabled') {
+              setAnonLimitReached(true);
+              // Remove optimistic messages
+              setMessages((prev) => prev.filter((m) => m.id !== userMsg.id && m.id !== assistantMsg.id));
+              setIsStreaming(false);
+              throw new Error(detail);
+            }
+          }
+          throw new Error(`HTTP ${response.status}`);
+        },
+        onerror(err) {
+          if (err?.message === 'anon_limit_reached' || err?.message === 'anon_chat_disabled') {
+            throw err; // Don't retry
+          }
           setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
@@ -153,6 +184,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
             return updated;
           });
           setIsStreaming(false);
+          throw err; // Don't retry
         },
       });
     },
@@ -246,5 +278,5 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
 }

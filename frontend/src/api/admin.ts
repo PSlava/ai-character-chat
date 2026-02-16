@@ -74,6 +74,7 @@ export interface AdminSettings {
   paid_mode: string;
   daily_message_limit: string;
   max_personas: string;
+  anon_message_limit: string;
 }
 
 export async function getAdminSettings(): Promise<AdminSettings> {

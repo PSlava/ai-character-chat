@@ -260,6 +260,18 @@ docker compose up -d
 - **Markdown рендеринг** — react-markdown + rehype-sanitize для сообщений ассистента (bold, italic, code, списки, blockquote). Пользовательские сообщения — plain text
 - **Копирование сообщений** — кнопка Copy на каждом сообщении ассистента (clipboard + toast)
 - **Auto-resize textarea** — поле ввода автоматически растёт по высоте (от 1 строки до 192px max), сбрасывается после отправки
+- **Анонимный (гостевой) чат** — незарегистрированные пользователи могут общаться с персонажами:
+  - Системный пользователь `anonymous@system.local` — общий аккаунт для анонимных чатов (избегает nullable FK)
+  - Сессия трекается через UUID в localStorage (`anon_session_id`), передаётся в `X-Anon-Session` header
+  - `anon_session_id` на модели Chat — разделяет чаты разных анонимных сессий
+  - Лимит сообщений: админ-настройка `setting.anon_message_limit` (дефолт 50, 0 = отключено)
+  - Серверная проверка: бэкенд считает сообщения по `anon_session_id`, возвращает 403 при превышении
+  - Клиентский трекинг: `anon_messages_left` в ответе создания чата и SSE `done` событиях
+  - Опциональная авторизация: `get_current_user_optional` — None для анонимных запросов
+  - При достижении лимита — модалка `AnonLimitModal` с предложением зарегистрироваться
+  - Если лимит = 0: кнопка «Начать чат» сразу редиректит на `/auth`
+  - Анонимным недоступны: удаление чатов, очистка, список чатов, новый чат в шапке
+  - Индикатор оставшихся сообщений (amber bar) в чате
 
 ### Аватары
 - **Загрузка аватаров** — `POST /api/upload/avatar` (multipart, auth required)
@@ -315,10 +327,10 @@ docker compose up -d
   - 6 summary карточек: пользователи, новые, просмотры, уникальные, сообщения, чаты
   - CSS bar chart трафика по дням (просмотры + уникальные + регистрации)
   - Топ страниц, источники трафика, топ персонажей, устройства (mobile/desktop/tablet), модели
-  - Админы полностью исключены из статистики (page views, регистрации, сообщения, чаты)
+  - Системные пользователи (админы, @sweetsin, anonymous) полностью исключены из статистики (page views, регистрации, сообщения, чаты)
   - **GeoIP страны посетителей** — локальная база DB-IP Lite (MMDB, ~5MB), instant lookup через maxminddb. Автообновление при старте если база старше 30 дней. Страны с флагами на дашборде. `country` колонка на `page_views`
 - **Email-уведомления о регистрации** — при новой регистрации (email или Google OAuth) администратору отправляется email с данными нового пользователя (email, username, метод регистрации). Toggle вкл/выкл на странице `/admin/users` (кнопка Bell). Настройка хранится в `prompt_templates` как `setting.notify_registration`. Админы не получают уведомление о своей регистрации
-- **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.paid_mode` (bool) — платный режим LLM, `setting.max_personas` (int, дефолт 5) — лимит персон на пользователя, `setting.daily_message_limit` (int, дефолт 1000) — дневной лимит сообщений
+- **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.paid_mode` (bool) — платный режим LLM, `setting.max_personas` (int, дефолт 5) — лимит персон на пользователя, `setting.daily_message_limit` (int, дефолт 1000) — дневной лимит сообщений, `setting.anon_message_limit` (int, дефолт 50) — лимит сообщений для анонимных гостей (0 = отключено)
 - **Настройки админа** — API `GET /api/admin/settings` и `PUT /api/admin/settings/{key}` для key-value настроек (хранятся в `prompt_templates` с префиксом `setting.`)
 - **Платный режим (Paid Mode)** — админ-тоггл на странице пользователей (иконка DollarSign). Когда включён: auto-fallback использует `["groq", "together"]` (платные, без rate limits) вместо `groq → cerebras → openrouter`. Настройка `setting.paid_mode` с 60-секундным in-memory кэшем. UI: зелёная кнопка когда вкл, серая когда выкл
 - Ссылки в сайдбаре: «Пользователи» + «Промпты» + «Жалобы» + «Аналитика» видны только админу
@@ -334,6 +346,7 @@ docker compose up -d
 - **Очистка** (`autonomous/cleanup.py`) — удаление `page_views` >90 дней, orphan avatar файлов
 - **Общий порядок провайдеров** (`autonomous/providers.py`) — `AUTONOMOUS_PROVIDER_ORDER` env: платные первые (Claude → OpenAI → Gemini → DeepSeek → Together), бесплатные как fallback (Groq → Cerebras → OpenRouter)
 - **Anti-AI пост-обработка** (`autonomous/text_humanizer.py`) — замена ~30 AI-клише (RU+EN) на естественные альтернативы. Применяется к сгенерированным персонажам
+- **Мониторинг моделей** (`autonomous/model_monitor.py`) — ежедневно: проверяет Groq/Cerebras/Together (через `client.models.list()`) и OpenRouter (httpx → `/api/v1/models`, только `:free`). Хранит предыдущее состояние в `prompt_templates` (`models.*` ключи). Первый запуск — сохраняет baseline без уведомления. При изменениях (новые/удалённые/изменённые модели) — email всем ADMIN_EMAILS
 - Конфиг: `AUTO_CHARACTER_ENABLED` env (по умолчанию `true`)
 
 ### LLM-провайдеры (9 штук)
@@ -439,7 +452,7 @@ docker compose up -d
 - 21 страница: главная, авторизация, сброс пароля, OAuth callback, персонаж (с размытым фоном аватара), чат, создание (ручное + из текста + импорт), редактирование, профиль, **избранное**, **админ-промпты**, **админ-пользователи**, **админ-жалобы**, **админ-аналитика**, **о проекте**, **условия**, **конфиденциальность**, **FAQ**
 - **Брендинг**: логотип Sweet+Sin с SVG-иконкой сердца (дьявольские рожки/хвост), SEO мета-теги, Open Graph
 - **Landing page (hero section)** — для неавторизованных: большой логотип, слоган, **статистика** (пользователи/сообщения/онлайн), 2 CTA-кнопки, аватары популярных персонажей, 4 feature-карточки. Gradient-фон rose-950/30. Для авторизованных — только каталог
-- **Статистика на лендинге** — `GET /api/stats` возвращает users (+1200), messages (+45000), characters, online_now (15–45, pseudo-random stable per 5-min window)
+- **Статистика на лендинге** — `GET /api/stats` возвращает users (+1200), messages (+45000), characters, online_now (15–45, pseudo-random stable per 5-min window). Исключены: админы, @sweetsin, anonymous системный пользователь
 - **Footer** — ссылки на О проекте, Условия, Конфиденциальность, FAQ, контакт (support@sweetsin.cc), copyright. Прижат к низу через min-h-full flex. **Популярные персонажи** — 8 топ-персонажей как ссылки (SEO internal linking, module-level кеш)
 - **Онлайн-точки** — зелёная точка на аватарах всех персонажей (всегда online). На CharacterCard и CharacterPage
 - **Фильтры по тегам** — пиллы (Все / Фэнтези / Романтика / Современность / Аниме) над поиском на главной. Используют существующий backend `tag` query param
@@ -555,9 +568,11 @@ docker compose up -d
 - [ ] **Revenue share для создателей** — % от дохода популярных персонажей (Chai)
 
 ### Engagement (Удержание)
-- [ ] **Lorebooks / World Info** — keyword-triggered лор, инжектится в контекст при упоминании (Chub.ai). Огромный UX буст
-- [ ] **Семантическая память** — LLM автосуммаризация важных моментов, вспоминает при релевантности (SpicyChat Memory 2.0)
-- [ ] **Групповые чаты** — пользователь + 2-5 ИИ-персонажей, orchestrated turn-taking (Character.AI, CrushOn)
+- [x] ~~**Lorebooks / World Info** — keyword-triggered лор, инжектится в контекст при упоминании~~
+- [x] ~~**Память чата (Chat Memory)** — LLM автосуммаризация, контекст длинных разговоров~~
+- [x] ~~**Групповые чаты** — пользователь + несколько ИИ-персонажей, поочерёдные ответы~~
+- [x] ~~**Мониторинг моделей** — ежедневная проверка Groq/Cerebras/Together/OpenRouter, email при изменениях~~
+- [x] ~~**Обновление About/FAQ/Hero** — 10 feature-карточек, 12 FAQ, 6 hero-карточек, 3 языка~~
 - [ ] **Ачивки/коллекционные карточки** — бейджи за вехи (100 сообщений, 10 персонажей), геймификация (Talkie)
 - [x] ~~**Выбор персоны в UI чата** — модалка выбора при создании, снапшот в чате, генерация ответа~~
 
@@ -698,10 +713,10 @@ chatbot/
 │   │   │   ├── AdminReportsPage.tsx # Админ: жалобы (фильтр по статусу, review/dismiss)
 │   │   │   ├── CreateCharacterPage.tsx  # Создание (ручное + из текста + импорт SillyTavern)
 │   │   │   ├── EditCharacterPage.tsx    # Редактирование персонажа
-│   │   │   ├── AboutPage.tsx        # О проекте
+│   │   │   ├── AboutPage.tsx        # О проекте (10 feature-карточек с иконками)
 │   │   │   ├── TermsPage.tsx        # Условия использования
 │   │   │   ├── PrivacyPage.tsx      # Политика конфиденциальности
-│   │   │   ├── FAQPage.tsx          # Часто задаваемые вопросы
+│   │   │   ├── FAQPage.tsx          # FAQ (12 вопросов, JSON-LD schema)
 │   │   │   └── ...
 │   │   ├── components/
 │   │   │   ├── chat/

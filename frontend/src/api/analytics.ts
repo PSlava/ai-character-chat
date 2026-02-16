@@ -57,6 +57,14 @@ export interface CountryStats {
   unique: number;
 }
 
+export interface AnonStats {
+  unique_sessions: number;
+  total_sessions: number;
+  messages: number;
+  chats: number;
+  total_messages: number;
+}
+
 export interface AnalyticsOverview {
   summary: AnalyticsSummary;
   daily: DailyStats[];
@@ -66,6 +74,7 @@ export interface AnalyticsOverview {
   devices: { mobile: number; desktop: number; tablet: number };
   models: ModelUsage[];
   countries: CountryStats[];
+  anon_stats: AnonStats;
 }
 
 export async function getAnalyticsOverview(days: number = 7): Promise<AnalyticsOverview> {

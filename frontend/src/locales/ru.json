@@ -508,6 +508,12 @@
   "admin.analyticsUniq": "Уникальные",
   "admin.analyticsSource": "Источник",
   "admin.analyticsRegistrations": "Регистрации",
+  "admin.analyticsAnon": "Анонимные гости",
+  "admin.analyticsAnonSessionsNew": "Уникальных сессий (период)",
+  "admin.analyticsAnonSessionsTotal": "Уникальных сессий (всего)",
+  "admin.analyticsAnonMessages": "Сообщений (период)",
+  "admin.analyticsAnonChats": "Чатов (период)",
+  "admin.analyticsAnonMessagesTotal": "Сообщений (всего)",
 
   "admin.notifyRegistration": "Email о регистрации",
   "admin.notifyRegistrationHint": "Отправлять email админу при регистрации нового пользователя",
@@ -517,6 +523,8 @@
   "admin.dailyMessageLimitHint": "Макс. сообщений на пользователя в день (0 = без лимита)",
   "admin.maxPersonas": "Лимит персон",
   "admin.maxPersonasHint": "Макс. персон на пользователя (0 = без лимита)",
+  "admin.anonLimit": "Лимит анонимов",
+  "admin.anonLimitHint": "Макс. сообщений для анонимных (0 = отключено)",
 
   "create.tabImport": "Импорт",
   "create.importTitle": "Импорт карточки персонажа",
@@ -561,5 +569,12 @@
   "seo.about.description": "О SweetSin — платформа чата с ИИ-персонажами для ролеплея и фантазийных разговоров.",
   "seo.terms.description": "Условия использования SweetSin — платформа чата с ИИ-персонажами.",
   "seo.privacy.description": "Политика конфиденциальности SweetSin — как мы обрабатываем ваши данные и защищаем вашу приватность.",
-  "seo.faq.description": "Часто задаваемые вопросы о SweetSin — чат с ИИ-персонажами, ролеплей и создание персонажей."
+  "seo.faq.description": "Часто задаваемые вопросы о SweetSin — чат с ИИ-персонажами, ролеплей и создание персонажей.",
+
+  "anon.limitTitle": "Требуется регистрация",
+  "anon.limitMessage": "Вы использовали все бесплатные сообщения. Создайте аккаунт, чтобы продолжить общение с персонажами — это займёт несколько секунд!",
+  "anon.register": "Создать аккаунт",
+  "anon.later": "Позже",
+  "anon.messagesLeft": "Осталось бесплатных сообщений: {{count}}",
+  "anon.registerLink": "Зарегистрируйтесь для безлимитного доступа"
 }
