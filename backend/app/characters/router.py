@@ -184,6 +184,9 @@ async def browse_characters(
     is_admin = user.get("role") == "admin" if user else False
     characters = await service.list_public_characters(db, limit, offset, search, tag, user_id=user_id, language=language)
     total = await service.count_public_characters(db, search, tag, user_id=user_id)
+    if language:
+        from app.characters.translation import ensure_translations
+        await ensure_translations(characters, language)
     return {"items": [character_to_dict(c, language=language, is_admin=is_admin) for c in characters], "total": total}
 
 
