@@ -1,12 +1,12 @@
 import re
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from sqlalchemy.orm import selectinload
-from app.db.models import User, Favorite, Vote, Character
+from app.db.models import User, Favorite, Vote, Character, Chat
 from app.characters.serializers import character_to_dict
 from app.utils.sanitize import strip_html_tags
 
@@ -32,6 +32,11 @@ async def get_profile(user=Depends(get_current_user), db: AsyncSession = Depends
     u = result.scalar_one_or_none()
     if not u:
         raise HTTPException(status_code=404)
+    # Count actual chats from DB (not cached counter — avoids desync on delete)
+    chat_count_result = await db.execute(
+        select(func.count()).select_from(Chat).where(Chat.user_id == user["id"])
+    )
+    actual_chat_count = chat_count_result.scalar() or 0
     return {
         "id": u.id,
         "email": u.email,
@@ -42,7 +47,7 @@ async def get_profile(user=Depends(get_current_user), db: AsyncSession = Depends
         "language": u.language or "ru",
         "role": u.role or "user",
         "message_count": u.message_count or 0,
-        "chat_count": u.chat_count or 0,
+        "chat_count": actual_chat_count,
     }
 
 
@@ -84,6 +89,10 @@ async def update_profile(
             setattr(u, key, value)
     await db.commit()
     await db.refresh(u)
+    chat_count_result = await db.execute(
+        select(func.count()).select_from(Chat).where(Chat.user_id == user["id"])
+    )
+    actual_chat_count = chat_count_result.scalar() or 0
     return {
         "id": u.id,
         "email": u.email,
@@ -94,7 +103,7 @@ async def update_profile(
         "language": u.language or "ru",
         "role": u.role or "user",
         "message_count": u.message_count or 0,
-        "chat_count": u.chat_count or 0,
+        "chat_count": actual_chat_count,
     }
 
 

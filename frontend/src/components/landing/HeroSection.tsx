@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/Button';
 import { localePath } from '@/lib/lang';
-import { Sparkles, ShieldOff, Cpu, Pencil } from 'lucide-react';
+import { Sparkles, ShieldOff, Cpu, Pencil, Users, BookOpen } from 'lucide-react';
 import { getStats, type SiteStats } from '@/api/stats';
 import type { Character } from '@/types';
 
@@ -13,6 +13,8 @@ const features = [
   { key: 'nocensor', icon: ShieldOff, titleKey: 'hero.feature2.title', descKey: 'hero.feature2.desc' },
   { key: 'providers', icon: Cpu, titleKey: 'hero.feature3.title', descKey: 'hero.feature3.desc' },
   { key: 'create', icon: Pencil, titleKey: 'hero.feature4.title', descKey: 'hero.feature4.desc' },
+  { key: 'group', icon: Users, titleKey: 'hero.feature5.title', descKey: 'hero.feature5.desc' },
+  { key: 'lore', icon: BookOpen, titleKey: 'hero.feature6.title', descKey: 'hero.feature6.desc' },
 ];
 
 interface Props {
@@ -99,7 +101,7 @@ export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
 
       {/* Feature Cards */}
       <section className="max-w-5xl mx-auto px-4 pb-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
           {features.map((f) => (
             <div
               key={f.key}

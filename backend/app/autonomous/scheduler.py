@@ -141,6 +141,17 @@ async def _run_cycle():
         except Exception:
             logger.exception("Relationship building failed")
 
+    # 6) Model monitoring (daily)
+    last_model_check = await _get_last_run("last_model_check")
+    if _should_run(last_model_check):
+        try:
+            from app.autonomous.model_monitor import check_models
+            await check_models()
+            await _set_last_run("last_model_check")
+            logger.info("Model monitoring completed")
+        except Exception:
+            logger.exception("Model monitoring failed")
+
     logger.info("Scheduler cycle complete")
 
 
