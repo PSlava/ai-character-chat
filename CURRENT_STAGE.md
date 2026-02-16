@@ -50,8 +50,8 @@
 
 ### VPS-деплой (Docker Compose) — РАБОТАЕТ
 
-**Production**: `151.245.217.191` (sweetsin.cc) — 888MB RAM, Ubuntu 22.04, `WEB_WORKERS=1`
-**Тестовый**: `89.116.31.138` — 8GB RAM, старый сервер (данные мигрированы)
+**Production**: `151.245.217.191` (sweetsin.cc) — 2 CPU, 1.8GB RAM, Ubuntu 22.04, `WEB_WORKERS=1`
+**Тестовый**: `89.116.31.138` (test.sweetsin.cc) — 4 CPU, 7.8GB RAM, SSL + `X-Robots-Tag: noindex, nofollow`
 
 Docker Compose: 4 контейнера, автодеплой через GitHub webhook.
 
@@ -105,7 +105,9 @@ docker compose up -d
 | OPENAI_API_KEY | Да | Вручную | GPT (нужны кредиты) |
 | GEMINI_API_KEY | Да | Вручную | Gemini (квота=0) |
 | DEFAULT_MODEL | auto | Настраиваемый | Модель по умолчанию (auto = все провайдеры) |
-| AUTO_PROVIDER_ORDER | groq,cerebras,openrouter | Настраиваемый | Порядок провайдеров для auto-fallback |
+| AUTO_PROVIDER_ORDER | groq,cerebras,openrouter | Настраиваемый | Порядок провайдеров для auto-fallback (чат) |
+| AUTONOMOUS_PROVIDER_ORDER | claude,openai,...,openrouter | Настраиваемый | Порядок провайдеров для автономных задач (платные первые) |
+| NGINX_CONF | nginx-ssl.conf | nginx-ssl-test.conf | Конфиг nginx (prod vs test) |
 | ADMIN_EMAILS | — | Вручную | Список email-ов админов (через запятую) |
 | PROXY_URL | Да | Вручную | HTTP прокси |
 | RESEND_API_KEY | — | Вручную | Resend API ключ (приоритет перед SMTP) |
@@ -322,9 +324,11 @@ docker compose up -d
 - **Генерация персонажей** (`autonomous/character_generator.py`) — LLM-driven: 14 взвешенных категорий (~90% NSFW), LLM изобретает уникальную концепцию → текст (Groq→Cerebras→OpenRouter) → DALL-E 3 аватар (512×512, WebP, ~$0.04) → сохранение под @sweetsin → авто-перевод EN/ES. При ошибке — email админам
 - **Рост счётчиков** (`autonomous/counter_growth.py`) — ежедневный bump `base_chat_count`/`base_like_count` с учётом языковых предпочтений (дарк-романтика растёт быстрее для RU, аниме — для EN, романтика — для ES)
 - **Языковые предпочтения** (`characters/language_preferences.py`) — таблица аффинити по сеттингам, тегам, рейтингу. Влияет на начальные счётчики при генерации и на ежедневный рост. Результат: сортировка на главной автоматически отражает предпочтения аудитории. Featured — из топ-5 по текущему языку
-- **Highlights** (`autonomous/highlight_generator.py`) — ежедневно: генерирует 2 editorial фразы на 3 языках для до 10 персонажей без highlights. НЕ фейк-отзывы — описательные фразы. Groq→Cerebras→OpenRouter fallback
+- **Highlights** (`autonomous/highlight_generator.py`) — ежедневно: генерирует 2 editorial фразы на 3 языках для до 10 персонажей без highlights. НЕ фейк-отзывы — описательные фразы
 - **Связи** (`autonomous/relationship_builder.py`) — еженедельно: ищет пары с 2+ общими тегами, LLM определяет тип отношений (rival/ex/friend/sibling/enemy/lover/ally), создаёт двунаправленные связи с лейблами на 3 языках. Макс 3 связи на персонажа, 20 пар за запуск
 - **Очистка** (`autonomous/cleanup.py`) — удаление `page_views` >90 дней, orphan avatar файлов
+- **Общий порядок провайдеров** (`autonomous/providers.py`) — `AUTONOMOUS_PROVIDER_ORDER` env: платные первые (Claude → OpenAI → Gemini → DeepSeek → Together), бесплатные как fallback (Groq → Cerebras → OpenRouter)
+- **Anti-AI пост-обработка** (`autonomous/text_humanizer.py`) — замена ~30 AI-клише (RU+EN) на естественные альтернативы. Применяется к сгенерированным персонажам
 - Конфиг: `AUTO_CHARACTER_ENABLED` env (по умолчанию `true`)
 
 ### LLM-провайдеры (9 штук)
@@ -530,6 +534,9 @@ docker compose up -d
 - [x] ~~Форк персонажей (POST /{id}/fork, clone + redirect to edit)~~
 - [x] ~~Character Highlights (авто-фразы LLM, daily, editorial not fake reviews)~~
 - [x] ~~Связи между персонажами (CharacterRelation, weekly LLM, Connections UI)~~
+- [x] ~~Платные модели для автономных задач (AUTONOMOUS_PROVIDER_ORDER, paid-first)~~
+- [x] ~~Anti-AI пост-обработка (text_humanizer.py, anti-cliché замены RU+EN)~~
+- [x] ~~Тестовый субдомен (test.sweetsin.cc, SSL, X-Robots-Tag: noindex)~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -635,7 +642,9 @@ chatbot/
 │   │   │   └── schemas.py           # PageViewRequest
 │   │   ├── autonomous/              # Автономные задачи (без cron/Celery)
 │   │   │   ├── scheduler.py         # Hourly check loop, state в prompt_templates
-│   │   │   ├── character_generator.py # LLM-driven (14 взвешенных категорий) + DALL-E аватар + перевод
+│   │   │   ├── providers.py         # Shared provider order (AUTONOMOUS_PROVIDER_ORDER, paid-first)
+│   │   │   ├── text_humanizer.py    # Anti-AI пост-обработка (~30 клише RU+EN → замены)
+│   │   │   ├── character_generator.py # LLM-driven (14 взвешенных категорий) + DALL-E аватар + humanizer + перевод
 │   │   │   ├── counter_growth.py    # Ежедневный bump с языковыми предпочтениями
 │   │   │   ├── highlight_generator.py # Ежедневные editorial фразы (2×3 языка, до 10 персонажей)
 │   │   │   ├── relationship_builder.py # Еженедельные связи между персонажами (LLM)
@@ -708,8 +717,10 @@ chatbot/
 │   ├── setup.sh                     # Установка на VPS (--auto для non-interactive)
 │   ├── deploy.sh                    # Автодеплой (git pull + rebuild)
 │   ├── nginx/
-│   │   ├── Dockerfile               # Multi-stage: node build → nginx serve
-│   │   ├── nginx.conf               # Reverse proxy + SSE support
+│   │   ├── Dockerfile               # Multi-stage: node build → nginx serve (NGINX_CONF build arg)
+│   │   ├── nginx.conf               # HTTP-only (dev)
+│   │   ├── nginx-ssl.conf           # Production SSL (sweetsin.cc)
+│   │   ├── nginx-ssl-test.conf      # Test SSL (test.sweetsin.cc, noindex)
 │   │   └── certs/                   # SSL сертификаты (gitignored)
 │   └── webhook/
 │       ├── Dockerfile               # Python + docker CLI + docker compose v2 + buildx
