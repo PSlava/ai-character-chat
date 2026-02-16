@@ -569,7 +569,8 @@ chatbot/
 │   │   │   ├── schemas.py           # Pydantic модели
 │   │   │   ├── serializers.py       # ORM → dict (username, active_translations)
 │   │   │   ├── translation.py       # Batch-перевод карточек + per-field plain text перевод описаний (personality, scenario, appearance, greeting) + JSONB кэш
-│   │   │   └── structured_tags.py   # Реестр 33 тегов × 5 категорий (с промпт-сниппетами ru/en)
+│   │   │   ├── structured_tags.py   # Реестр 33 тегов × 5 категорий (с промпт-сниппетами ru/en)
+│   │   │   └── language_preferences.py # Языковые предпочтения (аффинити по сеттингам/тегам/рейтингу)
 │   │   ├── chat/                    # SSE стриминг, контекст, счётчики, множественные чаты
 │   │   │   ├── router.py            # send_message (SSE + model_used + message count), delete, clear
 │   │   │   ├── service.py           # Контекстное окно, сохранение, increment_message_count, force_new
@@ -609,8 +610,8 @@ chatbot/
 │   │   │   └── schemas.py           # PageViewRequest
 │   │   ├── autonomous/              # Автономные задачи (без cron/Celery)
 │   │   │   ├── scheduler.py         # Hourly check loop, state в prompt_templates
-│   │   │   ├── character_generator.py # ~50 архетипов + LLM + DALL-E аватар + перевод
-│   │   │   ├── counter_growth.py    # Ежедневный bump base_chat/like_count
+│   │   │   ├── character_generator.py # LLM-driven (14 взвешенных категорий) + DALL-E аватар + перевод
+│   │   │   ├── counter_growth.py    # Ежедневный bump с языковыми предпочтениями
 │   │   │   └── cleanup.py           # page_views >90 дней, orphan avatars
 │   │   ├── stats/                   # Публичная статистика
 │   │   │   └── router.py            # GET /api/stats (users, messages, characters, online_now)

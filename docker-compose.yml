@@ -54,6 +54,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-https://sweetsin.cc}
       WEB_WORKERS: ${WEB_WORKERS:-2}
+      AUTO_CHARACTER_ENABLED: ${AUTO_CHARACTER_ENABLED:-true}
       ENVIRONMENT: production
     volumes:
       - uploads:/app/data/uploads
