@@ -8,10 +8,9 @@ from sqlalchemy import text
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
+from app.autonomous.providers import get_autonomous_provider_order
 
 logger = logging.getLogger("autonomous")
-
-_PROVIDER_ORDER = ("groq", "cerebras", "openrouter")
 _TIMEOUT = 20.0
 _BATCH_SIZE = 10  # characters per run
 
@@ -94,7 +93,7 @@ async def _generate_for_character(
     messages = [LLMMessage(role="user", content=prompt)]
     config = LLMConfig(model="", temperature=0.8, max_tokens=512)
 
-    for provider_name in _PROVIDER_ORDER:
+    for provider_name in get_autonomous_provider_order():
         try:
             provider = get_provider(provider_name)
         except ValueError:

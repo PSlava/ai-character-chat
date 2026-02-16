@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     together_api_key: str | None = None
     default_model: str = "auto"
     auto_provider_order: str = "groq,cerebras,openrouter"
+    autonomous_provider_order: str = "claude,openai,gemini,deepseek,together,groq,cerebras,openrouter"
     proxy_url: str | None = None  # e.g. http://user:pass@host:port
     admin_emails: str = ""  # comma-separated list of admin emails
     smtp_host: str | None = None

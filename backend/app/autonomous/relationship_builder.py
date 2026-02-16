@@ -9,10 +9,9 @@ from sqlalchemy import text
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
+from app.autonomous.providers import get_autonomous_provider_order
 
 logger = logging.getLogger("autonomous")
-
-_PROVIDER_ORDER = ("groq", "cerebras", "openrouter")
 _MAX_PAIRS = 20  # pairs per run
 _MAX_RELATIONS_PER_CHAR = 3
 
@@ -142,7 +141,7 @@ async def _determine_relationship(a, b) -> str | None:
     messages = [LLMMessage(role="user", content=prompt)]
     config = LLMConfig(model="", temperature=0.3, max_tokens=20)
 
-    for provider_name in _PROVIDER_ORDER:
+    for provider_name in get_autonomous_provider_order():
         try:
             provider = get_provider(provider_name)
             raw = await provider.generate(messages, config)

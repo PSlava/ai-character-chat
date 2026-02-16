@@ -15,10 +15,10 @@ from app.config import settings
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
+from app.autonomous.providers import get_autonomous_provider_order
+from app.autonomous.text_humanizer import humanize_character_data
 
 logger = logging.getLogger("autonomous")
-
-_PROVIDER_ORDER = ("groq", "cerebras", "openrouter")
 _TIMEOUT = 30.0
 
 # ── Categories with weights ──────────────────────────────────────
@@ -110,7 +110,9 @@ _INVENT_CONCEPT_PROMPT = """Ты — креативный дизайнер пе�
   "example_dialogues": "пример обмена: {{{{user}}}}: ... / {{{{char}}}}: ... (литературный формат, 3-е лицо)",
   "tags": "тег1, тег2, тег3 (3-5 тегов на русском)",
   "avatar_prompt": "DALL-E prompt in English: 'Digital art portrait of [detailed appearance]. [Style]. [Background], bust shot.' Keep it SFW (portrait only, no nudity)."
-}}"""
+}}
+
+СТИЛЬ: Пиши живым, разговорным языком. Вместо абстрактных описаний — конкретные детали. Вместо «загадочный» — покажи загадочность через действия. Каждое предложение должно нести новую информацию. Никаких штампов."""
 
 def _pick_category() -> tuple[str, str, str, str]:
     """Weighted random category pick. Returns (label, gender, setting, rating)."""
@@ -167,12 +169,19 @@ async def _generate_character_data(category: str, gender: str) -> dict | None:
     )
 
     messages = [
-        LLMMessage(role="system", content="Ты создаёшь уникальных персонажей для NSFW чат-сайта. Отвечай строго JSON. Будь креативным и не повторяйся."),
+        LLMMessage(role="system", content=(
+            "Ты создаёшь уникальных персонажей для NSFW чат-сайта. Отвечай строго JSON. "
+            "Будь креативным и не повторяйся. "
+            "ВАЖНО: Пиши живым, разговорным языком. ИЗБЕГАЙ штампов ИИ: "
+            "'пронизан', 'гобелен', 'поистине', 'бесчисленный', 'многогранный', "
+            "'delve', 'tapestry', 'vibrant', 'intricate', 'journey', 'realm', 'enigmatic'. "
+            "Пиши так, как написал бы живой автор — просто, конкретно, образно."
+        )),
         LLMMessage(role="user", content=prompt),
     ]
     config = LLMConfig(model="", temperature=0.95, max_tokens=2048)
 
-    for provider_name in _PROVIDER_ORDER:
+    for provider_name in get_autonomous_provider_order():
         try:
             provider = get_provider(provider_name)
         except ValueError:
@@ -306,6 +315,9 @@ async def generate_daily_character() -> bool:
     if not char_data:
         logger.error("Failed to generate character for category: %s", category)
         return False
+
+    # Post-process: replace AI cliché patterns with natural alternatives
+    char_data = humanize_character_data(char_data)
 
     # 3) Generate avatar (LLM provides the prompt)
     avatar_prompt = char_data.get("avatar_prompt", "")

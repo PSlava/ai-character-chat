@@ -10,6 +10,7 @@ from sqlalchemy import text
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
+from app.autonomous.providers import get_autonomous_provider_order
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,6 @@ OUTPUT: Return ONLY a JSON array with the same structure. No markdown, no explan
 
 
 
-_PROVIDER_ORDER = ("groq", "cerebras", "openrouter")
 _TIMEOUT = 15.0  # seconds
 
 # Rate limit: max 20 translation API calls per minute (global)
@@ -96,7 +96,7 @@ async def translate_batch(
     ]
     config = LLMConfig(model="", temperature=0.3, max_tokens=2048)
 
-    for provider_name in _PROVIDER_ORDER:
+    for provider_name in get_autonomous_provider_order():
         try:
             provider = get_provider(provider_name)
         except ValueError:
@@ -163,7 +163,7 @@ async def _translate_single_field(
     ]
     config = LLMConfig(model="", temperature=0.3, max_tokens=4096)
 
-    for provider_name in _PROVIDER_ORDER:
+    for provider_name in get_autonomous_provider_order():
         try:
             provider = get_provider(provider_name)
         except ValueError:

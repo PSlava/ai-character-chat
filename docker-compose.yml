@@ -39,6 +39,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       DEFAULT_MODEL: ${DEFAULT_MODEL:-auto}
       AUTO_PROVIDER_ORDER: ${AUTO_PROVIDER_ORDER:-groq,cerebras,openrouter}
+      AUTONOMOUS_PROVIDER_ORDER: ${AUTONOMOUS_PROVIDER_ORDER:-claude,openai,gemini,deepseek,together,groq,cerebras,openrouter}
       PROXY_URL: ${PROXY_URL:-}
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       FRONTEND_URL: ${FRONTEND_URL:-}
