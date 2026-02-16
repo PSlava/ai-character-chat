@@ -354,6 +354,7 @@ async def generate_daily_character() -> bool:
                         example_dialogues, tags, structured_tags,
                         content_rating, response_length, is_public,
                         preferred_model, max_tokens,
+                        chat_count, like_count,
                         base_chat_count, base_like_count,
                         original_language, created_at, updated_at
                     ) VALUES (
@@ -362,6 +363,7 @@ async def generate_daily_character() -> bool:
                         :example_dialogues, :tags, :structured_tags,
                         :content_rating, :response_length, true,
                         'auto', 2048,
+                        0, 0,
                         CAST(:base_chat AS jsonb), CAST(:base_like AS jsonb),
                         'ru', NOW(), NOW()
                     )
