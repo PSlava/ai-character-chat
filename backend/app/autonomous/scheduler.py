@@ -9,6 +9,11 @@ from sqlalchemy import text
 from app.db.session import engine as db_engine
 
 logger = logging.getLogger("autonomous")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("[%(asctime)s] %(name)s %(levelname)s: %(message)s"))
+    logger.addHandler(_handler)
 
 # First run delay (let the server warm up)
 _STARTUP_DELAY = 5 * 60  # 5 minutes
