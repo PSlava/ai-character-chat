@@ -115,9 +115,9 @@ async def build_relationships() -> int:
                 # Create bidirectional relations
                 async with db_engine.begin() as conn:
                     await conn.execute(text("""
-                        INSERT INTO character_relations (id, character_id, related_id, relation_type, label_ru, label_en, label_es)
-                        VALUES (:id1, :a, :b, :type, :ru, :en, :es),
-                               (:id2, :b, :a, :type, :ru, :en, :es)
+                        INSERT INTO character_relations (id, character_id, related_id, relation_type, label_ru, label_en, label_es, created_at)
+                        VALUES (:id1, :a, :b, :type, :ru, :en, :es, NOW()),
+                               (:id2, :b, :a, :type, :ru, :en, :es, NOW())
                     """), {
                         "id1": str(uuid.uuid4()), "id2": str(uuid.uuid4()),
                         "a": a.id, "b": b.id, "type": rel_type,
