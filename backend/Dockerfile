@@ -7,23 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Download free GeoIP database (DB-IP Lite Country, ~5MB, updated monthly)
 # Try current month, fallback to previous month, skip on failure (app refreshes on startup)
-RUN python -c "\
-import urllib.request, gzip, datetime, os;\
-today = datetime.date.today();\
-months = [today.strftime('%Y-%m'), (today.replace(day=1) - datetime.timedelta(days=1)).strftime('%Y-%m')];\
-ok = False;\
-for m in months:\
-    url = f'https://download.db-ip.com/free/dbip-country-lite-{m}.mmdb.gz';\
-    print(f'Trying GeoIP: {url}');\
-    try:\
-        urllib.request.urlretrieve(url, '/tmp/geo.gz');\
-        data = gzip.open('/tmp/geo.gz', 'rb').read();\
-        open('/app/geoip.mmdb', 'wb').write(data);\
-        os.remove('/tmp/geo.gz');\
-        print(f'GeoIP DB: {len(data)//1024}KB');\
-        ok = True; break;\
-    except Exception as e: print(f'Failed: {e}');\
-if not ok: print('GeoIP download failed, will retry at app startup')" || true
+RUN python -c "exec('''\nimport urllib.request, gzip, datetime, os\ntoday = datetime.date.today()\nmonths = [today.strftime(\"%Y-%m\"), (today.replace(day=1) - datetime.timedelta(days=1)).strftime(\"%Y-%m\")]\nfor m in months:\n    url = f\"https://download.db-ip.com/free/dbip-country-lite-{m}.mmdb.gz\"\n    print(f\"Trying GeoIP: {url}\")\n    try:\n        urllib.request.urlretrieve(url, \"/tmp/geo.gz\")\n        data = gzip.open(\"/tmp/geo.gz\", \"rb\").read()\n        open(\"/app/geoip.mmdb\", \"wb\").write(data)\n        os.remove(\"/tmp/geo.gz\")\n        print(f\"GeoIP DB: {len(data)//1024}KB\")\n        break\n    except Exception as e:\n        print(f\"Failed: {e}\")\nelse:\n    print(\"GeoIP download failed, will retry at app startup\")\n''')" || true
 
 COPY . .
 
