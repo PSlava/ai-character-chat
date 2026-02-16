@@ -513,6 +513,7 @@ docker compose up -d
 - **SSL** — Certbot (Let's Encrypt), настроен для sweetsin.cc, авто-обновление через cron
 - **WEB_WORKERS** — настраиваемое кол-во gunicorn workers через env (дефолт 2, для 888MB RAM используется 1)
 - **GeoIP DB в Dockerfile** — DB-IP Lite Country скачивается при docker build, авто-обновление при старте приложения каждые 30 дней
+- **Бэкап на Yandex Disk** — `deploy/backup/backup.sh`, cron ежедневно в 04:00. БД: 3 циклических слота (`day_of_year % 3`), pg_dump+gzip. Uploads: `rclone sync` (инкрементальный, только изменения). Структура: `ai-chat-backups/db/slot-{0,1,2}.sql.gz` + `ai-chat-backups/uploads/`
 - render.yaml + vercel.json для облачного деплоя
 - Прокси для обхода региональных ограничений API
 
@@ -537,6 +538,8 @@ docker compose up -d
 - [x] ~~Платные модели для автономных задач (AUTONOMOUS_PROVIDER_ORDER, paid-first)~~
 - [x] ~~Anti-AI пост-обработка (text_humanizer.py, anti-cliché замены RU+EN)~~
 - [x] ~~Тестовый субдомен (test.sweetsin.cc, SSL, X-Robots-Tag: noindex)~~
+- [x] ~~Перегенерация описаний @sweetsin через GPT (rewrite_characters.py, 41/41 обновлены)~~
+- [x] ~~Бэкап на Yandex Disk (rclone, 3 слота БД, инкрементальный sync uploads, cron 04:00)~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -658,7 +661,8 @@ chatbot/
 │   │       ├── models.py            # User, Character (+vote_score, fork_count, forked_from_id, highlights), Chat, Message, Favorite, Vote, CharacterRelation, Persona, PromptTemplate, Report
 │   │       └── session.py           # Engine, init_db + auto-migrations
 │   ├── scripts/
-│   │   └── generate_seed_avatars.py # Генерация аватаров через DALL-E 3
+│   │   ├── generate_seed_avatars.py # Генерация аватаров через DALL-E 3
+│   │   └── rewrite_characters.py  # Перезапись описаний @sweetsin через платные LLM
 │   ├── requirements.txt
 │   ├── Dockerfile                   # gunicorn + uvicorn workers
 │   └── .env.example
@@ -722,6 +726,8 @@ chatbot/
 │   │   ├── nginx-ssl.conf           # Production SSL (sweetsin.cc)
 │   │   ├── nginx-ssl-test.conf      # Test SSL (test.sweetsin.cc, noindex)
 │   │   └── certs/                   # SSL сертификаты (gitignored)
+│   ├── backup/
+│   │   └── backup.sh               # Daily backup → Yandex Disk (rclone, 3 DB slots, incremental uploads)
 │   └── webhook/
 │       ├── Dockerfile               # Python + docker CLI + docker compose v2 + buildx
 │       ├── server.py                # Flask webhook server (HOST_REPO_DIR aware)

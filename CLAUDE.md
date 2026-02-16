@@ -176,9 +176,18 @@ DB is auto-created on startup. Locally uses SQLite (`data.db`), delete to reset.
 - **Tag landing pages**: `/en/tags/{fantasy,romance,anime,modern}` with SEO, JSON-LD, prerender, sitemap.
 - **Autonomous scheduler**: `asyncio.create_task(run_scheduler())` in lifespan. Hourly check, 24h intervals (weekly for relations). State in `prompt_templates` with `scheduler.*` keys. Tasks: daily character generation (LLM + DALL-E avatar + auto-translate), counter growth, highlights generation, cleanup; weekly: relationship building. Email admin on character generation failure. Config: `AUTO_CHARACTER_ENABLED` env var.
 
-### Scripts (`scripts/`)
+### Scripts
 
-WetDreams.io auto-chat bot and utilities. See `scripts/CLAUDE.md` for details.
+- **`backend/scripts/rewrite_characters.py`** — One-time script to rewrite all @sweetsin character descriptions via paid LLM models (Claude→OpenAI→Gemini→... fallback). Rewrites personality, appearance, scenario, greeting_message + applies humanizer + clears translation cache. Run: `docker compose exec -T backend python scripts/rewrite_characters.py`
+- **`scripts/`** — WetDreams.io auto-chat bot and utilities. See `scripts/CLAUDE.md` for details.
+
+### Backup (`deploy/backup/`)
+
+- **`backup.sh`** — Daily backup to Yandex Disk via rclone. Cron: `0 4 * * *`
+  - **DB**: 3 rotating slots (`slot-0/1/2.sql.gz`), `day_of_year % 3` — always last 3 days
+  - **Uploads**: `rclone sync` (incremental — only transfers new/changed files)
+  - **rclone** configured with Yandex Disk OAuth token on production server (`/root/.config/rclone/rclone.conf`)
+  - Structure on Yandex Disk: `ai-chat-backups/db/slot-{0,1,2}.sql.gz` + `ai-chat-backups/uploads/`
 
 ## API Routes
 
