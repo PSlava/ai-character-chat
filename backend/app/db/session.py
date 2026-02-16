@@ -67,6 +67,14 @@ async def init_db():
         "CREATE INDEX IF NOT EXISTS idx_pageviews_created ON page_views (created_at DESC)",
         "CREATE INDEX IF NOT EXISTS idx_pageviews_ip_date ON page_views (ip_hash, created_at)",
         "CREATE INDEX IF NOT EXISTS idx_pageviews_path ON page_views (path)",
+        # Voting, forking, highlights
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS vote_score INTEGER DEFAULT 0",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS fork_count INTEGER DEFAULT 0",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS forked_from_id VARCHAR REFERENCES characters(id) ON DELETE SET NULL",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS highlights JSONB DEFAULT '[]'",
+        # Indexes for relations
+        "CREATE INDEX IF NOT EXISTS idx_character_relations_char ON character_relations (character_id)",
+        "CREATE INDEX IF NOT EXISTS idx_votes_character ON votes (character_id)",
     ]
     for sql in migrations:
         try:

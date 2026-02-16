@@ -472,6 +472,17 @@
   "share.linkCopied": "¡Enlace copiado!",
   "share.copyFailed": "Error al copiar el enlace",
 
+  "character.upvote": "A favor",
+  "character.downvote": "En contra",
+  "character.fork": "Bifurcar",
+  "character.forking": "Bifurcando...",
+  "character.forkedFrom": "Bifurcado de",
+  "character.forks": "bifurcaciones",
+  "character.connections": "Conexiones",
+  "toast.forked": "Personaje bifurcado. Redirigiendo al editor...",
+  "toast.forkError": "Error al bifurcar el personaje",
+  "toast.voted": "Voto registrado",
+
   "seo.home.description": "Chatea con personajes de IA únicos sin límites. Juego de roles inmersivo, conversaciones sin censura y fantasía infinita. Crea tus propios personajes o explora miles.",
   "seo.about.description": "Acerca de SweetSin — plataforma de chat con personajes de IA para juego de roles y fantasía.",
   "seo.terms.description": "Términos de servicio de SweetSin — plataforma de chat con personajes de IA.",

@@ -3,11 +3,12 @@ import logging
 import re
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user, get_current_user_optional
 from app.db.session import get_db
-from app.db.models import Character, ContentRating
+from app.db.models import Character, ContentRating, Vote, CharacterRelation
 from app.characters.schemas import CharacterCreate, CharacterUpdate, GenerateFromStoryRequest
 from app.characters import service
 from app.characters.serializers import character_to_dict
@@ -284,6 +285,143 @@ async def export_character(
             "Content-Disposition": f'attachment; filename="{safe_name}.json"',
         },
     )
+
+
+class VoteRequest(BaseModel):
+    value: int = Field(..., ge=-1, le=1)  # +1, -1, or 0 (remove)
+
+
+@router.post("/{character_id}/vote")
+async def vote_character(
+    character_id: str,
+    body: VoteRequest,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Vote on a character. value: 1 (upvote), -1 (downvote), 0 (remove vote)."""
+    result = await db.execute(select(Character).where(Character.id == character_id))
+    character = result.scalar_one_or_none()
+    if not character:
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    # Find existing vote
+    vote_result = await db.execute(
+        select(Vote).where(Vote.user_id == user["id"], Vote.character_id == character_id)
+    )
+    existing = vote_result.scalar_one_or_none()
+
+    old_value = existing.value if existing else 0
+    new_value = body.value
+
+    if new_value == 0:
+        # Remove vote
+        if existing:
+            await db.delete(existing)
+    elif existing:
+        existing.value = new_value
+    else:
+        db.add(Vote(user_id=user["id"], character_id=character_id, value=new_value))
+
+    # Update character vote_score by delta
+    delta = new_value - old_value
+    character.vote_score = (character.vote_score or 0) + delta
+
+    await db.commit()
+    return {"vote_score": character.vote_score, "user_vote": new_value}
+
+
+@router.post("/{character_id}/fork")
+async def fork_character(
+    character_id: str,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Fork a public character into a private draft."""
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Character).where(Character.id == character_id).options(selectinload(Character.creator))
+    )
+    original = result.scalar_one_or_none()
+    if not original or not original.is_public:
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    from app.characters.slugify import generate_slug
+    import uuid
+
+    new_id = str(uuid.uuid4())
+    fork_name = f"{original.name} (fork)"
+
+    forked = Character(
+        id=new_id,
+        creator_id=user["id"],
+        name=fork_name,
+        tagline=original.tagline,
+        avatar_url=original.avatar_url,
+        personality=original.personality,
+        appearance=original.appearance,
+        scenario=original.scenario,
+        greeting_message=original.greeting_message,
+        example_dialogues=original.example_dialogues,
+        content_rating=original.content_rating,
+        system_prompt_suffix=original.system_prompt_suffix,
+        tags=original.tags,
+        structured_tags=original.structured_tags,
+        preferred_model=original.preferred_model,
+        max_tokens=original.max_tokens,
+        response_length=original.response_length,
+        is_public=False,
+        forked_from_id=character_id,
+        slug=generate_slug(fork_name, new_id),
+    )
+    db.add(forked)
+
+    # Increment fork_count on original
+    original.fork_count = (original.fork_count or 0) + 1
+
+    await db.commit()
+    return {"id": forked.id, "slug": forked.slug, "name": forked.name}
+
+
+@router.get("/{character_id}/relations")
+async def get_character_relations(
+    character_id: str,
+    language: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get character relationships with related character data."""
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(CharacterRelation).where(CharacterRelation.character_id == character_id)
+    )
+    relations = result.scalars().all()
+    if not relations:
+        return []
+
+    # Load related characters
+    related_ids = [r.related_id for r in relations]
+    chars_result = await db.execute(
+        select(Character)
+        .where(Character.id.in_(related_ids))
+        .options(selectinload(Character.creator))
+    )
+    chars_by_id = {c.id: c for c in chars_result.scalars().all()}
+
+    if language:
+        from app.characters.translation import ensure_translations
+        await ensure_translations(list(chars_by_id.values()), language, cached_only=True)
+
+    items = []
+    for rel in relations:
+        char = chars_by_id.get(rel.related_id)
+        if not char or not char.is_public:
+            continue
+        label = getattr(rel, f"label_{language}", None) or rel.label_en or rel.relation_type
+        items.append({
+            "relation_type": rel.relation_type,
+            "label": label,
+            "character": character_to_dict(char, language=language),
+        })
+    return items
 
 
 @router.get("/{character_id}")

@@ -22,6 +22,16 @@ class MessageRole(str, enum.Enum):
     assistant = "assistant"
 
 
+class RelationType(str, enum.Enum):
+    rival = "rival"
+    ex = "ex"
+    friend = "friend"
+    sibling = "sibling"
+    enemy = "enemy"
+    lover = "lover"
+    ally = "ally"
+
+
 def gen_uuid() -> str:
     return str(uuid.uuid4())
 
@@ -81,11 +91,16 @@ class Character(Base):
     message_counts: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)  # {"ru": 150, "en": 30}
     original_language: Mapped[str] = mapped_column(String, default="ru")
     translations: Mapped[dict | None] = mapped_column(JSONB, nullable=True, default=dict)  # {"en": {"name": "...", "tagline": "...", "tags": [...]}}
+    vote_score: Mapped[int] = mapped_column(Integer, default=0)
+    fork_count: Mapped[int] = mapped_column(Integer, default=0)
+    forked_from_id: Mapped[str | None] = mapped_column(ForeignKey("characters.id", ondelete="SET NULL"), nullable=True)
+    highlights: Mapped[list | None] = mapped_column(JSONB, nullable=True, default=list)  # [{"text": "...", "lang": "ru"}, ...]
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     creator: Mapped["User"] = relationship(back_populates="characters")
     chats: Mapped[list["Chat"]] = relationship(back_populates="character", cascade="all, delete-orphan")
+    forked_from: Mapped["Character | None"] = relationship(remote_side="Character.id", foreign_keys=[forked_from_id])
 
 
 class Persona(Base):
@@ -160,6 +175,28 @@ class PromptTemplate(Base):
     key: Mapped[str] = mapped_column(String, primary_key=True)  # "ru.intro", "en.length_long"
     value: Mapped[str] = mapped_column(Text, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class Vote(Base):
+    __tablename__ = "votes"
+
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    character_id: Mapped[str] = mapped_column(ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True)
+    value: Mapped[int] = mapped_column(Integer, nullable=False)  # +1 or -1
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class CharacterRelation(Base):
+    __tablename__ = "character_relations"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    character_id: Mapped[str] = mapped_column(ForeignKey("characters.id", ondelete="CASCADE"))
+    related_id: Mapped[str] = mapped_column(ForeignKey("characters.id", ondelete="CASCADE"))
+    relation_type: Mapped[str] = mapped_column(String(20), nullable=False)  # RelationType value
+    label_ru: Mapped[str | None] = mapped_column(String, nullable=True)
+    label_en: Mapped[str | None] = mapped_column(String, nullable=True)
+    label_es: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class PageView(Base):

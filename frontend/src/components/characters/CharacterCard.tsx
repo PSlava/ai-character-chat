@@ -1,12 +1,13 @@
-import { useRef, memo } from 'react';
+import { useRef, memo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Character } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoritesStore } from '@/store/favoritesStore';
+import { useVotesStore } from '@/store/votesStore';
 import { isCharacterOnline } from '@/lib/utils';
 import { localePath } from '@/lib/lang';
-import { MessageCircle, Heart } from 'lucide-react';
+import { MessageCircle, Heart, ThumbsUp, ThumbsDown, GitFork } from 'lucide-react';
 
 interface Props {
   character: Character;
@@ -17,9 +18,12 @@ export const CharacterCard = memo(function CharacterCard({ character }: Props) {
   const { isAuthenticated, user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { favoriteIds, addFavorite, removeFavorite } = useFavoritesStore();
+  const { votes, vote } = useVotesStore();
   const isFav = favoriteIds.has(character.id);
   const initialFav = useRef(isFav);
   const likeOffset = (isFav ? 1 : 0) - (initialFav.current ? 1 : 0);
+  const userVote = votes[character.id] || 0;
+  const [scoreOffset, setScoreOffset] = useState(0);
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,6 +36,17 @@ export const CharacterCard = memo(function CharacterCard({ character }: Props) {
       removeFavorite(character.id);
     } else {
       addFavorite(character.id);
+    }
+  };
+
+  const handleVote = async (e: React.MouseEvent, value: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) { navigate('/auth'); return; }
+    const newValue = userVote === value ? 0 : value;
+    const result = await vote(character.id, newValue);
+    if (result) {
+      setScoreOffset(result.vote_score - (character.vote_score || 0));
     }
   };
 
@@ -76,6 +91,23 @@ export const CharacterCard = memo(function CharacterCard({ character }: Props) {
                 <span className="text-emerald-500/70">({character.real_like_count})</span>
               )}
             </button>
+            <span className="flex items-center gap-0.5">
+              <button onClick={(e) => handleVote(e, 1)} className={`transition-colors ${userVote === 1 ? 'text-green-400' : 'hover:text-green-400'}`}>
+                <ThumbsUp className={`w-3 h-3 ${userVote === 1 ? 'fill-current' : ''}`} />
+              </button>
+              <span className={(character.vote_score || 0) + scoreOffset > 0 ? 'text-green-400' : (character.vote_score || 0) + scoreOffset < 0 ? 'text-red-400' : ''}>
+                {(character.vote_score || 0) + scoreOffset}
+              </span>
+              <button onClick={(e) => handleVote(e, -1)} className={`transition-colors ${userVote === -1 ? 'text-red-400' : 'hover:text-red-400'}`}>
+                <ThumbsDown className={`w-3 h-3 ${userVote === -1 ? 'fill-current' : ''}`} />
+              </button>
+            </span>
+            {(character.fork_count || 0) > 0 && (
+              <span className="flex items-center gap-1">
+                <GitFork className="w-3 h-3" />
+                {character.fork_count}
+              </span>
+            )}
           </div>
         </div>
       </div>

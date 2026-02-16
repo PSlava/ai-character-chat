@@ -187,6 +187,10 @@ docker compose up -d
 - **Автоперевод карточек** — имена, tagline и теги автоматически переводятся LLM при просмотре на другом языке (batch, с кэшированием в JSONB)
 - **Счётчик сообщений по языкам** — атомарный инкремент JSONB `message_counts` при каждом сообщении (кроме перегенераций)
 - **Базовые счётчики (social proof)** — JSONB поля `base_chat_count` и `base_like_count` на Character: `{"ru": 345, "en": 567}`. Seed-персонажи инициализируются случайными значениями (100–1000 чатов, 50–100 лайков). Обычные пользователи видят `real + base[lang]`, админ видит реальные значения отдельно в зелёном
+- **Голосование (upvote/downvote)** — модель `Vote` (composite PK: user_id + character_id, value +1/-1), `vote_score` на Character. `POST /api/characters/{id}/vote` с delta-обновлением. Zustand `votesStore` с optimistic update, загрузка при логине, очистка при выходе. ThumbsUp/ThumbsDown кнопки на CharacterCard и CharacterPage. Цветовая индикация: зелёный/красный/серый
+- **Форк персонажей** — `POST /api/characters/{id}/fork` клонирует публичного персонажа в приватный черновик (is_public=false). Копирует: name (+fork), tagline, avatar, personality, appearance, scenario, greeting, tags, structured_tags, model settings. Сбрасывает: counters, translations. `fork_count` инкрементируется на оригинале. Кнопка GitFork на CharacterPage → redirect на edit. "Forked from" ссылка
+- **Character Highlights** — AI-сгенерированные editorial фразы (НЕ фейк-отзывы). JSONB `highlights` на Character: `[{"text": "...", "lang": "ru"}, ...]`. Автономная задача (`highlight_generator.py`) ежедневно генерирует 2 фразы × 3 языка для до 10 персонажей. Отображаются italic под tagline на CharacterPage
+- **Связи между персонажами** — модель `CharacterRelation` (character_id, related_id, relation_type, trilingual labels). 7 типов: rival/ex/friend/sibling/enemy/lover/ally. Автономная задача (`relationship_builder.py`) еженедельно находит пары с общими тегами, LLM определяет тип. `GET /api/characters/{id}/relations` возвращает связи с карточками. Секция "Connections" на CharacterPage перед Similar Characters
 
 ### Персоны пользователя
 - **Пользовательские персоны** — до 10 альтернативных личностей для ролевых чатов
@@ -314,10 +318,12 @@ docker compose up -d
 
 ### Автономный планировщик
 
-- **Scheduler** (`autonomous/scheduler.py`) — `asyncio.create_task()` в lifespan, hourly check, 24ч между задачами. Состояние в `prompt_templates` с `scheduler.*` ключами. 5 мин задержка при старте
+- **Scheduler** (`autonomous/scheduler.py`) — `asyncio.create_task()` в lifespan, hourly check, 24ч между задачами (7 дней для связей). Состояние в `prompt_templates` с `scheduler.*` ключами. 5 мин задержка при старте
 - **Генерация персонажей** (`autonomous/character_generator.py`) — LLM-driven: 14 взвешенных категорий (~90% NSFW), LLM изобретает уникальную концепцию → текст (Groq→Cerebras→OpenRouter) → DALL-E 3 аватар (512×512, WebP, ~$0.04) → сохранение под @sweetsin → авто-перевод EN/ES. При ошибке — email админам
 - **Рост счётчиков** (`autonomous/counter_growth.py`) — ежедневный bump `base_chat_count`/`base_like_count` с учётом языковых предпочтений (дарк-романтика растёт быстрее для RU, аниме — для EN, романтика — для ES)
 - **Языковые предпочтения** (`characters/language_preferences.py`) — таблица аффинити по сеттингам, тегам, рейтингу. Влияет на начальные счётчики при генерации и на ежедневный рост. Результат: сортировка на главной автоматически отражает предпочтения аудитории. Featured — из топ-5 по текущему языку
+- **Highlights** (`autonomous/highlight_generator.py`) — ежедневно: генерирует 2 editorial фразы на 3 языках для до 10 персонажей без highlights. НЕ фейк-отзывы — описательные фразы. Groq→Cerebras→OpenRouter fallback
+- **Связи** (`autonomous/relationship_builder.py`) — еженедельно: ищет пары с 2+ общими тегами, LLM определяет тип отношений (rival/ex/friend/sibling/enemy/lover/ally), создаёт двунаправленные связи с лейблами на 3 языках. Макс 3 связи на персонажа, 20 пар за запуск
 - **Очистка** (`autonomous/cleanup.py`) — удаление `page_views` >90 дней, orphan avatar файлов
 - Конфиг: `AUTO_CHARACTER_ENABLED` env (по умолчанию `true`)
 
@@ -520,6 +526,10 @@ docker compose up -d
 - [x] ~~Языковые предпочтения (аффинити, сортировка, featured по языку)~~
 - [x] ~~Аналитика (трафик, пользователи, персонажи, устройства, модели)~~
 - [x] ~~Перевод описаний персонажей (personality, scenario, appearance, greeting)~~
+- [x] ~~Голосование/рейтинг (upvote/downvote, vote_score, Zustand votesStore)~~
+- [x] ~~Форк персонажей (POST /{id}/fork, clone + redirect to edit)~~
+- [x] ~~Character Highlights (авто-фразы LLM, daily, editorial not fake reviews)~~
+- [x] ~~Связи между персонажами (CharacterRelation, weekly LLM, Connections UI)~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -537,8 +547,8 @@ docker compose up -d
 - [ ] **Выбор персоны в UI чата** — сейчас только API, нужен UI
 
 ### Growth (Рост)
-- [ ] **Голосование/рейтинг персонажей** — upvote/downvote, сортировка по рейтингу, social proof (Chub.ai)
-- [ ] **Форк персонажей** — "клонировать и модифицировать", снижает барьер создания (JanitorAI, Chub)
+- [x] ~~**Голосование/рейтинг персонажей** — upvote/downvote, vote_score, Zustand votesStore~~
+- [x] ~~**Форк персонажей** — clone + redirect to edit, fork_count~~
 - [ ] **Лидерборд создателей** — рейтинг по чатам/лайкам/фолловерам, мотивация (Chai)
 - [ ] **SEO продвижение** — см. `SEO.md`
 - [ ] **OAuth (GitHub, Discord)** — расширение аудитории
@@ -627,6 +637,8 @@ chatbot/
 │   │   │   ├── scheduler.py         # Hourly check loop, state в prompt_templates
 │   │   │   ├── character_generator.py # LLM-driven (14 взвешенных категорий) + DALL-E аватар + перевод
 │   │   │   ├── counter_growth.py    # Ежедневный bump с языковыми предпочтениями
+│   │   │   ├── highlight_generator.py # Ежедневные editorial фразы (2×3 языка, до 10 персонажей)
+│   │   │   ├── relationship_builder.py # Еженедельные связи между персонажами (LLM)
 │   │   │   └── cleanup.py           # page_views >90 дней, orphan avatars
 │   │   ├── stats/                   # Публичная статистика
 │   │   │   └── router.py            # GET /api/stats (users, messages, characters, online_now)
@@ -634,7 +646,7 @@ chatbot/
 │   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
 │   │   │   └── email.py             # Async email sender (Resend API → SMTP → console fallback)
 │   │   └── db/                      # Модели, сессии, миграции
-│   │       ├── models.py            # User (is_banned, oauth_provider, oauth_id), Character, Chat (persona_id), Message, Favorite, Persona, PromptTemplate, Report
+│   │       ├── models.py            # User, Character (+vote_score, fork_count, forked_from_id, highlights), Chat, Message, Favorite, Vote, CharacterRelation, Persona, PromptTemplate, Report
 │   │       └── session.py           # Engine, init_db + auto-migrations
 │   ├── scripts/
 │   │   └── generate_seed_avatars.py # Генерация аватаров через DALL-E 3

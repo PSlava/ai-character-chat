@@ -19,6 +19,7 @@ if not logger.handlers:
 _STARTUP_DELAY = 5 * 60  # 5 minutes
 _CHECK_INTERVAL = 3600  # 1 hour
 _TASK_INTERVAL = timedelta(hours=24)
+_WEEKLY_INTERVAL = timedelta(days=7)
 
 
 async def _get_last_run(key: str) -> datetime | None:
@@ -55,11 +56,11 @@ async def _set_last_run(key: str, dt: datetime | None = None):
         logger.warning("Failed to save scheduler state %s: %s", key, e)
 
 
-def _should_run(last_run: datetime | None) -> bool:
+def _should_run(last_run: datetime | None, interval: timedelta = _TASK_INTERVAL) -> bool:
     """Check if enough time has passed since last run."""
     if last_run is None:
         return True
-    return datetime.now(timezone.utc) - last_run >= _TASK_INTERVAL
+    return datetime.now(timezone.utc) - last_run >= interval
 
 
 async def run_scheduler():
@@ -117,6 +118,28 @@ async def _run_cycle():
             logger.info("Cleanup completed")
         except Exception:
             logger.exception("Cleanup failed")
+
+    # 4) Character highlights (daily)
+    last_highlights = await _get_last_run("last_highlights")
+    if _should_run(last_highlights):
+        try:
+            from app.autonomous.highlight_generator import generate_highlights
+            count = await generate_highlights()
+            await _set_last_run("last_highlights")
+            logger.info("Highlights generated for %d characters", count)
+        except Exception:
+            logger.exception("Highlight generation failed")
+
+    # 5) Character relations (weekly)
+    last_relations = await _get_last_run("last_relations")
+    if _should_run(last_relations, _WEEKLY_INTERVAL):
+        try:
+            from app.autonomous.relationship_builder import build_relationships
+            count = await build_relationships()
+            await _set_last_run("last_relations")
+            logger.info("Built %d character relationships", count)
+        except Exception:
+            logger.exception("Relationship building failed")
 
     logger.info("Scheduler cycle complete")
 

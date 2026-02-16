@@ -472,6 +472,17 @@
   "share.linkCopied": "Ссылка скопирована!",
   "share.copyFailed": "Не удалось скопировать ссылку",
 
+  "character.upvote": "За",
+  "character.downvote": "Против",
+  "character.fork": "Форк",
+  "character.forking": "Создание форка...",
+  "character.forkedFrom": "Форк от",
+  "character.forks": "форков",
+  "character.connections": "Связи",
+  "toast.forked": "Персонаж скопирован! Переход в редактор...",
+  "toast.forkError": "Не удалось создать форк",
+  "toast.voted": "Голос учтён",
+
   "seo.home.description": "Общайтесь с уникальными ИИ-персонажами без ограничений. Иммерсивный ролеплей, свободные разговоры и бесконечные фантазии. Создавайте своих персонажей или исследуйте тысячи других.",
   "seo.about.description": "О SweetSin — платформа чата с ИИ-персонажами для ролеплея и фантазийных разговоров.",
   "seo.terms.description": "Условия использования SweetSin — платформа чата с ИИ-персонажами.",

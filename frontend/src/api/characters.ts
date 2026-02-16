@@ -95,6 +95,34 @@ export async function getTogetherModels(): Promise<OpenRouterModel[]> {
   return data;
 }
 
+export async function voteCharacter(characterId: string, value: number): Promise<{ vote_score: number; user_vote: number }> {
+  const { data } = await api.post(`/characters/${characterId}/vote`, { value });
+  return data;
+}
+
+export async function getUserVotes(): Promise<Record<string, number>> {
+  const { data } = await api.get<Record<string, number>>('/users/me/votes');
+  return data;
+}
+
+export async function forkCharacter(characterId: string): Promise<{ id: string; slug: string; name: string }> {
+  const { data } = await api.post(`/characters/${characterId}/fork`);
+  return data;
+}
+
+export interface CharacterRelation {
+  relation_type: string;
+  label: string;
+  character: Character;
+}
+
+export async function getCharacterRelations(characterId: string, language?: string): Promise<CharacterRelation[]> {
+  const { data } = await api.get<CharacterRelation[]>(`/characters/${characterId}/relations`, {
+    params: language ? { language } : undefined,
+  });
+  return data;
+}
+
 /** Wake up Render backend if sleeping. Retries every 3s for up to 3 minutes. */
 export async function wakeUpServer(
   onStatus?: (status: string) => void,

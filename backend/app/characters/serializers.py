@@ -28,6 +28,10 @@ def character_to_dict(c: Character, language: str = None, is_admin: bool = False
         "preferred_model": c.preferred_model,
         "max_tokens": getattr(c, 'max_tokens', None) or 2048,
         "response_length": getattr(c, 'response_length', None) or "long",
+        "vote_score": getattr(c, 'vote_score', 0) or 0,
+        "fork_count": getattr(c, 'fork_count', 0) or 0,
+        "forked_from_id": getattr(c, 'forked_from_id', None),
+        "highlights": getattr(c, 'highlights', None) or [],
         "created_at": c.created_at.isoformat() if c.created_at else None,
         "updated_at": c.updated_at.isoformat() if c.updated_at else None,
     }

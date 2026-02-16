@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from sqlalchemy.orm import selectinload
-from app.db.models import User, Favorite, Character
+from app.db.models import User, Favorite, Vote, Character
 from app.characters.serializers import character_to_dict
 from app.utils.sanitize import strip_html_tags
 
@@ -96,6 +96,14 @@ async def update_profile(
         "message_count": u.message_count or 0,
         "chat_count": u.chat_count or 0,
     }
+
+
+@router.get("/me/votes")
+async def get_user_votes(user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """Return {character_id: vote_value} dict for all user votes."""
+    result = await db.execute(select(Vote).where(Vote.user_id == user["id"]))
+    votes = result.scalars().all()
+    return {v.character_id: v.value for v in votes}
 
 
 @router.get("/me/favorites")

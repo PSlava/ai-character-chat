@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getCharacter, getCharacterBySlug, deleteCharacter, getSimilarCharacters } from '@/api/characters';
+import { getCharacter, getCharacterBySlug, deleteCharacter, getSimilarCharacters, forkCharacter, getCharacterRelations, type CharacterRelation } from '@/api/characters';
 import { createChat } from '@/api/chat';
 import { getPersonas } from '@/api/personas';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatStore } from '@/store/chatStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
+import { useVotesStore } from '@/store/votesStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -14,7 +15,7 @@ import { SEO } from '@/components/seo/SEO';
 import { localePath } from '@/lib/lang';
 import { isCharacterOnline } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import { MessageCircle, Heart, User, Pencil, Trash2, Star, Flag, Download } from 'lucide-react';
+import { MessageCircle, Heart, User, Pencil, Trash2, Star, Flag, Download, ThumbsUp, ThumbsDown, GitFork } from 'lucide-react';
 import { getExportUrl } from '@/api/export';
 import { ReportModal } from '@/components/characters/ReportModal';
 import { ShareButtons } from '@/components/characters/ShareButtons';
@@ -28,8 +29,10 @@ export function CharacterPage() {
   const { t, i18n } = useTranslation();
   const { fetchChats } = useChatStore();
   const { favoriteIds, addFavorite: addFav, removeFavorite: removeFav } = useFavoritesStore();
+  const { votes, vote } = useVotesStore();
   const [character, setCharacter] = useState<Character | null>(null);
   const [loading, setLoading] = useState(false);
+  const [forking, setForking] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showPersonaModal, setShowPersonaModal] = useState(false);
@@ -37,6 +40,7 @@ export function CharacterPage() {
   const [forceNewChat, setForceNewChat] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [similar, setSimilar] = useState<Character[]>([]);
+  const [relations, setRelations] = useState<CharacterRelation[]>([]);
 
   const isAdmin = user?.role === 'admin';
   const isOwner = isAuthenticated && character && (user?.id === character.creator_id || isAdmin);
@@ -63,6 +67,7 @@ export function CharacterPage() {
   useEffect(() => {
     if (character?.id) {
       getSimilarCharacters(character.id, i18n.language).then(setSimilar).catch(() => {});
+      getCharacterRelations(character.id, i18n.language).then(setRelations).catch(() => {});
     }
   }, [character?.id, i18n.language]);
 
@@ -120,6 +125,32 @@ export function CharacterPage() {
       setDeleting(false);
     }
   };
+
+  const handleFork = async () => {
+    if (!character || !isAuthenticated) { navigate('/auth'); return; }
+    setForking(true);
+    try {
+      const result = await forkCharacter(character.id);
+      toast.success(t('toast.forked'));
+      navigate(`/character/${result.id}/edit`);
+    } catch {
+      toast.error(t('toast.forkError'));
+    } finally {
+      setForking(false);
+    }
+  };
+
+  const handleVote = async (value: number) => {
+    if (!character || !isAuthenticated) { navigate('/auth'); return; }
+    const currentVote = votes[character.id] || 0;
+    const newValue = currentVote === value ? 0 : value;
+    const result = await vote(character.id, newValue);
+    if (result) {
+      setCharacter((c) => c ? { ...c, vote_score: result.vote_score } : c);
+    }
+  };
+
+  const userVote = character ? (votes[character.id] || 0) : 0;
 
   const charUrl = character?.slug ? localePath(`/c/${character.slug}`) : undefined;
   const charDescription = character
@@ -234,6 +265,23 @@ export function CharacterPage() {
                 <span className="text-emerald-500">({character.real_like_count})</span>
               )}
             </button>
+            <span className="flex items-center gap-1 shrink-0">
+              <button onClick={() => handleVote(1)} className={`p-0.5 transition-colors ${userVote === 1 ? 'text-green-400' : 'hover:text-green-400'}`} title={t('character.upvote')}>
+                <ThumbsUp className={`w-4 h-4 ${userVote === 1 ? 'fill-current' : ''}`} />
+              </button>
+              <span className={`min-w-[1ch] text-center ${(character.vote_score || 0) > 0 ? 'text-green-400' : (character.vote_score || 0) < 0 ? 'text-red-400' : ''}`}>
+                {character.vote_score || 0}
+              </span>
+              <button onClick={() => handleVote(-1)} className={`p-0.5 transition-colors ${userVote === -1 ? 'text-red-400' : 'hover:text-red-400'}`} title={t('character.downvote')}>
+                <ThumbsDown className={`w-4 h-4 ${userVote === -1 ? 'fill-current' : ''}`} />
+              </button>
+            </span>
+            {(character.fork_count || 0) > 0 && (
+              <span className="flex items-center gap-1 shrink-0">
+                <GitFork className="w-4 h-4" />
+                {character.fork_count} {t('character.forks')}
+              </span>
+            )}
             {character.profiles?.username && (
               <span className="flex items-center gap-1 min-w-0">
                 <User className="w-4 h-4 shrink-0" />
@@ -263,14 +311,26 @@ export function CharacterPage() {
           </div>
         )}
         {character.is_public && (
-          <a
-            href={getExportUrl(character.id)}
-            download={`${character.name}.json`}
-            className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-blue-400 transition-colors"
-            title="Export (SillyTavern)"
-          >
-            <Download className="w-4 h-4" />
-          </a>
+          <div className="flex gap-2">
+            {isAuthenticated && !isOwner && (
+              <button
+                onClick={handleFork}
+                disabled={forking}
+                className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-purple-400 transition-colors"
+                title={t('character.fork')}
+              >
+                <GitFork className="w-4 h-4" />
+              </button>
+            )}
+            <a
+              href={getExportUrl(character.id)}
+              download={`${character.name}.json`}
+              className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-blue-400 transition-colors"
+              title="Export (SillyTavern)"
+            >
+              <Download className="w-4 h-4" />
+            </a>
+          </div>
         )}
         {isAuthenticated && !isOwner && (
           <button
@@ -282,6 +342,34 @@ export function CharacterPage() {
           </button>
         )}
       </div>
+
+      {character.forked_from_id && (
+        <p className="text-xs text-neutral-500 mb-2">
+          <GitFork className="w-3 h-3 inline mr-1" />
+          {t('character.forkedFrom')}{' '}
+          <button
+            onClick={() => {
+              getCharacter(character.forked_from_id!).then(c => {
+                navigate(localePath(c.slug ? `/c/${c.slug}` : `/character/${c.id}`));
+              }).catch(() => {});
+            }}
+            className="text-rose-400 hover:underline"
+          >
+            {character.name.replace(' (fork)', '')}
+          </button>
+        </p>
+      )}
+
+      {character.highlights && character.highlights.length > 0 && (
+        <div className="mb-4">
+          {character.highlights
+            .filter(h => h.lang === i18n.language || (!character.highlights!.some(x => x.lang === i18n.language) && h.lang === 'en'))
+            .slice(0, 2)
+            .map((h, i) => (
+              <p key={i} className="text-sm italic text-neutral-400">{h.text}</p>
+            ))}
+        </div>
+      )}
 
       {character.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
@@ -340,6 +428,24 @@ export function CharacterPage() {
       <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="w-full">
         {loading ? t('character.creatingChat') : t('character.startChat')}
       </Button>
+
+      {relations.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-sm font-medium text-neutral-400 mb-3 uppercase tracking-wider">
+            {t('character.connections')}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {relations.map((rel) => (
+              <div key={rel.character.id} className="relative">
+                <span className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-neutral-900/80 border border-neutral-600 rounded-full text-xs text-neutral-300">
+                  {rel.label}
+                </span>
+                <CharacterCard character={rel.character} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {similar.length > 0 && (
         <div className="mt-8">

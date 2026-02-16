@@ -3,6 +3,7 @@ import { Link, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
+import { useVotesStore } from '@/store/votesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
@@ -19,6 +20,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
   const isAdmin = user?.role === 'admin';
   const { chats, loading: chatsLoading, fetchChats } = useChatStore();
   const { fetchFavorites } = useFavoritesStore();
+  const { fetchVotes } = useVotesStore();
   const { chatId } = useParams();
   const location = useLocation();
 
@@ -26,8 +28,9 @@ export function Sidebar({ isOpen, onClose }: Props) {
     if (isAuthenticated) {
       fetchChats();
       fetchFavorites();
+      fetchVotes();
     }
-  }, [isAuthenticated, fetchChats, fetchFavorites]);
+  }, [isAuthenticated, fetchChats, fetchFavorites, fetchVotes]);
 
   // Close drawer on route change (mobile)
   useEffect(() => {

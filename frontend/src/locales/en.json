@@ -472,6 +472,17 @@
   "share.linkCopied": "Link copied!",
   "share.copyFailed": "Failed to copy link",
 
+  "character.upvote": "Upvote",
+  "character.downvote": "Downvote",
+  "character.fork": "Fork",
+  "character.forking": "Forking...",
+  "character.forkedFrom": "Forked from",
+  "character.forks": "forks",
+  "character.connections": "Connections",
+  "toast.forked": "Character forked! Redirecting to editor...",
+  "toast.forkError": "Failed to fork character",
+  "toast.voted": "Vote recorded",
+
   "seo.home.description": "Chat with unique AI characters without limits. Immersive roleplay, uncensored conversations, and endless fantasy. Create your own characters or explore thousands.",
   "seo.about.description": "About SweetSin — AI character chat platform for immersive roleplay and fantasy conversations.",
   "seo.terms.description": "Terms of service for SweetSin — AI character chat platform.",

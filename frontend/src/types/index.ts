@@ -27,6 +27,10 @@ export interface Character {
   like_count: number;
   real_chat_count?: number;
   real_like_count?: number;
+  vote_score: number;
+  fork_count: number;
+  forked_from_id?: string | null;
+  highlights: { text: string; lang: string }[];
   preferred_model: string;
   max_tokens: number;
   response_length: 'short' | 'medium' | 'long' | 'very_long';
