@@ -1,17 +1,20 @@
 import { useState, useRef, useEffect, useCallback, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Square } from 'lucide-react';
+import { Send, Square, Sparkles } from 'lucide-react';
 
 interface Props {
   onSend: (content: string) => void;
   onStop?: () => void;
   isStreaming: boolean;
   disabled?: boolean;
+  personaName?: string | null;
+  onGeneratePersonaReply?: () => Promise<string | null>;
 }
 
-export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
+export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, onGeneratePersonaReply }: Props) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
+  const [generating, setGenerating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const autoResize = useCallback(() => {
@@ -45,9 +48,35 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled }: Props) {
     }
   };
 
+  const handleGenerate = async () => {
+    if (!onGeneratePersonaReply || generating || isStreaming) return;
+    setGenerating(true);
+    try {
+      const result = await onGeneratePersonaReply();
+      if (result) {
+        setText(result);
+        requestAnimationFrame(() => {
+          textareaRef.current?.focus();
+        });
+      }
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className="border-t border-neutral-800 p-2 sm:p-4">
       <div className="flex items-end gap-2 max-w-3xl mx-auto">
+        {personaName && onGeneratePersonaReply && (
+          <button
+            onClick={handleGenerate}
+            disabled={generating || isStreaming || disabled}
+            className="p-3 text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t('chat.generateAsPersona')}
+          >
+            <Sparkles className={`w-5 h-5 ${generating ? 'animate-pulse' : ''}`} />
+          </button>
+        )}
         <textarea
           ref={textareaRef}
           value={text}

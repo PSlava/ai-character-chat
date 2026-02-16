@@ -75,6 +75,12 @@ async def init_db():
         # Indexes for relations
         "CREATE INDEX IF NOT EXISTS idx_character_relations_char ON character_relations (character_id)",
         "CREATE INDEX IF NOT EXISTS idx_votes_character ON votes (character_id)",
+        # Chat memory / summarization
+        "ALTER TABLE chats ADD COLUMN IF NOT EXISTS summary TEXT",
+        "ALTER TABLE chats ADD COLUMN IF NOT EXISTS summary_up_to_id VARCHAR",
+        # Persona snapshot in chat
+        "ALTER TABLE chats ADD COLUMN IF NOT EXISTS persona_name VARCHAR(50)",
+        "ALTER TABLE chats ADD COLUMN IF NOT EXISTS persona_description TEXT",
     ]
     for sql in migrations:
         try:

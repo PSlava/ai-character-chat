@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.db.models import Chat, Message, Character, User, Persona, MessageRole
+from app.db.models import Chat, Message, Character, User, Persona, MessageRole, LoreEntry
 from app.chat.prompt_builder import build_system_prompt
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage
@@ -35,10 +35,22 @@ async def get_or_create_chat(
 
     model_used = model or character.preferred_model or "claude"
 
+    # Load persona snapshot if persona_id provided
+    p_name = None
+    p_description = None
+    if persona_id:
+        persona_result = await db.execute(select(Persona).where(Persona.id == persona_id))
+        persona_obj = persona_result.scalar_one_or_none()
+        if persona_obj:
+            p_name = persona_obj.name
+            p_description = persona_obj.description
+
     chat = Chat(
         user_id=user_id,
         character_id=character_id,
         persona_id=persona_id,
+        persona_name=p_name,
+        persona_description=p_description,
         title=character.name,
         model_used=model_used,
     )
@@ -48,13 +60,7 @@ async def get_or_create_chat(
     # Apply {{char}}/{{user}} template variables in greeting
     greeting_text = character.greeting_message
     if "{{char}}" in greeting_text or "{{user}}" in greeting_text:
-        # Prefer persona name over display_name for {{user}}
-        u_name = None
-        if persona_id:
-            persona_result = await db.execute(select(Persona).where(Persona.id == persona_id))
-            persona_obj = persona_result.scalar_one_or_none()
-            if persona_obj:
-                u_name = persona_obj.name
+        u_name = p_name
         if not u_name:
             user_result = await db.execute(select(User).where(User.id == user_id))
             user_obj = user_result.scalar_one_or_none()
@@ -273,11 +279,28 @@ async def build_conversation_messages(
         "appearance": getattr(character, 'appearance', None),
         "structured_tags": [t for t in (getattr(character, 'structured_tags', '') or '').split(",") if t],
     }
+    messages_data, _ = await get_chat_messages(db, chat_id)  # all messages, no limit
+
+    # Load lore entries for this character
+    lore_result = await db.execute(
+        select(LoreEntry)
+        .where(LoreEntry.character_id == character.id, LoreEntry.enabled == True)  # noqa: E712
+        .order_by(LoreEntry.position)
+    )
+    lore_entries = [
+        {"keywords": e.keywords, "content": e.content, "enabled": e.enabled}
+        for e in lore_result.scalars().all()
+    ]
+
+    # Build context text from recent messages for lore keyword matching
+    recent_texts = [m.content for m in messages_data[-10:]]  # last 10 messages
+    context_text = " ".join(recent_texts)
+
     system_prompt = await build_system_prompt(
         char_dict, user_name=user_name, user_description=user_description,
         language=language, engine=db_engine,
+        lore_entries=lore_entries, context_text=context_text,
     )
-    messages_data, _ = await get_chat_messages(db, chat_id)  # all messages, no limit
 
     # context_limit is in "real" tokens; multiply by ~4 for char-based estimation
     max_tokens = (context_limit * 4) if context_limit else DEFAULT_CONTEXT_TOKENS
@@ -293,4 +316,19 @@ async def build_conversation_messages(
         total_tokens += est_tokens
 
     messages = messages[-MAX_CONTEXT_MESSAGES:]
-    return [LLMMessage(role="system", content=system_prompt)] + messages
+
+    result_list = [LLMMessage(role="system", content=system_prompt)]
+
+    # Inject chat summary if available (memory of older messages)
+    chat_result = await db.execute(select(Chat.summary).where(Chat.id == chat_id))
+    summary = chat_result.scalar_one_or_none()
+    if summary:
+        summary_labels = {
+            "ru": "[Краткое содержание предыдущего разговора]",
+            "en": "[Previous conversation summary]",
+            "es": "[Resumen de la conversación anterior]",
+        }
+        label = summary_labels.get(language, summary_labels["en"])
+        result_list.append(LLMMessage(role="system", content=f"{label}\n{summary}"))
+
+    return result_list + messages

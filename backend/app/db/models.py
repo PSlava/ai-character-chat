@@ -124,8 +124,12 @@ class Chat(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     character_id: Mapped[str] = mapped_column(ForeignKey("characters.id", ondelete="CASCADE"))
     persona_id: Mapped[str | None] = mapped_column(ForeignKey("personas.id", ondelete="SET NULL"), nullable=True)
+    persona_name: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    persona_description: Mapped[str | None] = mapped_column(Text, nullable=True)
     title: Mapped[str | None] = mapped_column(String, nullable=True)
     model_used: Mapped[str | None] = mapped_column(String, nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)  # LLM-generated summary of older messages
+    summary_up_to_id: Mapped[str | None] = mapped_column(String, nullable=True)  # last message ID included in summary
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -196,6 +200,57 @@ class CharacterRelation(Base):
     label_ru: Mapped[str | None] = mapped_column(String, nullable=True)
     label_en: Mapped[str | None] = mapped_column(String, nullable=True)
     label_es: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class GroupChat(Base):
+    __tablename__ = "group_chats"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    title: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    members: Mapped[list["GroupChatMember"]] = relationship(back_populates="group_chat", cascade="all, delete-orphan")
+    messages: Mapped[list["GroupMessage"]] = relationship(back_populates="group_chat", cascade="all, delete-orphan")
+
+
+class GroupChatMember(Base):
+    __tablename__ = "group_chat_members"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    group_chat_id: Mapped[str] = mapped_column(ForeignKey("group_chats.id", ondelete="CASCADE"))
+    character_id: Mapped[str] = mapped_column(ForeignKey("characters.id", ondelete="CASCADE"))
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+    group_chat: Mapped["GroupChat"] = relationship(back_populates="members")
+    character: Mapped["Character"] = relationship()
+
+
+class GroupMessage(Base):
+    __tablename__ = "group_messages"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    group_chat_id: Mapped[str] = mapped_column(ForeignKey("group_chats.id", ondelete="CASCADE"))
+    character_id: Mapped[str | None] = mapped_column(ForeignKey("characters.id", ondelete="SET NULL"), nullable=True)  # null for user messages
+    role: Mapped[MessageRole] = mapped_column(SAEnum(MessageRole), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    model_used: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    group_chat: Mapped["GroupChat"] = relationship(back_populates="messages")
+
+
+class LoreEntry(Base):
+    __tablename__ = "lore_entries"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    character_id: Mapped[str] = mapped_column(ForeignKey("characters.id", ondelete="CASCADE"))
+    keywords: Mapped[str] = mapped_column(String, nullable=False)  # comma-separated trigger words
+    content: Mapped[str] = mapped_column(Text, nullable=False)  # lore text to inject
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    position: Mapped[int] = mapped_column(Integer, default=0)  # sort order
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

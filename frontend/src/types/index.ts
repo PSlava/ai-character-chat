@@ -44,8 +44,10 @@ export interface Chat {
   user_id: string;
   character_id: string;
   persona_id?: string | null;
+  persona_name?: string | null;
   title: string | null;
   model_used: string | null;
+  has_summary?: boolean;
   created_at: string;
   updated_at: string;
   characters?: Character;

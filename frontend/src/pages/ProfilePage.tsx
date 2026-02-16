@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { getMyCharacters } from '@/api/characters';
 import { getProfile, updateProfile, deleteAccount } from '@/api/users';
 import type { UserProfile } from '@/api/users';
-import { getPersonas, createPersona, updatePersona, deletePersona } from '@/api/personas';
+import { getPersonas, createPersona, updatePersona, deletePersona, getPersonaLimit } from '@/api/personas';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -42,6 +42,7 @@ export function ProfilePage() {
   const [personaDefault, setPersonaDefault] = useState(false);
   const [personaSaving, setPersonaSaving] = useState(false);
   const [deletePersonaId, setDeletePersonaId] = useState<string | null>(null);
+  const [personaLimit, setPersonaLimit] = useState(5);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -54,6 +55,7 @@ export function ProfilePage() {
       setUsername(p.username || '');
     });
     getPersonas().then(setPersonas).catch(() => {});
+    getPersonaLimit().then((r) => setPersonaLimit(r.limit)).catch(() => {});
   }, [isAuthenticated]);
 
   const handleDeleteAccount = async () => {
@@ -241,7 +243,7 @@ export function ProfilePage() {
             <h2 className="text-lg font-semibold">{t('persona.title')}</h2>
             <p className="text-neutral-500 text-sm mt-0.5">{t('persona.subtitle')}</p>
           </div>
-          {personas.length < 10 && !showPersonaForm && (
+          {(personaLimit === 0 || personas.length < personaLimit) && !showPersonaForm && (
             <Button
               variant="secondary"
               size="sm"
@@ -335,7 +337,7 @@ export function ProfilePage() {
           </div>
         )}
 
-        {personas.length >= 10 && (
+        {personaLimit > 0 && personas.length >= personaLimit && (
           <p className="text-neutral-500 text-xs mt-2">{t('persona.limit')}</p>
         )}
       </div>

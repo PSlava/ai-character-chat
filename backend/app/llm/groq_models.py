@@ -10,19 +10,21 @@ logger = logging.getLogger(__name__)
 # Llama models are preferred — GPT-OSS has strict content moderation
 QUALITY_SCORES: dict[str, int] = {
     "llama-3.3-70b-versatile": 9,
+    "moonshotai/kimi-k2-instruct-0905": 8,  # 1T MoE (32B active), 256K ctx, strong general capability
     "meta-llama/llama-4-scout-17b-16e-instruct": 7,
     "meta-llama/llama-4-maverick-17b-128e-instruct": 7,
     "openai/gpt-oss-120b": 6,
     "qwen/qwen3-32b": 5,  # produces CJK garbage in Russian, below auto-fallback threshold
     "openai/gpt-oss-20b": 5,
+    "llama-3.1-8b-instant": 4,  # small 8B, fast but weak for RP
 }
 
 # Models that refuse NSFW content (strict content moderation)
 NSFW_BLOCKED: set[str] = {"openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/gpt-oss-safeguard-20b"}
 
 # Models to exclude (not useful for chat)
-EXCLUDE_PREFIXES = ("whisper", "meta-llama/llama-guard", "meta-llama/llama-prompt-guard")
-EXCLUDE_IDS = {"groq/compound", "groq/compound-mini", "openai/gpt-oss-safeguard-20b", "deepseek-r1-distill-llama-70b"}
+EXCLUDE_PREFIXES = ("whisper", "meta-llama/llama-guard", "meta-llama/llama-prompt-guard", "canopylabs/")
+EXCLUDE_IDS = {"groq/compound", "groq/compound-mini", "openai/gpt-oss-safeguard-20b", "deepseek-r1-distill-llama-70b", "moonshotai/kimi-k2-instruct"}
 
 # Min quality to include in auto-fallback (skip 8B and similar tiny models)
 MIN_QUALITY_FOR_FALLBACK = 6
@@ -35,6 +37,7 @@ CACHE_TTL = 3600  # 1 hour
 # Fallback if API unavailable
 FALLBACK_MODELS = [
     {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B", "quality": 9, "nsfw": True, "note": ""},
+    {"id": "moonshotai/kimi-k2-instruct-0905", "name": "Kimi K2 0905", "quality": 8, "nsfw": True, "note": ""},
     {"id": "openai/gpt-oss-120b", "name": "GPT-OSS 120B", "quality": 6, "nsfw": False, "note": ""},
     {"id": "openai/gpt-oss-20b", "name": "GPT-OSS 20B", "quality": 5, "nsfw": False, "note": ""},
 ]

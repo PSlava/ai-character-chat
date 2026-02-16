@@ -26,6 +26,7 @@ const AdminReportsPage = lazy(() => import('@/pages/AdminReportsPage').then(m =>
 const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage').then(m => ({ default: m.AdminAnalyticsPage })));
 const OAuthCallbackPage = lazy(() => import('@/pages/OAuthCallbackPage').then(m => ({ default: m.OAuthCallbackPage })));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const GroupChatPage = lazy(() => import('@/pages/GroupChatPage').then(m => ({ default: m.GroupChatPage })));
 
 export default function App() {
   return (
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="/auth/oauth-callback" element={<OAuthCallbackPage />} />
             <Route path="/character/:id/edit" element={<EditCharacterPage />} />
             <Route path="/chat/:chatId" element={<ChatPage />} />
+            <Route path="/group-chat/:chatId" element={<GroupChatPage />} />
             <Route path="/create" element={<CreateCharacterPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/favorites" element={<FavoritesPage />} />

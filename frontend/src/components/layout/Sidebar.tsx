@@ -1,13 +1,15 @@
-import { useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/store/chatStore';
+import { useGroupChatStore } from '@/store/groupChatStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { useVotesStore } from '@/store/votesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
-import { Home, Heart, Settings, Users, Flag, BarChart3, X } from 'lucide-react';
+import { CreateGroupChatModal } from '@/components/chat/CreateGroupChatModal';
+import { Home, Heart, Settings, Users, Flag, BarChart3, X, UsersRound } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -19,18 +21,21 @@ export function Sidebar({ isOpen, onClose }: Props) {
   const { user, isAuthenticated } = useAuth();
   const isAdmin = user?.role === 'admin';
   const { chats, loading: chatsLoading, fetchChats } = useChatStore();
+  const { groupChats, loading: groupChatsLoading, fetchGroupChats } = useGroupChatStore();
   const { fetchFavorites } = useFavoritesStore();
   const { fetchVotes } = useVotesStore();
   const { chatId } = useParams();
   const location = useLocation();
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchChats();
+      fetchGroupChats();
       fetchFavorites();
       fetchVotes();
     }
-  }, [isAuthenticated, fetchChats, fetchFavorites, fetchVotes]);
+  }, [isAuthenticated, fetchChats, fetchGroupChats, fetchFavorites, fetchVotes]);
 
   // Close drawer on route change (mobile)
   useEffect(() => {
@@ -66,6 +71,15 @@ export function Sidebar({ isOpen, onClose }: Props) {
             <Heart className="w-4 h-4" />
             {t('sidebar.favorites')}
           </Link>
+        )}
+        {isAuthenticated && (
+          <button
+            onClick={() => setShowCreateGroup(true)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300 w-full text-left"
+          >
+            <UsersRound className="w-4 h-4" />
+            {t('groupChat.create')}
+          </button>
         )}
         {isAdmin && (
           <>
@@ -147,6 +161,41 @@ export function Sidebar({ isOpen, onClose }: Props) {
         </div>
       )}
 
+      {isAuthenticated && (groupChatsLoading || groupChats.length > 0) && (
+        <div className="border-t border-neutral-800">
+          <div className="p-3">
+            <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 px-3">
+              {t('groupChat.section')}
+            </p>
+            <div className="space-y-1">
+              {groupChats.map((gc) => (
+                <Link
+                  key={gc.id}
+                  to={`/group-chat/${gc.id}`}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    chatId === gc.id
+                      ? 'bg-rose-600/20 text-rose-300'
+                      : 'hover:bg-neutral-800 text-neutral-400'
+                  }`}
+                >
+                  <div className="flex -space-x-2 shrink-0">
+                    {gc.members.slice(0, 3).map((m) => (
+                      <Avatar
+                        key={m.id}
+                        src={m.character?.avatar_url || null}
+                        name={m.character?.name || '?'}
+                        size="sm"
+                      />
+                    ))}
+                  </div>
+                  <span className="truncate">{gc.title}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {!isAuthenticated && (
         <div className="p-4 text-sm text-neutral-500">
           <Logo className="w-8 h-8 mb-2 text-neutral-600" />
@@ -182,6 +231,10 @@ export function Sidebar({ isOpen, onClose }: Props) {
             {sidebarContent}
           </aside>
         </div>
+      )}
+
+      {showCreateGroup && (
+        <CreateGroupChatModal onClose={() => setShowCreateGroup(false)} />
       )}
     </>
   );

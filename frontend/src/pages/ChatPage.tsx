@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Trash2, Eraser, Settings, MessageSquarePlus } from 'lucide-react';
-import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages, createChat } from '@/api/chat';
+import { Trash2, Eraser, Settings, MessageSquarePlus, Brain, Star } from 'lucide-react';
+import { getChat, deleteChat, clearChatMessages, deleteChatMessage, getOlderMessages, createChat, generatePersonaReply } from '@/api/chat';
 import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels } from '@/api/characters';
+import { getPersonas } from '@/api/personas';
+import type { Persona } from '@/types';
 import type { OpenRouterModel } from '@/api/characters';
 import { useChat } from '@/hooks/useChat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
@@ -47,6 +49,8 @@ export function ChatPage() {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [showPersonaModal, setShowPersonaModal] = useState(false);
+  const [personas, setPersonas] = useState<Persona[]>([]);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
@@ -225,6 +229,52 @@ export function ChatPage() {
     }
   };
 
+  const handleNewChat = async () => {
+    if (!chatDetail?.chat.character_id) return;
+    try {
+      const list = await getPersonas();
+      setPersonas(list);
+      if (list.length === 0) {
+        // No personas — create directly
+        const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, undefined, true);
+        await useChatStore.getState().fetchChats();
+        navigate(`/chat/${newChat.id}`);
+      } else if (list.length === 1 && list[0].is_default) {
+        // Single default persona — use automatically
+        const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, list[0].id, true);
+        await useChatStore.getState().fetchChats();
+        navigate(`/chat/${newChat.id}`);
+      } else {
+        setShowPersonaModal(true);
+      }
+    } catch {
+      toast.error(t('toast.networkError'));
+    }
+  };
+
+  const startChatWithPersona = async (personaId?: string) => {
+    if (!chatDetail?.chat.character_id) return;
+    setShowPersonaModal(false);
+    try {
+      const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, personaId, true);
+      await useChatStore.getState().fetchChats();
+      navigate(`/chat/${newChat.id}`);
+    } catch {
+      toast.error(t('toast.networkError'));
+    }
+  };
+
+  const handleGeneratePersonaReply = async (): Promise<string | null> => {
+    if (!chatId) return null;
+    try {
+      const { content } = await generatePersonaReply(chatId);
+      return content;
+    } catch {
+      toast.error(t('chat.noPersonaForGen'));
+      return null;
+    }
+  };
+
   if (!authLoading && !isAuthenticated) {
     return <Navigate to="/" replace />;
   }
@@ -279,7 +329,17 @@ export function ChatPage() {
           size="sm"
         />
         <div className="flex-1 min-w-0">
-          <h2 className="font-semibold">{character?.name}</h2>
+          <div className="flex items-center gap-1.5">
+            <h2 className="font-semibold">{character?.name}</h2>
+            {chatDetail?.chat.has_summary && (
+              <span title={t('chat.memoryActive')} className="text-purple-400">
+                <Brain className="w-4 h-4" />
+              </span>
+            )}
+          </div>
+          {chatDetail?.chat.persona_name && (
+            <span className="text-xs text-rose-400">{t('chat.asPersona', { name: chatDetail.chat.persona_name })}</span>
+          )}
           <p className="text-xs text-neutral-500">
             {character?.profiles?.username && `@${character.profiles.username}`}
             {isAdmin && <> · {getModelLabel(activeModel)}</>}
@@ -293,16 +353,7 @@ export function ChatPage() {
           <Settings size={16} />
         </button>
         <button
-          onClick={async () => {
-            if (!chatDetail?.chat.character_id) return;
-            try {
-              const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, undefined, true);
-              await useChatStore.getState().fetchChats();
-              navigate(`/chat/${newChat.id}`);
-            } catch {
-              toast.error(t('toast.networkError'));
-            }
-          }}
+          onClick={handleNewChat}
           className="p-2 text-neutral-500 hover:text-green-400 transition-colors"
           title={t('chat.newChatTooltip')}
         >
@@ -345,6 +396,8 @@ export function ChatPage() {
         onSend={sendMessage}
         onStop={stopStreaming}
         isStreaming={isStreaming}
+        personaName={chatDetail?.chat.persona_name}
+        onGeneratePersonaReply={chatDetail?.chat.persona_name ? handleGeneratePersonaReply : undefined}
       />
 
       {showSettings && (
@@ -367,6 +420,42 @@ export function ChatPage() {
           onConfirm={executeConfirm}
           onCancel={() => setConfirmAction(null)}
         />
+      )}
+
+      {showPersonaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowPersonaModal(false)}>
+          <div
+            className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 sm:p-6 w-full max-w-sm mx-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-base font-semibold text-white mb-1">{t('persona.selectTitle')}</h3>
+            <p className="text-sm text-neutral-400 mb-4">{t('persona.selectSubtitle')}</p>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              <button
+                onClick={() => startChatWithPersona(undefined)}
+                className="w-full text-left p-3 rounded-xl bg-neutral-800/50 border border-neutral-700 hover:border-neutral-500 transition-colors"
+              >
+                <span className="font-medium text-neutral-300">{t('persona.none')}</span>
+                <span className="block text-xs text-neutral-500 mt-0.5">{t('persona.noneHint')}</span>
+              </button>
+              {personas.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => startChatWithPersona(p.id)}
+                  className="w-full text-left p-3 rounded-xl bg-neutral-800/50 border border-neutral-700 hover:border-rose-500/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-white">{p.name}</span>
+                    {p.is_default && <Star className="w-3.5 h-3.5 text-amber-400" />}
+                  </div>
+                  {p.description && (
+                    <p className="text-xs text-neutral-400 mt-1 line-clamp-2">{p.description}</p>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

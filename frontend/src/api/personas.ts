@@ -19,3 +19,8 @@ export async function updatePersona(id: string, body: { name?: string; descripti
 export async function deletePersona(id: string) {
   await api.delete(`/personas/${id}`);
 }
+
+export async function getPersonaLimit(): Promise<{ used: number; limit: number }> {
+  const { data } = await api.get<{ used: number; limit: number }>('/personas/limit');
+  return data;
+}

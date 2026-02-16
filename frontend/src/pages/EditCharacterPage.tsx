@@ -3,6 +3,7 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getCharacter, updateCharacter } from '@/api/characters';
 import { CharacterForm } from '@/components/characters/CharacterForm';
+import { LoreEditor } from '@/components/characters/LoreEditor';
 import { localePath } from '@/lib/lang';
 import type { Character } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -65,6 +66,11 @@ export function EditCharacterPage() {
         submitLabel={t('edit.saveChanges')}
         isAdmin={isAdmin}
       />
+
+      {/* Lorebook / World Info */}
+      <div className="mt-8 border-t border-neutral-800 pt-6">
+        <LoreEditor characterId={character.id} />
+      </div>
     </div>
   );
 }

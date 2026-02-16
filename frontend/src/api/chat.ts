@@ -42,6 +42,16 @@ export async function getOlderMessages(chatId: string, beforeId: string, limit =
   return data;
 }
 
+export async function getDailyUsage(): Promise<{ used: number; limit: number }> {
+  const { data } = await api.get<{ used: number; limit: number }>('/chats/daily-usage');
+  return data;
+}
+
+export async function generatePersonaReply(chatId: string): Promise<{ content: string }> {
+  const { data } = await api.post<{ content: string }>(`/chats/${chatId}/generate-persona-reply`);
+  return data;
+}
+
 export async function getAuthToken(): Promise<string | null> {
   return getToken();
 }

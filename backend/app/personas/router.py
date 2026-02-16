@@ -7,10 +7,9 @@ from app.db.session import get_db
 from app.db.models import Persona
 from app.personas.schemas import PersonaCreate, PersonaUpdate
 from app.utils.sanitize import strip_html_tags
+from app.chat.daily_limit import get_max_personas
 
 router = APIRouter(prefix="/api/personas", tags=["personas"])
-
-MAX_PERSONAS = 10
 
 
 def _serialize(p: Persona) -> dict:
@@ -36,18 +35,33 @@ async def list_personas(
     return [_serialize(p) for p in result.scalars().all()]
 
 
+@router.get("/limit")
+async def persona_limit(
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return current persona usage and limit."""
+    max_personas = await get_max_personas()
+    count = await db.execute(
+        select(func.count()).select_from(Persona).where(Persona.user_id == user["id"])
+    )
+    return {"used": count.scalar() or 0, "limit": max_personas}
+
+
 @router.post("", status_code=201)
 async def create_persona(
     body: PersonaCreate,
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Check limit
+    # Check limit (admin-configurable)
+    max_personas = await get_max_personas()
     count = await db.execute(
         select(func.count()).select_from(Persona).where(Persona.user_id == user["id"])
     )
-    if (count.scalar() or 0) >= MAX_PERSONAS:
-        raise HTTPException(status_code=400, detail=f"Maximum {MAX_PERSONAS} personas allowed")
+    current = count.scalar() or 0
+    if max_personas > 0 and current >= max_personas:
+        raise HTTPException(status_code=400, detail=f"Maximum {max_personas} personas allowed")
 
     # If setting as default, clear others
     if body.is_default:

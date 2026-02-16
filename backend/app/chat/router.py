@@ -9,11 +9,14 @@ from app.auth.middleware import get_current_user
 from app.db.session import get_db
 from app.chat.schemas import CreateChatRequest, SendMessageRequest
 from app.chat import service
-from app.db.models import User, Persona
+from app.db.models import User, Persona, Message
 from app.llm.base import LLMConfig
 from app.llm.registry import get_provider
 from app.config import settings
 from app.auth.rate_limit import check_message_rate, check_message_interval
+from app.chat.daily_limit import check_daily_limit, get_daily_usage
+from app.chat.summarizer import maybe_summarize
+import asyncio as _asyncio
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
 
@@ -67,8 +70,10 @@ def chat_to_dict(c):
         "user_id": c.user_id,
         "character_id": c.character_id,
         "persona_id": getattr(c, 'persona_id', None),
+        "persona_name": getattr(c, 'persona_name', None),
         "title": c.title,
         "model_used": c.model_used,
+        "has_summary": bool(getattr(c, 'summary', None)),
         "created_at": c.created_at.isoformat() if c.created_at else None,
         "updated_at": c.updated_at.isoformat() if c.updated_at else None,
     }
@@ -188,6 +193,116 @@ async def delete_message(
         raise HTTPException(status_code=404, detail="Message not found or cannot be deleted")
 
 
+@router.get("/daily-usage")
+async def daily_usage(
+    user=Depends(get_current_user),
+):
+    """Return daily message usage for the current user."""
+    return await get_daily_usage(user["id"])
+
+
+@router.post("/{chat_id}/generate-persona-reply")
+async def generate_persona_reply(
+    chat_id: str,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate a reply as the user's persona. Returns text for editing, NOT saved."""
+    from app.llm.base import LLMMessage
+
+    # Check daily limit (counts toward usage)
+    await check_daily_limit(user["id"], user.get("role", "user"))
+
+    chat = await service.get_chat(db, chat_id, user["id"])
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    persona_name = getattr(chat, 'persona_name', None)
+    if not persona_name:
+        raise HTTPException(status_code=400, detail="No persona attached to this chat")
+
+    persona_desc = getattr(chat, 'persona_description', None) or ""
+    character_name = chat.character.name if chat.character else "Character"
+
+    # Get recent messages for context
+    msgs_result = await db.execute(
+        select(Message)
+        .where(Message.chat_id == chat_id)
+        .order_by(Message.created_at.desc())
+        .limit(10)
+    )
+    recent_msgs = list(msgs_result.scalars().all())
+    recent_msgs.reverse()
+
+    # Detect language from recent messages
+    user_obj = await db.execute(select(User).where(User.id == user["id"]))
+    user_obj = user_obj.scalar_one_or_none()
+    language = user_obj.language if user_obj else "ru"
+
+    lang_instructions = {
+        "ru": "Напиши ответ на русском языке.",
+        "en": "Write the reply in English.",
+        "es": "Escribe la respuesta en español.",
+    }
+    lang_hint = lang_instructions.get(language, lang_instructions["en"])
+
+    # Build prompt
+    system_prompt = (
+        f"You are ghostwriting a reply as the user named '{persona_name}' in a roleplay chat "
+        f"with a character named '{character_name}'.\n\n"
+        f"About {persona_name}: {persona_desc}\n\n"
+        f"Write a short in-character reply (1-3 sentences) as {persona_name} would say it. "
+        f"Match the tone and style of the conversation. Use *asterisks* for actions/descriptions. "
+        f"Do NOT write as {character_name} — only as {persona_name}.\n"
+        f"{lang_hint}\n"
+        f"Output ONLY the reply text, nothing else."
+    )
+
+    llm_msgs = [LLMMessage(role="system", content=system_prompt)]
+    for msg in recent_msgs:
+        role_val = msg.role.value if hasattr(msg.role, 'value') else msg.role
+        if role_val == "user":
+            llm_msgs.append(LLMMessage(role="user", content=msg.content))
+        elif role_val == "assistant":
+            llm_msgs.append(LLMMessage(role="assistant", content=msg.content))
+
+    # Add a final instruction as user turn to prompt the generation
+    llm_msgs.append(LLMMessage(
+        role="user",
+        content=f"Now write {persona_name}'s next reply to {character_name}. Reply text only."
+    ))
+
+    config = LLMConfig(model="", temperature=0.8, max_tokens=512)
+
+    # Auto-fallback through providers
+    auto_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip()]
+    generated_text = ""
+
+    for pname in auto_order:
+        try:
+            prov = get_provider(pname)
+        except ValueError:
+            continue
+        try:
+            chunks = []
+            async for chunk in prov.generate_stream(llm_msgs, config):
+                chunks.append(chunk)
+            generated_text = "".join(chunks)
+            break
+        except Exception:
+            continue
+
+    if not generated_text:
+        raise HTTPException(status_code=500, detail="Generation failed")
+
+    # Increment user message count (counts toward daily limit)
+    if user_obj:
+        user_obj.message_count = (user_obj.message_count or 0) + 1
+        await db.commit()
+
+    return {"content": generated_text.strip()}
+
+
 @router.post("/{chat_id}/message")
 async def send_message(
     chat_id: str,
@@ -197,6 +312,7 @@ async def send_message(
 ):
     check_message_rate(user["id"])
     check_message_interval(user["id"])
+    await check_daily_limit(user["id"], user.get("role", "user"))
 
     chat = await service.get_chat(db, chat_id, user["id"])
     if not chat:
@@ -220,15 +336,9 @@ async def send_message(
     user_obj = user_result.scalar_one_or_none()
     language = body.language or (user_obj.language if user_obj else None) or "ru"
 
-    # Load persona if attached to chat
-    user_name = user_obj.display_name if user_obj else None
-    user_description = None
-    if chat.persona_id:
-        persona_result = await db.execute(select(Persona).where(Persona.id == chat.persona_id))
-        persona_obj = persona_result.scalar_one_or_none()
-        if persona_obj:
-            user_name = persona_obj.name
-            user_description = persona_obj.description
+    # Use persona snapshot from chat (not FK lookup)
+    user_name = getattr(chat, 'persona_name', None) or (user_obj.display_name if user_obj else None)
+    user_description = getattr(chat, 'persona_description', None)
 
     # Build context
     messages = await service.build_conversation_messages(
@@ -312,8 +422,8 @@ async def send_message(
                     complete_text = "".join(full_response)
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
                     saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
-                    if not body.is_regenerate:
-                        await service.increment_message_count(character.id, language, user["id"])
+                    await service.increment_message_count(character.id, language, user["id"])
+                    _asyncio.create_task(maybe_summarize(chat_id))
                     yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
                     return
                 except Exception as e:
@@ -335,8 +445,8 @@ async def send_message(
                 complete_text = "".join(full_response)
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
                 saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
-                if not body.is_regenerate:
-                    await service.increment_message_count(character.id, language, user["id"])
+                await service.increment_message_count(character.id, language, user["id"])
+                _asyncio.create_task(maybe_summarize(chat_id))
                 yield f"data: {json.dumps({'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model})}\n\n"
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'content': _user_error(str(e), is_admin), 'user_message_id': user_msg.id})}\n\n"

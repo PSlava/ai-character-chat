@@ -333,12 +333,29 @@ def get_all_keys() -> list[dict]:
     return result
 
 
+def _match_lore_entries(lore_entries: list[dict], context_text: str) -> list[str]:
+    """Return lore content for entries whose keywords match the context text."""
+    if not lore_entries or not context_text:
+        return []
+    context_lower = context_text.lower()
+    matched = []
+    for entry in lore_entries:
+        if not entry.get("enabled", True):
+            continue
+        keywords = [kw.strip().lower() for kw in entry.get("keywords", "").split(",") if kw.strip()]
+        if any(kw in context_lower for kw in keywords):
+            matched.append(entry["content"])
+    return matched
+
+
 async def build_system_prompt(
     character: dict,
     user_name: str | None = None,
     user_description: str | None = None,
     language: str = "ru",
     engine=None,
+    lore_entries: list[dict] | None = None,
+    context_text: str = "",
 ) -> str:
     if engine:
         await load_overrides(engine)
@@ -366,6 +383,13 @@ async def build_system_prompt(
 
     if character.get("scenario"):
         parts.append(f"\n{_get(lang, 'scenario')}\n{tpl(character['scenario'])}")
+
+    # Inject matched lore entries (World Info)
+    if lore_entries:
+        matched_lore = _match_lore_entries(lore_entries, context_text)
+        if matched_lore:
+            lore_header = {"ru": "## Мир и лор", "en": "## World Info", "es": "## Información del mundo"}
+            parts.append(f"\n{lore_header.get(lang, lore_header['en'])}\n" + "\n".join(matched_lore))
 
     if character.get("example_dialogues"):
         parts.append(f"\n{_get(lang, 'examples')}\n{tpl(character['example_dialogues'])}")

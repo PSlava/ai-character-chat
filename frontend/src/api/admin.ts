@@ -72,6 +72,8 @@ export async function deleteUser(userId: string): Promise<void> {
 export interface AdminSettings {
   notify_registration: string;
   paid_mode: string;
+  daily_message_limit: string;
+  max_personas: string;
 }
 
 export async function getAdminSettings(): Promise<AdminSettings> {
