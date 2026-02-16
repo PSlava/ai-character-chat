@@ -64,7 +64,7 @@ async def grow_counters():
 
                 new_chat = {}
                 new_like = {}
-                for lang in ("ru", "en", "es"):
+                for lang in ("ru", "en", "es", "fr", "de"):
                     new_chat[lang] = (base_chat.get(lang) or 0) + chat_inc[lang]
                     new_like[lang] = (base_like.get(lang) or 0) + like_inc[lang]
 

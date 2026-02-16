@@ -84,6 +84,9 @@ async def init_db():
         # Anonymous guest chat
         "ALTER TABLE chats ADD COLUMN IF NOT EXISTS anon_session_id VARCHAR",
         "CREATE INDEX IF NOT EXISTS idx_chats_anon_session ON chats (anon_session_id) WHERE anon_session_id IS NOT NULL",
+        # FR/DE language support for character relations
+        "ALTER TABLE character_relations ADD COLUMN IF NOT EXISTS label_fr VARCHAR",
+        "ALTER TABLE character_relations ADD COLUMN IF NOT EXISTS label_de VARCHAR",
     ]
     for sql in migrations:
         try:

@@ -14,48 +14,56 @@ from app.seo.jsonld import (
 
 router = APIRouter(prefix="/api/seo", tags=["seo"])
 
-LANGS = ["en", "es", "ru"]
+LANGS = ["en", "es", "ru", "fr", "de"]
 
 # Tag slug → search values (match characters in any language)
 TAG_PAGES = [
     {
         "slug": "fantasy",
         "search": ["фэнтези", "fantasy", "fantasía"],
-        "labels": {"en": "Fantasy", "es": "Fantasía", "ru": "Фэнтези"},
+        "labels": {"en": "Fantasy", "es": "Fantasía", "ru": "Фэнтези", "fr": "Fantaisie", "de": "Fantasy"},
         "descriptions": {
             "en": "Explore fantasy AI characters — elves, mages, dragons, and mythical worlds. Immersive roleplay without limits.",
             "es": "Explora personajes de fantasía — elfos, magos, dragones y mundos míticos. Roleplay inmersivo sin límites.",
             "ru": "Фэнтезийные AI-персонажи — эльфы, маги, драконы и мифические миры. Иммерсивный ролеплей без ограничений.",
+            "fr": "Explorez des personnages IA fantastiques — elfes, mages, dragons et mondes mythiques. Jeu de rôle immersif sans limites.",
+            "de": "Entdecke Fantasy-KI-Charaktere — Elfen, Magier, Drachen und mythische Welten. Immersives Rollenspiel ohne Grenzen.",
         },
     },
     {
         "slug": "romance",
         "search": ["романтика", "romance"],
-        "labels": {"en": "Romance", "es": "Romance", "ru": "Романтика"},
+        "labels": {"en": "Romance", "es": "Romance", "ru": "Романтика", "fr": "Romance", "de": "Romantik"},
         "descriptions": {
             "en": "Chat with romantic AI characters — love stories, dating simulation, and intimate conversations.",
             "es": "Chatea con personajes románticos — historias de amor, simulación de citas y conversaciones íntimas.",
             "ru": "Романтические AI-персонажи — любовные истории, симулятор свиданий и интимные разговоры.",
+            "fr": "Chattez avec des personnages IA romantiques — histoires d'amour, simulation de rendez-vous et conversations intimes.",
+            "de": "Chatte mit romantischen KI-Charakteren — Liebesgeschichten, Dating-Simulation und intime Gespräche.",
         },
     },
     {
         "slug": "anime",
         "search": ["аниме", "anime"],
-        "labels": {"en": "Anime", "es": "Anime", "ru": "Аниме"},
+        "labels": {"en": "Anime", "es": "Anime", "ru": "Аниме", "fr": "Anime", "de": "Anime"},
         "descriptions": {
             "en": "Anime-inspired AI characters — waifu, shonen heroes, isekai adventures. Your favorite anime worlds come alive.",
             "es": "Personajes AI inspirados en anime — waifu, héroes shonen, aventuras isekai. Tus mundos anime favoritos cobran vida.",
             "ru": "Аниме AI-персонажи — вайфу, сёнэн-герои, исекай-приключения. Твои любимые аниме-миры оживают.",
+            "fr": "Personnages IA inspirés de l'anime — waifu, héros shonen, aventures isekai. Vos mondes anime préférés prennent vie.",
+            "de": "Anime-inspirierte KI-Charaktere — Waifu, Shonen-Helden, Isekai-Abenteuer. Deine liebsten Anime-Welten erwachen zum Leben.",
         },
     },
     {
         "slug": "modern",
         "search": ["современность", "modern", "moderno", "реалистичный"],
-        "labels": {"en": "Modern", "es": "Moderno", "ru": "Современность"},
+        "labels": {"en": "Modern", "es": "Moderno", "ru": "Современность", "fr": "Moderne", "de": "Modern"},
         "descriptions": {
             "en": "Modern-day AI characters — realistic scenarios, everyday life, contemporary settings and stories.",
             "es": "Personajes AI modernos — escenarios realistas, vida cotidiana, entornos y historias contemporáneas.",
             "ru": "Современные AI-персонажи — реалистичные сценарии, повседневная жизнь, актуальные истории.",
+            "fr": "Personnages IA modernes — scénarios réalistes, vie quotidienne, contextes et histoires contemporains.",
+            "de": "Moderne KI-Charaktere — realistische Szenarien, Alltagsleben, zeitgenössische Settings und Geschichten.",
         },
     },
 ]
@@ -267,6 +275,22 @@ async def prerender_faq(lang: str = Query("en")):
             ("Как создать персонажа?", "Нажмите «Создать» в шапке. Можно создать вручную или вставить текст для автоматической генерации."),
             ("Мой чат приватный?", "Да. Ваши разговоры приватны и видны только вам."),
             ("Можно ли удалить данные?", "Да. Зайдите в Профиль → «Удалить аккаунт» в разделе «Опасная зона»."),
+        ],
+        "fr": [
+            ("SweetSin est-il gratuit ?", "Oui ! Les fonctionnalités de base sont gratuites. Nous proposons plusieurs fournisseurs gratuits."),
+            ("Quels modèles sont disponibles ?", "Nous prenons en charge OpenRouter, Groq, Cerebras, Together, DeepSeek et l'accès direct à Claude, GPT-4o et Gemini."),
+            ("Puis-je créer du contenu NSFW ?", "Oui, pour les utilisateurs de 18 ans et plus. Vous pouvez définir la classification du contenu par personnage."),
+            ("Comment créer un personnage ?", "Cliquez sur « Créer » dans l'en-tête. Vous pouvez le créer manuellement ou coller du texte pour une génération automatique."),
+            ("Mon historique de chat est-il privé ?", "Oui. Vos conversations sont privées et visibles uniquement par vous."),
+            ("Puis-je supprimer mes données ?", "Oui. Allez dans Profil et utilisez « Supprimer le compte » dans la section Zone de danger."),
+        ],
+        "de": [
+            ("Ist SweetSin kostenlos?", "Ja! Die Kernfunktionen sind kostenlos. Wir bieten mehrere kostenlose Anbieter an."),
+            ("Welche Modelle sind verfügbar?", "Wir unterstützen OpenRouter, Groq, Cerebras, Together, DeepSeek und direkten Zugang zu Claude, GPT-4o und Gemini."),
+            ("Kann ich NSFW-Inhalte erstellen?", "Ja, für Nutzer ab 18 Jahren. Sie können die Inhaltsbewertung pro Charakter festlegen."),
+            ("Wie erstelle ich einen Charakter?", "Klicken Sie auf „Erstellen" in der Kopfzeile. Sie können manuell erstellen oder Text einfügen, um automatisch zu generieren."),
+            ("Ist mein Chatverlauf privat?", "Ja. Ihre Gespräche sind privat und nur für Sie sichtbar."),
+            ("Kann ich meine Daten löschen?", "Ja. Gehen Sie zu Profil und verwenden Sie „Konto löschen" im Bereich Gefahrenzone."),
         ],
     }
     pairs = _faq.get(lang, _faq["en"])

@@ -451,7 +451,7 @@ async def _translate_new_character(char_id: str):
         _save_translations, _check_translation_rate,
     )
 
-    for lang in ("en", "es"):
+    for lang in ("en", "es", "fr", "de"):
         try:
             if not _check_translation_rate():
                 logger.warning("Translation rate limit, skipping %s", lang)

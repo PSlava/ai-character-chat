@@ -24,13 +24,15 @@ Character info:
 - Personality (first 200 chars): {personality}
 - Content rating: {rating}
 
-Generate exactly 6 phrases: 2 in Russian, 2 in English, 2 in Spanish.
+Generate exactly 10 phrases: 2 in Russian, 2 in English, 2 in Spanish, 2 in French, 2 in German.
 Each phrase should be catchy, under 80 characters, and describe what makes this character unique or appealing.
 
 Examples of good phrases:
 - "Dark romance with an unpredictable twist"
 - "Идеальный микс цундере и воительницы"
 - "Perfecto para fans del romance prohibido"
+- "Romance sombre avec une touche imprévisible"
+- "Dunkle Romantik mit unberechenbarer Wendung"
 
 Return ONLY a JSON array:
 [
@@ -39,7 +41,11 @@ Return ONLY a JSON array:
   {{"text": "phrase in English", "lang": "en"}},
   {{"text": "another phrase in English", "lang": "en"}},
   {{"text": "phrase in Spanish", "lang": "es"}},
-  {{"text": "another phrase in Spanish", "lang": "es"}}
+  {{"text": "another phrase in Spanish", "lang": "es"}},
+  {{"text": "phrase in French", "lang": "fr"}},
+  {{"text": "another phrase in French", "lang": "fr"}},
+  {{"text": "phrase in German", "lang": "de"}},
+  {{"text": "another phrase in German", "lang": "de"}}
 ]"""
 
 
@@ -115,7 +121,7 @@ async def _generate_for_character(
                     {"text": item["text"][:100], "lang": item["lang"]}
                     for item in data
                     if isinstance(item, dict) and "text" in item and "lang" in item
-                    and item["lang"] in ("ru", "en", "es")
+                    and item["lang"] in ("ru", "en", "es", "fr", "de")
                 ]
                 if valid:
                     return valid

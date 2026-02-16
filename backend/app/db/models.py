@@ -201,6 +201,8 @@ class CharacterRelation(Base):
     label_ru: Mapped[str | None] = mapped_column(String, nullable=True)
     label_en: Mapped[str | None] = mapped_column(String, nullable=True)
     label_es: Mapped[str | None] = mapped_column(String, nullable=True)
+    label_fr: Mapped[str | None] = mapped_column(String, nullable=True)
+    label_de: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

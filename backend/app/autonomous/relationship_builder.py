@@ -17,13 +17,13 @@ _MAX_RELATIONS_PER_CHAR = 3
 
 # Predefined labels for relation types
 _LABELS = {
-    "rival": {"ru": "Соперник", "en": "Rival", "es": "Rival"},
-    "ex": {"ru": "Бывший", "en": "Ex", "es": "Ex"},
-    "friend": {"ru": "Друг", "en": "Friend", "es": "Amigo"},
-    "sibling": {"ru": "Родственник", "en": "Sibling", "es": "Hermano"},
-    "enemy": {"ru": "Враг", "en": "Enemy", "es": "Enemigo"},
-    "lover": {"ru": "Возлюбленный", "en": "Lover", "es": "Amante"},
-    "ally": {"ru": "Союзник", "en": "Ally", "es": "Aliado"},
+    "rival": {"ru": "Соперник", "en": "Rival", "es": "Rival", "fr": "Rival", "de": "Rivale"},
+    "ex": {"ru": "Бывший", "en": "Ex", "es": "Ex", "fr": "Ex", "de": "Ex"},
+    "friend": {"ru": "Друг", "en": "Friend", "es": "Amigo", "fr": "Ami", "de": "Freund"},
+    "sibling": {"ru": "Родственник", "en": "Sibling", "es": "Hermano", "fr": "Parent", "de": "Verwandter"},
+    "enemy": {"ru": "Враг", "en": "Enemy", "es": "Enemigo", "fr": "Ennemi", "de": "Feind"},
+    "lover": {"ru": "Возлюбленный", "en": "Lover", "es": "Amante", "fr": "Amant", "de": "Geliebter"},
+    "ally": {"ru": "Союзник", "en": "Ally", "es": "Aliado", "fr": "Allié", "de": "Verbündeter"},
 }
 
 _VALID_TYPES = set(_LABELS.keys())
@@ -114,13 +114,14 @@ async def build_relationships() -> int:
                 # Create bidirectional relations
                 async with db_engine.begin() as conn:
                     await conn.execute(text("""
-                        INSERT INTO character_relations (id, character_id, related_id, relation_type, label_ru, label_en, label_es, created_at)
-                        VALUES (:id1, :a, :b, :type, :ru, :en, :es, NOW()),
-                               (:id2, :b, :a, :type, :ru, :en, :es, NOW())
+                        INSERT INTO character_relations (id, character_id, related_id, relation_type, label_ru, label_en, label_es, label_fr, label_de, created_at)
+                        VALUES (:id1, :a, :b, :type, :ru, :en, :es, :fr, :de, NOW()),
+                               (:id2, :b, :a, :type, :ru, :en, :es, :fr, :de, NOW())
                     """), {
                         "id1": str(uuid.uuid4()), "id2": str(uuid.uuid4()),
                         "a": a.id, "b": b.id, "type": rel_type,
                         "ru": labels["ru"], "en": labels["en"], "es": labels["es"],
+                        "fr": labels["fr"], "de": labels["de"],
                     })
                 count += 1
                 logger.info("Created %s relation: %s <-> %s", rel_type, a.name, b.name)

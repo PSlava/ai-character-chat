@@ -35,6 +35,8 @@ export function LanguageSwitcher({ compact }: Props) {
     { code: 'en', label: 'EN' },
     { code: 'es', label: 'ES' },
     { code: 'ru', label: 'RU' },
+    { code: 'fr', label: 'FR' },
+    { code: 'de', label: 'DE' },
   ];
 
   if (compact) {
