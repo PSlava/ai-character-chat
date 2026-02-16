@@ -65,9 +65,9 @@ export function HomePage() {
     return () => clearTimeout(timer);
   }, [search, activeTag, page, i18n.language]);
 
-  // Featured character of the day — deterministic, changes daily
+  // Featured character of the day — pick from top 5 (already sorted by language preference)
   const featuredCharacter = characters.length > 0
-    ? characters[Math.floor(Date.now() / 86400000) % characters.length]
+    ? characters[Math.floor(Date.now() / 86400000) % Math.min(5, characters.length)]
     : null;
 
   const handleBrowseClick = () => {

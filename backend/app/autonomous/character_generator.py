@@ -334,17 +334,16 @@ async def generate_daily_character() -> bool:
         char_id = uuid.uuid4().hex
         slug = generate_slug(char_data.get("name", "character"), char_id)
 
-        # Random base counters
-        base_chat = json.dumps({
-            "ru": random.randint(50, 300),
-            "en": random.randint(30, 200),
-            "es": random.randint(10, 80),
-        })
-        base_like = json.dumps({
-            "ru": random.randint(20, 100),
-            "en": random.randint(10, 60),
-            "es": random.randint(5, 30),
-        })
+        # Language-preference-aware base counters
+        from app.characters.language_preferences import get_initial_base_counts
+        base_chat_dict, base_like_dict = get_initial_base_counts(
+            setting=setting,
+            rating=rating,
+            structured_tags=structured_tags,
+            free_tags=char_data.get("tags", ""),
+        )
+        base_chat = json.dumps(base_chat_dict)
+        base_like = json.dumps(base_like_dict)
 
         async with db_engine.begin() as conn:
             await conn.execute(

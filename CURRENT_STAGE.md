@@ -315,8 +315,9 @@ docker compose up -d
 ### Автономный планировщик
 
 - **Scheduler** (`autonomous/scheduler.py`) — `asyncio.create_task()` в lifespan, hourly check, 24ч между задачами. Состояние в `prompt_templates` с `scheduler.*` ключами. 5 мин задержка при старте
-- **Генерация персонажей** (`autonomous/character_generator.py`) — 50 архетипов (фэнтези/современность/аниме/sci-fi, ~90% NSFW). Каждый день: `random.choice()` из неиспользованных → LLM генерация текста (Groq→Cerebras→OpenRouter) → DALL-E 3 аватар (512×512, WebP, ~$0.04) → сохранение под @sweetsin → авто-перевод EN/ES. При ошибке — email админам
-- **Рост счётчиков** (`autonomous/counter_growth.py`) — ежедневный bump `base_chat_count`/`base_like_count` на всех публичных персонажах (+3-15 чатов, +1-5 лайков на язык)
+- **Генерация персонажей** (`autonomous/character_generator.py`) — LLM-driven: 14 взвешенных категорий (~90% NSFW), LLM изобретает уникальную концепцию → текст (Groq→Cerebras→OpenRouter) → DALL-E 3 аватар (512×512, WebP, ~$0.04) → сохранение под @sweetsin → авто-перевод EN/ES. При ошибке — email админам
+- **Рост счётчиков** (`autonomous/counter_growth.py`) — ежедневный bump `base_chat_count`/`base_like_count` с учётом языковых предпочтений (дарк-романтика растёт быстрее для RU, аниме — для EN, романтика — для ES)
+- **Языковые предпочтения** (`characters/language_preferences.py`) — таблица аффинити по сеттингам, тегам, рейтингу. Влияет на начальные счётчики при генерации и на ежедневный рост. Результат: сортировка на главной автоматически отражает предпочтения аудитории. Featured — из топ-5 по текущему языку
 - **Очистка** (`autonomous/cleanup.py`) — удаление `page_views` >90 дней, orphan avatar файлов
 - Конфиг: `AUTO_CHARACTER_ENABLED` env (по умолчанию `true`)
 
