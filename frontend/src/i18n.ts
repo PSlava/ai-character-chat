@@ -5,9 +5,11 @@ import en from './locales/en.json';
 import es from './locales/es.json';
 import fr from './locales/fr.json';
 import de from './locales/de.json';
+import pt from './locales/pt.json';
+import it from './locales/it.json';
 
 // URL-first language detection: /:lang/... takes priority
-const SUPPORTED = ['en', 'es', 'ru', 'fr', 'de'];
+const SUPPORTED = ['en', 'es', 'ru', 'fr', 'de', 'pt', 'it'];
 const pathLang = window.location.pathname.split('/')[1];
 const urlLang = SUPPORTED.includes(pathLang) ? pathLang : null;
 const savedLang = localStorage.getItem('language');
@@ -16,7 +18,7 @@ const browserLang = browserLangs.map((l) => l.split('-')[0]).find((l) => SUPPORT
 const defaultLang = urlLang || savedLang || browserLang || 'en';
 
 i18n.use(initReactI18next).init({
-  resources: { en: { translation: en }, es: { translation: es }, ru: { translation: ru }, fr: { translation: fr }, de: { translation: de } },
+  resources: { en: { translation: en }, es: { translation: es }, ru: { translation: ru }, fr: { translation: fr }, de: { translation: de }, pt: { translation: pt }, it: { translation: it } },
   lng: defaultLang,
   fallbackLng: 'en',
   interpolation: { escapeValue: false },

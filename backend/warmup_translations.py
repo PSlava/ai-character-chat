@@ -39,7 +39,7 @@ async def main():
     from app.llm.registry import get_available_providers
     print(f"Providers: {get_available_providers()}")
 
-    target_languages = ["en", "es", "fr", "de"]
+    target_languages = ["en", "es", "fr", "de", "pt", "it"]
 
     async with async_session() as db:
         result = await db.execute(

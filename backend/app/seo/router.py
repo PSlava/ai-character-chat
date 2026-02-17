@@ -14,56 +14,64 @@ from app.seo.jsonld import (
 
 router = APIRouter(prefix="/api/seo", tags=["seo"])
 
-LANGS = ["en", "es", "ru", "fr", "de"]
+LANGS = ["en", "es", "ru", "fr", "de", "pt", "it"]
 
 # Tag slug → search values (match characters in any language)
 TAG_PAGES = [
     {
         "slug": "fantasy",
         "search": ["фэнтези", "fantasy", "fantasía"],
-        "labels": {"en": "Fantasy", "es": "Fantasía", "ru": "Фэнтези", "fr": "Fantaisie", "de": "Fantasy"},
+        "labels": {"en": "Fantasy", "es": "Fantasía", "ru": "Фэнтези", "fr": "Fantaisie", "de": "Fantasy", "pt": "Fantasia", "it": "Fantasy"},
         "descriptions": {
             "en": "Explore fantasy AI characters — elves, mages, dragons, and mythical worlds. Immersive roleplay without limits.",
             "es": "Explora personajes de fantasía — elfos, magos, dragones y mundos míticos. Roleplay inmersivo sin límites.",
             "ru": "Фэнтезийные AI-персонажи — эльфы, маги, драконы и мифические миры. Иммерсивный ролеплей без ограничений.",
             "fr": "Explorez des personnages IA fantastiques — elfes, mages, dragons et mondes mythiques. Jeu de rôle immersif sans limites.",
             "de": "Entdecke Fantasy-KI-Charaktere — Elfen, Magier, Drachen und mythische Welten. Immersives Rollenspiel ohne Grenzen.",
+            "pt": "Explore personagens de fantasia com IA — elfos, magos, dragões e mundos míticos. Roleplay imersivo sem limites.",
+            "it": "Esplora personaggi fantasy IA — elfi, maghi, draghi e mondi mitici. Gioco di ruolo immersivo senza limiti.",
         },
     },
     {
         "slug": "romance",
         "search": ["романтика", "romance"],
-        "labels": {"en": "Romance", "es": "Romance", "ru": "Романтика", "fr": "Romance", "de": "Romantik"},
+        "labels": {"en": "Romance", "es": "Romance", "ru": "Романтика", "fr": "Romance", "de": "Romantik", "pt": "Romance", "it": "Romantico"},
         "descriptions": {
             "en": "Chat with romantic AI characters — love stories, dating simulation, and intimate conversations.",
             "es": "Chatea con personajes románticos — historias de amor, simulación de citas y conversaciones íntimas.",
             "ru": "Романтические AI-персонажи — любовные истории, симулятор свиданий и интимные разговоры.",
             "fr": "Chattez avec des personnages IA romantiques — histoires d'amour, simulation de rendez-vous et conversations intimes.",
             "de": "Chatte mit romantischen KI-Charakteren — Liebesgeschichten, Dating-Simulation und intime Gespräche.",
+            "pt": "Converse com personagens românticos de IA — histórias de amor, simulação de encontros e conversas íntimas.",
+            "it": "Chatta con personaggi IA romantici — storie d'amore, simulazione di appuntamenti e conversazioni intime.",
         },
     },
     {
         "slug": "anime",
         "search": ["аниме", "anime"],
-        "labels": {"en": "Anime", "es": "Anime", "ru": "Аниме", "fr": "Anime", "de": "Anime"},
+        "labels": {"en": "Anime", "es": "Anime", "ru": "Аниме", "fr": "Anime", "de": "Anime", "pt": "Anime", "it": "Anime"},
         "descriptions": {
             "en": "Anime-inspired AI characters — waifu, shonen heroes, isekai adventures. Your favorite anime worlds come alive.",
             "es": "Personajes AI inspirados en anime — waifu, héroes shonen, aventuras isekai. Tus mundos anime favoritos cobran vida.",
             "ru": "Аниме AI-персонажи — вайфу, сёнэн-герои, исекай-приключения. Твои любимые аниме-миры оживают.",
             "fr": "Personnages IA inspirés de l'anime — waifu, héros shonen, aventures isekai. Vos mondes anime préférés prennent vie.",
             "de": "Anime-inspirierte KI-Charaktere — Waifu, Shonen-Helden, Isekai-Abenteuer. Deine liebsten Anime-Welten erwachen zum Leben.",
+            "pt": "Personagens de IA inspirados em anime — waifu, heróis shonen, aventuras isekai. Seus mundos anime favoritos ganham vida.",
+            "it": "Personaggi IA ispirati agli anime — waifu, eroi shonen, avventure isekai. I tuoi mondi anime preferiti prendono vita.",
         },
     },
     {
         "slug": "modern",
         "search": ["современность", "modern", "moderno", "реалистичный"],
-        "labels": {"en": "Modern", "es": "Moderno", "ru": "Современность", "fr": "Moderne", "de": "Modern"},
+        "labels": {"en": "Modern", "es": "Moderno", "ru": "Современность", "fr": "Moderne", "de": "Modern", "pt": "Moderno", "it": "Moderno"},
         "descriptions": {
             "en": "Modern-day AI characters — realistic scenarios, everyday life, contemporary settings and stories.",
             "es": "Personajes AI modernos — escenarios realistas, vida cotidiana, entornos y historias contemporáneas.",
             "ru": "Современные AI-персонажи — реалистичные сценарии, повседневная жизнь, актуальные истории.",
             "fr": "Personnages IA modernes — scénarios réalistes, vie quotidienne, contextes et histoires contemporains.",
             "de": "Moderne KI-Charaktere — realistische Szenarien, Alltagsleben, zeitgenössische Settings und Geschichten.",
+            "pt": "Personagens de IA modernos — cenários realistas, vida cotidiana, ambientes e histórias contemporâneas.",
+            "it": "Personaggi IA moderni — scenari realistici, vita quotidiana, ambientazioni e storie contemporanee.",
         },
     },
 ]
@@ -291,6 +299,22 @@ async def prerender_faq(lang: str = Query("en")):
             ("Wie erstelle ich einen Charakter?", 'Klicken Sie auf "Erstellen" in der Kopfzeile. Sie können manuell erstellen oder Text einfügen, um automatisch zu generieren.'),
             ("Ist mein Chatverlauf privat?", "Ja. Ihre Gespräche sind privat und nur für Sie sichtbar."),
             ("Kann ich meine Daten löschen?", 'Ja. Gehen Sie zu Profil und verwenden Sie "Konto löschen" im Bereich Gefahrenzone.'),
+        ],
+        "pt": [
+            ("O SweetSin é gratuito?", "Sim! Os recursos principais são gratuitos. Oferecemos vários provedores gratuitos."),
+            ("Quais modelos estão disponíveis?", "Suportamos OpenRouter, Groq, Cerebras, Together, DeepSeek e acesso direto a Claude, GPT-4o e Gemini."),
+            ("Posso criar conteúdo NSFW?", "Sim, para usuários maiores de 18 anos. Você pode definir classificações de conteúdo por personagem."),
+            ("Como crio um personagem?", 'Clique em "Criar" no cabeçalho. Você pode criar manualmente ou colar texto para gerar automaticamente.'),
+            ("Meu histórico de chat é privado?", "Sim. Suas conversas são privadas e visíveis apenas para você."),
+            ("Posso excluir meus dados?", 'Sim. Vá em Perfil e use "Excluir conta" na seção Zona de Perigo.'),
+        ],
+        "it": [
+            ("SweetSin è gratuito?", "Sì! Le funzionalità principali sono gratuite. Offriamo diversi fornitori gratuiti."),
+            ("Quali modelli sono disponibili?", "Supportiamo OpenRouter, Groq, Cerebras, Together, DeepSeek e accesso diretto a Claude, GPT-4o e Gemini."),
+            ("Posso creare contenuti NSFW?", "Sì, per utenti maggiori di 18 anni. Puoi impostare la classificazione dei contenuti per personaggio."),
+            ("Come creo un personaggio?", 'Clicca su "Crea" nell\'intestazione. Puoi creare manualmente o incollare testo per generare automaticamente.'),
+            ("La mia cronologia chat è privata?", "Sì. Le tue conversazioni sono private e visibili solo a te."),
+            ("Posso eliminare i miei dati?", 'Sì. Vai su Profilo e usa "Elimina account" nella sezione Zona di Pericolo.'),
         ],
     }
     pairs = _faq.get(lang, _faq["en"])

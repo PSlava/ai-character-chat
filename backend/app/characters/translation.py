@@ -84,7 +84,8 @@ async def translate_batch(
         return {}
 
     lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",
-                  "de": "German", "ja": "Japanese", "zh": "Chinese", "ko": "Korean"}
+                  "de": "German", "pt": "Brazilian Portuguese", "it": "Italian",
+                  "ja": "Japanese", "zh": "Chinese", "ko": "Korean"}
     lang_name = lang_names.get(target_language, target_language)
 
     system = TRANSLATE_SYSTEM_PROMPT.format(target_lang=lang_name)
@@ -210,7 +211,8 @@ async def translate_descriptions(
         return {}
 
     lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",
-                  "de": "German", "ja": "Japanese", "zh": "Chinese", "ko": "Korean"}
+                  "de": "German", "pt": "Brazilian Portuguese", "it": "Italian",
+                  "ja": "Japanese", "zh": "Chinese", "ko": "Korean"}
     lang_name = lang_names.get(target_language, target_language)
 
     result = {}

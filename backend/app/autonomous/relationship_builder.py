@@ -17,13 +17,13 @@ _MAX_RELATIONS_PER_CHAR = 3
 
 # Predefined labels for relation types
 _LABELS = {
-    "rival": {"ru": "Соперник", "en": "Rival", "es": "Rival", "fr": "Rival", "de": "Rivale"},
-    "ex": {"ru": "Бывший", "en": "Ex", "es": "Ex", "fr": "Ex", "de": "Ex"},
-    "friend": {"ru": "Друг", "en": "Friend", "es": "Amigo", "fr": "Ami", "de": "Freund"},
-    "sibling": {"ru": "Родственник", "en": "Sibling", "es": "Hermano", "fr": "Parent", "de": "Verwandter"},
-    "enemy": {"ru": "Враг", "en": "Enemy", "es": "Enemigo", "fr": "Ennemi", "de": "Feind"},
-    "lover": {"ru": "Возлюбленный", "en": "Lover", "es": "Amante", "fr": "Amant", "de": "Geliebter"},
-    "ally": {"ru": "Союзник", "en": "Ally", "es": "Aliado", "fr": "Allié", "de": "Verbündeter"},
+    "rival": {"ru": "Соперник", "en": "Rival", "es": "Rival", "fr": "Rival", "de": "Rivale", "pt": "Rival", "it": "Rivale"},
+    "ex": {"ru": "Бывший", "en": "Ex", "es": "Ex", "fr": "Ex", "de": "Ex", "pt": "Ex", "it": "Ex"},
+    "friend": {"ru": "Друг", "en": "Friend", "es": "Amigo", "fr": "Ami", "de": "Freund", "pt": "Amigo", "it": "Amico"},
+    "sibling": {"ru": "Родственник", "en": "Sibling", "es": "Hermano", "fr": "Parent", "de": "Verwandter", "pt": "Parente", "it": "Parente"},
+    "enemy": {"ru": "Враг", "en": "Enemy", "es": "Enemigo", "fr": "Ennemi", "de": "Feind", "pt": "Inimigo", "it": "Nemico"},
+    "lover": {"ru": "Возлюбленный", "en": "Lover", "es": "Amante", "fr": "Amant", "de": "Geliebter", "pt": "Amante", "it": "Amante"},
+    "ally": {"ru": "Союзник", "en": "Ally", "es": "Aliado", "fr": "Allié", "de": "Verbündeter", "pt": "Aliado", "it": "Alleato"},
 }
 
 _VALID_TYPES = set(_LABELS.keys())

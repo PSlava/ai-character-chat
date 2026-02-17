@@ -1,6 +1,6 @@
 import i18n from '@/i18n';
 
-export const SUPPORTED_LANGS = ['en', 'es', 'ru', 'fr', 'de'];
+export const SUPPORTED_LANGS = ['en', 'es', 'ru', 'fr', 'de', 'pt', 'it'];
 
 const SEO_PATHS = ['/c/', '/about', '/terms', '/privacy', '/faq'];
 
