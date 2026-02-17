@@ -56,7 +56,8 @@ async def list_public_characters(
     if tag:
         query = query.where(Character.tags.contains(tag))
     if gender and gender in ("male", "female"):
-        query = query.where(Character.structured_tags.contains(gender))
+        # Exact tag match within comma-separated list (avoid "male" matching "female")
+        query = query.where(text(f"(',' || structured_tags || ',') LIKE '%,{gender},%'"))
 
     result = await db.execute(query)
     characters = result.scalars().all()
@@ -91,7 +92,8 @@ async def count_public_characters(
     if tag:
         query = query.where(Character.tags.contains(tag))
     if gender and gender in ("male", "female"):
-        query = query.where(Character.structured_tags.contains(gender))
+        # Exact tag match within comma-separated list (avoid "male" matching "female")
+        query = query.where(text(f"(',' || structured_tags || ',') LIKE '%,{gender},%'"))
 
     result = await db.execute(query)
     return result.scalar_one()
