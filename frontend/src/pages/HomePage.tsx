@@ -173,7 +173,7 @@ export function HomePage() {
         </div>
 
         {/* Featured character of the day */}
-        {featuredCharacter && !search && !activeTag && !activeGender && !loading && (
+        {featuredCharacter && !search && !activeTag && !loading && (
           <Link
             to={localePath(featuredCharacter.slug ? `/c/${featuredCharacter.slug}` : `/character/${featuredCharacter.id}`)}
             className="block mb-6 p-4 rounded-xl bg-gradient-to-r from-rose-950/50 to-neutral-800/50 border border-rose-500/20 hover:border-rose-500/40 transition-colors"
