@@ -129,11 +129,18 @@ async def prerender_character(
     name = _escape(tr["name"] if tr and "name" in tr else character.name)
     tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (character.tagline or ""))
     scenario = tr["scenario"] if tr and "scenario" in tr else (character.scenario or "")
+    personality = tr.get("personality", "") if tr else (character.personality or "")
     appearance = tr["appearance"] if tr and "appearance" in tr else (character.appearance or "")
     greeting = tr["greeting_message"] if tr and "greeting_message" in tr else (character.greeting_message or "")
     tags = tr["tags"] if tr and "tags" in tr else ([t for t in character.tags.split(",") if t] if character.tags else [])
 
-    description = _escape(_truncate(scenario or tagline))
+    # Build rich meta description: tagline + scenario snippet (120-160 chars target)
+    desc_parts = []
+    if tagline:
+        desc_parts.append(tagline)
+    if scenario and scenario != tagline:
+        desc_parts.append(scenario)
+    description = _escape(_truncate(" — ".join(desc_parts) if desc_parts else name, 160))
     keywords = _escape(", ".join(tags) if isinstance(tags, list) else tags)
     canonical = f"{SITE_URL}/{lang}/c/{slug}"
 
@@ -144,7 +151,77 @@ async def prerender_character(
     title = f"{name} — {tagline}" if tagline else name
     title_full = f"{title} | SweetSin"
 
+    # noindex for thin pages: short content without substantial description
+    content_length = len(scenario) + len(personality) + len(appearance) + len(greeting)
+    noindex = content_length < 100
+
+    # Creator info for E-E-A-T
+    creator_name = ""
+    if character.creator:
+        creator_name = character.creator.display_name or character.creator.username or ""
+    date_str = ""
+    if character.created_at:
+        date_str = character.created_at.strftime("%Y-%m-%d")
+
     ld_json = json.dumps(character_jsonld(character, lang), ensure_ascii=False)
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([
+        ("SweetSin", SITE_URL),
+        (name, None),
+    ]), ensure_ascii=False)
+
+    # Build body sections — vary order/headings based on slug hash for anti-template
+    slug_hash = sum(ord(c) for c in slug) % 6
+    _h2_scenario = ["About", "Story", "Background", "Scenario", "Overview", "Setting"][slug_hash]
+    _h2_personality = ["Personality", "Character", "Traits", "Nature", "Temperament", "Profile"][slug_hash]
+    _h2_appearance = ["Appearance", "Looks", "Description", "Physical", "Visual", "Features"][slug_hash]
+    _h2_greeting = ["Greeting", "Introduction", "First Words", "Welcome", "Opening", "Hello"][slug_hash]
+    _cta_texts = [
+        f"Chat with {_escape(name)} on SweetSin",
+        f"Start a conversation with {_escape(name)}",
+        f"Talk to {_escape(name)} now",
+        f"Begin your story with {_escape(name)}",
+        f"Meet {_escape(name)} on SweetSin",
+        f"Explore {_escape(name)}'s world",
+    ]
+    cta = _cta_texts[slug_hash]
+
+    # Build sections list — vary ordering based on hash
+    sections = []
+    if avatar:
+        sections.append(f'<img src="{_escape(avatar)}" alt="{_escape(name)}" width="256" height="256">')
+    if tagline:
+        sections.append(f'<p><em>{_escape(tagline)}</em></p>')
+
+    # Core content sections — vary order for anti-template
+    content_blocks = []
+    if scenario:
+        content_blocks.append(("scenario", f'<h2>{_h2_scenario}</h2><p>{_escape(_truncate(scenario, 500))}</p>'))
+    if personality:
+        content_blocks.append(("personality", f'<h2>{_h2_personality}</h2><p>{_escape(_truncate(personality, 400))}</p>'))
+    if appearance:
+        content_blocks.append(("appearance", f'<h2>{_h2_appearance}</h2><p>{_escape(_truncate(appearance, 300))}</p>'))
+    if greeting:
+        content_blocks.append(("greeting", f'<h2>{_h2_greeting}</h2><p>{_escape(_truncate(greeting, 300))}</p>'))
+
+    # Rotate section order based on hash
+    if content_blocks:
+        rotation = slug_hash % len(content_blocks)
+        content_blocks = content_blocks[rotation:] + content_blocks[:rotation]
+    sections.extend(html for _, html in content_blocks)
+
+    # Meta info: creator, date, tags
+    meta_parts = []
+    if creator_name:
+        meta_parts.append(f'Created by {_escape(creator_name)}')
+    if date_str:
+        meta_parts.append(f'<time datetime="{date_str}">{date_str}</time>')
+    if meta_parts:
+        sections.append(f'<p>{" | ".join(meta_parts)}</p>')
+    if tags:
+        sections.append(f'<p>Tags: {_escape(", ".join(tags) if isinstance(tags, list) else tags)}</p>')
+    sections.append(f'<a href="{canonical}">{cta}</a>')
+
+    body_html = "\n".join(sections)
 
     html = f"""<!DOCTYPE html>
 <html lang="{_escape(lang)}">
@@ -153,28 +230,26 @@ async def prerender_character(
 <title>{_escape(title_full)}</title>
 <meta name="description" content="{description}">
 <meta name="keywords" content="{keywords}">
+{'<meta name="robots" content="noindex, follow">' if noindex else ''}
 <link rel="canonical" href="{canonical}">
 <meta property="og:title" content="{_escape(title)}">
 <meta property="og:description" content="{description}">
 <meta property="og:image" content="{_escape(avatar)}">
 <meta property="og:url" content="{canonical}">
-<meta property="og:type" content="website">
+<meta property="og:type" content="article">
 <meta property="og:site_name" content="SweetSin">
+<meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{_escape(title)}">
 <meta name="twitter:description" content="{description}">
 <meta name="twitter:image" content="{_escape(avatar)}">
 {_hreflang_tags(f"/c/{slug}")}
 <script type="application/ld+json">{ld_json}</script>
+<script type="application/ld+json">{ld_breadcrumb}</script>
 </head>
 <body>
 <h1>{_escape(name)}</h1>
-{f'<p>{_escape(tagline)}</p>' if tagline else ''}
-{f'<p>{_escape(_truncate(scenario, 500))}</p>' if scenario else ''}
-{f'<p>{_escape(_truncate(appearance, 300))}</p>' if appearance else ''}
-{f'<p>{_escape(_truncate(greeting, 300))}</p>' if greeting else ''}
-<p>Tags: {_escape(", ".join(tags) if isinstance(tags, list) else tags)}</p>
-<a href="{canonical}">Chat with {_escape(name)} on SweetSin</a>
+{body_html}
 </body>
 </html>"""
     return HTMLResponse(html)
@@ -211,8 +286,9 @@ async def prerender_tag(
 
     char_links = []
     for c in characters:
-        name = _escape(c.name)
-        tagline = _escape(c.tagline or "")
+        tr = (c.translations or {}).get(lang)
+        name = _escape(tr["name"] if tr and "name" in tr else c.name)
+        tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
         url = f"{SITE_URL}/{lang}/c/{c.slug}"
         char_links.append(f'<li><a href="{url}">{name}</a> — {tagline}</li>')
 
@@ -236,9 +312,13 @@ async def prerender_tag(
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SweetSin">
+<meta property="og:image" content="{SITE_URL}/og-image.png">
+<meta property="og:site_name" content="SweetSin">
+<meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{_escape(label)} — AI Characters">
 <meta name="twitter:description" content="{_escape(description)}">
+<meta name="twitter:image" content="{SITE_URL}/og-image.png">
 {_hreflang_tags(f"/tags/{slug}")}
 <script type="application/ld+json">{ld_collection}</script>
 <script type="application/ld+json">{ld_breadcrumb}</script>
@@ -258,70 +338,134 @@ async def prerender_tag(
 
 @router.get("/faq", response_class=HTMLResponse)
 async def prerender_faq(lang: str = Query("en")):
-    # FAQ Q&A pairs per language
+    # FAQ Q&A pairs per language — synced with frontend locales (12 questions)
     _faq = {
         "en": [
-            ("Is SweetSin free?", "Yes! Core features are free. We offer multiple free providers."),
-            ("What models are available?", "We support OpenRouter, Groq, Cerebras, Together, DeepSeek, and direct API access to Claude, GPT-4o, and Gemini."),
-            ("Can I create NSFW content?", "Yes, for users 18+. You can set content ratings per character. Some models may have content restrictions."),
-            ("How do I create a character?", "Click 'Create' in the header. You can build manually or paste text to auto-generate."),
-            ("Is my chat history private?", "Yes. Your conversations are private and only visible to you."),
-            ("Can I delete my data?", "Yes. Go to Profile and use 'Delete Account' in the Danger Zone section."),
+            ("Is SweetSin free?", "Yes! Core features are completely free. We offer dozens of free models via Groq, Cerebras, and OpenRouter. Premium models (Claude, GPT-4o, Gemini) require your own API key."),
+            ("What AI models are available?", "9 providers: Groq (Llama 3.3, Kimi K2, Scout, Maverick), Cerebras, OpenRouter (Hermes 405B, Gemma, DeepSeek R1), Together, DeepSeek, Qwen, Anthropic Claude, OpenAI GPT-4o, and Google Gemini. Auto-fallback switches models if one is unavailable."),
+            ("Can I create NSFW content?", "Yes, for users 18+. You control the content rating per character. Some models (like GPT-OSS) have built-in content restrictions, but most free models support unrestricted content."),
+            ("How do I create a character?", "Click 'Create' in the header. You can build a character manually with personality, appearance, scenario, and example dialogues — or paste any text and let AI generate a character from it. You can also import SillyTavern character cards."),
+            ("Is my chat history private?", "Yes. Your conversations are private and only visible to you. We do not share chat content with anyone."),
+            ("Can I delete my data?", "Yes. Go to Profile and use 'Delete Account' in the Danger Zone section. This permanently removes your account, characters, chats, and all associated data."),
+            ("What are personas?", "Personas let you roleplay as different characters. Create a persona with a name and description in your profile, then select it when starting a new chat. The AI will address you by your persona's name."),
+            ("How do group chats work?", "Open a chat and add other characters via the group chat panel. Each character responds in turn based on the conversation context. They interact with you and with each other."),
+            ("What are lorebooks?", "Lorebooks are world-building tools. Add entries with keywords — when those keywords appear in chat, the related lore is automatically included in the AI's context. Great for consistent world details."),
+            ("How does chat memory work?", "For long conversations, the AI automatically summarizes earlier messages so it remembers important details even as the context window fills up. You can toggle this per chat in settings."),
+            ("Can I import SillyTavern characters?", "Yes! Go to Create, then the Import tab. Upload a SillyTavern character card (JSON, v1 or v2 format) or paste the JSON directly. All fields are mapped automatically."),
+            ("Can I have multiple chats with the same character?", "Yes. Click 'New Chat' on the character page or in the chat header. Each chat has its own independent history, context, and model settings."),
         ],
         "es": [
-            ("¿Es SweetSin gratis?", "¡Sí! Las funciones principales son gratuitas. Ofrecemos múltiples proveedores gratuitos."),
-            ("¿Qué modelos están disponibles?", "Soportamos OpenRouter, Groq, Cerebras, Together, DeepSeek y acceso directo a Claude, GPT-4o y Gemini."),
-            ("¿Puedo crear contenido NSFW?", "Sí, para usuarios mayores de 18 años. Puedes establecer clasificaciones de contenido por personaje."),
-            ("¿Cómo creo un personaje?", "Haz clic en 'Crear' en el encabezado. Puedes construir manualmente o pegar texto para generar automáticamente."),
-            ("¿Mi historial de chat es privado?", "Sí. Tus conversaciones son privadas y solo visibles para ti."),
-            ("¿Puedo eliminar mis datos?", "Sí. Ve a Perfil y usa 'Eliminar cuenta' en la sección Zona de Peligro."),
+            ("¿SweetSin es gratis?", "¡Sí! Las funciones principales son completamente gratuitas. Docenas de modelos gratuitos a través de Groq, Cerebras y OpenRouter. Los modelos premium (Claude, GPT-4o, Gemini) requieren tu propia clave API."),
+            ("¿Qué modelos de IA están disponibles?", "9 proveedores: Groq (Llama 3.3, Kimi K2, Scout, Maverick), Cerebras, OpenRouter (Hermes 405B, Gemma, DeepSeek R1), Together, DeepSeek, Qwen, Anthropic Claude, OpenAI GPT-4o y Google Gemini. El auto-fallback cambia de modelo automáticamente si uno no está disponible."),
+            ("¿Puedo crear contenido NSFW?", "Sí, para usuarios de 18+. Tú controlas la clasificación de contenido por personaje. Algunos modelos (como GPT-OSS) tienen restricciones integradas, pero la mayoría de los modelos gratuitos soportan contenido sin restricciones."),
+            ("¿Cómo creo un personaje?", "Haz clic en 'Crear' en la barra superior. Crea un personaje manualmente con personalidad, apariencia, escenario y diálogos de ejemplo — o pega cualquier texto y deja que la IA genere un personaje. También puedes importar tarjetas de SillyTavern."),
+            ("¿Mi historial de chat es privado?", "Sí. Tus conversaciones son privadas y solo visibles para ti. No compartimos el contenido de los chats con nadie."),
+            ("¿Puedo eliminar mis datos?", "Sí. Ve a Perfil, sección Zona de peligro, y usa 'Eliminar cuenta'. Esto elimina permanentemente tu cuenta, personajes, chats y todos los datos asociados."),
+            ("¿Qué son las personas?", "Las personas te permiten interpretar diferentes personajes. Crea una persona con nombre y descripción en tu perfil, luego selecciónala al iniciar un nuevo chat. La IA se dirigirá a ti por el nombre de tu persona."),
+            ("¿Cómo funcionan los chats grupales?", "Abre un chat y añade otros personajes a través del panel de chat grupal. Cada personaje responde por turnos según el contexto de la conversación. Interactúan contigo y entre ellos."),
+            ("¿Qué son los lorebooks?", "Los lorebooks son herramientas de construcción de mundo. Añade entradas con palabras clave — cuando esas palabras aparecen en el chat, la información relacionada se incluye automáticamente en el contexto de la IA."),
+            ("¿Cómo funciona la memoria del chat?", "Para conversaciones largas, la IA resume automáticamente los mensajes anteriores para recordar detalles importantes incluso cuando la ventana de contexto se llena. Puedes activar/desactivar esto por chat en configuración."),
+            ("¿Puedo importar personajes de SillyTavern?", "¡Sí! Ve a Crear, pestaña Importar. Sube una tarjeta de SillyTavern (JSON, formato v1 o v2) o pega el JSON directamente. Todos los campos se mapean automáticamente."),
+            ("¿Puedo tener múltiples chats con el mismo personaje?", "Sí. Haz clic en 'Nuevo chat' en la página del personaje o en la cabecera del chat. Cada chat tiene su propio historial, contexto y configuración de modelo independiente."),
         ],
         "ru": [
-            ("SweetSin бесплатный?", "Да! Основные функции бесплатны. Мы предлагаем несколько бесплатных провайдеров."),
-            ("Какие модели доступны?", "Поддерживаем OpenRouter, Groq, Cerebras, Together, DeepSeek и прямой доступ к Claude, GPT-4o и Gemini."),
-            ("Можно ли создавать NSFW-контент?", "Да, для пользователей 18+. Можно задать рейтинг контента для каждого персонажа."),
-            ("Как создать персонажа?", "Нажмите «Создать» в шапке. Можно создать вручную или вставить текст для автоматической генерации."),
-            ("Мой чат приватный?", "Да. Ваши разговоры приватны и видны только вам."),
-            ("Можно ли удалить данные?", "Да. Зайдите в Профиль → «Удалить аккаунт» в разделе «Опасная зона»."),
+            ("SweetSin бесплатный?", "Да! Основные функции полностью бесплатны. Десятки бесплатных моделей через Groq, Cerebras и OpenRouter. Премиум-модели (Claude, GPT-4o, Gemini) требуют собственного API-ключа."),
+            ("Какие AI-модели доступны?", "9 провайдеров: Groq (Llama 3.3, Kimi K2, Scout, Maverick), Cerebras, OpenRouter (Hermes 405B, Gemma, DeepSeek R1), Together, DeepSeek, Qwen, Anthropic Claude, OpenAI GPT-4o и Google Gemini. Авто-фоллбэк автоматически переключает модели при недоступности."),
+            ("Можно создавать NSFW контент?", "Да, для пользователей 18+. Вы контролируете рейтинг контента для каждого персонажа. Некоторые модели (GPT-OSS) имеют встроенные ограничения, но большинство бесплатных моделей поддерживают контент без ограничений."),
+            ("Как создать персонажа?", "Нажмите 'Создать' в шапке. Создайте персонажа вручную с личностью, внешностью, сценарием и примерами диалогов — или вставьте любой текст, и AI сгенерирует персонажа. Также можно импортировать карточки SillyTavern."),
+            ("Моя история чатов приватна?", "Да. Ваши разговоры приватны и видны только вам. Мы не делимся содержимым чатов ни с кем."),
+            ("Могу ли я удалить свои данные?", "Да. Перейдите в Профиль, раздел 'Опасная зона', и нажмите 'Удалить аккаунт'. Все данные, персонажи, чаты и связанная информация будут удалены безвозвратно."),
+            ("Что такое персоны?", "Персоны позволяют отыгрывать разных персонажей. Создайте персону с именем и описанием в профиле, затем выберите её при начале нового чата. AI будет обращаться к вам по имени персоны."),
+            ("Как работают групповые чаты?", "Откройте чат и добавьте других персонажей через панель группового чата. Каждый персонаж отвечает по очереди на основе контекста разговора. Они взаимодействуют с вами и друг с другом."),
+            ("Что такое лорбуки?", "Лорбуки — инструменты для построения мира. Добавьте записи с ключевыми словами — когда эти слова появляются в чате, связанная информация автоматически включается в контекст AI. Отлично подходит для поддержания деталей мира."),
+            ("Как работает память чата?", "Для длинных разговоров AI автоматически суммаризирует ранние сообщения, чтобы помнить важные детали даже при заполнении контекстного окна. Можно включить/выключить для каждого чата в настройках."),
+            ("Можно импортировать персонажей из SillyTavern?", "Да! Перейдите в Создать, вкладка Импорт. Загрузите карточку SillyTavern (JSON, формат v1 или v2) или вставьте JSON напрямую. Все поля маппятся автоматически."),
+            ("Можно вести несколько чатов с одним персонажем?", "Да. Нажмите 'Новый чат' на странице персонажа или в шапке чата. Каждый чат имеет свою независимую историю, контекст и настройки модели."),
         ],
         "fr": [
-            ("SweetSin est-il gratuit ?", "Oui ! Les fonctionnalités de base sont gratuites. Nous proposons plusieurs fournisseurs gratuits."),
-            ("Quels modèles sont disponibles ?", "Nous prenons en charge OpenRouter, Groq, Cerebras, Together, DeepSeek et l'accès direct à Claude, GPT-4o et Gemini."),
-            ("Puis-je créer du contenu NSFW ?", "Oui, pour les utilisateurs de 18 ans et plus. Vous pouvez définir la classification du contenu par personnage."),
-            ("Comment créer un personnage ?", "Cliquez sur « Créer » dans l'en-tête. Vous pouvez le créer manuellement ou coller du texte pour une génération automatique."),
-            ("Mon historique de chat est-il privé ?", "Oui. Vos conversations sont privées et visibles uniquement par vous."),
-            ("Puis-je supprimer mes données ?", "Oui. Allez dans Profil et utilisez « Supprimer le compte » dans la section Zone de danger."),
+            ("SweetSin est-il gratuit ?", "Oui ! Les fonctionnalités principales sont entièrement gratuites. Nous proposons des dizaines de modèles gratuits via Groq, Cerebras et OpenRouter. Les modèles premium (Claude, GPT-4o, Gemini) nécessitent votre propre clé API."),
+            ("Quels modèles d'IA sont disponibles ?", "9 fournisseurs : Groq (Llama 3.3, Kimi K2, Scout, Maverick), Cerebras, OpenRouter (Hermes 405B, Gemma, DeepSeek R1), Together, DeepSeek, Qwen, Anthropic Claude, OpenAI GPT-4o et Google Gemini. Le basculement automatique change de modèle si l'un est indisponible."),
+            ("Puis-je créer du contenu NSFW ?", "Oui, pour les utilisateurs de 18 ans et plus. Vous contrôlez la classification du contenu par personnage. Certains modèles (comme GPT-OSS) ont des restrictions intégrées, mais la plupart des modèles gratuits prennent en charge le contenu sans restriction."),
+            ("Comment créer un personnage ?", "Cliquez sur 'Créer' dans l'en-tête. Vous pouvez construire un personnage manuellement avec personnalité, apparence, scénario et exemples de dialogues — ou coller n'importe quel texte et laisser l'IA générer un personnage. Vous pouvez aussi importer des fiches SillyTavern."),
+            ("Mon historique de discussion est-il privé ?", "Oui. Vos conversations sont privées et visibles uniquement par vous. Nous ne partageons le contenu des discussions avec personne."),
+            ("Puis-je supprimer mes données ?", "Oui. Allez dans Profil, section Zone de danger, et utilisez 'Supprimer le compte'. Cela supprime définitivement votre compte, vos personnages, vos discussions et toutes les données associées."),
+            ("Que sont les personas ?", "Les personas vous permettent d'incarner différents personnages. Créez un persona avec un nom et une description dans votre profil, puis sélectionnez-le en démarrant une nouvelle discussion. L'IA vous appellera par le nom de votre persona."),
+            ("Comment fonctionnent les discussions de groupe ?", "Ouvrez une discussion et ajoutez d'autres personnages via le panneau de discussion de groupe. Chaque personnage répond à son tour en fonction du contexte de la conversation. Ils interagissent avec vous et entre eux."),
+            ("Que sont les lorebooks ?", "Les lorebooks sont des outils de construction d'univers. Ajoutez des entrées avec des mots-clés — lorsque ces mots-clés apparaissent dans la discussion, le lore associé est automatiquement inclus dans le contexte de l'IA."),
+            ("Comment fonctionne la mémoire du chat ?", "Pour les longues conversations, l'IA résume automatiquement les messages précédents afin de se souvenir des détails importants même lorsque la fenêtre de contexte se remplit. Vous pouvez activer ou désactiver cette fonctionnalité par discussion dans les paramètres."),
+            ("Puis-je importer des personnages SillyTavern ?", "Oui ! Allez dans Créer puis l'onglet Import. Téléversez une fiche personnage SillyTavern (JSON, format v1 ou v2) ou collez le JSON directement. Tous les champs sont mappés automatiquement."),
+            ("Puis-je avoir plusieurs discussions avec le même personnage ?", "Oui. Cliquez sur 'Nouvelle discussion' sur la page du personnage ou dans l'en-tête de la discussion. Chaque discussion a son propre historique, contexte et paramètres de modèle indépendants."),
         ],
         "de": [
-            ("Ist SweetSin kostenlos?", "Ja! Die Kernfunktionen sind kostenlos. Wir bieten mehrere kostenlose Anbieter an."),
-            ("Welche Modelle sind verfügbar?", "Wir unterstützen OpenRouter, Groq, Cerebras, Together, DeepSeek und direkten Zugang zu Claude, GPT-4o und Gemini."),
-            ("Kann ich NSFW-Inhalte erstellen?", "Ja, für Nutzer ab 18 Jahren. Sie können die Inhaltsbewertung pro Charakter festlegen."),
-            ("Wie erstelle ich einen Charakter?", 'Klicken Sie auf "Erstellen" in der Kopfzeile. Sie können manuell erstellen oder Text einfügen, um automatisch zu generieren.'),
-            ("Ist mein Chatverlauf privat?", "Ja. Ihre Gespräche sind privat und nur für Sie sichtbar."),
-            ("Kann ich meine Daten löschen?", 'Ja. Gehen Sie zu Profil und verwenden Sie "Konto löschen" im Bereich Gefahrenzone.'),
+            ("Ist SweetSin kostenlos?", "Ja! Die Kernfunktionen sind vollständig kostenlos. Wir bieten Dutzende kostenloser Modelle über Groq, Cerebras und OpenRouter an. Premium-Modelle (Claude, GPT-4o, Gemini) erfordern Ihren eigenen API-Schlüssel."),
+            ("Welche KI-Modelle sind verfügbar?", "9 Anbieter: Groq (Llama 3.3, Kimi K2, Scout, Maverick), Cerebras, OpenRouter (Hermes 405B, Gemma, DeepSeek R1), Together, DeepSeek, Qwen, Anthropic Claude, OpenAI GPT-4o und Google Gemini. Automatisches Fallback wechselt Modelle, wenn eines nicht verfügbar ist."),
+            ("Kann ich NSFW-Inhalte erstellen?", "Ja, für Benutzer ab 18 Jahren. Sie steuern die Inhaltsbewertung pro Charakter. Einige Modelle (wie GPT-OSS) haben integrierte Inhaltsbeschränkungen, aber die meisten kostenlosen Modelle unterstützen uneingeschränkte Inhalte."),
+            ("Wie erstelle ich einen Charakter?", "Klicken Sie auf 'Erstellen' in der Kopfzeile. Sie können einen Charakter manuell mit Persönlichkeit, Aussehen, Szenario und Beispieldialogen erstellen — oder einen beliebigen Text einfügen und die KI daraus einen Charakter generieren lassen. Sie können auch SillyTavern-Charakterkarten importieren."),
+            ("Ist mein Chatverlauf privat?", "Ja. Ihre Gespräche sind privat und nur für Sie sichtbar. Wir teilen Chat-Inhalte mit niemandem."),
+            ("Kann ich meine Daten löschen?", "Ja. Gehen Sie zum Profil, Bereich Gefahrenzone, und nutzen Sie 'Konto löschen'. Dies entfernt dauerhaft Ihr Konto, Charaktere, Chats und alle zugehörigen Daten."),
+            ("Was sind Personas?", "Personas ermöglichen es Ihnen, als verschiedene Charaktere zu spielen. Erstellen Sie eine Persona mit Name und Beschreibung in Ihrem Profil und wählen Sie sie beim Starten eines neuen Chats aus. Die KI wird Sie mit dem Namen Ihrer Persona ansprechen."),
+            ("Wie funktionieren Gruppenchats?", "Öffnen Sie einen Chat und fügen Sie andere Charaktere über das Gruppenchat-Panel hinzu. Jeder Charakter antwortet abwechselnd basierend auf dem Gesprächskontext. Sie interagieren mit Ihnen und miteinander."),
+            ("Was sind Lorebooks?", "Lorebooks sind Weltenbau-Werkzeuge. Fügen Sie Einträge mit Schlüsselwörtern hinzu — wenn diese Schlüsselwörter im Chat erscheinen, wird die zugehörige Lore automatisch in den KI-Kontext eingefügt. Ideal für konsistente Weltdetails."),
+            ("Wie funktioniert die Chat-Erinnerung?", "Bei langen Gesprächen fasst die KI automatisch frühere Nachrichten zusammen, damit sie sich an wichtige Details erinnert, auch wenn das Kontextfenster sich füllt. Sie können dies pro Chat in den Einstellungen umschalten."),
+            ("Kann ich SillyTavern-Charaktere importieren?", "Ja! Gehen Sie zu Erstellen, dann der Import-Tab. Laden Sie eine SillyTavern-Charakterkarte hoch (JSON, v1- oder v2-Format) oder fügen Sie das JSON direkt ein. Alle Felder werden automatisch zugeordnet."),
+            ("Kann ich mehrere Chats mit demselben Charakter haben?", "Ja. Klicken Sie auf 'Neuer Chat' auf der Charakterseite oder in der Chat-Kopfzeile. Jeder Chat hat seinen eigenen unabhängigen Verlauf, Kontext und Modelleinstellungen."),
         ],
         "pt": [
-            ("O SweetSin é gratuito?", "Sim! Os recursos principais são gratuitos. Oferecemos vários provedores gratuitos."),
-            ("Quais modelos estão disponíveis?", "Suportamos OpenRouter, Groq, Cerebras, Together, DeepSeek e acesso direto a Claude, GPT-4o e Gemini."),
-            ("Posso criar conteúdo NSFW?", "Sim, para usuários maiores de 18 anos. Você pode definir classificações de conteúdo por personagem."),
-            ("Como crio um personagem?", 'Clique em "Criar" no cabeçalho. Você pode criar manualmente ou colar texto para gerar automaticamente.'),
-            ("Meu histórico de chat é privado?", "Sim. Suas conversas são privadas e visíveis apenas para você."),
-            ("Posso excluir meus dados?", 'Sim. Vá em Perfil e use "Excluir conta" na seção Zona de Perigo.'),
+            ("O SweetSin é gratuito?", "Sim! Os recursos principais são totalmente gratuitos. Oferecemos dezenas de modelos gratuitos via Groq, Cerebras e OpenRouter. Modelos premium (Claude, GPT-4o, Gemini) exigem sua própria chave de API."),
+            ("Quais modelos de IA estão disponíveis?", "9 provedores: Groq (Llama 3.3, Kimi K2, Scout, Maverick), Cerebras, OpenRouter (Hermes 405B, Gemma, DeepSeek R1), Together, DeepSeek, Qwen, Anthropic Claude, OpenAI GPT-4o e Google Gemini. O auto-fallback troca de modelo se um estiver indisponível."),
+            ("Posso criar conteúdo NSFW?", "Sim, para usuários maiores de 18 anos. Você controla a classificação de conteúdo por personagem. Alguns modelos (como GPT-OSS) têm restrições de conteúdo embutidas, mas a maioria dos modelos gratuitos suporta conteúdo sem restrições."),
+            ("Como eu crio um personagem?", "Clique em 'Criar' no cabeçalho. Você pode construir um personagem manualmente com personalidade, aparência, cenário e diálogos de exemplo — ou colar qualquer texto e deixar a IA gerar um personagem a partir dele. Você também pode importar cards do SillyTavern."),
+            ("Meu histórico de conversas é privado?", "Sim. Suas conversas são privadas e visíveis apenas para você. Não compartilhamos o conteúdo das conversas com ninguém."),
+            ("Posso excluir meus dados?", "Sim. Vá ao Perfil, seção Zona de Perigo, e use 'Excluir Conta'. Isso remove permanentemente sua conta, personagens, conversas e todos os dados associados."),
+            ("O que são personas?", "Personas permitem que você interprete diferentes personagens. Crie uma persona com nome e descrição no seu perfil, depois selecione-a ao iniciar uma nova conversa. A IA vai se dirigir a você pelo nome da sua persona."),
+            ("Como funcionam os chats em grupo?", "Abra uma conversa e adicione outros personagens pelo painel de chat em grupo. Cada personagem responde por vez baseado no contexto da conversa. Eles interagem com você e entre si."),
+            ("O que são lorebooks?", "Lorebooks são ferramentas de construção de mundo. Adicione entradas com palavras-chave — quando essas palavras-chave aparecerem no chat, o lore relacionado é automaticamente incluído no contexto da IA."),
+            ("Como funciona a memória do chat?", "Para conversas longas, a IA automaticamente resume mensagens anteriores para lembrar detalhes importantes mesmo quando a janela de contexto enche. Você pode ativar ou desativar isso por conversa nas configurações."),
+            ("Posso importar personagens do SillyTavern?", "Sim! Vá em Criar, aba Importar. Envie um card de personagem do SillyTavern (JSON, formato v1 ou v2) ou cole o JSON diretamente. Todos os campos são mapeados automaticamente."),
+            ("Posso ter múltiplas conversas com o mesmo personagem?", "Sim. Clique em 'Nova Conversa' na página do personagem ou no cabeçalho do chat. Cada conversa tem seu próprio histórico, contexto e configurações de modelo independentes."),
         ],
         "it": [
-            ("SweetSin è gratuito?", "Sì! Le funzionalità principali sono gratuite. Offriamo diversi fornitori gratuiti."),
-            ("Quali modelli sono disponibili?", "Supportiamo OpenRouter, Groq, Cerebras, Together, DeepSeek e accesso diretto a Claude, GPT-4o e Gemini."),
-            ("Posso creare contenuti NSFW?", "Sì, per utenti maggiori di 18 anni. Puoi impostare la classificazione dei contenuti per personaggio."),
-            ("Come creo un personaggio?", 'Clicca su "Crea" nell\'intestazione. Puoi creare manualmente o incollare testo per generare automaticamente.'),
-            ("La mia cronologia chat è privata?", "Sì. Le tue conversazioni sono private e visibili solo a te."),
-            ("Posso eliminare i miei dati?", 'Sì. Vai su Profilo e usa "Elimina account" nella sezione Zona di Pericolo.'),
+            ("SweetSin è gratuito?", "Sì! Le funzionalità principali sono completamente gratuite. Offriamo decine di modelli gratuiti tramite Groq, Cerebras e OpenRouter. I modelli premium (Claude, GPT-4o, Gemini) richiedono la propria chiave API."),
+            ("Quali modelli AI sono disponibili?", "9 provider: Groq (Llama 3.3, Kimi K2, Scout, Maverick), Cerebras, OpenRouter (Hermes 405B, Gemma, DeepSeek R1), Together, DeepSeek, Qwen, Anthropic Claude, OpenAI GPT-4o e Google Gemini. Il fallback automatico cambia modello se uno non è disponibile."),
+            ("Posso creare contenuti NSFW?", "Sì, per utenti 18+. Puoi controllare la classificazione dei contenuti per ogni personaggio. Alcuni modelli (come GPT-OSS) hanno restrizioni integrate, ma la maggior parte dei modelli gratuiti supporta contenuti senza restrizioni."),
+            ("Come posso creare un personaggio?", "Clicca 'Crea' nell'intestazione. Puoi costruire un personaggio manualmente con personalità, aspetto, scenario e dialoghi di esempio — oppure incolla qualsiasi testo e lascia che l'IA generi un personaggio. Puoi anche importare schede SillyTavern."),
+            ("La mia cronologia delle chat è privata?", "Sì. Le tue conversazioni sono private e visibili solo a te. Non condividiamo il contenuto delle chat con nessuno."),
+            ("Posso eliminare i miei dati?", "Sì. Vai al Profilo, sezione Zona pericolosa, e usa 'Elimina account'. Questa azione rimuove definitivamente il tuo account, i personaggi, le chat e tutti i dati associati."),
+            ("Cosa sono le persona?", "Le persona ti permettono di interpretare ruoli diversi. Crea una persona con un nome e una descrizione nel tuo profilo, poi selezionala quando inizi una nuova chat. L'IA ti chiamerà con il nome della tua persona."),
+            ("Come funzionano le chat di gruppo?", "Apri una chat e aggiungi altri personaggi tramite il pannello chat di gruppo. Ogni personaggio risponde a turno in base al contesto della conversazione. Interagiscono con te e tra loro."),
+            ("Cosa sono i lorebook?", "I lorebook sono strumenti di world-building. Aggiungi voci con parole chiave — quando quelle parole chiave appaiono nella chat, le informazioni correlate vengono automaticamente incluse nel contesto dell'IA."),
+            ("Come funziona la memoria della chat?", "Per le conversazioni lunghe, l'IA riassume automaticamente i messaggi precedenti in modo da ricordare i dettagli importanti anche quando la finestra di contesto si riempie. Puoi attivare o disattivare questa funzione per ogni chat nelle impostazioni."),
+            ("Posso importare personaggi di SillyTavern?", "Sì! Vai su Crea, scheda Importa. Carica una scheda personaggio SillyTavern (JSON, formato v1 o v2) oppure incolla direttamente il JSON. Tutti i campi vengono mappati automaticamente."),
+            ("Posso avere più chat con lo stesso personaggio?", "Sì. Clicca 'Nuova chat' nella pagina del personaggio o nell'intestazione della chat. Ogni chat ha la propria cronologia, contesto e impostazioni del modello indipendenti."),
         ],
     }
+
+    _faq_titles = {
+        "en": "Frequently Asked Questions",
+        "es": "Preguntas frecuentes",
+        "ru": "Часто задаваемые вопросы",
+        "fr": "Questions fréquentes",
+        "de": "Häufig gestellte Fragen",
+        "pt": "Perguntas Frequentes",
+        "it": "Domande frequenti",
+    }
+    _faq_descriptions = {
+        "en": "Frequently asked questions about SweetSin — AI character chat, roleplay, models, personas, group chats, and more.",
+        "es": "Preguntas frecuentes sobre SweetSin — chat con personajes IA, roleplay, modelos, personas, chats grupales y más.",
+        "ru": "Часто задаваемые вопросы о SweetSin — чат с AI-персонажами, ролеплей, модели, персоны, групповые чаты и другое.",
+        "fr": "Questions fréquentes sur SweetSin — chat avec personnages IA, jeu de rôle, modèles, personas, discussions de groupe et plus.",
+        "de": "Häufig gestellte Fragen zu SweetSin — KI-Charakter-Chat, Rollenspiel, Modelle, Personas, Gruppenchats und mehr.",
+        "pt": "Perguntas frequentes sobre SweetSin — chat com personagens IA, roleplay, modelos, personas, chats em grupo e mais.",
+        "it": "Domande frequenti su SweetSin — chat con personaggi IA, gioco di ruolo, modelli, persona, chat di gruppo e altro.",
+    }
+
     pairs = _faq.get(lang, _faq["en"])
+    faq_title = _faq_titles.get(lang, _faq_titles["en"])
+    faq_desc = _faq_descriptions.get(lang, _faq_descriptions["en"])
     canonical = f"{SITE_URL}/{lang}/faq"
 
     qa_html = "\n".join(
-        f"<h3>{_escape(q)}</h3><p>{_escape(a)}</p>" for q, a in pairs
+        f"<h2>{_escape(q)}</h2><p>{_escape(a)}</p>" for q, a in pairs
     )
     ld_faq = json.dumps(faq_jsonld(pairs), ensure_ascii=False)
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([
@@ -333,19 +477,150 @@ async def prerender_faq(lang: str = Query("en")):
 <html lang="{_escape(lang)}">
 <head>
 <meta charset="UTF-8">
-<title>FAQ | SweetSin</title>
-<meta name="description" content="Frequently asked questions about SweetSin — AI character chat, roleplay, and creating characters.">
+<title>{_escape(faq_title)} | SweetSin</title>
+<meta name="description" content="{_escape(faq_desc)}">
 <link rel="canonical" href="{canonical}">
-<meta property="og:title" content="FAQ — SweetSin">
+<meta property="og:title" content="{_escape(faq_title)} — SweetSin">
+<meta property="og:description" content="{_escape(faq_desc)}">
+<meta property="og:image" content="{SITE_URL}/og-image.png">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="SweetSin">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{_escape(faq_title)} — SweetSin">
+<meta name="twitter:description" content="{_escape(faq_desc)}">
+<meta name="twitter:image" content="{SITE_URL}/og-image.png">
 {_hreflang_tags("/faq")}
 <script type="application/ld+json">{ld_faq}</script>
 <script type="application/ld+json">{ld_breadcrumb}</script>
 </head>
 <body>
-<h1>Frequently Asked Questions</h1>
+<h1>{_escape(faq_title)}</h1>
 {qa_html}
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+
+@router.get("/about", response_class=HTMLResponse)
+async def prerender_about(lang: str = Query("en")):
+    _titles = {"en": "About SweetSin", "es": "Acerca de SweetSin", "ru": "О SweetSin", "fr": "À propos de SweetSin", "de": "Über SweetSin", "pt": "Sobre o SweetSin", "it": "Informazioni su SweetSin"}
+    _descriptions = {
+        "en": "SweetSin is a platform for creative roleplay and character-driven conversations. We connect 9 AI providers with richly detailed character profiles to create immersive, literary-quality chat experiences.",
+        "es": "SweetSin es una plataforma de roleplay creativo y conversaciones con personajes. Conectamos 9 proveedores de IA con perfiles de personajes detallados para crear experiencias de chat inmersivas con calidad literaria.",
+        "ru": "SweetSin — платформа для творческих ролевых игр и общения с персонажами. Мы объединяем 9 AI-провайдеров с детально проработанными профилями персонажей для создания иммерсивного литературного опыта общения.",
+        "fr": "SweetSin est une plateforme de jeu de rôle créatif et de conversations centrées sur les personnages. Nous connectons 9 fournisseurs d'IA avec des profils de personnages richement détaillés pour créer des expériences de chat immersives et de qualité littéraire.",
+        "de": "SweetSin ist eine Plattform für kreatives Rollenspiel und charaktergesteuerte Gespräche. Wir verbinden 9 KI-Anbieter mit detaillierten Charakterprofilen, um immersive Chat-Erlebnisse in literarischer Qualität zu schaffen.",
+        "pt": "SweetSin é uma plataforma para roleplay criativo e conversas focadas em personagens. Conectamos 9 provedores de IA com perfis de personagens ricamente detalhados para criar experiências de chat imersivas e com qualidade literária.",
+        "it": "SweetSin è una piattaforma per roleplay creativo e conversazioni guidate dai personaggi. Colleghiamo 9 provider AI con profili di personaggi ricchi di dettagli per creare esperienze di chat immersive e di qualità letteraria.",
+    }
+    title = _titles.get(lang, _titles["en"])
+    desc = _descriptions.get(lang, _descriptions["en"])
+    canonical = f"{SITE_URL}/{lang}/about"
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([("SweetSin", SITE_URL), (title, None)]), ensure_ascii=False)
+
+    html = f"""<!DOCTYPE html>
+<html lang="{_escape(lang)}">
+<head>
+<meta charset="UTF-8">
+<title>{_escape(title)} | SweetSin</title>
+<meta name="description" content="{_escape(_truncate(desc, 160))}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:title" content="{_escape(title)}">
+<meta property="og:description" content="{_escape(_truncate(desc, 160))}">
+<meta property="og:image" content="{SITE_URL}/og-image.png">
+<meta property="og:url" content="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SweetSin">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{_escape(title)}">
+<meta name="twitter:description" content="{_escape(_truncate(desc, 160))}">
+{_hreflang_tags("/about")}
+<script type="application/ld+json">{ld_breadcrumb}</script>
+</head>
+<body>
+<h1>{_escape(title)}</h1>
+<p>{_escape(desc)}</p>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+
+@router.get("/terms", response_class=HTMLResponse)
+async def prerender_terms(lang: str = Query("en")):
+    _titles = {"en": "Terms of Service", "es": "Términos de servicio", "ru": "Условия использования", "fr": "Conditions d'utilisation", "de": "Nutzungsbedingungen", "pt": "Termos de Uso", "it": "Termini di servizio"}
+    _descriptions = {
+        "en": "Terms of Service for SweetSin — AI character chat platform. Eligibility, user content rules, acceptable use, and disclaimers.",
+        "es": "Términos de servicio de SweetSin — plataforma de chat con personajes IA. Elegibilidad, reglas de contenido, uso aceptable y descargos.",
+        "ru": "Условия использования SweetSin — платформы для чата с AI-персонажами. Требования, правила контента, допустимое использование и отказ от ответственности.",
+        "fr": "Conditions d'utilisation de SweetSin — plateforme de chat avec personnages IA. Éligibilité, règles de contenu, utilisation acceptable et avertissements.",
+        "de": "Nutzungsbedingungen von SweetSin — KI-Charakter-Chat-Plattform. Berechtigung, Inhaltsregeln, akzeptable Nutzung und Haftungsausschlüsse.",
+        "pt": "Termos de Uso do SweetSin — plataforma de chat com personagens IA. Elegibilidade, regras de conteúdo, uso aceitável e isenções.",
+        "it": "Termini di servizio di SweetSin — piattaforma di chat con personaggi IA. Idoneità, regole sui contenuti, uso accettabile e dichiarazioni di non responsabilità.",
+    }
+    title = _titles.get(lang, _titles["en"])
+    desc = _descriptions.get(lang, _descriptions["en"])
+    canonical = f"{SITE_URL}/{lang}/terms"
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([("SweetSin", SITE_URL), (title, None)]), ensure_ascii=False)
+
+    html = f"""<!DOCTYPE html>
+<html lang="{_escape(lang)}">
+<head>
+<meta charset="UTF-8">
+<title>{_escape(title)} | SweetSin</title>
+<meta name="description" content="{_escape(desc)}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:title" content="{_escape(title)}">
+<meta property="og:description" content="{_escape(desc)}">
+<meta property="og:url" content="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SweetSin">
+{_hreflang_tags("/terms")}
+<script type="application/ld+json">{ld_breadcrumb}</script>
+</head>
+<body>
+<h1>{_escape(title)}</h1>
+<p>{_escape(desc)}</p>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+async def prerender_privacy(lang: str = Query("en")):
+    _titles = {"en": "Privacy Policy", "es": "Política de privacidad", "ru": "Политика конфиденциальности", "fr": "Politique de confidentialité", "de": "Datenschutzrichtlinie", "pt": "Política de Privacidade", "it": "Informativa sulla privacy"}
+    _descriptions = {
+        "en": "Privacy Policy for SweetSin — how we collect, use, and protect your data. Your conversations are private.",
+        "es": "Política de privacidad de SweetSin — cómo recopilamos, usamos y protegemos tus datos. Tus conversaciones son privadas.",
+        "ru": "Политика конфиденциальности SweetSin — как мы собираем, используем и защищаем ваши данные. Ваши разговоры приватны.",
+        "fr": "Politique de confidentialité de SweetSin — comment nous collectons, utilisons et protégeons vos données. Vos conversations sont privées.",
+        "de": "Datenschutzrichtlinie von SweetSin — wie wir Ihre Daten erheben, verwenden und schützen. Ihre Gespräche sind privat.",
+        "pt": "Política de Privacidade do SweetSin — como coletamos, usamos e protegemos seus dados. Suas conversas são privadas.",
+        "it": "Informativa sulla privacy di SweetSin — come raccogliamo, utilizziamo e proteggiamo i tuoi dati. Le tue conversazioni sono private.",
+    }
+    title = _titles.get(lang, _titles["en"])
+    desc = _descriptions.get(lang, _descriptions["en"])
+    canonical = f"{SITE_URL}/{lang}/privacy"
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([("SweetSin", SITE_URL), (title, None)]), ensure_ascii=False)
+
+    html = f"""<!DOCTYPE html>
+<html lang="{_escape(lang)}">
+<head>
+<meta charset="UTF-8">
+<title>{_escape(title)} | SweetSin</title>
+<meta name="description" content="{_escape(desc)}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:title" content="{_escape(title)}">
+<meta property="og:description" content="{_escape(desc)}">
+<meta property="og:url" content="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SweetSin">
+{_hreflang_tags("/privacy")}
+<script type="application/ld+json">{ld_breadcrumb}</script>
+</head>
+<body>
+<h1>{_escape(title)}</h1>
+<p>{_escape(desc)}</p>
 </body>
 </html>"""
     return HTMLResponse(html)
@@ -364,12 +639,24 @@ async def prerender_home(
     )
     characters = result.scalars().all()
 
-    ld_json = json.dumps(website_jsonld(), ensure_ascii=False)
+    ld_graph = json.dumps({
+        "@context": "https://schema.org",
+        "@graph": [
+            website_jsonld(),
+            {
+                "@type": "Organization",
+                "name": "SweetSin",
+                "url": SITE_URL,
+                "description": "AI Character Chat Platform",
+            },
+        ],
+    }, ensure_ascii=False)
 
     char_links = []
     for c in characters:
-        name = _escape(c.name)
-        tagline = _escape(c.tagline or "")
+        tr = (c.translations or {}).get(lang)
+        name = _escape(tr["name"] if tr and "name" in tr else c.name)
+        tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
         url = f"{SITE_URL}/{lang}/c/{c.slug}"
         char_links.append(f'<li><a href="{url}">{name}</a> — {tagline}</li>')
 
@@ -384,12 +671,17 @@ async def prerender_home(
 <link rel="canonical" href="{canonical}">
 <meta property="og:title" content="SweetSin — Where Fantasy Comes Alive">
 <meta property="og:description" content="AI Character Chat Platform. Immersive roleplay, uncensored conversations, no limits.">
-<meta property="og:image" content="{SITE_URL}/og-image.svg">
+<meta property="og:image" content="{SITE_URL}/og-image.png">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="SweetSin">
+<meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SweetSin — Where Fantasy Comes Alive">
+<meta name="twitter:description" content="AI Character Chat Platform. Immersive roleplay, uncensored conversations, no limits.">
+<meta name="twitter:image" content="{SITE_URL}/og-image.png">
 {_hreflang_tags("")}
-<script type="application/ld+json">{ld_json}</script>
+<script type="application/ld+json">{ld_graph}</script>
 </head>
 <body>
 <h1>SweetSin — AI Character Chat</h1>
@@ -405,9 +697,16 @@ async def prerender_home(
 
 @router.get("/sitemap.xml")
 async def sitemap(db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import func
+    # Quality gate: only include characters with substantial content (scenario+personality >= 100 chars)
     result = await db.execute(
         select(Character.slug, Character.updated_at)
-        .where(Character.is_public == True, Character.slug.isnot(None))
+        .where(
+            Character.is_public == True,
+            Character.slug.isnot(None),
+            (func.length(func.coalesce(Character.scenario, ""))
+             + func.length(func.coalesce(Character.personality, ""))) >= 100,
+        )
         .order_by(Character.updated_at.desc())
     )
     characters = result.all()
@@ -480,9 +779,12 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
 
     items = []
     for c in characters:
-        name = _escape(c.name)
-        tagline = _escape(c.tagline or "")
-        desc = _escape(_truncate(c.scenario or c.tagline or "", 300))
+        # Use English translations if available (RSS links to /en/)
+        tr = (c.translations or {}).get("en")
+        name = _escape(tr["name"] if tr and "name" in tr else c.name)
+        tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
+        scenario_text = tr["scenario"] if tr and "scenario" in tr else (c.scenario or c.tagline or "")
+        desc = _escape(_truncate(scenario_text, 300))
         link = f"{SITE_URL}/en/c/{c.slug}"
         pub_date = c.created_at.strftime("%a, %d %b %Y %H:%M:%S +0000") if c.created_at else now
         avatar = ""

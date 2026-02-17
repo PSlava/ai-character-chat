@@ -11,8 +11,8 @@ def character_jsonld(c: Character, language: str = "en") -> dict:
     tags = tr["tags"] if tr and "tags" in tr else ([t for t in c.tags.split(",") if t] if c.tags else [])
 
     lang = language or "en"
-    base_chat = (c.base_chat_count or {}).get(lang, 0)
-    chat_count = (c.chat_count or 0) + base_chat
+    # Real counts only — no inflated base_chat_count (avoid suspicious numbers)
+    chat_count = c.chat_count or 0
 
     avatar = c.avatar_url
     if avatar and avatar.startswith("/"):
@@ -24,15 +24,18 @@ def character_jsonld(c: Character, language: str = "en") -> dict:
         "name": name,
         "description": tagline or scenario[:160] if scenario else name,
         "url": f"{SITE_URL}/{lang}/c/{c.slug}" if c.slug else f"{SITE_URL}/character/{c.id}",
-        "datePublished": c.created_at.isoformat() if c.created_at else None,
-        "dateModified": c.updated_at.isoformat() if c.updated_at else None,
+        "inLanguage": lang,
+        "datePublished": (c.created_at.strftime("%Y-%m-%dT%H:%M:%SZ") if c.created_at else None),
+        "dateModified": (c.updated_at.strftime("%Y-%m-%dT%H:%M:%SZ") if c.updated_at else None),
         "keywords": ", ".join(tags) if isinstance(tags, list) else tags,
-        "interactionStatistic": {
+        "isPartOf": {"@type": "WebSite", "name": "SweetSin", "url": SITE_URL},
+    }
+    if chat_count > 0:
+        data["interactionStatistic"] = {
             "@type": "InteractionCounter",
             "interactionType": "https://schema.org/CommentAction",
             "userInteractionCount": chat_count,
-        },
-    }
+        }
     if avatar:
         data["image"] = avatar
     if c.creator:
@@ -94,6 +97,7 @@ def collection_jsonld(
         "name": f"{tag_name} — AI Characters",
         "url": f"{SITE_URL}/{language}/tags/{tag_slug}",
         "description": f"Chat with {tag_name} AI characters on SweetSin. {total} characters available.",
+        "inLanguage": language,
         "numberOfItems": total,
         "isPartOf": {"@type": "WebSite", "name": "SweetSin", "url": SITE_URL},
     }

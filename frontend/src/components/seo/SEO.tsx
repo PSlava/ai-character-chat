@@ -49,9 +49,9 @@ export function SEO({ title, description, image, url, jsonLd }: SEOProps) {
       <meta name="twitter:title" content={title || `${SITE_NAME} — AI Character Chat`} />
       {description && <meta name="twitter:description" content={description} />}
       {ogImage && <meta name="twitter:image" content={ogImage} />}
-      <link rel="alternate" hrefLang="en" href={langUrl('en')} />
-      <link rel="alternate" hrefLang="es" href={langUrl('es')} />
-      <link rel="alternate" hrefLang="ru" href={langUrl('ru')} />
+      {SUPPORTED_LANGS.map(lang => (
+        <link key={lang} rel="alternate" hrefLang={lang} href={langUrl(lang)} />
+      ))}
       <link rel="alternate" hrefLang="x-default" href={langUrl('en')} />
       {jsonLd && (
         <script type="application/ld+json">
