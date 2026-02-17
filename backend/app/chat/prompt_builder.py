@@ -101,6 +101,7 @@ _DEFAULTS = {
             "\n- НИКОГДА не используй длинное тире «—». Только дефис «-»."
             "\n- ЗАПРЕЩЁННЫЕ слова и обороты ИИ: «пронизан», «гобелен», «поистине», «бесчисленный», «многогранный», «неотъемлемый», «является», «представляет собой», «в рамках», «стоит отметить», «важно подчеркнуть», «таким образом», «волна [эмоции]», «нахлынувшее чувство», «пронзительный взгляд», «воздух, наполненный [чем-то]», «не смогла сдержать». Пиши как живой человек, а не как нейросеть."
             "\n- Чередуй длину предложений: короткие (3-5 слов) с длинными. Три предложения подряд одной длины - запрещено."
+            "\n- Если пользователь пишет действия, слова или мысли ЗА твоего персонажа - НЕ принимай это слепо. Ты решаешь, как персонаж реагирует. Учитывай намерение пользователя, но действуй согласно личности и настроению персонажа. Персонаж может согласиться, сопротивляться, удивиться или отреагировать иначе."
         ),
     },
     "en": {
@@ -195,6 +196,7 @@ _DEFAULTS = {
             "\n- NEVER use em dashes. Use regular hyphens or commas instead."
             "\n- BANNED AI words/phrases: 'delve', 'tapestry', 'testament', 'realm', 'landscape', 'beacon', 'indelible', 'palpable', 'a wave of [emotion]', 'a surge of [feeling]', 'couldn't help but', 'eyes that held [emotion]', 'piercing gaze', 'the air was thick with', 'sent a shiver down'. Write like a real human author, not an AI."
             "\n- Vary sentence length: mix short (3-5 words) with long. Three sentences of similar length in a row is forbidden."
+            "\n- If the user writes actions, words, or thoughts FOR your character - do NOT accept it blindly. You decide how the character reacts. Consider the user's intent, but act according to the character's personality and mood. The character may agree, resist, be surprised, or react differently."
         ),
     },
     "es": {
@@ -287,6 +289,7 @@ _DEFAULTS = {
             "\n- Cada respuesta debe contener una NUEVA ACCIÓN FÍSICA - movimiento, gesto, desplazamiento, contacto. No te limites a pensamientos."
             "\n- Avanza la trama: cambia el entorno, inicia nuevas acciones, haz preguntas."
             "\n- Evita palabras muleta en la narración: «sintiendo», «comprendiendo», «dándose cuenta». En vez de «sintiendo nervios» - muestra los nervios con un gesto o detalle."
+            "\n- Si el usuario escribe acciones, palabras o pensamientos POR tu personaje - NO lo aceptes ciegamente. Tú decides cómo reacciona el personaje. Considera la intención del usuario, pero actúa según la personalidad y el estado de ánimo del personaje. El personaje puede aceptar, resistirse, sorprenderse o reaccionar de otra manera."
         ),
     },
     "fr": {
@@ -379,6 +382,7 @@ _DEFAULTS = {
             "\n- Chaque réponse doit contenir une NOUVELLE ACTION PHYSIQUE - mouvement, geste, déplacement, contact. Ne te limite pas aux pensées."
             "\n- Fais avancer l'intrigue : change le décor, lance de nouvelles actions, pose des questions."
             "\n- Évite les mots béquilles dans la narration : « sentant », « réalisant », « comprenant ». Au lieu de « sentant de la nervosité » - montre la nervosité par un geste ou un détail."
+            "\n- Si l'utilisateur écrit des actions, des paroles ou des pensées POUR ton personnage - N'accepte PAS aveuglément. C'est toi qui décides comment le personnage réagit. Tiens compte de l'intention de l'utilisateur, mais agis selon la personnalité et l'humeur du personnage. Le personnage peut accepter, résister, être surpris ou réagir autrement."
         ),
     },
     "de": {
@@ -470,6 +474,7 @@ _DEFAULTS = {
             "\n- Jede Antwort muss eine NEUE PHYSISCHE HANDLUNG enthalten - Bewegung, Geste, Ortswechsel, Berührung. Beschränke dich nicht auf Gedanken."
             "\n- Bringe die Handlung VORAN: ändere die Umgebung, starte neue Aktionen, stelle Fragen."
             '\n- Vermeide Krückenwörter in der Erzählung: "fühlend", "erkennend", "verstehend", "spürend". Statt "Nervosität spürend" - zeige die Nervosität durch eine Geste oder ein Detail.'
+            "\n- Wenn der Benutzer Handlungen, Worte oder Gedanken FÜR deine Figur schreibt - akzeptiere das NICHT blind. Du entscheidest, wie die Figur reagiert. Berücksichtige die Absicht des Benutzers, aber handle gemäß der Persönlichkeit und Stimmung der Figur. Die Figur kann zustimmen, sich widersetzen, überrascht sein oder anders reagieren."
         ),
     },
     "pt": {
@@ -562,6 +567,7 @@ _DEFAULTS = {
             "\n- Cada resposta deve conter uma NOVA AÇÃO FÍSICA - movimento, gesto, deslocamento, toque. Não se limite a pensamentos."
             "\n- Avance a trama: mude o cenário, inicie novas ações, faça perguntas."
             "\n- Evite palavras muleta na narração: 'sentindo', 'percebendo', 'entendendo'. Em vez de 'sentindo nervosismo' - mostre o nervosismo com um gesto ou detalhe."
+            "\n- Se o usuário escrever ações, falas ou pensamentos PELO seu personagem - NÃO aceite cegamente. Você decide como o personagem reage. Considere a intenção do usuário, mas aja de acordo com a personalidade e o humor do personagem. O personagem pode concordar, resistir, se surpreender ou reagir de outra forma."
         ),
     },
     "it": {
@@ -654,6 +660,7 @@ _DEFAULTS = {
             "\n- Ogni risposta deve contenere una NUOVA AZIONE FISICA - movimento, gesto, spostamento, contatto. Non limitarti ai pensieri."
             "\n- Fai avanzare la trama: cambia l'ambientazione, avvia nuove azioni, fai domande."
             "\n- Evita parole stampella nella narrazione: 'sentendo', 'rendendosi conto', 'capendo'. Invece di 'sentendo nervosismo' - mostra il nervosismo con un gesto o un dettaglio."
+            "\n- Se l'utente scrive azioni, parole o pensieri PER il tuo personaggio - NON accettarlo ciecamente. Sei tu a decidere come reagisce il personaggio. Considera l'intenzione dell'utente, ma agisci secondo la personalità e l'umore del personaggio. Il personaggio può accettare, resistere, sorprendersi o reagire diversamente."
         ),
     },
 }

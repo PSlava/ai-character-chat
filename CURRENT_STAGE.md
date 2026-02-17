@@ -229,11 +229,12 @@ docker compose up -d
 - **System prompt (литературный формат):**
   - Динамические инструкции по длине ответа (short/medium/long/very_long)
   - **Структурированные теги** — промпт-сниппеты между personality и appearance
-  - **Литературный формат прозы** — нарратив обычным текстом, диалоги через тире (ru) / кавычки (en), `*звёздочки*` ТОЛЬКО для внутренних мыслей
+  - **Литературный формат прозы** — нарратив обычным текстом, диалоги через дефис `-` (ru/es/fr/pt/it) / кавычки (en/de), `*звёздочки*` ТОЛЬКО для внутренних мыслей. Длинное тире `—` запрещено (маркер ИИ)
   - **Конкретный пример формата** в промпте — модели следуют примерам лучше, чем абстрактным правилам
   - **Нарратив от третьего лица** — «она сказала», а не «я сказала»; правило в intro, format_rules и rules
   - Show-don't-tell, физические ощущения, анти-шаблонность, запрет повторов
   - **Анти-повтор правила** (на 7 языках: ru/en/es/fr/de/pt/it): запрет эхо/пересказа слов собеседника, обязательное новое физическое действие в каждом ответе, продвижение сюжета вперёд, запрет слов-костылей
+  - **Анти-ИИ правила** — запрещённые AI-маркерные слова по языкам (RU: пронизан, гобелен, поистине, многогранный и др.; EN: delve, tapestry, testament, realm, landscape и др.), обязательная вариация длины предложений, запрет длинного тире `—`
   - Обязательные пустые строки между нарративом, диалогом и мыслями
 - **Ленивая подгрузка сообщений** — загружаются последние 20, остальные при скролле вверх (infinite scroll)
 - **Отслеживание модели** — каждое сообщение сохраняет `model_used` (напр. `openrouter:google/gemma-3-27b-it:free`)
@@ -322,11 +323,14 @@ docker compose up -d
   - Страница `/admin/reports` с табами статусов и карточками жалоб
 - **Аналитика** — встроенный дашборд `/admin/analytics`:
   - **Трекинг просмотров** — `POST /api/analytics/pageview` (публичный, без auth, rate limit 60/мин). Трекает анонимных и авторизованных. Админы исключены
-  - **Таблица `page_views`** — path, IP-хеш (SHA256 + daily salt, приватность), user_id, device, referrer, language
+  - **Таблица `page_views`** — path, IP-хеш (SHA256 + daily salt, приватность), user_id, device, os, is_bot, referrer, language, country
   - **Дашборд** — `GET /api/admin/analytics/overview?days=1|7|30|90` (admin only)
-  - 6 summary карточек: пользователи, новые, просмотры, уникальные, сообщения, чаты
+  - 7 summary карточек: пользователи, новые, просмотры, уникальные, сообщения, чаты, бот-визиты
   - CSS bar chart трафика по дням (просмотры + уникальные + регистрации)
-  - Топ страниц, источники трафика, топ персонажей, устройства (mobile/desktop/tablet), модели
+  - **Источники трафика** — классификация referrer через SQL CASE WHEN: direct/organic/social/referral (цветные бары)
+  - **ОС посетителей** — pills: Windows, macOS, iOS, Android, Linux, ChromeOS, Other
+  - **Определение ботов** — keyword-based парсинг User-Agent (googlebot, bingbot, curl и др.), боты исключены из основной аналитики, отображаются отдельной цифрой
+  - Топ страниц, топ персонажей, устройства (mobile/desktop/tablet), модели
   - Системные пользователи (админы, @sweetsin, anonymous) полностью исключены из статистики (page views, регистрации, сообщения, чаты)
   - **GeoIP страны посетителей** — локальная база DB-IP Lite (MMDB, ~5MB), instant lookup через maxminddb. Автообновление при старте если база старше 30 дней. Страны с флагами на дашборде. `country` колонка на `page_views`
 - **Email-уведомления о регистрации** — при новой регистрации (email или Google OAuth) администратору отправляется email с данными нового пользователя (email, username, метод регистрации). Toggle вкл/выкл на странице `/admin/users` (кнопка Bell). Настройка хранится в `prompt_templates` как `setting.notify_registration`. Админы не получают уведомление о своей регистрации
@@ -443,7 +447,7 @@ docker compose up -d
 - **Перевод карточек персонажей** — name, tagline, tags переводятся batch-запросом через LLM (Groq → Cerebras → OpenRouter), кэшируются в JSONB
 - **Перевод описаний персонажей** — personality, scenario, appearance, greeting_message переводятся per-character через LLM (каждое поле отдельно как plain text), кэшируются в JSONB
 - **System prompts на 7 языках** — 23 ключа × 7 языков (ru/en/es/fr/de/pt/it) в prompt_builder.py: полный набор промптов включая литературный формат, диалоги, NSFW-правила
-- **Литературный формат по языкам**: RU (тире с пробелом `— Текст`), EN (кавычки `"..."`), ES (тире без пробела `—Texto`), FR (тире с пробелом `— Texte`), DE (кавычки `"..."`), PT-BR (тире с пробелом `— Texto`), IT (тире с пробелом `— Testo`)
+- **Литературный формат по языкам**: RU (дефис `- Текст`), EN (кавычки `"..."`), ES (дефис `- Texto`), FR (дефис `- Texte`), DE (кавычки `"..."`), PT-BR (дефис `- Texto`), IT (дефис `- Testo`). Длинное тире `—` запрещено во всех языках (AI-маркер)
 - **SEO prerender для 7 языков** — nginx regex `(en|es|ru|fr|de|pt|it)` для всех prerender-маршрутов
 - **FAQ на 7 языках** — переведённые вопросы/ответы в `seo/router.py`
 - **`GET /api/auth/providers`** — возвращает доступные OAuth-провайдеры, кнопка Google скрыта если не настроен
@@ -566,6 +570,8 @@ docker compose up -d
 - [x] ~~Португальский (PT-BR) и итальянский (IT) языки — 7 языков UI (~540 ключей), промпты, SEO prerender, FAQ~~
 - [x] ~~Фильтр по полу на главной — пиллы Male/Female по structured_tags (gender.all/gender.male/gender.female)~~
 - [x] ~~Эротические фантазии в автогенерации — ~50% персонажей, 70% мужские / 30% женские фантазии~~
+- [x] ~~Расширенная аналитика — источники трафика (direct/organic/social/referral), ОС посетителей, определение ботов~~
+- [x] ~~Анти-ИИ правила в промптах — замена длинных тире на дефисы, запрет AI-маркерных слов (delve, tapestry, пронизан и др.), вариация длины предложений~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -638,7 +644,7 @@ chatbot/
 │   │   │   ├── router.py            # send_message (SSE + model_used + message count), delete, clear
 │   │   │   ├── service.py           # Контекстное окно, сохранение, increment_message_count, force_new
 │   │   │   ├── schemas.py           # SendMessageRequest (model, temp, top_p, is_regenerate), CreateChatRequest (force_new)
-│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 23 ключа × ru/en/es/fr/de/pt/it, литературный формат с примером, 60s cache, anti-repetition rules
+│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 23 ключа × ru/en/es/fr/de/pt/it, литературный формат с примером, 60s cache, anti-repetition rules, anti-AI banned words
 │   │   ├── llm/                     # 9 провайдеров + реестр + модели + кулдаун
 │   │   │   ├── base.py              # BaseLLMProvider, LLMConfig (+ content_rating)
 │   │   │   ├── registry.py          # init_providers + get_provider
@@ -668,14 +674,14 @@ chatbot/
 │   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP)
 │   │   ├── users/                   # Профиль (username, stats: message_count/chat_count), избранное, удаление аккаунта
 │   │   ├── analytics/               # Встроенная аналитика
-│   │   │   ├── router.py            # POST /api/analytics/pageview + GET /api/admin/analytics/overview
-│   │   │   ├── collector.py         # IP-хеширование, device detection, async запись page views
+│   │   │   ├── router.py            # POST /api/analytics/pageview + GET /api/admin/analytics/overview (traffic_sources, os, bot_views)
+│   │   │   ├── collector.py         # IP-хеширование, device/OS/bot detection, GeoIP, async запись page views
 │   │   │   └── schemas.py           # PageViewRequest
 │   │   ├── autonomous/              # Автономные задачи (без cron/Celery)
 │   │   │   ├── scheduler.py         # Hourly check loop, state в prompt_templates
 │   │   │   ├── providers.py         # Shared provider order (AUTONOMOUS_PROVIDER_ORDER, paid-first)
 │   │   │   ├── text_humanizer.py    # Anti-AI пост-обработка (~30 клише RU+EN → замены)
-│   │   │   ├── character_generator.py # LLM-driven (14 взвешенных категорий) + DALL-E аватар + humanizer + перевод
+│   │   │   ├── character_generator.py # LLM-driven (14 взвешенных категорий) + DALL-E аватар + humanizer + перевод + anti-AI (em-dash ban)
 │   │   │   ├── counter_growth.py    # Ежедневный bump с языковыми предпочтениями
 │   │   │   ├── highlight_generator.py # Ежедневные editorial фразы (2×3 языка, до 10 персонажей)
 │   │   │   ├── relationship_builder.py # Еженедельные связи между персонажами (LLM)
