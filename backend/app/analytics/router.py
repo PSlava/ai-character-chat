@@ -73,6 +73,9 @@ async def analytics_overview(
         models_res,
         countries_res,
         anon_res,
+        traffic_sources_res,
+        os_res,
+        bot_res,
     ) = await asyncio.gather(
         _query_summary(db, since),
         _query_daily_pageviews(db, since),
@@ -86,6 +89,9 @@ async def analytics_overview(
         _query_models(db, since),
         _query_countries(db, since),
         _query_anon_stats(db, since),
+        _query_traffic_sources(db, since),
+        _query_os(db, since),
+        _query_bot_stats(db, since),
     )
 
     # Merge daily stats into single list
@@ -101,13 +107,16 @@ async def analytics_overview(
         "models": models_res,
         "countries": countries_res,
         "anon_stats": anon_res,
+        "traffic_sources": traffic_sources_res,
+        "os": os_res,
+        "bot_views": bot_res,
     }
 
 
 # --- Query helpers ---
 
 _EXCLUDE_SYSTEM = "AND NOT EXISTS (SELECT 1 FROM users u WHERE u.id = {user_col} AND (u.role = 'admin' OR u.email IN ('system@sweetsin.cc', 'anonymous@system.local')))"
-_PV_NO_SYSTEM = "AND (user_id IS NULL OR NOT EXISTS (SELECT 1 FROM users u WHERE u.id = page_views.user_id AND (u.role = 'admin' OR u.email IN ('system@sweetsin.cc', 'anonymous@system.local'))))"
+_PV_NO_SYSTEM = "AND (is_bot IS NOT TRUE) AND (user_id IS NULL OR NOT EXISTS (SELECT 1 FROM users u WHERE u.id = page_views.user_id AND (u.role = 'admin' OR u.email IN ('system@sweetsin.cc', 'anonymous@system.local'))))"
 
 
 async def _query_summary(db: AsyncSession, since: datetime) -> dict:
@@ -279,6 +288,55 @@ async def _query_anon_stats(db: AsyncSession, since: datetime) -> dict:
         "chats": anon_chats,
         "total_messages": total_anon_messages,
     }
+
+
+async def _query_traffic_sources(db: AsyncSession, since: datetime) -> dict:
+    """Classify referrers into traffic source categories (excluding bots)."""
+    # _PV_NO_SYSTEM already excludes bots
+    rows = (await db.execute(text(f"""
+        SELECT
+          CASE
+            WHEN referrer IS NULL OR referrer = '' THEN 'direct'
+            WHEN referrer ~* '(google|bing|yahoo|yandex|duckduckgo|baidu|ecosia|brave)' THEN 'organic'
+            WHEN referrer ~* '(facebook|instagram|twitter|x\\.com|tiktok|reddit|vk\\.com|youtube|linkedin|pinterest|telegram|t\\.me)' THEN 'social'
+            ELSE 'referral'
+          END AS source,
+          COUNT(*) AS views,
+          COUNT(DISTINCT ip_hash) AS uniq
+        FROM page_views
+        WHERE created_at >= :since {_PV_NO_SYSTEM}
+        GROUP BY source
+    """), {"since": since})).fetchall()
+    result = {"direct": 0, "organic": 0, "social": 0, "referral": 0}
+    unique = {"direct": 0, "organic": 0, "social": 0, "referral": 0}
+    for r in rows:
+        if r[0] in result:
+            result[r[0]] = r[1]
+            unique[r[0]] = r[2]
+    return {"views": result, "unique": unique}
+
+
+async def _query_os(db: AsyncSession, since: datetime) -> list[dict]:
+    """OS breakdown (excluding bots)."""
+    rows = (await db.execute(text(f"""
+        SELECT COALESCE(os, 'Other') AS os_name, COUNT(*) AS views, COUNT(DISTINCT ip_hash) AS uniq
+        FROM page_views
+        WHERE created_at >= :since {_PV_NO_SYSTEM}
+        GROUP BY os_name ORDER BY views DESC
+    """), {"since": since})).fetchall()
+    return [{"os": r[0], "views": r[1], "unique": r[2]} for r in rows]
+
+
+async def _query_bot_stats(db: AsyncSession, since: datetime) -> dict:
+    """Bot traffic stats — total views and unique IPs."""
+    # Note: don't use _PV_NO_SYSTEM here since it filters OUT bots
+    _PV_NO_ADMIN = "AND (user_id IS NULL OR NOT EXISTS (SELECT 1 FROM users u WHERE u.id = page_views.user_id AND (u.role = 'admin' OR u.email IN ('system@sweetsin.cc', 'anonymous@system.local'))))"
+    row = (await db.execute(text(f"""
+        SELECT COUNT(*) AS views, COUNT(DISTINCT ip_hash) AS uniq
+        FROM page_views
+        WHERE created_at >= :since AND is_bot = TRUE {_PV_NO_ADMIN}
+    """), {"since": since})).fetchone()
+    return {"views": row[0] if row else 0, "unique": row[1] if row else 0}
 
 
 def _merge_daily(

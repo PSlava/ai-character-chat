@@ -266,6 +266,8 @@ class PageView(Base):
     user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(String, nullable=True)
     device: Mapped[str | None] = mapped_column(String(10), nullable=True)  # mobile/desktop/tablet
+    os: Mapped[str | None] = mapped_column(String(20), nullable=True)  # Windows/macOS/iOS/Android/Linux/ChromeOS/Other
+    is_bot: Mapped[bool] = mapped_column(Boolean, default=False)
     referrer: Mapped[str | None] = mapped_column(String, nullable=True)
     language: Mapped[str | None] = mapped_column(String(10), nullable=True)
     country: Mapped[str | None] = mapped_column(String(2), nullable=True)

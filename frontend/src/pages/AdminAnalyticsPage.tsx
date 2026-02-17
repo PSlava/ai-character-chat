@@ -7,7 +7,7 @@ import type { AnalyticsOverview } from '@/api/analytics';
 import { Avatar } from '@/components/ui/Avatar';
 import {
   Users, UserPlus, Eye, Globe, MessageCircle, MessagesSquare,
-  Smartphone, Monitor, Tablet,
+  Smartphone, Monitor, Tablet, Bot,
 } from 'lucide-react';
 
 const PERIOD_OPTIONS = [
@@ -75,13 +75,14 @@ export function AdminAnalyticsPage() {
       ) : (
         <div className="space-y-6">
           {/* Summary cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
             <SummaryCard icon={<Users className="w-4 h-4" />} label={t('admin.analyticsUsers')} value={s?.users_total ?? 0} />
             <SummaryCard icon={<UserPlus className="w-4 h-4" />} label={t('admin.analyticsNewUsers')} value={s?.users_new ?? 0} accent />
             <SummaryCard icon={<Eye className="w-4 h-4" />} label={t('admin.analyticsPageviews')} value={s?.pageviews ?? 0} />
             <SummaryCard icon={<Globe className="w-4 h-4" />} label={t('admin.analyticsUnique')} value={s?.unique_visitors ?? 0} accent />
             <SummaryCard icon={<MessageCircle className="w-4 h-4" />} label={t('admin.analyticsMessages')} value={s?.messages ?? 0} />
             <SummaryCard icon={<MessagesSquare className="w-4 h-4" />} label={t('admin.analyticsChats')} value={s?.new_chats ?? 0} />
+            <SummaryCard icon={<Bot className="w-4 h-4" />} label={t('admin.analyticsBotViews')} value={data.bot_views?.views ?? 0} />
           </div>
 
           {/* Anonymous stats */}
@@ -96,6 +97,20 @@ export function AdminAnalyticsPage() {
               </div>
             </Section>
           )}
+
+          {/* Traffic Sources + OS */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {data.traffic_sources && (
+              <Section title={t('admin.analyticsTrafficSources')}>
+                <TrafficSourceBars sources={data.traffic_sources} />
+              </Section>
+            )}
+            {data.os && data.os.length > 0 && (
+              <Section title={t('admin.analyticsOS')}>
+                <OsPills items={data.os} />
+              </Section>
+            )}
+          </div>
 
           {/* Daily chart */}
           <DailyChart daily={data.daily} />
@@ -389,6 +404,70 @@ function DevicePill({ icon, label, count, percent }: {
       </div>
       <div className="text-lg font-bold text-neutral-200">{percent}%</div>
       <div className="text-xs text-neutral-500">{count}</div>
+    </div>
+  );
+}
+
+const SOURCE_COLORS: Record<string, string> = {
+  direct: 'bg-blue-500/70',
+  organic: 'bg-green-500/70',
+  social: 'bg-purple-500/70',
+  referral: 'bg-amber-500/70',
+};
+
+const SOURCE_LABELS: Record<string, string> = {
+  direct: 'Direct',
+  organic: 'Organic',
+  social: 'Social',
+  referral: 'Referral',
+};
+
+function TrafficSourceBars({ sources }: { sources: AnalyticsOverview['traffic_sources'] }) {
+  const { t } = useTranslation();
+  const entries = Object.entries(sources.views) as [string, number][];
+  const maxViews = Math.max(1, ...entries.map(([, v]) => v));
+  const total = entries.reduce((acc, [, v]) => acc + v, 0);
+  if (total === 0) return <EmptyState />;
+
+  return (
+    <div className="space-y-2">
+      {entries.map(([key, views]) => {
+        const uniq = sources.unique[key as keyof typeof sources.unique] ?? 0;
+        const pct = total > 0 ? Math.round((views / total) * 100) : 0;
+        return (
+          <div key={key} className="flex items-center gap-2">
+            <span className="text-xs text-neutral-400 w-16">
+              {t(`admin.analyticsSource_${key}`, SOURCE_LABELS[key] || key)}
+            </span>
+            <div className="flex-1 h-2 bg-neutral-800 rounded-full">
+              <div
+                className={`h-full rounded-full ${SOURCE_COLORS[key] || 'bg-neutral-500/70'}`}
+                style={{ width: `${(views / maxViews) * 100}%` }}
+              />
+            </div>
+            <span className="text-xs text-neutral-500 tabular-nums w-10 text-right">{pct}%</span>
+            <span className="text-xs text-neutral-600 tabular-nums w-12 text-right">{uniq} uv</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function OsPills({ items }: { items: AnalyticsOverview['os'] }) {
+  const total = items.reduce((acc, i) => acc + i.views, 0);
+  if (total === 0) return <EmptyState />;
+  const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <div key={item.os} className="bg-neutral-800/50 rounded-lg px-3 py-2 text-center min-w-[70px]">
+          <div className="text-xs text-neutral-400 mb-1">{item.os}</div>
+          <div className="text-lg font-bold text-neutral-200">{pct(item.views)}%</div>
+          <div className="text-xs text-neutral-500">{item.views}</div>
+        </div>
+      ))}
     </div>
   );
 }

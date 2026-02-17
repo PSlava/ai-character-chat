@@ -521,6 +521,13 @@
   "admin.analyticsAnonMessages": "Сообщений (период)",
   "admin.analyticsAnonChats": "Чатов (период)",
   "admin.analyticsAnonMessagesTotal": "Сообщений (всего)",
+  "admin.analyticsTrafficSources": "Источники трафика",
+  "admin.analyticsSource_direct": "Прямой",
+  "admin.analyticsSource_organic": "Поисковый",
+  "admin.analyticsSource_social": "Соцсети",
+  "admin.analyticsSource_referral": "Рефералы",
+  "admin.analyticsOS": "Операционные системы",
+  "admin.analyticsBotViews": "Боты",
 
   "admin.notifyRegistration": "Email о регистрации",
   "admin.notifyRegistrationHint": "Отправлять email админу при регистрации нового пользователя",

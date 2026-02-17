@@ -87,6 +87,9 @@ async def init_db():
         # FR/DE language support for character relations
         "ALTER TABLE character_relations ADD COLUMN IF NOT EXISTS label_fr VARCHAR",
         "ALTER TABLE character_relations ADD COLUMN IF NOT EXISTS label_de VARCHAR",
+        # Analytics: OS and bot detection
+        "ALTER TABLE page_views ADD COLUMN IF NOT EXISTS os VARCHAR(20)",
+        "ALTER TABLE page_views ADD COLUMN IF NOT EXISTS is_bot BOOLEAN DEFAULT FALSE",
     ]
     for sql in migrations:
         try:

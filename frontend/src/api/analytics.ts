@@ -65,6 +65,22 @@ export interface AnonStats {
   total_messages: number;
 }
 
+export interface TrafficSources {
+  views: { direct: number; organic: number; social: number; referral: number };
+  unique: { direct: number; organic: number; social: number; referral: number };
+}
+
+export interface OsStats {
+  os: string;
+  views: number;
+  unique: number;
+}
+
+export interface BotStats {
+  views: number;
+  unique: number;
+}
+
 export interface AnalyticsOverview {
   summary: AnalyticsSummary;
   daily: DailyStats[];
@@ -75,6 +91,9 @@ export interface AnalyticsOverview {
   models: ModelUsage[];
   countries: CountryStats[];
   anon_stats: AnonStats;
+  traffic_sources: TrafficSources;
+  os: OsStats[];
+  bot_views: BotStats;
 }
 
 export async function getAnalyticsOverview(days: number = 7): Promise<AnalyticsOverview> {

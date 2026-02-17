@@ -521,6 +521,13 @@
   "admin.analyticsAnonMessages": "Mensagens (período)",
   "admin.analyticsAnonChats": "Conversas (período)",
   "admin.analyticsAnonMessagesTotal": "Mensagens (total)",
+  "admin.analyticsTrafficSources": "Fontes de tráfego",
+  "admin.analyticsSource_direct": "Direto",
+  "admin.analyticsSource_organic": "Orgânico",
+  "admin.analyticsSource_social": "Social",
+  "admin.analyticsSource_referral": "Referência",
+  "admin.analyticsOS": "Sistemas operacionais",
+  "admin.analyticsBotViews": "Visitas de bots",
 
   "admin.notifyRegistration": "E-mail ao cadastrar",
   "admin.notifyRegistrationHint": "Enviar e-mail para o admin quando um novo usuário se cadastrar",

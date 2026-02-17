@@ -98,6 +98,44 @@ def parse_device(user_agent: str | None) -> str:
     return "desktop"
 
 
+def parse_os(user_agent: str | None) -> str:
+    """Detect OS from User-Agent string. Keyword-based, no external libraries."""
+    if not user_agent:
+        return "Other"
+    ua = user_agent.lower()
+    # Order matters: check specific before general
+    if "iphone" in ua or "ipad" in ua or "ipod" in ua:
+        return "iOS"
+    if "android" in ua:
+        return "Android"
+    if "cros" in ua or "chromeos" in ua:
+        return "ChromeOS"
+    if "windows" in ua:
+        return "Windows"
+    if "macintosh" in ua or "mac os" in ua:
+        return "macOS"
+    if "linux" in ua:
+        return "Linux"
+    return "Other"
+
+
+_BOT_KEYWORDS = (
+    "bot", "crawler", "spider", "googlebot", "bingbot", "yandex", "baidu",
+    "duckduckbot", "facebookexternalhit", "twitterbot", "linkedinbot",
+    "slurp", "semrush", "ahrefs", "mj12bot", "dotbot", "petalbot",
+    "curl", "wget", "python-requests", "python-urllib", "scrapy",
+    "headless", "phantomjs", "prerender", "lighthouse",
+)
+
+
+def detect_bot(user_agent: str | None) -> bool:
+    """Check if request is from a bot/crawler."""
+    if not user_agent:
+        return False
+    ua = user_agent.lower()
+    return any(kw in ua for kw in _BOT_KEYWORDS)
+
+
 def parse_language(accept_language: str | None) -> str | None:
     """Extract primary language from Accept-Language header."""
     if not accept_language:
@@ -161,6 +199,8 @@ async def record_pageview(
         from sqlalchemy import insert
         ip_hashed = hash_ip(ip)
         device = parse_device(user_agent)
+        os_name = parse_os(user_agent)
+        is_bot = detect_bot(user_agent)
         language = parse_language(accept_language)
         country = lookup_country(ip)
 
@@ -178,6 +218,8 @@ async def record_pageview(
                     user_id=user_id,
                     user_agent=user_agent[:500] if user_agent and len(user_agent) > 500 else user_agent,
                     device=device,
+                    os=os_name,
+                    is_bot=is_bot,
                     referrer=referrer,
                     language=language,
                     country=country,
