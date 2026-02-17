@@ -176,14 +176,15 @@ async def browse_characters(
     offset: int = Query(0, ge=0),
     search: str | None = None,
     tag: str | None = None,
+    gender: str | None = None,
     language: str | None = None,
     user=Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     user_id = user["id"] if user else None
     is_admin = user.get("role") == "admin" if user else False
-    characters = await service.list_public_characters(db, limit, offset, search, tag, user_id=user_id, language=language)
-    total = await service.count_public_characters(db, search, tag, user_id=user_id)
+    characters = await service.list_public_characters(db, limit, offset, search, tag, gender=gender, user_id=user_id, language=language)
+    total = await service.count_public_characters(db, search, tag, gender=gender, user_id=user_id)
     if language:
         from app.characters.translation import ensure_translations
         await ensure_translations(characters, language)

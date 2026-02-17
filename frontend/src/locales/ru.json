@@ -348,6 +348,9 @@
   "tags.romance": "Романтика",
   "tags.modern": "Современность",
   "tags.anime": "Аниме",
+  "gender.all": "Все",
+  "gender.male": "Мужские ♂",
+  "gender.female": "Женские ♀",
 
   "tagPage.count": "{{count}} персонажей",
   "tagPage.fantasyDesc": "Фэнтезийные AI-персонажи — эльфы, маги, драконы и мифические миры. Иммерсивный ролеплей без ограничений.",

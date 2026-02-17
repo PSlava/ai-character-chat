@@ -22,6 +22,7 @@ async def list_public_characters(
     offset: int = 0,
     search: str | None = None,
     tag: str | None = None,
+    gender: str | None = None,
     user_id: str | None = None,
     language: str | None = None,
 ):
@@ -54,6 +55,8 @@ async def list_public_characters(
         query = query.where(Character.name.ilike(f"%{escaped}%"))
     if tag:
         query = query.where(Character.tags.contains(tag))
+    if gender and gender in ("male", "female"):
+        query = query.where(Character.structured_tags.contains(gender))
 
     result = await db.execute(query)
     characters = result.scalars().all()
@@ -71,6 +74,7 @@ async def count_public_characters(
     db: AsyncSession,
     search: str | None = None,
     tag: str | None = None,
+    gender: str | None = None,
     user_id: str | None = None,
 ) -> int:
     from sqlalchemy import or_
@@ -86,6 +90,8 @@ async def count_public_characters(
         query = query.where(Character.name.ilike(f"%{escaped}%"))
     if tag:
         query = query.where(Character.tags.contains(tag))
+    if gender and gender in ("male", "female"):
+        query = query.where(Character.structured_tags.contains(gender))
 
     result = await db.execute(query)
     return result.scalar_one()

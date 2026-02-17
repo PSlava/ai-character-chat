@@ -348,6 +348,9 @@
   "tags.romance": "Romance",
   "tags.modern": "Moderno",
   "tags.anime": "Anime",
+  "gender.all": "Todos",
+  "gender.male": "Masculino ♂",
+  "gender.female": "Feminino ♀",
 
   "tagPage.count": "{{count}} personagens",
   "tagPage.fantasyDesc": "Explore personagens de fantasia com IA — elfos, magos, dragões e mundos míticos. Roleplay imersivo sem limites.",

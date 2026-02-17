@@ -18,6 +18,12 @@ const TAG_PILLS = [
   { key: 'anime', labelKey: 'tags.anime', value: 'аниме' },
 ];
 
+const GENDER_PILLS = [
+  { key: 'all', labelKey: 'gender.all', value: null },
+  { key: 'male', labelKey: 'gender.male', value: 'male' },
+  { key: 'female', labelKey: 'gender.female', value: 'female' },
+];
+
 const PAGE_SIZE = 15;
 
 export function HomePage() {
@@ -28,6 +34,7 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeGender, setActiveGender] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const prevLangRef = useRef(i18n.language);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -35,9 +42,9 @@ export function HomePage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   useEffect(() => {
-    // Reset to page 1 when search, tag, or language changes
+    // Reset to page 1 when search, tag, gender, or language changes
     setPage(1);
-  }, [search, activeTag]);
+  }, [search, activeTag, activeGender]);
 
   useEffect(() => {
     if (prevLangRef.current !== i18n.language) {
@@ -52,6 +59,7 @@ export function HomePage() {
       getCharacters({
         search: search || undefined,
         tag: activeTag || undefined,
+        gender: activeGender || undefined,
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
         language: i18n.language,
@@ -63,7 +71,7 @@ export function HomePage() {
         .finally(() => setLoading(false));
     }, search ? 300 : 0);
     return () => clearTimeout(timer);
-  }, [search, activeTag, page, i18n.language]);
+  }, [search, activeTag, activeGender, page, i18n.language]);
 
   // Featured character of the day — pick from top 5 (already sorted by language preference)
   const featuredCharacter = characters.length > 0
@@ -121,7 +129,7 @@ export function HomePage() {
         </div>
 
         {/* Tag filters */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-2">
           {TAG_PILLS.map((tag) => (
             <button
               key={tag.key}
@@ -133,6 +141,23 @@ export function HomePage() {
               }`}
             >
               {t(tag.labelKey)}
+            </button>
+          ))}
+        </div>
+
+        {/* Gender filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {GENDER_PILLS.map((g) => (
+            <button
+              key={g.key}
+              onClick={() => setActiveGender(activeGender === g.value ? null : g.value)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                activeGender === g.value || (g.value === null && activeGender === null)
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-700'
+              }`}
+            >
+              {t(g.labelKey)}
             </button>
           ))}
         </div>

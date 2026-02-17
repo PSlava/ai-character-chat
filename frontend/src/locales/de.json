@@ -348,6 +348,9 @@
   "tags.romance": "Romantik",
   "tags.modern": "Modern",
   "tags.anime": "Anime",
+  "gender.all": "Alle",
+  "gender.male": "Männlich ♂",
+  "gender.female": "Weiblich ♀",
 
   "tagPage.count": "{{count}} Charaktere",
   "tagPage.fantasyDesc": "Entdecken Sie Fantasy-KI-Charaktere — Elfen, Magier, Drachen und mythische Welten. Immersives Rollenspiel ohne Grenzen.",

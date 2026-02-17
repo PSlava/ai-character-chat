@@ -191,8 +191,8 @@ docker compose up -d
 - **Базовые счётчики (social proof)** — JSONB поля `base_chat_count` и `base_like_count` на Character: `{"ru": 345, "en": 567}`. Seed-персонажи инициализируются случайными значениями (100–1000 чатов, 50–100 лайков). Обычные пользователи видят `real + base[lang]`, админ видит реальные значения отдельно в зелёном
 - **Голосование (upvote/downvote)** — модель `Vote` (composite PK: user_id + character_id, value +1/-1), `vote_score` на Character. `POST /api/characters/{id}/vote` с delta-обновлением. Zustand `votesStore` с optimistic update, загрузка при логине, очистка при выходе. ThumbsUp/ThumbsDown кнопки на CharacterCard и CharacterPage. Цветовая индикация: зелёный/красный/серый
 - **Форк персонажей** — `POST /api/characters/{id}/fork` клонирует публичного персонажа в приватный черновик (is_public=false). Копирует: name (+fork), tagline, avatar, personality, appearance, scenario, greeting, tags, structured_tags, model settings. Сбрасывает: counters, translations. `fork_count` инкрементируется на оригинале. Кнопка GitFork на CharacterPage → redirect на edit. "Forked from" ссылка
-- **Character Highlights** — AI-сгенерированные editorial фразы (НЕ фейк-отзывы). JSONB `highlights` на Character: `[{"text": "...", "lang": "ru"}, ...]`. Автономная задача (`highlight_generator.py`) ежедневно генерирует 2 фразы × 5 языков для до 10 персонажей. Отображаются italic под tagline на CharacterPage
-- **Связи между персонажами** — модель `CharacterRelation` (character_id, related_id, relation_type, 5-lingual labels ru/en/es/fr/de). 7 типов: rival/ex/friend/sibling/enemy/lover/ally. Автономная задача (`relationship_builder.py`) еженедельно находит пары с общими тегами, LLM определяет тип. `GET /api/characters/{id}/relations` возвращает связи с карточками. Секция "Connections" на CharacterPage перед Similar Characters
+- **Character Highlights** — AI-сгенерированные editorial фразы (НЕ фейк-отзывы). JSONB `highlights` на Character: `[{"text": "...", "lang": "ru"}, ...]`. Автономная задача (`highlight_generator.py`) ежедневно генерирует 2 фразы × 7 языков для до 10 персонажей. Отображаются italic под tagline на CharacterPage
+- **Связи между персонажами** — модель `CharacterRelation` (character_id, related_id, relation_type, 7-lingual labels ru/en/es/fr/de/pt/it). 7 типов: rival/ex/friend/sibling/enemy/lover/ally. Автономная задача (`relationship_builder.py`) еженедельно находит пары с общими тегами, LLM определяет тип. `GET /api/characters/{id}/relations` возвращает связи с карточками. Секция "Connections" на CharacterPage перед Similar Characters
 
 ### Персоны пользователя
 - **Пользовательские персоны** — альтернативные личности для ролевых чатов (лимит настраивается админом, дефолт 5)
@@ -218,7 +218,7 @@ docker compose up -d
 - **Сброс кэша** — при обновлении name/tagline/personality/scenario/appearance/greeting_message кэш очищается
 - **Fallback** — при ошибке перевода показывается оригинал
 - **Rate limit** — 60 вызовов/мин (глобальный), provider fallback Groq → Cerebras → OpenRouter
-- **Warmup-скрипт** (`warmup_translations.py`) — двухпроходный прогрев кэша: Pass 1 — batch-перевод карточек (15 шт/батч), Pass 2 — per-character описания (3с задержка между персонажами). Целевые языки: en, es, fr, de
+- **Warmup-скрипт** (`warmup_translations.py`) — двухпроходный прогрев кэша: Pass 1 — batch-перевод карточек (15 шт/батч), Pass 2 — per-character описания (3с задержка между персонажами). Целевые языки: en, es, fr, de, pt, it
 - Поддержка 8 языков (en, ru, es, fr, de, ja, zh, ko)
 
 ### Чат
@@ -233,7 +233,7 @@ docker compose up -d
   - **Конкретный пример формата** в промпте — модели следуют примерам лучше, чем абстрактным правилам
   - **Нарратив от третьего лица** — «она сказала», а не «я сказала»; правило в intro, format_rules и rules
   - Show-don't-tell, физические ощущения, анти-шаблонность, запрет повторов
-  - **Анти-повтор правила** (на 5 языках: ru/en/es/fr/de): запрет эхо/пересказа слов собеседника, обязательное новое физическое действие в каждом ответе, продвижение сюжета вперёд, запрет слов-костылей
+  - **Анти-повтор правила** (на 7 языках: ru/en/es/fr/de/pt/it): запрет эхо/пересказа слов собеседника, обязательное новое физическое действие в каждом ответе, продвижение сюжета вперёд, запрет слов-костылей
   - Обязательные пустые строки между нарративом, диалогом и мыслями
 - **Ленивая подгрузка сообщений** — загружаются последние 20, остальные при скролле вверх (infinite scroll)
 - **Отслеживание модели** — каждое сообщение сохраняет `model_used` (напр. `openrouter:google/gemma-3-27b-it:free`)
@@ -292,8 +292,8 @@ docker compose up -d
   - Defaults хранятся в коде (`prompt_builder.py`), overrides — в БД (`prompt_templates`)
   - Override перекрывает дефолт; кнопка «Сбросить» удаляет override → возврат к дефолту
   - In-memory кэш (60 сек TTL) для минимизации запросов к БД
-  - 23 ключа × 5 языков (ru/en/es/fr/de): вступление, правила контента, длина ответа, формат с примером, структурированные теги, внешность, правила и др.
-  - Страница `/admin/prompts` с табами RU/EN (ES/FR/DE пока только в коде, табы в UI не добавлены), expandable карточки, метки «Изменён»/«По умолчанию»
+  - 23 ключа × 7 языков (ru/en/es/fr/de/pt/it): вступление, правила контента, длина ответа, формат с примером, структурированные теги, внешность, правила и др.
+  - Страница `/admin/prompts` с табами RU/EN (ES/FR/DE/PT/IT пока только в коде, табы в UI не добавлены), expandable карточки, метки «Изменён»/«По умолчанию»
 - **Seed-персонажи** — 40 готовых персонажей от @sweetsin для непустого каталога
   - Основаны на популярных архетипах конкурентов (SpicyChat, CrushOn, JanitorAI, Chub, WetDreams)
   - **30 фэнтези/архетипы** (25 NSFW, 5 moderate): вампир, суккуб, мафия, яндере, профессор, демон, сосед, цундере, CEO, оборотень, нэко, тёмная эльфийка, фембой, сводный брат, инкуб, якудза, призрак, дракон, сталкер-бывший, андроид, доминатрикс, байкер, эльф-целитель, sugar mommy, рыцарь, Люцифер, ревнивый парень, ведьма, друг детства, пиратка
@@ -338,11 +338,11 @@ docker compose up -d
 ### Автономный планировщик
 
 - **Scheduler** (`autonomous/scheduler.py`) — `asyncio.create_task()` в lifespan, hourly check, 24ч между задачами (7 дней для связей). Состояние в `prompt_templates` с `scheduler.*` ключами. 5 мин задержка при старте
-- **Генерация персонажей** (`autonomous/character_generator.py`) — LLM-driven: 14 взвешенных категорий (~90% NSFW), LLM изобретает уникальную концепцию → текст (Groq→Cerebras→OpenRouter) → DALL-E 3 аватар (512×512, WebP, ~$0.04) → сохранение под @sweetsin → авто-перевод EN/ES/FR/DE. При ошибке — email админам
+- **Генерация персонажей** (`autonomous/character_generator.py`) — LLM-driven: 14 взвешенных категорий (~90% NSFW), **~50% эротические фантазии** (70% мужские / 30% женские), LLM изобретает уникальную концепцию → текст (Groq→Cerebras→OpenRouter) → DALL-E 3 аватар (512×512, WebP, ~$0.04) → сохранение под @sweetsin → авто-перевод EN/ES/FR/DE/PT/IT. При ошибке — email админам
 - **Рост счётчиков** (`autonomous/counter_growth.py`) — ежедневный bump `base_chat_count`/`base_like_count` с учётом языковых предпочтений (дарк-романтика растёт быстрее для RU, аниме — для EN, романтика — для ES, fantasy — для FR, modern — для DE)
 - **Языковые предпочтения** (`characters/language_preferences.py`) — таблица аффинити по сеттингам, тегам, рейтингу. Влияет на начальные счётчики при генерации и на ежедневный рост. Результат: сортировка на главной автоматически отражает предпочтения аудитории. Featured — из топ-5 по текущему языку
-- **Highlights** (`autonomous/highlight_generator.py`) — ежедневно: генерирует 2 editorial фразы на 5 языках для до 10 персонажей без highlights. НЕ фейк-отзывы — описательные фразы
-- **Связи** (`autonomous/relationship_builder.py`) — еженедельно: ищет пары с 2+ общими тегами, LLM определяет тип отношений (rival/ex/friend/sibling/enemy/lover/ally), создаёт двунаправленные связи с лейблами на 5 языках. Макс 3 связи на персонажа, 20 пар за запуск
+- **Highlights** (`autonomous/highlight_generator.py`) — ежедневно: генерирует 2 editorial фразы на 7 языках для до 10 персонажей без highlights. НЕ фейк-отзывы — описательные фразы
+- **Связи** (`autonomous/relationship_builder.py`) — еженедельно: ищет пары с 2+ общими тегами, LLM определяет тип отношений (rival/ex/friend/sibling/enemy/lover/ally), создаёт двунаправленные связи с лейблами на 7 языках. Макс 3 связи на персонажа, 20 пар за запуск
 - **Очистка** (`autonomous/cleanup.py`) — удаление `page_views` >90 дней, orphan avatar файлов
 - **Общий порядок провайдеров** (`autonomous/providers.py`) — `AUTONOMOUS_PROVIDER_ORDER` env: платные первые (Claude → OpenAI → Gemini → DeepSeek → Together), бесплатные как fallback (Groq → Cerebras → OpenRouter)
 - **Anti-AI пост-обработка** (`autonomous/text_humanizer.py`) — замена ~30 AI-клише (RU+EN) на естественные альтернативы. Применяется к сгенерированным персонажам
@@ -435,17 +435,17 @@ docker compose up -d
 - **Render wake-up** — автоматическое пробуждение сервера перед генерацией (free tier засыпает)
 
 ### i18n (интернационализация)
-- **Пятиязычный** интерфейс: **английский** (по умолчанию), **испанский**, русский, **французский**, **немецкий**
-- i18next + react-i18next, ~538 ключей на язык
-- Переключатель языков EN | ES | RU | FR | DE в хедере и профиле
+- **Семиязычный** интерфейс: **английский** (по умолчанию), **испанский**, русский, **французский**, **немецкий**, **португальский (BR)**, **итальянский**
+- i18next + react-i18next, ~540 ключей на язык (включая gender.all/gender.male/gender.female)
+- Переключатель языков EN | ES | RU | FR | DE | PT | IT в хедере и профиле
 - Язык пользователя сохраняется в БД и передаётся в system prompt
 - **Промпты на выбранном языке** — при выборе English все части system prompt берутся из английского набора, включая строгое указание «Write ONLY in English»
 - **Перевод карточек персонажей** — name, tagline, tags переводятся batch-запросом через LLM (Groq → Cerebras → OpenRouter), кэшируются в JSONB
 - **Перевод описаний персонажей** — personality, scenario, appearance, greeting_message переводятся per-character через LLM (каждое поле отдельно как plain text), кэшируются в JSONB
-- **System prompts на 5 языках** — 23 ключа × 5 языков (ru/en/es/fr/de) в prompt_builder.py: полный набор промптов включая литературный формат, диалоги, NSFW-правила
-- **Литературный формат по языкам**: RU (тире с пробелом `— Текст`), EN (кавычки `"..."`), ES (тире без пробела `—Texto`), FR (тире с пробелом `— Texte`), DE (кавычки `"..."`)
-- **SEO prerender для 5 языков** — nginx regex `(en|es|ru|fr|de)` для всех prerender-маршрутов
-- **FAQ на 5 языках** — переведённые вопросы/ответы в `seo/router.py`
+- **System prompts на 7 языках** — 23 ключа × 7 языков (ru/en/es/fr/de/pt/it) в prompt_builder.py: полный набор промптов включая литературный формат, диалоги, NSFW-правила
+- **Литературный формат по языкам**: RU (тире с пробелом `— Текст`), EN (кавычки `"..."`), ES (тире без пробела `—Texto`), FR (тире с пробелом `— Texte`), DE (кавычки `"..."`), PT-BR (тире с пробелом `— Texto`), IT (тире с пробелом `— Testo`)
+- **SEO prerender для 7 языков** — nginx regex `(en|es|ru|fr|de|pt|it)` для всех prerender-маршрутов
+- **FAQ на 7 языках** — переведённые вопросы/ответы в `seo/router.py`
 - **`GET /api/auth/providers`** — возвращает доступные OAuth-провайдеры, кнопка Google скрыта если не настроен
 
 ### Фронтенд
@@ -459,8 +459,9 @@ docker compose up -d
 - **Footer** — ссылки на О проекте, Условия, Конфиденциальность, FAQ, контакт (support@sweetsin.cc), copyright. Прижат к низу через min-h-full flex. **Популярные персонажи** — 8 топ-персонажей как ссылки (SEO internal linking, module-level кеш)
 - **Онлайн-точки** — зелёная точка на аватарах всех персонажей (всегда online). На CharacterCard и CharacterPage
 - **Фильтры по тегам** — пиллы (Все / Фэнтези / Романтика / Современность / Аниме) над поиском на главной. Используют существующий backend `tag` query param
+- **Фильтр по полу** — пиллы Male/Female на главной, фильтрация по structured_tags (gender). i18n ключи: `gender.all`, `gender.male`, `gender.female`
 - **Персонаж дня** — gradient-баннер между фильтрами и гридом. `characters[daysSinceEpoch % count]`, меняется раз в день. Скрыт при поиске/фильтрации
-- **Статические страницы** — О проекте (`/about`), Условия (`/terms`), Конфиденциальность (`/privacy`), FAQ (`/faq`). Пятиязычный контент через i18n
+- **Статические страницы** — О проекте (`/about`), Условия (`/terms`), Конфиденциальность (`/privacy`), FAQ (`/faq`). Семиязычный контент через i18n
 - **Scroll to top** — при навигации между страницами контент автоматически прокручивается вверх (через `useRef` + `useEffect` на `pathname`)
 - Стриминг сообщений в реальном времени
 - Выбор AI-модели: **Auto (все провайдеры)** / OpenRouter / Groq / Cerebras / Together (с оценками) + DeepSeek + Qwen + платные
@@ -562,6 +563,9 @@ docker compose up -d
 - [x] ~~Французский и немецкий языки (FR/DE — 538 ключей UI, 23 prompt keys, SEO prerender, FAQ, language preferences)~~
 - [x] ~~Перегенерация описаний @sweetsin через GPT (rewrite_characters.py, 41/41 обновлены)~~
 - [x] ~~Бэкап на Yandex Disk (rclone, 3 слота БД, инкрементальный sync uploads, cron 04:00)~~
+- [x] ~~Португальский (PT-BR) и итальянский (IT) языки — 7 языков UI (~540 ключей), промпты, SEO prerender, FAQ~~
+- [x] ~~Фильтр по полу на главной — пиллы Male/Female по structured_tags (gender.all/gender.male/gender.female)~~
+- [x] ~~Эротические фантазии в автогенерации — ~50% персонажей, 70% мужские / 30% женские фантазии~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -596,7 +600,7 @@ docker compose up -d
 
 ```
 Backend:  Python 3.12 + FastAPI + SQLAlchemy + PyJWT + bcrypt + Pillow + authlib + gunicorn + uvicorn
-Frontend: React 18 + TypeScript + Vite + Tailwind CSS + Zustand + i18next (EN/ES/RU/FR/DE) + react-markdown + react-hot-toast + vite-plugin-pwa
+Frontend: React 18 + TypeScript + Vite + Tailwind CSS + Zustand + i18next (EN/ES/RU/FR/DE/PT/IT) + react-markdown + react-hot-toast + vite-plugin-pwa
 Database: PostgreSQL 16 (Docker) / Supabase (облако) / SQLite (локально)
 AI:       OpenRouter + Groq + Cerebras + Together + DeepSeek + Qwen/DashScope + Anthropic + OpenAI + Google GenAI
 Streaming: SSE (Server-Sent Events)
@@ -634,7 +638,7 @@ chatbot/
 │   │   │   ├── router.py            # send_message (SSE + model_used + message count), delete, clear
 │   │   │   ├── service.py           # Контекстное окно, сохранение, increment_message_count, force_new
 │   │   │   ├── schemas.py           # SendMessageRequest (model, temp, top_p, is_regenerate), CreateChatRequest (force_new)
-│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 23 ключа × ru/en/es/fr/de, литературный формат с примером, 60s cache, anti-repetition rules
+│   │   │   └── prompt_builder.py    # Defaults + DB overrides, 23 ключа × ru/en/es/fr/de/pt/it, литературный формат с примером, 60s cache, anti-repetition rules
 │   │   ├── llm/                     # 9 провайдеров + реестр + модели + кулдаун
 │   │   │   ├── base.py              # BaseLLMProvider, LLMConfig (+ content_rating)
 │   │   │   ├── registry.py          # init_providers + get_provider
@@ -737,7 +741,7 @@ chatbot/
 │   │   │   │   └── Footer.tsx            # Ссылки на About/Terms/Privacy/FAQ, копирайт
 │   │   │   └── ui/                       # Button, Input, Avatar, AvatarUpload, AgeGate, ConfirmDialog, LanguageSwitcher, Logo, Skeleton
 │   │   ├── lib/                     # Утилиты (localStorage с role, isCharacterOnline, PoW solver)
-│   │   ├── locales/                 # i18n: en.json, es.json, ru.json, fr.json, de.json (~538 ключей каждый)
+│   │   ├── locales/                 # i18n: en.json, es.json, ru.json, fr.json, de.json, pt.json, it.json (~540 ключей каждый)
 │   │   └── types/                   # TypeScript типы (Message с model_used)
 │   ├── vercel.json
 │   └── package.json

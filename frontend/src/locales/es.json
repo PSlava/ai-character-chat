@@ -348,6 +348,9 @@
   "tags.romance": "Romance",
   "tags.modern": "Moderno",
   "tags.anime": "Anime",
+  "gender.all": "Todos",
+  "gender.male": "Masculino ♂",
+  "gender.female": "Femenino ♀",
 
   "tagPage.count": "{{count}} personajes",
   "tagPage.fantasyDesc": "Explora personajes de fantasía — elfos, magos, dragones y mundos míticos. Roleplay inmersivo sin límites.",
