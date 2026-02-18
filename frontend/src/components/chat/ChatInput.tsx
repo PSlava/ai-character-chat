@@ -85,7 +85,8 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
           placeholder={t('chat.placeholder')}
           rows={1}
           disabled={disabled}
-          className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500 resize-none max-h-48"
+          className="flex-1 bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500 resize-none max-h-48 overflow-y-auto"
+          style={{ scrollbarWidth: 'none' }}
         />
         {isStreaming ? (
           <button

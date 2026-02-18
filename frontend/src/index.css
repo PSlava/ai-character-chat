@@ -15,3 +15,7 @@ body {
 ::-webkit-scrollbar-thumb {
   @apply bg-neutral-600 rounded-full;
 }
+
+textarea::-webkit-scrollbar {
+  display: none;
+}
