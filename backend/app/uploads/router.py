@@ -106,7 +106,7 @@ async def generate_avatar(
     user=Depends(get_current_user),
 ):
     """Generate avatar via DALL-E 3. Admin only."""
-    if getattr(user, "role", None) != "admin":
+    if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
 
     if not settings.openai_api_key:
