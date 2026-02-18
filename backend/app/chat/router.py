@@ -293,6 +293,10 @@ async def generate_persona_reply(
         "ru": "Напиши ответ на русском языке.",
         "en": "Write the reply in English.",
         "es": "Escribe la respuesta en español.",
+        "fr": "Écris la réponse en français.",
+        "de": "Schreibe die Antwort auf Deutsch.",
+        "pt": "Escreva a resposta em português.",
+        "it": "Scrivi la risposta in italiano.",
     }
     lang_hint = lang_instructions.get(language, lang_instructions["en"])
 

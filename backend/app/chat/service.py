@@ -344,6 +344,10 @@ async def build_conversation_messages(
             "ru": "[Краткое содержание предыдущего разговора]",
             "en": "[Previous conversation summary]",
             "es": "[Resumen de la conversación anterior]",
+            "fr": "[Résumé de la conversation précédente]",
+            "de": "[Zusammenfassung des bisherigen Gesprächs]",
+            "pt": "[Resumo da conversa anterior]",
+            "it": "[Riassunto della conversazione precedente]",
         }
         label = summary_labels.get(language, summary_labels["en"])
         result_list.append(LLMMessage(role="system", content=f"{label}\n{summary}"))
