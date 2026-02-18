@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
@@ -90,6 +91,10 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.is_public && !form.avatar_url) {
+      toast.error(t('form.avatarRequiredError'));
+      return;
+    }
     setLoading(true);
     try {
       await onSubmit({
@@ -126,6 +131,9 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         currentUrl={form.avatar_url || null}
         name={form.name || '?'}
         onChange={(url) => setForm((prev) => ({ ...prev, avatar_url: url }))}
+        required={form.is_public}
+        isAdmin={isAdmin}
+        characterDescription={form.appearance || form.personality || ''}
       />
 
       <Input

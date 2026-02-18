@@ -193,6 +193,11 @@
 
   "form.avatar": "Avatar",
   "form.avatarHint": "Clicca per caricare (max 4MB)",
+  "form.avatarRequired": "Carica un avatar per i personaggi pubblici",
+  "form.avatarRequiredError": "I personaggi pubblici necessitano di un avatar",
+  "form.generateAvatar": "Genera",
+  "form.avatarPrompt": "Prompt dell'avatar",
+  "form.generating": "Generazione...",
   "form.name": "Nome del personaggio *",
   "form.namePlaceholder": "Es.: Sherlock Holmes",
   "form.slug": "Slug (ID univoco)",

@@ -1,12 +1,18 @@
+import base64
+import io
+import logging
 import uuid
 from io import BytesIO
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+import httpx
+from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile, File
 from PIL import Image
 
 from app.auth.middleware import get_current_user
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/upload", tags=["uploads"])
 
@@ -92,3 +98,59 @@ async def upload_avatar(
     out_path.write_bytes(buf.getvalue())
 
     return {"url": f"/api/uploads/avatars/{filename}"}
+
+
+@router.post("/generate-avatar")
+async def generate_avatar(
+    prompt: str = Body(..., max_length=1000, embed=True),
+    user=Depends(get_current_user),
+):
+    """Generate avatar via DALL-E 3. Admin only."""
+    if getattr(user, "role", None) != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    if not settings.openai_api_key:
+        raise HTTPException(status_code=400, detail="Avatar generation not available")
+
+    filename = f"{uuid.uuid4().hex}.webp"
+    filepath = _get_avatars_dir() / filename
+
+    try:
+        client_kwargs: dict = {"timeout": 120}
+        if settings.proxy_url:
+            client_kwargs["proxy"] = settings.proxy_url
+
+        async with httpx.AsyncClient(**client_kwargs) as client:
+            response = await client.post(
+                "https://api.openai.com/v1/images/generations",
+                json={
+                    "model": "dall-e-3",
+                    "prompt": prompt,
+                    "n": 1,
+                    "size": "1024x1024",
+                    "quality": "standard",
+                    "response_format": "b64_json",
+                },
+                headers={
+                    "Authorization": f"Bearer {settings.openai_api_key}",
+                    "Content-Type": "application/json",
+                },
+            )
+            response.raise_for_status()
+
+        b64 = response.json()["data"][0]["b64_json"]
+        img_bytes = base64.b64decode(b64)
+
+        img = Image.open(io.BytesIO(img_bytes))
+        img = img.resize((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
+        img.save(filepath, "WEBP", quality=85)
+
+        logger.info("Avatar generated: %s (%dKB)", filename, filepath.stat().st_size // 1024)
+        return {"url": f"/api/uploads/avatars/{filename}"}
+
+    except httpx.HTTPStatusError as e:
+        logger.error("DALL-E API error: %s", str(e)[:300])
+        raise HTTPException(status_code=502, detail="Avatar generation failed")
+    except Exception as e:
+        logger.exception("Avatar generation failed: %s", str(e)[:200])
+        raise HTTPException(status_code=500, detail="Avatar generation failed")

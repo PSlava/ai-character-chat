@@ -496,6 +496,9 @@ async def create_character(
     db: AsyncSession = Depends(get_db),
 ):
     is_admin = user.get("role") == "admin"
+    # Public characters require an avatar
+    if body.is_public and not body.avatar_url:
+        raise HTTPException(status_code=400, detail="Public characters require an avatar")
     try:
         character = await service.create_character(db, user["id"], body.model_dump())
     except ValueError as e:
@@ -516,6 +519,11 @@ async def update_character(
     db: AsyncSession = Depends(get_db),
 ):
     is_admin = user.get("role") == "admin"
+    # If making public, ensure avatar exists (in body or on existing character)
+    if body.is_public is True and not body.avatar_url:
+        existing = await service.get_character(db, character_id)
+        if existing and not existing.avatar_url:
+            raise HTTPException(status_code=400, detail="Public characters require an avatar")
     try:
         result = await service.update_character(
             db, character_id, user["id"], body.model_dump(), is_admin=is_admin

@@ -193,6 +193,11 @@
 
   "form.avatar": "Аватар",
   "form.avatarHint": "Нажмите для загрузки (макс. 4 МБ)",
+  "form.avatarRequired": "Загрузите аватар для публичного персонажа",
+  "form.avatarRequiredError": "Для публичного персонажа нужен аватар",
+  "form.generateAvatar": "Сгенерировать",
+  "form.avatarPrompt": "Промпт для аватара",
+  "form.generating": "Генерация...",
   "form.name": "Имя персонажа *",
   "form.namePlaceholder": "Например: Шерлок Холмс",
   "form.slug": "Slug (уникальный ID)",

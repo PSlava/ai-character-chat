@@ -193,6 +193,11 @@
 
   "form.avatar": "Avatar",
   "form.avatarHint": "Click to upload (max 4MB)",
+  "form.avatarRequired": "Upload an avatar for public characters",
+  "form.avatarRequiredError": "Public characters require an avatar",
+  "form.generateAvatar": "Generate",
+  "form.avatarPrompt": "Avatar prompt",
+  "form.generating": "Generating...",
   "form.name": "Character name *",
   "form.namePlaceholder": "E.g.: Sherlock Holmes",
   "form.slug": "Slug (unique ID)",

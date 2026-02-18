@@ -193,6 +193,11 @@
 
   "form.avatar": "Avatar",
   "form.avatarHint": "Klicken zum Hochladen (max. 4 MB)",
+  "form.avatarRequired": "Laden Sie ein Avatar für öffentliche Charaktere hoch",
+  "form.avatarRequiredError": "Öffentliche Charaktere benötigen ein Avatar",
+  "form.generateAvatar": "Generieren",
+  "form.avatarPrompt": "Avatar-Prompt",
+  "form.generating": "Wird generiert...",
   "form.name": "Charaktername *",
   "form.namePlaceholder": "Z.B.: Sherlock Holmes",
   "form.slug": "Slug (eindeutige ID)",
