@@ -82,7 +82,7 @@ docker compose up -d
 
 Автодеплой:
 - **GitHub Webhook** — Flask-сервер на порту 9000, при push в main → `git pull && docker compose build && up -d`
-- **Zero-downtime deploy** — build images → restart backend → health check → restart nginx (последовательно)
+- **Zero-downtime deploy** — build images → force-recreate backend → health check → auto-recovery (stop+rm+up) if unhealthy → restart nginx
 - **Deploy tracking** — статус деплоя (deploying/done/failed/timeout) с exit_code и временными метками
 - **Health endpoint** — `GET :9000/health` возвращает commit, started_at, last_deploy (status, exit_code, finished_at)
 - **Docker compose v2 + buildx** — standalone бинарники в webhook-контейнере
@@ -187,7 +187,7 @@ docker compose up -d
 - **Выбор AI-модели** — OpenRouter, Groq, Cerebras, Together + прямые провайдеры (DeepSeek, Qwen) — только для админа, обычные пользователи используют auto
 - **API реестра моделей** — `GET /api/models/{openrouter,groq,cerebras,together}`
 - **API реестра тегов** — `GET /api/characters/structured-tags` — категории и теги для формы
-- **Проверка slug** — `GET /api/characters/check-slug?slug=name` — доступность псевдонима
+- **Slug персонажа (автогенерация)** — slug автоматически генерируется из имени персонажа (транслитерация + UUID суффикс), перегенерируется при смене имени. Не редактируется пользователем. Используется в SEO-URL (`/c/{slug}`)
 - **Автоперевод карточек** — имена, tagline и теги автоматически переводятся LLM при просмотре на другом языке (batch, с кэшированием в JSONB)
 - **Счётчик сообщений по языкам** — атомарный инкремент JSONB `message_counts` при каждом сообщении (кроме перегенераций)
 - **Базовые счётчики (social proof)** — JSONB поля `base_chat_count` и `base_like_count` на Character: `{"ru": 345, "en": 567}`. Seed-персонажи инициализируются случайными значениями (100–1000 чатов, 50–100 лайков). Обычные пользователи видят `real + base[lang]`, админ видит реальные значения отдельно в зелёном
@@ -199,7 +199,7 @@ docker compose up -d
 ### Персоны пользователя
 - **Пользовательские персоны** — альтернативные личности для ролевых чатов (лимит настраивается админом, дефолт 5)
 - CRUD: создание, редактирование, удаление (с подтверждением), установка дефолтной
-- Каждая персона имеет имя и опциональное описание
+- Каждая персона имеет имя, опциональный slug (уникальный в рамках пользователя, `GET /api/personas/check-slug`) и описание
 - **Снапшот в чате** — при создании чата persona_name и persona_description копируются из Persona в Chat (не по FK). Редактирование персоны не влияет на существующие чаты
 - **Выбор персоны при создании чата** — модальное окно с вариантами (включая «Без персоны»), на странице персонажа и в шапке чата. Единственная дефолтная — используется автоматически. Нет персон — чат без персоны
 - **Имя персоны в шапке чата** — отображается под именем персонажа как «as PersonaName»
@@ -283,7 +283,9 @@ docker compose up -d
 - **Хранение**: `data/uploads/avatars/{uuid}.webp`, UUID-имена файлов (нет user-controlled имён)
 - **Раздача**: FastAPI StaticFiles (dev) + nginx location (prod) с кэшированием 30 дней
 - **Docker**: shared volume `uploads` между backend и nginx
-- **Фронтенд**: компонент `AvatarUpload` — кликабельный аватар с overlay камеры, загрузка, preview
+- **Обязательность для публичных** — бэкенд: 400 при создании/публикации без аватара; фронтенд: toast + красная пунктирная обводка
+- **Генерация (admin)** — `POST /api/upload/generate-avatar` (DALL-E 3, 1024→512×512 WebP). Кнопка Wand2 в AvatarUpload с inline textarea для prompt
+- **Фронтенд**: компонент `AvatarUpload` — кликабельный аватар с overlay камеры, загрузка, preview, required-подсветка, admin-генерация
 - **Интеграция**: форма создания/редактирования персонажа, страница профиля
 - **Фон на странице персонажа** — размытый растянутый аватар (blur-3xl, opacity-20)
 - **Жизненный цикл файлов** — автоматическое удаление старых файлов при замене аватара (персонаж + профиль), при удалении персонажа, при удалении аккаунта
@@ -538,7 +540,7 @@ docker compose up -d
 - **Docker Compose** — полный VPS-деплой (PostgreSQL + Backend + Nginx + Webhook)
 - **Multi-stage Docker build** — frontend собирается в node:20, nginx.conf baked в образ (не volume mount)
 - **GitHub Webhook** — автодеплой при push в main (Flask на порту 9000), tracking статуса (done/failed/timeout)
-- **Zero-downtime deploy** — build → restart backend → health check (до 60с) → restart nginx
+- **Zero-downtime deploy** — build → force-recreate backend → health check (до 60с) → auto-recovery (stop+rm+up) if unhealthy → restart nginx
 - **Same-path mount** — webhook контейнер монтирует репо по `HOST_REPO_DIR:HOST_REPO_DIR`, чтобы Docker daemon видел корректные пути для build context и volumes
 - **Health endpoints** — `/api/health` и `:9000/health` с commit hash, started_at, last_deploy
 - **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`), настройка email (Resend/SMTP), ADMIN_EMAILS, авто-определение FRONTEND_URL
@@ -648,10 +650,10 @@ chatbot/
 │   │   │   ├── export_import.py     # SillyTavern character card v1/v2 export/import
 │   │   │   ├── service.py           # Бизнес-логика (is_admin, сортировка по популярности)
 │   │   │   ├── schemas.py           # Pydantic модели
-│   │   │   ├── slugify.py           # validate_slug() — normalize, validate 3-50 chars
+│   │   │   ├── slugify.py           # validate_slug(), generate_slug() — shared by Character and Persona
 │   │   │   ├── serializers.py       # ORM → dict (username, active_translations)
 │   │   │   ├── translation.py       # Batch-перевод карточек + per-field plain text перевод описаний (personality, scenario, appearance, greeting) + JSONB кэш
-│   │   │   ├── structured_tags.py   # Реестр 33 тегов × 5 категорий (с промпт-сниппетами ru/en)
+│   │   │   ├── structured_tags.py   # Реестр 33 тегов × 5 категорий (label + snippet × 7 языков: ru/en/es/fr/de/pt/it)
 │   │   │   └── language_preferences.py # Языковые предпочтения (аффинити по сеттингам/тегам/рейтингу)
 │   │   ├── chat/                    # SSE стриминг, контекст, счётчики, множественные чаты
 │   │   │   ├── router.py            # send_message (SSE + model_used + message count), delete, clear
@@ -678,13 +680,13 @@ chatbot/
 │   │   │   ├── thinking_filter.py      # ThinkingFilter для <think> блоков
 │   │   │   └── router.py              # GET /api/models/{openrouter,groq,cerebras,together}
 │   │   ├── personas/                # Пользовательские персоны
-│   │   │   ├── router.py            # CRUD + GET /limit (динамический лимит из setting.max_personas)
-│   │   │   └── schemas.py           # PersonaCreate, PersonaUpdate
+│   │   │   ├── router.py            # CRUD + GET /limit + GET /check-slug (slug availability)
+│   │   │   └── schemas.py           # PersonaCreate, PersonaUpdate (with slug)
 │   │   ├── reports/                 # Система жалоб
 │   │   │   ├── router.py            # POST /characters/{id}/report, GET/PUT /admin/reports
 │   │   │   └── schemas.py           # CreateReportRequest, UpdateReportRequest
 │   │   ├── uploads/                 # Загрузка файлов (аватары)
-│   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP)
+│   │   │   └── router.py            # POST /api/upload/avatar (Pillow, magic bytes, WebP) + POST /api/upload/generate-avatar (admin, DALL-E 3)
 │   │   ├── users/                   # Профиль (username, stats: message_count/chat_count), избранное, удаление аккаунта
 │   │   ├── analytics/               # Встроенная аналитика
 │   │   │   ├── router.py            # POST /api/analytics/pageview + GET /api/admin/analytics/overview (traffic_sources, os, bot_views)
@@ -708,7 +710,7 @@ chatbot/
 │   │   │   ├── sanitize.py          # HTML strip_tags (defense-in-depth)
 │   │   │   └── email.py             # Async email sender (Resend API → SMTP → console fallback)
 │   │   └── db/                      # Модели, сессии, миграции
-│   │       ├── models.py            # User, Character (+vote_score, fork_count, forked_from_id, highlights), Chat, Message, Favorite, Vote, CharacterRelation, Persona, PromptTemplate, Report
+│   │       ├── models.py            # User, Character (+vote_score, fork_count, forked_from_id, highlights), Chat, Message, Favorite, Vote, CharacterRelation, Persona (+slug), PromptTemplate, Report
 │   │       └── session.py           # Engine, init_db + auto-migrations
 │   ├── scripts/
 │   │   ├── generate_seed_avatars.py # Генерация аватаров через DALL-E 3
