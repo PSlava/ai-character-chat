@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Boolean, Integer, DateTime, ForeignKey, Enum as SAEnum
+from sqlalchemy import String, Text, Boolean, Integer, DateTime, ForeignKey, Enum as SAEnum, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 import enum
@@ -62,10 +62,13 @@ class User(Base):
 
 class Character(Base):
     __tablename__ = "characters"
+    __table_args__ = (
+        UniqueConstraint("creator_id", "slug", name="uq_characters_creator_slug"),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
     creator_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    slug: Mapped[str | None] = mapped_column(String, nullable=True, unique=True)
+    slug: Mapped[str | None] = mapped_column(String, nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     tagline: Mapped[str | None] = mapped_column(String, nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)

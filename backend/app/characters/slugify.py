@@ -22,6 +22,18 @@ def transliterate(text: str) -> str:
     return ''.join(result)
 
 
+def validate_slug(slug: str) -> str:
+    """Validate and normalize user-provided slug."""
+    slug = slug.strip().lower()
+    slug = re.sub(r'[^a-z0-9-]', '', slug)
+    slug = re.sub(r'-+', '-', slug).strip('-')
+    if len(slug) < 3:
+        raise ValueError("slug_too_short")
+    if len(slug) > 50:
+        slug = slug[:50].rstrip('-')
+    return slug
+
+
 def generate_slug(name: str, short_id: str) -> str:
     """Generate URL-friendly slug from character name + short ID suffix."""
     text = transliterate(name)

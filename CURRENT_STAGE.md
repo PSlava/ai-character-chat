@@ -166,6 +166,7 @@ docker compose up -d
 
 ### Персонажи
 - Полный CRUD: создание, просмотр, редактирование, удаление (с cascade на чаты)
+- **Slug (псевдоним)** — уникальный для каждого создателя (`UniqueConstraint('creator_id', 'slug')`). Задаётся пользователем при создании, валидация 3-50 символов (lowercase, alphanumeric + дефисы). Проверка доступности через `GET /api/characters/check-slug` с debounce 500мс на фронтенде. Если не указан — генерируется автоматически
 - **Админ может редактировать и удалять персонажей всех пользователей**
 - Каталог публичных персонажей с поиском и фильтрацией по тегам
 - **Пагинация каталога** — 15 персонажей на страницу, навигация по страницам с умными номерами (1 ... 3 4 5 ... 12)
@@ -179,13 +180,14 @@ docker compose up -d
 - **Шаблонные переменные** — `{{char}}` и `{{user}}` в примерах диалогов заменяются на реальные имена
 - **Структурированные теги** — 33 предустановленных тега в 5 категориях (пол, роль, характер, сеттинг, стиль ответов). Каждый тег добавляет свой промпт-сниппет в system prompt. Кликабельные pills в форме создания/редактирования
 - **Длина ответа** — настройка на персонаже: короткий / средний / длинный / очень длинный
-- **Макс. токенов** — настраиваемый лимит (256–4096, дефолт 2048)
+- **Макс. токенов** — настраиваемый лимит (256–4096, дефолт 2048) — только для админа
 - **Генерация персонажа из текста** — вставляешь рассказ, AI создаёт профиль
 - **Импорт из SillyTavern** — загрузка JSON character card (v1/v2) в формате SillyTavern/TavernAI; маппинг полей (personality→description, tagline→personality, greeting→first_mes), SweetSin-специфичные поля в `extensions.sweetsin`
 - **Экспорт в SillyTavern** — `GET /api/characters/{id}/export` скачивает JSON character card v2 (`spec: "chara_card_v2"`) с Content-Disposition header
-- **Выбор AI-модели** — OpenRouter, Groq, Cerebras, Together + прямые провайдеры (DeepSeek, Qwen)
+- **Выбор AI-модели** — OpenRouter, Groq, Cerebras, Together + прямые провайдеры (DeepSeek, Qwen) — только для админа, обычные пользователи используют auto
 - **API реестра моделей** — `GET /api/models/{openrouter,groq,cerebras,together}`
 - **API реестра тегов** — `GET /api/characters/structured-tags` — категории и теги для формы
+- **Проверка slug** — `GET /api/characters/check-slug?slug=name` — доступность псевдонима
 - **Автоперевод карточек** — имена, tagline и теги автоматически переводятся LLM при просмотре на другом языке (batch, с кэшированием в JSONB)
 - **Счётчик сообщений по языкам** — атомарный инкремент JSONB `message_counts` при каждом сообщении (кроме перегенераций)
 - **Базовые счётчики (social proof)** — JSONB поля `base_chat_count` и `base_like_count` на Character: `{"ru": 345, "en": 567}`. Seed-персонажи инициализируются случайными значениями (100–1000 чатов, 50–100 лайков). Обычные пользователи видят `real + base[lang]`, админ видит реальные значения отдельно в зелёном
@@ -203,7 +205,7 @@ docker compose up -d
 - **Имя персоны в шапке чата** — отображается под именем персонажа как «as PersonaName»
 - Персону нельзя сменить после создания чата
 - При удалении персоны — чаты продолжают работать (снапшот сохранён, `persona_id` → NULL)
-- **Генерация ответа от лица персоны** — кнопка Sparkles в ChatInput, LLM генерирует текст за юзера (не сохраняет), подставляет в textarea для редактирования. Считается в дневной лимит сообщений
+- **Генерация ответа от лица персоны** — кнопка Sparkles в ChatInput (только для админа), LLM генерирует текст за юзера (не сохраняет), подставляет в textarea для редактирования. Считается в дневной лимит сообщений
 - **Настраиваемый лимит** — `setting.max_personas` (дефолт 5, 0 = без лимита), кнопка UserCircle на AdminUsersPage
 - `GET /api/personas/limit` — текущее использование и лимит
 - HTML-санитизация текстовых полей
@@ -336,7 +338,7 @@ docker compose up -d
 - **Email-уведомления о регистрации** — при новой регистрации (email или Google OAuth) администратору отправляется email с данными нового пользователя (email, username, метод регистрации). Toggle вкл/выкл на странице `/admin/users` (кнопка Bell). Настройка хранится в `prompt_templates` как `setting.notify_registration`. Админы не получают уведомление о своей регистрации
 - **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.paid_mode` (bool) — платный режим LLM, `setting.max_personas` (int, дефолт 5) — лимит персон на пользователя, `setting.daily_message_limit` (int, дефолт 1000) — дневной лимит сообщений, `setting.anon_message_limit` (int, дефолт 50) — лимит сообщений для анонимных гостей (0 = отключено)
 - **Настройки админа** — API `GET /api/admin/settings` и `PUT /api/admin/settings/{key}` для key-value настроек (хранятся в `prompt_templates` с префиксом `setting.`)
-- **Платный режим (Paid Mode)** — админ-тоггл на странице пользователей (иконка DollarSign). Когда включён: auto-fallback использует `["groq", "together"]` (платные, без rate limits) вместо `groq → cerebras → openrouter`. Настройка `setting.paid_mode` с 60-секундным in-memory кэшем. UI: зелёная кнопка когда вкл, серая когда выкл
+- **Платный режим (Paid Mode)** — админ-тоггл на странице пользователей (иконка DollarSign). Когда включён: auto-fallback использует `["groq", "openrouter"]` (Groq с flex tier, OpenRouter как fallback). Когда выключен: `["openrouter"]` (только бесплатные). Настройка `setting.paid_mode` с 60-секундным in-memory кэшем. UI: зелёная кнопка когда вкл, серая когда выкл
 - Ссылки в сайдбаре: «Пользователи» + «Промпты» + «Жалобы» + «Аналитика» видны только админу
 
 ### Автономный планировщик
@@ -415,7 +417,7 @@ docker compose up -d
 **Together AI**: платный (pay-per-token, от $0.02/M), OpenAI-совместимый. **Без модерации контента** — Qwen и Llama работают без NSFW-ограничений. Поддерживает все параметры генерации.
 
 **Режимы выбора модели:**
-- **Auto (Все провайдеры)** — кросс-провайдерный fallback: Groq → Cerebras → OpenRouter (настраиваемый порядок через `AUTO_PROVIDER_ORDER`). **Paid mode**: Groq → Together (без rate limits). Дефолт для новых персонажей
+- **Auto (Все провайдеры)** — кросс-провайдерный fallback. **Paid mode**: Groq → OpenRouter (Groq с flex tier). **Free mode**: только OpenRouter. Дефолт для новых персонажей
 - **Auto (OpenRouter / Groq / Cerebras / Together)** — автоматический перебор топ-3 по качеству внутри одного провайдера, с NSFW-фильтрацией
 - **Конкретная модель** — выбор конкретной модели провайдера (напр. `groq:llama-3.3-70b-versatile`)
 - **Прямой провайдер** (DeepSeek, Qwen) — напрямую через API, минуя агрегаторы
@@ -493,7 +495,10 @@ docker compose up -d
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
 
 ### Performance оптимизации
-- React.memo на CharacterCard, explicit width/height на Avatar (CLS prevention)
+- React.memo на CharacterCard и MessageBubble (кастомный comparator — не ре-рендерит во время стриминга)
+- **Streaming scroll** — `requestAnimationFrame`-батчинг instant `scrollTop` вместо `scrollIntoView({ behavior: 'smooth' })` (предотвращает jank от накапливания smooth-анимаций)
+- `isNearBottomRef` — авто-скролл только если пользователь не прокрутил вверх
+- Explicit width/height на Avatar (CLS prevention)
 - Request dedup + stale-while-revalidate в chatStore
 - Skeleton loading в Sidebar
 - useMemo для группировки чатов
@@ -574,6 +579,11 @@ docker compose up -d
 - [x] ~~Расширенная аналитика — источники трафика (direct/organic/social/referral), ОС посетителей, определение ботов~~
 - [x] ~~Анти-ИИ правила в промптах — замена длинных тире на дефисы, запрет AI-маркерных слов (delve, tapestry, пронизан и др.), вариация длины предложений~~
 - [x] ~~SEO аудит и Anti-AI для prerender — см. `ANTIAI.md`. og:image PNG, hreflang 7 языков, FAQ 12 вопросов × 7 языков, prerender для /about /terms /privacy, Organization JSON-LD, BreadcrumbList, улучшенные meta description, twitter tags, og:locale. Anti-template вариативность (заголовки, порядок секций, CTA), убраны фейковые счётчики из JSON-LD, E-E-A-T сигналы (author, datePublished, isPartOf, inLanguage), RSS EN translations, quality gates для sitemap, noindex для тонких страниц~~
+- [x] ~~Slug (псевдоним) персонажа — уникальный per-creator, валидация, проверка доступности с debounce~~
+- [x] ~~Streaming scroll fix — rAF-батчинг, React.memo на MessageBubble, устранение jank~~
+- [x] ~~Admin-only поля в CharacterForm (модель, длина ответа, макс токенов, system prompt suffix)~~
+- [x] ~~Paid mode обновлён: groq→openrouter (paid), openrouter only (free)~~
+- [x] ~~Persona generation — только для админа~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -638,6 +648,7 @@ chatbot/
 │   │   │   ├── export_import.py     # SillyTavern character card v1/v2 export/import
 │   │   │   ├── service.py           # Бизнес-логика (is_admin, сортировка по популярности)
 │   │   │   ├── schemas.py           # Pydantic модели
+│   │   │   ├── slugify.py           # validate_slug() — normalize, validate 3-50 chars
 │   │   │   ├── serializers.py       # ORM → dict (username, active_translations)
 │   │   │   ├── translation.py       # Batch-перевод карточек + per-field plain text перевод описаний (personality, scenario, appearance, greeting) + JSONB кэш
 │   │   │   ├── structured_tags.py   # Реестр 33 тегов × 5 категорий (с промпт-сниппетами ru/en)

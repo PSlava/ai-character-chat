@@ -113,12 +113,30 @@ async def get_character_by_slug(db: AsyncSession, slug: str):
         select(Character)
         .options(selectinload(Character.creator))
         .where(Character.slug == slug)
+        .order_by(Character.chat_count.desc())
+        .limit(1)
     )
     return result.scalar_one_or_none()
 
 
+async def check_slug_available(db: AsyncSession, creator_id: str, slug: str, exclude_id: str | None = None):
+    """Check if slug is available for this user."""
+    query = select(func.count()).select_from(Character).where(
+        Character.creator_id == creator_id,
+        Character.slug == slug,
+    )
+    if exclude_id:
+        query = query.where(Character.id != exclude_id)
+    result = await db.execute(query)
+    return result.scalar_one() == 0
+
+
 async def create_character(db: AsyncSession, creator_id: str, data: dict):
-    from app.characters.slugify import generate_slug
+    from app.characters.slugify import generate_slug, validate_slug
+    # Extract and validate slug
+    user_slug = data.pop("slug", None)
+    if user_slug:
+        user_slug = validate_slug(user_slug)
     # Sanitize text fields
     for field in _TEXT_FIELDS_TO_SANITIZE:
         if field in data and isinstance(data[field], str):
@@ -134,7 +152,15 @@ async def create_character(db: AsyncSession, creator_id: str, data: dict):
     )
     db.add(character)
     await db.flush()  # get character.id
-    character.slug = generate_slug(data.get("name", "character"), character.id)
+    if user_slug:
+        # Check per-user uniqueness
+        is_available = await check_slug_available(db, creator_id, user_slug)
+        if not is_available:
+            await db.rollback()
+            raise ValueError("slug_taken")
+        character.slug = user_slug
+    else:
+        character.slug = generate_slug(data.get("name", "character"), character.id)
     await db.commit()
     # Re-fetch with creator loaded
     return await get_character(db, character.id)
@@ -162,6 +188,16 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
             old_file = Path(settings.upload_dir) / "avatars" / character.avatar_url.split("/")[-1]
             if old_file.exists():
                 old_file.unlink(missing_ok=True)
+
+    # Handle slug update
+    new_slug = data.pop("slug", None)
+    if new_slug and new_slug != character.slug:
+        from app.characters.slugify import validate_slug
+        new_slug = validate_slug(new_slug)
+        is_available = await check_slug_available(db, character.creator_id, new_slug, exclude_id=character_id)
+        if not is_available:
+            raise ValueError("slug_taken")
+        character.slug = new_slug
 
     # Sanitize text fields
     for field in _TEXT_FIELDS_TO_SANITIZE:

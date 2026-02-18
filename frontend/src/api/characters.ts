@@ -52,6 +52,11 @@ export async function getMyCharacters() {
   return data;
 }
 
+export async function checkSlug(slug: string): Promise<{ available: boolean; slug: string; error?: string }> {
+  const { data } = await api.get('/characters/check-slug', { params: { slug } });
+  return data;
+}
+
 export async function createCharacter(body: Partial<Character>) {
   const { data } = await api.post<Character>('/characters', body);
   return data;

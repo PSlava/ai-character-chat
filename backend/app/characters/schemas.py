@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class CharacterCreate(BaseModel):
+    slug: str | None = Field(default=None, max_length=50, pattern=r'^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]{1,2}$')
     name: str = Field(max_length=100)
     tagline: str | None = Field(default=None, max_length=300)
     avatar_url: str | None = Field(default=None, max_length=2000)
@@ -30,6 +31,7 @@ class GenerateFromStoryRequest(BaseModel):
 
 
 class CharacterUpdate(BaseModel):
+    slug: str | None = Field(default=None, max_length=50)
     name: str | None = Field(default=None, max_length=100)
     tagline: str | None = Field(default=None, max_length=300)
     avatar_url: str | None = Field(default=None, max_length=2000)

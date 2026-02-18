@@ -90,6 +90,10 @@ async def init_db():
         # Analytics: OS and bot detection
         "ALTER TABLE page_views ADD COLUMN IF NOT EXISTS os VARCHAR(20)",
         "ALTER TABLE page_views ADD COLUMN IF NOT EXISTS is_bot BOOLEAN DEFAULT FALSE",
+        # Slug: per-user unique (drop old global unique, add composite)
+        "DROP INDEX IF EXISTS ix_characters_slug",
+        "ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_slug_key",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_characters_creator_slug ON characters (creator_id, slug)",
     ]
     for sql in migrations:
         try:

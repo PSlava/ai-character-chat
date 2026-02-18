@@ -474,6 +474,21 @@ async def get_character(
     return character_to_dict(character, language=language, is_admin=is_admin)
 
 
+@router.get("/check-slug")
+async def check_slug(
+    slug: str = Query(min_length=1, max_length=50),
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.characters.slugify import validate_slug
+    try:
+        normalized = validate_slug(slug)
+    except ValueError as e:
+        return {"available": False, "slug": slug, "error": str(e)}
+    available = await service.check_slug_available(db, user["id"], normalized)
+    return {"available": available, "slug": normalized}
+
+
 @router.post("", status_code=201)
 async def create_character(
     body: CharacterCreate,
@@ -481,7 +496,15 @@ async def create_character(
     db: AsyncSession = Depends(get_db),
 ):
     is_admin = user.get("role") == "admin"
-    character = await service.create_character(db, user["id"], body.model_dump())
+    try:
+        character = await service.create_character(db, user["id"], body.model_dump())
+    except ValueError as e:
+        msg = str(e)
+        if msg == "slug_taken":
+            raise HTTPException(status_code=409, detail="This slug is already taken")
+        if msg == "slug_too_short":
+            raise HTTPException(status_code=400, detail="Slug must be at least 3 characters")
+        raise HTTPException(status_code=400, detail=msg)
     return character_to_dict(character, is_admin=is_admin)
 
 
@@ -493,9 +516,15 @@ async def update_character(
     db: AsyncSession = Depends(get_db),
 ):
     is_admin = user.get("role") == "admin"
-    result = await service.update_character(
-        db, character_id, user["id"], body.model_dump(), is_admin=is_admin
-    )
+    try:
+        result = await service.update_character(
+            db, character_id, user["id"], body.model_dump(), is_admin=is_admin
+        )
+    except ValueError as e:
+        msg = str(e)
+        if msg == "slug_taken":
+            raise HTTPException(status_code=409, detail="This slug is already taken")
+        raise HTTPException(status_code=400, detail=msg)
     if not result:
         raise HTTPException(status_code=404, detail="Character not found or not yours")
     return character_to_dict(result, is_admin=is_admin)
