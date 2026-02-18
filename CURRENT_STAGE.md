@@ -484,9 +484,10 @@ docker compose up -d
 - **Toast notifications** — react-hot-toast (bottom-center, dark theme neutral-800). Тосты при: like/unlike, delete, copy message, report, import, ошибках
 - **Skeleton loading** — детальные скелетоны для карточек персонажей (аватар-круг + линии текста + теги), страницы персонажа и чата
 - **PWA (Progressive Web App)** — vite-plugin-pwa, manifest (standalone, theme #171717), service worker с NetworkFirst для `/api/`, установка на домашний экран
-- **Open Graph / SEO** — og:image (1200×630), og:url, og:type, twitter:card/title/description/image мета-теги
-- **RSS фид** — `/feed.xml` (RSS 2.0, 30 последних персонажей с аватарами). `<link rel="alternate">` в HTML
-- **JSON-LD Organization** — на главной (@graph с WebSite)
+- **Open Graph / SEO** — og:image PNG (1200×630), og:url, og:type, og:locale, twitter:card/title/description/image мета-теги. Hreflang для 7 языков
+- **RSS фид** — `/feed.xml` (RSS 2.0, 30 последних персонажей с аватарами, EN translations для имён/описаний). `<link rel="alternate">` в HTML
+- **JSON-LD** — WebSite + Organization (@graph) на главной, CreativeWork на персонажах (реальные счётчики, без base_chat_count; author, datePublished UTC, inLanguage, isPartOf), FAQPage на /faq, BreadcrumbList на персонажах и тегах, CollectionPage на тегах
+- **SEO prerender** — nginx bot detection → backend HTML для /:lang/c/:slug, /:lang/tags/:slug, /:lang/faq, /:lang/about, /:lang/terms, /:lang/privacy, /:lang (home). FAQ: 12 вопросов × 7 языков. Anti-template: slug-hash ротация порядка секций, 6 вариантов заголовков, 6 вариантов CTA. Personality + avatar `<img>` + creator attribution в body. Quality gates для sitemap (scenario+personality >= 100 chars). noindex для тонких страниц. См. `ANTIAI.md`
 - **WhatsApp шер** — кнопка поделиться в WhatsApp на странице персонажа
 - **Native Web Share API** — мобильный share-диалог (navigator.share) на странице персонажа
 - **Адаптивная вёрстка**: мобильный sidebar-drawer (hamburger + backdrop), responsive padding, responsive message bubbles (85%/75%), compact chat input
@@ -572,6 +573,7 @@ docker compose up -d
 - [x] ~~Эротические фантазии в автогенерации — ~50% персонажей, 70% мужские / 30% женские фантазии~~
 - [x] ~~Расширенная аналитика — источники трафика (direct/organic/social/referral), ОС посетителей, определение ботов~~
 - [x] ~~Анти-ИИ правила в промптах — замена длинных тире на дефисы, запрет AI-маркерных слов (delve, tapestry, пронизан и др.), вариация длины предложений~~
+- [x] ~~SEO аудит и Anti-AI для prerender — см. `ANTIAI.md`. og:image PNG, hreflang 7 языков, FAQ 12 вопросов × 7 языков, prerender для /about /terms /privacy, Organization JSON-LD, BreadcrumbList, улучшенные meta description, twitter tags, og:locale. Anti-template вариативность (заголовки, порядок секций, CTA), убраны фейковые счётчики из JSON-LD, E-E-A-T сигналы (author, datePublished, isPartOf, inLanguage), RSS EN translations, quality gates для sitemap, noindex для тонких страниц~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -594,7 +596,7 @@ docker compose up -d
 - [x] ~~**Голосование/рейтинг персонажей** — upvote/downvote, vote_score, Zustand votesStore~~
 - [x] ~~**Форк персонажей** — clone + redirect to edit, fork_count~~
 - [ ] **Лидерборд создателей** — рейтинг по чатам/лайкам/фолловерам, мотивация (Chai)
-- [ ] **SEO продвижение** — см. `SEO.md`
+- [ ] **SEO продвижение** — см. `SEO.md` и `ANTIAI.md` (аудит и anti-AI меры выполнены)
 - [ ] **OAuth (GitHub, Discord)** — расширение аудитории
 
 ### Quality (UX)
@@ -686,6 +688,9 @@ chatbot/
 │   │   │   ├── highlight_generator.py # Ежедневные editorial фразы (2×3 языка, до 10 персонажей)
 │   │   │   ├── relationship_builder.py # Еженедельные связи между персонажами (LLM)
 │   │   │   └── cleanup.py           # page_views >90 дней, orphan avatars
+│   │   ├── seo/                      # SEO prerender + sitemap + RSS
+│   │   │   ├── router.py            # Prerender endpoints (home, c/:slug, tags/:slug, faq, about, terms, privacy), sitemap.xml, robots.txt, feed.xml
+│   │   │   └── jsonld.py            # JSON-LD generators (character, website, faq, breadcrumb, collection)
 │   │   ├── stats/                   # Публичная статистика
 │   │   │   └── router.py            # GET /api/stats (users, messages, characters, online_now)
 │   │   ├── utils/                   # Утилиты

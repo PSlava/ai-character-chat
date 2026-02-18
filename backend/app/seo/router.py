@@ -2,14 +2,14 @@ import json
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse, Response
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db.session import get_db
-from app.db.models import Character
+from app.db.models import Character, Vote
 from app.seo.jsonld import (
-    character_jsonld, website_jsonld, faq_jsonld,
-    breadcrumb_jsonld, collection_jsonld, SITE_URL,
+    character_jsonld, website_jsonld, software_application_jsonld,
+    faq_jsonld, breadcrumb_jsonld, collection_jsonld, SITE_URL,
 )
 
 router = APIRouter(prefix="/api/seo", tags=["seo"])
@@ -163,7 +163,13 @@ async def prerender_character(
     if character.created_at:
         date_str = character.created_at.strftime("%Y-%m-%d")
 
-    ld_json = json.dumps(character_jsonld(character, lang), ensure_ascii=False)
+    # Count votes for AggregateRating
+    vote_result = await db.execute(
+        select(func.count()).select_from(Vote).where(Vote.character_id == character.id)
+    )
+    vote_count = vote_result.scalar() or 0
+
+    ld_json = json.dumps(character_jsonld(character, lang, vote_count=vote_count), ensure_ascii=False)
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([
         ("SweetSin", SITE_URL),
         (name, None),
@@ -649,6 +655,7 @@ async def prerender_home(
                 "url": SITE_URL,
                 "description": "AI Character Chat Platform",
             },
+            software_application_jsonld(),
         ],
     }, ensure_ascii=False)
 

@@ -86,7 +86,9 @@ async def generate_from_story(
     body: GenerateFromStoryRequest,
     user=Depends(get_current_user),
 ):
-    # Direct OpenRouter model ID (contains "/") or alias
+    is_admin = getattr(user, "role", None) == "admin"
+
+    # Admin: direct provider selection; Regular users: auto with fallback
     PROVIDER_MODELS = {
         "claude": "claude-sonnet-4-5-20250929",
         "openai": "gpt-4o",
@@ -94,20 +96,27 @@ async def generate_from_story(
         "deepseek": "deepseek-chat",
         "qwen": "qwen3-32b",
     }
-    if "/" in body.preferred_model:
-        provider_name = "openrouter"
-        model_id = body.preferred_model
-    elif body.preferred_model in ("openrouter", "qwen3"):
-        provider_name = "openrouter"
-        model_id = ""  # auto — provider will pick best from fallback chain
-    else:
-        provider_name = body.preferred_model
-        model_id = PROVIDER_MODELS.get(body.preferred_model, "")
 
-    try:
-        provider = get_provider(provider_name)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Model not available")
+    # Build provider chain: list of (provider_name, model_id) to try
+    if is_admin and body.preferred_model and body.preferred_model != "auto":
+        # Admin picked a specific provider
+        if "/" in body.preferred_model:
+            provider_chain = [("openrouter", body.preferred_model)]
+        elif body.preferred_model in ("openrouter",):
+            provider_chain = [("openrouter", "")]
+        elif body.preferred_model in ("groq",):
+            provider_chain = [("groq", "")]
+        else:
+            pm = body.preferred_model
+            provider_chain = [(pm, PROVIDER_MODELS.get(pm, ""))]
+        # Admin always gets groq fallback if not already groq
+        if provider_chain[0][0] != "groq":
+            provider_chain.append(("groq", ""))
+        if provider_chain[0][0] != "openrouter":
+            provider_chain.append(("openrouter", ""))
+    else:
+        # Regular users: openrouter auto → groq fallback
+        provider_chain = [("openrouter", ""), ("groq", "")]
 
     rating_instructions = {
         "sfw": "Контент должен быть полностью безопасным (SFW). Никакого насилия, откровенного контента или мрачных тем.",
@@ -125,12 +134,25 @@ async def generate_from_story(
         LLMMessage(role="system", content=GENERATE_SYSTEM_PROMPT),
         LLMMessage(role="user", content=user_msg),
     ]
-    config = LLMConfig(model=model_id, temperature=0.7, max_tokens=2048)
 
-    try:
-        raw = await provider.generate(messages, config)
-    except Exception as e:
-        logging.getLogger(__name__).error("LLM generation failed: %s", str(e)[:200])
+    # Try each provider in chain
+    last_error = None
+    for prov_name, model_id in provider_chain:
+        try:
+            provider = get_provider(prov_name)
+        except ValueError:
+            continue
+        config = LLMConfig(model=model_id, temperature=0.7, max_tokens=2048)
+        try:
+            raw = await provider.generate(messages, config)
+            break  # success
+        except Exception as e:
+            last_error = e
+            logging.getLogger(__name__).warning(
+                "LLM generation failed (%s): %s", prov_name, str(e)[:200]
+            )
+    else:
+        logging.getLogger(__name__).error("All providers failed for character generation")
         raise HTTPException(status_code=502, detail="Character generation failed. Please try again.")
 
     # Strip markdown code fences if present

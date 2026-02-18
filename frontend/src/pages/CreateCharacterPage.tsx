@@ -26,7 +26,7 @@ export function CreateCharacterPage() {
   const [tab, setTab] = useState<Tab>('manual');
   const [storyText, setStoryText] = useState('');
   const [characterName, setCharacterName] = useState('');
-  const [model, setModel] = useState('qwen');
+  const [model, setModel] = useState(isAdmin ? 'groq' : 'auto');
   const [contentRating, setContentRating] = useState('sfw');
   const [extraInstructions, setExtraInstructions] = useState('');
   const [generating, setGenerating] = useState(false);
@@ -209,6 +209,7 @@ export function CreateCharacterPage() {
             maxLength={100}
           />
 
+          {isAdmin && (
           <div>
             <label className="block text-sm text-neutral-400 mb-1">
               {t('create.aiModel')}
@@ -218,6 +219,7 @@ export function CreateCharacterPage() {
               onChange={(e) => setModel(e.target.value)}
               className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white w-full"
             >
+              <option value="groq">Groq (auto)</option>
               <option value="openrouter">{t('create.openrouterAuto')}</option>
               {orModels.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -233,6 +235,7 @@ export function CreateCharacterPage() {
               <option value="openai">{t('create.gptPaid')}</option>
             </select>
           </div>
+          )}
 
           <div>
             <label className="block text-sm text-neutral-400 mb-1">
