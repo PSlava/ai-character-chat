@@ -149,8 +149,15 @@ async def generate_avatar(
         return {"url": f"/api/uploads/avatars/{filename}"}
 
     except httpx.HTTPStatusError as e:
-        logger.error("DALL-E API error: %s", str(e)[:300])
-        raise HTTPException(status_code=502, detail="Avatar generation failed")
+        body = e.response.text[:500] if e.response else ""
+        logger.error("DALL-E API error %s: %s", e.response.status_code, body)
+        # Return OpenAI error details to admin
+        try:
+            error_msg = e.response.json().get("error", {}).get("message", "")
+        except Exception:
+            error_msg = ""
+        detail = error_msg or "Avatar generation failed"
+        raise HTTPException(status_code=502, detail=detail)
     except Exception as e:
         logger.exception("Avatar generation failed: %s", str(e)[:200])
         raise HTTPException(status_code=500, detail="Avatar generation failed")
