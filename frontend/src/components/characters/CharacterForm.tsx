@@ -205,6 +205,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         maxLength={10000}
       />
 
+      {isAdmin && (
       <Textarea
         label={t('form.instructions')}
         value={form.system_prompt_suffix}
@@ -213,6 +214,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         rows={2}
         maxLength={5000}
       />
+      )}
 
       <Input
         label={t('form.tags')}
@@ -238,6 +240,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
           </select>
         </div>
 
+        {isAdmin && (
         <div>
           <label className="block text-sm text-neutral-400 mb-1">
             {t('form.responseLength')}
@@ -253,7 +256,9 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
             <option value="very_long">{t('form.lengthVeryLong')}</option>
           </select>
         </div>
+        )}
 
+        {isAdmin && (
         <div className="flex-1 min-w-[200px]">
           <label className="block text-sm text-neutral-400 mb-1">
             {t('form.preferredModel')}
@@ -294,16 +299,13 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
             <option disabled>{t('form.directApiSeparator')}</option>
             <option value="deepseek">DeepSeek</option>
             <option value="qwen" disabled={form.content_rating === 'nsfw'}>Qwen (DashScope)</option>
-            {isAdmin && (
-              <>
-                <option disabled>{t('form.paidSeparator')}</option>
-                <option value="gemini">Gemini</option>
-                <option value="claude">Claude</option>
-                <option value="openai">GPT-4o</option>
-              </>
-            )}
+            <option disabled>{t('form.paidSeparator')}</option>
+            <option value="gemini">Gemini</option>
+            <option value="claude">Claude</option>
+            <option value="openai">GPT-4o</option>
           </select>
         </div>
+        )}
 
         <div className="flex items-end">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -318,6 +320,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         </div>
       </div>
 
+      {isAdmin && (
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="text-sm text-neutral-400">
@@ -338,6 +341,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
           {t('form.maxTokensHelp')}
         </p>
       </div>
+      )}
 
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? t('common.saving') : (submitLabel || t('common.create'))}
