@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
@@ -18,7 +18,7 @@ interface Props {
   onRegenerate?: (messageId: string) => void;
 }
 
-export function MessageBubble({ message, characterName, characterAvatar, userName, isFirstMessage, isAdmin, onDelete, onRegenerate }: Props) {
+export const MessageBubble = memo(function MessageBubble({ message, characterName, characterAvatar, userName, isFirstMessage, isAdmin, onDelete, onRegenerate }: Props) {
   const { t } = useTranslation();
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
@@ -164,4 +164,14 @@ export function MessageBubble({ message, characterName, characterAvatar, userNam
       </div>
     </div>
   );
-}
+}, (prev, next) =>
+  prev.message.id === next.message.id
+  && prev.message.content === next.message.content
+  && prev.message.isError === next.message.isError
+  && prev.message.model_used === next.message.model_used
+  && prev.isFirstMessage === next.isFirstMessage
+  && prev.isAdmin === next.isAdmin
+  && prev.characterName === next.characterName
+  && prev.characterAvatar === next.characterAvatar
+  && prev.userName === next.userName
+);

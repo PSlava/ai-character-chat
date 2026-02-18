@@ -29,6 +29,8 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
   const prevScrollHeightRef = useRef<number>(0);
   const isPrependingRef = useRef(false);
   const prevMsgCountRef = useRef(messages.length);
+  const isNearBottomRef = useRef(true);
+  const scrollRAFRef = useRef<number>(0);
 
   // Auto-scroll to bottom on new messages (but not when prepending old ones)
   useEffect(() => {
@@ -40,19 +42,36 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
         container.scrollTop = newScrollHeight - prevScrollHeightRef.current;
       }
       isPrependingRef.current = false;
-    } else {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    } else if (isNearBottomRef.current) {
+      if (isStreaming) {
+        // During streaming: instant scroll batched with rAF to avoid layout thrashing
+        cancelAnimationFrame(scrollRAFRef.current);
+        scrollRAFRef.current = requestAnimationFrame(() => {
+          const container = containerRef.current;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        });
+      } else {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
     }
     prevMsgCountRef.current = messages.length;
   }, [messages, isStreaming]);
+
+  // Cleanup rAF on unmount
+  useEffect(() => {
+    return () => cancelAnimationFrame(scrollRAFRef.current);
+  }, []);
 
   // Detect scroll to top for loading more + show/hide scroll-to-bottom button
   const handleScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // Show scroll-to-bottom when user is >300px from bottom
+    // Track if user is near bottom for auto-scroll decisions
     const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    isNearBottomRef.current = distanceFromBottom < 150;
     setShowScrollBtn(distanceFromBottom > 300);
 
     if (!hasMore || loadingMore) return;
