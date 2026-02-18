@@ -411,7 +411,7 @@ export function ChatPage() {
         onStop={stopStreaming}
         isStreaming={isStreaming}
         personaName={chatDetail?.chat.persona_name}
-        onGeneratePersonaReply={chatDetail?.chat.persona_name ? handleGeneratePersonaReply : undefined}
+        onGeneratePersonaReply={isAdmin && chatDetail?.chat.persona_name ? handleGeneratePersonaReply : undefined}
       />
 
       {showSettings && (

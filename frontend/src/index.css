@@ -10,7 +10,7 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-neutral-800;
+  @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
   @apply bg-neutral-600 rounded-full;
