@@ -26,20 +26,36 @@ function Fallback({ name, size = 'md' }: { name: string; size?: string }) {
   );
 }
 
+/** Derive thumbnail URL from full avatar URL (convention: _thumb before .webp) */
+function getThumbUrl(url: string): string {
+  if (url.includes('/api/uploads/') && url.endsWith('.webp')) {
+    return url.replace('.webp', '_thumb.webp');
+  }
+  return url;
+}
+
 export function Avatar({ src, name, size = 'md' }: Props) {
   const safeSrc = src && (/^https?:\/\//.test(src) || src.startsWith('/api/uploads/')) ? src : null;
   const [errored, setErrored] = useState(false);
+  const [thumbErrored, setThumbErrored] = useState(false);
 
   if (safeSrc && !errored) {
+    const displaySrc = thumbErrored ? safeSrc : getThumbUrl(safeSrc);
     return (
       <img
-        src={safeSrc}
+        src={displaySrc}
         alt={name}
         width={sizePx[size]}
         height={sizePx[size]}
         loading="lazy"
         decoding="async"
-        onError={() => setErrored(true)}
+        onError={() => {
+          if (!thumbErrored && displaySrc !== safeSrc) {
+            setThumbErrored(true);
+          } else {
+            setErrored(true);
+          }
+        }}
         className={`${sizeMap[size]} rounded-full object-cover`}
       />
     );

@@ -31,6 +31,7 @@ _MAGIC = {
 }
 
 MAX_DIMENSION = 512
+THUMB_DIMENSION = 160
 
 
 def _check_magic_bytes(data: bytes) -> str | None:
@@ -48,6 +49,24 @@ def _get_avatars_dir() -> Path:
     d = Path(settings.upload_dir) / "avatars"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def _save_with_thumb(img: Image.Image, avatars_dir: Path, filename: str) -> None:
+    """Save full-size (512) and thumbnail (160) versions of avatar."""
+    # Full size
+    full = img.copy()
+    full.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
+    buf = BytesIO()
+    full.save(buf, format="WEBP", quality=85)
+    (avatars_dir / filename).write_bytes(buf.getvalue())
+
+    # Thumbnail
+    thumb = img.copy()
+    thumb.thumbnail((THUMB_DIMENSION, THUMB_DIMENSION), Image.LANCZOS)
+    buf = BytesIO()
+    thumb.save(buf, format="WEBP", quality=80)
+    thumb_name = filename.replace(".webp", "_thumb.webp")
+    (avatars_dir / thumb_name).write_bytes(buf.getvalue())
 
 
 @router.post("/avatar")
@@ -86,16 +105,9 @@ async def upload_avatar(
     elif img.mode != "RGB":
         img = img.convert("RGB")
 
-    # Resize to max 512x512, preserving aspect ratio
-    img.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
-
-    # Save as WebP (strips all EXIF by default)
+    # Save full + thumb as WebP (strips all EXIF by default)
     filename = f"{uuid.uuid4().hex}.webp"
-    out_path = _get_avatars_dir() / filename
-
-    buf = BytesIO()
-    img.save(buf, format="WEBP", quality=85)
-    out_path.write_bytes(buf.getvalue())
+    _save_with_thumb(img, _get_avatars_dir(), filename)
 
     return {"url": f"/api/uploads/avatars/{filename}"}
 
@@ -171,7 +183,6 @@ async def generate_avatar(
         raise HTTPException(status_code=400, detail="Avatar generation not available")
 
     filename = f"{uuid.uuid4().hex}.webp"
-    filepath = _get_avatars_dir() / filename
 
     client_kwargs: dict = {"timeout": 120}
     if settings.proxy_url:
@@ -208,10 +219,10 @@ async def generate_avatar(
 
     try:
         img = Image.open(io.BytesIO(img_bytes))
-        img = img.resize((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
-        img.save(filepath, "WEBP", quality=85)
+        avatars_dir = _get_avatars_dir()
+        _save_with_thumb(img, avatars_dir, filename)
     except Exception:
         raise HTTPException(status_code=500, detail="Failed to process generated image")
 
-    logger.info("Avatar generated via %s: %s (%dKB)", provider, filename, filepath.stat().st_size // 1024)
+    logger.info("Avatar generated via %s: %s (%dKB)", provider, filename, (avatars_dir / filename).stat().st_size // 1024)
     return {"url": f"/api/uploads/avatars/{filename}"}

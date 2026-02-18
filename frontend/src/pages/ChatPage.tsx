@@ -16,6 +16,7 @@ import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AnonLimitModal } from '@/components/chat/AnonLimitModal';
 import { Avatar } from '@/components/ui/Avatar';
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { SEO } from '@/components/seo/SEO';
 import type { ChatDetail } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,6 +63,7 @@ export function ChatPage() {
     chatId || ''
   );
   const [showAnonLimit, setShowAnonLimit] = useState(false);
+  const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
   const isAnon = !isAuthenticated;
 
   useEffect(() => {
@@ -333,11 +335,17 @@ export function ChatPage() {
       {character?.name && <SEO title={`${t('chat.chatWith')} ${character.name}`} />}
       {/* Chat header */}
       <div className="border-b border-neutral-800 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
-        <Avatar
-          src={character?.avatar_url}
-          name={character?.name || '?'}
-          size="sm"
-        />
+        <button
+          type="button"
+          onClick={() => character?.avatar_url && setShowAvatarLightbox(true)}
+          className={character?.avatar_url ? 'cursor-pointer' : ''}
+        >
+          <Avatar
+            src={character?.avatar_url}
+            name={character?.name || '?'}
+            size="sm"
+          />
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <h2 className="font-semibold">{character?.name}</h2>
@@ -481,6 +489,13 @@ export function ChatPage() {
             </div>
           </div>
         </div>
+      )}
+      {showAvatarLightbox && character?.avatar_url && (
+        <ImageLightbox
+          src={character.avatar_url}
+          alt={character.name}
+          onClose={() => setShowAvatarLightbox(false)}
+        />
       )}
     </div>
   );

@@ -9,6 +9,7 @@ import { useChatStore } from '@/store/chatStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { useVotesStore } from '@/store/votesStore';
 import { Avatar } from '@/components/ui/Avatar';
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { SEO } from '@/components/seo/SEO';
@@ -39,6 +40,7 @@ export function CharacterPage() {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [forceNewChat, setForceNewChat] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
   const [similar, setSimilar] = useState<Character[]>([]);
   const [relations, setRelations] = useState<CharacterRelation[]>([]);
 
@@ -238,7 +240,13 @@ export function CharacterPage() {
       <div className="relative p-4 md:p-6 max-w-3xl mx-auto">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 md:mb-8">
         <div className="relative">
-          <Avatar src={character.avatar_url} name={character.name} size="lg" />
+          <button
+            type="button"
+            onClick={() => character.avatar_url && setShowAvatarLightbox(true)}
+            className={character.avatar_url ? 'cursor-pointer' : ''}
+          >
+            <Avatar src={character.avatar_url} name={character.name} size="lg" />
+          </button>
           {isCharacterOnline(character.id) && (
             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-neutral-800" />
           )}
@@ -528,6 +536,13 @@ export function CharacterPage() {
       )}
       {showReport && character && (
         <ReportModal characterId={character.id} onClose={() => setShowReport(false)} />
+      )}
+      {showAvatarLightbox && character?.avatar_url && (
+        <ImageLightbox
+          src={character.avatar_url}
+          alt={character.name}
+          onClose={() => setShowAvatarLightbox(false)}
+        />
       )}
       </div>
     </div>
