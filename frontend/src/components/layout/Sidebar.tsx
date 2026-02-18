@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { CreateGroupChatModal } from '@/components/chat/CreateGroupChatModal';
-import { Home, Heart, Settings, Users, Flag, BarChart3, X, UsersRound } from 'lucide-react';
+import { Home, Heart, Settings, Users, Flag, BarChart3, X, UsersRound, Sparkles } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -70,6 +70,15 @@ export function Sidebar({ isOpen, onClose }: Props) {
           >
             <Heart className="w-4 h-4" />
             {t('sidebar.favorites')}
+          </Link>
+        )}
+        {isAuthenticated && (
+          <Link
+            to="/profile"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+          >
+            <Sparkles className="w-4 h-4" />
+            {t('sidebar.myCharacters')}
           </Link>
         )}
         {isAuthenticated && (
