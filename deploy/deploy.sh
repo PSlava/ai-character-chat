@@ -40,10 +40,10 @@ echo "Restarting backend (force-recreate)..."
 $DC up -d --no-deps --force-recreate backend
 
 if ! wait_for_healthy 30; then
-    echo "First attempt failed. Doing full down+up..."
+    echo "First attempt failed. Doing full stop+rm+up (with deps)..."
     $DC stop backend
     $DC rm -f backend
-    $DC up -d --no-deps backend
+    $DC up -d backend
 
     if ! wait_for_healthy 30; then
         echo "ERROR: Backend still unhealthy after recovery. Deploy failed."
