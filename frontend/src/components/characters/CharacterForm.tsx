@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AvatarUpload } from '@/components/ui/AvatarUpload';
-import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels, getStructuredTags, checkSlug } from '@/api/characters';
+import { getOpenRouterModels, getGroqModels, getCerebrasModels, getTogetherModels, getStructuredTags } from '@/api/characters';
 import type { OpenRouterModel, StructuredTagsResponse } from '@/api/characters';
 import type { Character } from '@/types';
 
@@ -24,7 +24,6 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
   const lang = i18n.language;
   const [form, setForm] = useState({
     avatar_url: initial?.avatar_url || '',
-    slug: str(initial?.slug),
     name: str(initial?.name),
     tagline: str(initial?.tagline),
     personality: str(initial?.personality),
@@ -44,31 +43,11 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     response_length: initial?.response_length || 'long',
   });
   const [loading, setLoading] = useState(false);
-  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
-  const slugTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
   const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
   const [cerebrasModels, setCerebrasModels] = useState<OpenRouterModel[]>([]);
   const [togetherModels, setTogetherModels] = useState<OpenRouterModel[]>([]);
   const [tagRegistry, setTagRegistry] = useState<StructuredTagsResponse | null>(null);
-
-  const checkSlugAvailability = useCallback((slug: string) => {
-    clearTimeout(slugTimerRef.current);
-    const clean = slug.toLowerCase().replace(/[^a-z0-9-]/g, '');
-    if (clean.length < 3) {
-      setSlugStatus('idle');
-      return;
-    }
-    setSlugStatus('checking');
-    slugTimerRef.current = setTimeout(async () => {
-      try {
-        const result = await checkSlug(clean);
-        setSlugStatus(result.available ? 'available' : 'taken');
-      } catch {
-        setSlugStatus('error');
-      }
-    }, 500);
-  }, []);
 
   useEffect(() => {
     getOpenRouterModels().then(setOrModels).catch(() => {});
@@ -99,7 +78,6 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     try {
       await onSubmit({
         avatar_url: form.avatar_url || undefined,
-        slug: form.slug || undefined,
         name: form.name,
         tagline: form.tagline || undefined,
         personality: form.personality,
@@ -144,26 +122,6 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         maxLength={100}
         required
       />
-
-      <div>
-        <Input
-          label={t('form.slug')}
-          value={form.slug}
-          onChange={(e) => {
-            const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-            update('slug', v);
-            checkSlugAvailability(v);
-          }}
-          placeholder={t('form.slugPlaceholder')}
-          maxLength={50}
-        />
-        <div className="mt-1 text-xs">
-          {slugStatus === 'checking' && <span className="text-neutral-500">{t('form.slugChecking')}</span>}
-          {slugStatus === 'available' && <span className="text-green-400">{t('form.slugAvailable')}</span>}
-          {slugStatus === 'taken' && <span className="text-red-400">{t('form.slugTaken')}</span>}
-        </div>
-        <p className="text-xs text-neutral-500 mt-0.5">{t('form.slugHint')}</p>
-      </div>
 
       <Input
         label={t('form.tagline')}

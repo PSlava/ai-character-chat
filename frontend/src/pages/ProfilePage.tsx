@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { getMyCharacters } from '@/api/characters';
 import { getProfile, updateProfile, deleteAccount } from '@/api/users';
 import type { UserProfile } from '@/api/users';
-import { getPersonas, createPersona, updatePersona, deletePersona, getPersonaLimit } from '@/api/personas';
+import { getPersonas, createPersona, updatePersona, deletePersona, getPersonaLimit, checkPersonaSlug } from '@/api/personas';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
 import { Input, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -38,6 +38,9 @@ export function ProfilePage() {
   const [showPersonaForm, setShowPersonaForm] = useState(false);
   const [editingPersona, setEditingPersona] = useState<Persona | null>(null);
   const [personaName, setPersonaName] = useState('');
+  const [personaSlug, setPersonaSlug] = useState('');
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
+  const slugTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [personaDesc, setPersonaDesc] = useState('');
   const [personaDefault, setPersonaDefault] = useState(false);
   const [personaSaving, setPersonaSaving] = useState(false);
@@ -70,10 +73,30 @@ export function ProfilePage() {
     }
   };
 
+  const checkSlugAvailability = useCallback((slug: string) => {
+    clearTimeout(slugTimerRef.current);
+    const clean = slug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (clean.length < 3) {
+      setSlugStatus('idle');
+      return;
+    }
+    setSlugStatus('checking');
+    slugTimerRef.current = setTimeout(async () => {
+      try {
+        const result = await checkPersonaSlug(clean);
+        setSlugStatus(result.available ? 'available' : 'taken');
+      } catch {
+        setSlugStatus('error');
+      }
+    }, 500);
+  }, []);
+
   const resetPersonaForm = () => {
     setShowPersonaForm(false);
     setEditingPersona(null);
     setPersonaName('');
+    setPersonaSlug('');
+    setSlugStatus('idle');
     setPersonaDesc('');
     setPersonaDefault(false);
   };
@@ -85,6 +108,7 @@ export function ProfilePage() {
       if (editingPersona) {
         const updated = await updatePersona(editingPersona.id, {
           name: personaName.trim(),
+          slug: personaSlug.trim() || '',
           description: personaDesc.trim() || undefined,
           is_default: personaDefault,
         });
@@ -96,6 +120,7 @@ export function ProfilePage() {
       } else {
         const created = await createPersona({
           name: personaName.trim(),
+          slug: personaSlug.trim() || undefined,
           description: personaDesc.trim() || undefined,
           is_default: personaDefault,
         });
@@ -123,6 +148,8 @@ export function ProfilePage() {
   const startEditPersona = (p: Persona) => {
     setEditingPersona(p);
     setPersonaName(p.name);
+    setPersonaSlug(p.slug || '');
+    setSlugStatus('idle');
     setPersonaDesc(p.description || '');
     setPersonaDefault(p.is_default);
     setShowPersonaForm(true);
@@ -266,6 +293,25 @@ export function ProfilePage() {
                 placeholder={t('persona.namePlaceholder')}
                 maxLength={50}
               />
+              <div>
+                <Input
+                  label={t('persona.slug')}
+                  value={personaSlug}
+                  onChange={(e) => {
+                    const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                    setPersonaSlug(v);
+                    checkSlugAvailability(v);
+                  }}
+                  placeholder={t('persona.slugPlaceholder')}
+                  maxLength={50}
+                />
+                <div className="mt-1 text-xs">
+                  {slugStatus === 'checking' && <span className="text-neutral-500">{t('persona.slugChecking')}</span>}
+                  {slugStatus === 'available' && <span className="text-green-400">{t('persona.slugAvailable')}</span>}
+                  {slugStatus === 'taken' && <span className="text-red-400">{t('persona.slugTaken')}</span>}
+                </div>
+                <p className="text-xs text-neutral-500 mt-0.5">{t('persona.slugHint')}</p>
+              </div>
               <Textarea
                 label={t('persona.description')}
                 value={personaDesc}

@@ -55,6 +55,7 @@ export interface Chat {
 
 export interface Persona {
   id: string;
+  slug: string | null;
   name: string;
   description: string | null;
   is_default: boolean;

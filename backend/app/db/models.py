@@ -108,9 +108,13 @@ class Character(Base):
 
 class Persona(Base):
     __tablename__ = "personas"
+    __table_args__ = (
+        UniqueConstraint("user_id", "slug", name="uq_personas_user_slug"),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    slug: Mapped[str | None] = mapped_column(String, nullable=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)

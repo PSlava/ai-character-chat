@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +15,7 @@ router = APIRouter(prefix="/api/personas", tags=["personas"])
 def _serialize(p: Persona) -> dict:
     return {
         "id": p.id,
+        "slug": getattr(p, "slug", None),
         "name": p.name,
         "description": p.description,
         "is_default": p.is_default,
@@ -48,6 +49,31 @@ async def persona_limit(
     return {"used": count.scalar() or 0, "limit": max_personas}
 
 
+async def _check_slug_available(db: AsyncSession, user_id: str, slug: str, exclude_id: str | None = None) -> bool:
+    query = select(func.count()).select_from(Persona).where(
+        Persona.user_id == user_id, Persona.slug == slug,
+    )
+    if exclude_id:
+        query = query.where(Persona.id != exclude_id)
+    result = await db.execute(query)
+    return result.scalar_one() == 0
+
+
+@router.get("/check-slug")
+async def check_slug(
+    slug: str = Query(min_length=1, max_length=50),
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.characters.slugify import validate_slug
+    try:
+        normalized = validate_slug(slug)
+    except ValueError as e:
+        return {"available": False, "slug": slug, "error": str(e)}
+    available = await _check_slug_available(db, user["id"], normalized)
+    return {"available": available, "slug": normalized}
+
+
 @router.post("", status_code=201)
 async def create_persona(
     body: PersonaCreate,
@@ -71,8 +97,17 @@ async def create_persona(
             .values(is_default=False)
         )
 
+    # Validate and check slug uniqueness
+    validated_slug = None
+    if body.slug:
+        from app.characters.slugify import validate_slug
+        validated_slug = validate_slug(body.slug)
+        if not await _check_slug_available(db, user["id"], validated_slug):
+            raise HTTPException(status_code=409, detail="This slug is already taken")
+
     persona = Persona(
         user_id=user["id"],
+        slug=validated_slug,
         name=strip_html_tags(body.name),
         description=strip_html_tags(body.description) if body.description else None,
         is_default=body.is_default,
@@ -97,6 +132,16 @@ async def update_persona(
     if not persona:
         raise HTTPException(status_code=404, detail="Persona not found")
 
+    if body.slug is not None:
+        if body.slug == "":
+            persona.slug = None  # clear slug
+        else:
+            from app.characters.slugify import validate_slug
+            validated_slug = validate_slug(body.slug)
+            if validated_slug != persona.slug:
+                if not await _check_slug_available(db, user["id"], validated_slug, exclude_id=persona_id):
+                    raise HTTPException(status_code=409, detail="This slug is already taken")
+                persona.slug = validated_slug
     if body.name is not None:
         persona.name = strip_html_tags(body.name)
     if body.description is not None:

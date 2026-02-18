@@ -6,12 +6,17 @@ export async function getPersonas() {
   return data;
 }
 
-export async function createPersona(body: { name: string; description?: string; is_default?: boolean }) {
+export async function checkPersonaSlug(slug: string): Promise<{ available: boolean; slug: string; error?: string }> {
+  const { data } = await api.get('/personas/check-slug', { params: { slug } });
+  return data;
+}
+
+export async function createPersona(body: { name: string; slug?: string; description?: string; is_default?: boolean }) {
   const { data } = await api.post<Persona>('/personas', body);
   return data;
 }
 
-export async function updatePersona(id: string, body: { name?: string; description?: string; is_default?: boolean }) {
+export async function updatePersona(id: string, body: { name?: string; slug?: string; description?: string; is_default?: boolean }) {
   const { data } = await api.put<Persona>(`/personas/${id}`, body);
   return data;
 }
