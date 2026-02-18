@@ -42,8 +42,14 @@ def refresh_geoip_db() -> None:
         url = _GEOIP_URL.format(month=month)
         logger.info("Downloading GeoIP DB: %s", url)
 
+        import socket
+        old_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(30)
         tmp_path = _GEOIP_DB_PATH + ".tmp.gz"
-        urllib.request.urlretrieve(url, tmp_path)
+        try:
+            urllib.request.urlretrieve(url, tmp_path)
+        finally:
+            socket.setdefaulttimeout(old_timeout)
         with gzip.open(tmp_path, "rb") as f:
             data = f.read()
         with open(_GEOIP_DB_PATH, "wb") as f:
