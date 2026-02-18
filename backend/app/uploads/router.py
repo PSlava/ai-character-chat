@@ -100,6 +100,19 @@ async def upload_avatar(
     return {"url": f"/api/uploads/avatars/{filename}"}
 
 
+def _extract_api_error(e: Exception, provider: str) -> str:
+    """Extract human-readable error message from API exception."""
+    if isinstance(e, httpx.HTTPStatusError) and e.response is not None:
+        try:
+            msg = e.response.json().get("error", {}).get("message", "")
+            if msg:
+                return f"{provider}: {msg}"
+        except Exception:
+            pass
+        return f"{provider}: HTTP {e.response.status_code}"
+    return f"{provider}: {str(e)[:200]}"
+
+
 async def _generate_via_together(client: httpx.AsyncClient, prompt: str) -> bytes:
     """Generate image via Together AI (FLUX.1 schnell). Returns raw image bytes."""
     response = await client.post(
@@ -164,41 +177,34 @@ async def generate_avatar(
     if settings.proxy_url:
         client_kwargs["proxy"] = settings.proxy_url
 
-    last_error = ""
+    errors: list[str] = []
+    img_bytes = None
+    provider = ""
+
     async with httpx.AsyncClient(**client_kwargs) as client:
         # Try Together AI first (FLUX.1 schnell — fast, cheap, no censorship)
-        if settings.together_api_key:
+        if settings.together_api_key and img_bytes is None:
             try:
                 img_bytes = await _generate_via_together(client, prompt)
                 provider = "together/FLUX.1-schnell"
             except Exception as e:
-                last_error = str(e)[:300]
-                logger.warning("Together AI image generation failed, trying DALL-E: %s", last_error)
-                img_bytes = None
-            else:
-                img_bytes = img_bytes  # success
-        else:
-            img_bytes = None
+                err = _extract_api_error(e, "Together")
+                errors.append(err)
+                logger.warning("Together AI image gen failed: %s", err)
 
         # Fallback to DALL-E 3
-        if img_bytes is None and settings.openai_api_key:
+        if settings.openai_api_key and img_bytes is None:
             try:
                 img_bytes = await _generate_via_dalle(client, prompt)
                 provider = "openai/dall-e-3"
-            except httpx.HTTPStatusError as e:
-                body = e.response.text[:500] if e.response else ""
-                logger.error("DALL-E API error %s: %s", e.response.status_code, body)
-                try:
-                    error_msg = e.response.json().get("error", {}).get("message", "")
-                except Exception:
-                    error_msg = ""
-                raise HTTPException(status_code=502, detail=error_msg or "Avatar generation failed")
             except Exception as e:
-                logger.exception("DALL-E generation failed: %s", str(e)[:200])
-                raise HTTPException(status_code=500, detail="Avatar generation failed")
+                err = _extract_api_error(e, "DALL-E")
+                errors.append(err)
+                logger.warning("DALL-E image gen failed: %s", err)
 
     if img_bytes is None:
-        raise HTTPException(status_code=502, detail=last_error or "Avatar generation failed")
+        detail = "; ".join(errors) if errors else "No image generation provider available"
+        raise HTTPException(status_code=502, detail=detail)
 
     try:
         img = Image.open(io.BytesIO(img_bytes))
