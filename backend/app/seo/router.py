@@ -702,7 +702,7 @@ async def prerender_home(
     return HTMLResponse(html)
 
 
-@router.get("/sitemap.xml")
+@router.api_route("/sitemap.xml", methods=["GET", "HEAD"])
 async def sitemap(db: AsyncSession = Depends(get_db)):
     from sqlalchemy import func
     # Quality gate: only include characters with substantial content (scenario+personality >= 100 chars)
@@ -771,7 +771,7 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
     return Response(content=xml, media_type="application/xml")
 
 
-@router.get("/feed.xml")
+@router.api_route("/feed.xml", methods=["GET", "HEAD"])
 async def rss_feed(db: AsyncSession = Depends(get_db)):
     """RSS 2.0 feed of latest public characters."""
     result = await db.execute(
@@ -824,7 +824,7 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
     return Response(content=xml, media_type="application/rss+xml; charset=utf-8")
 
 
-@router.get("/robots.txt")
+@router.api_route("/robots.txt", methods=["GET", "HEAD"])
 async def robots():
     content = f"""User-agent: *
 Allow: /
