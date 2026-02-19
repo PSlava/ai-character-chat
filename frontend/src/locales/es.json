@@ -547,6 +547,8 @@
 
   "admin.notifyRegistration": "Email de registro",
   "admin.notifyRegistrationHint": "Enviar email al admin cuando un nuevo usuario se registre",
+  "admin.notifyErrors": "Alertas de errores",
+  "admin.notifyErrorsHint": "Enviar email a admins en errores del backend",
   "admin.paidMode": "Modo pago",
   "admin.paidModeHint": "Proveedores LLM de pago (Groq+Together), sin límites",
   "admin.dailyMessageLimit": "Límite diario",

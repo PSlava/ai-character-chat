@@ -547,6 +547,8 @@
 
   "admin.notifyRegistration": "E-mail ao cadastrar",
   "admin.notifyRegistrationHint": "Enviar e-mail para o admin quando um novo usuário se cadastrar",
+  "admin.notifyErrors": "Alertas de erros",
+  "admin.notifyErrorsHint": "Enviar e-mail para admins em erros do backend",
   "admin.paidMode": "Modo pago",
   "admin.paidModeHint": "Provedores LLM pagos (Groq+Together), sem limites de taxa",
   "admin.dailyMessageLimit": "Limite diário",

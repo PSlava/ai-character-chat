@@ -6,7 +6,7 @@ import { getAdminUsers, banUser, unbanUser, deleteUser, getAdminSettings, update
 import type { AdminUser } from '@/api/admin';
 import { Avatar } from '@/components/ui/Avatar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle, UserPlus } from 'lucide-react';
+import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle, UserPlus, AlertTriangle } from 'lucide-react';
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
@@ -18,6 +18,7 @@ export function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [notifyRegistration, setNotifyRegistration] = useState(true);
+  const [notifyErrors, setNotifyErrors] = useState(true);
   const [paidMode, setPaidMode] = useState(false);
   const [dailyLimit, setDailyLimit] = useState('1000');
   const [editingLimit, setEditingLimit] = useState(false);
@@ -34,6 +35,7 @@ export function AdminUsersPage() {
     getAdminSettings()
       .then((s) => {
         setNotifyRegistration(s.notify_registration === 'true');
+        setNotifyErrors(s.notify_errors === 'true');
         setPaidMode(s.paid_mode === 'true');
         setDailyLimit(s.daily_message_limit || '1000');
         setMaxPersonas(s.max_personas || '5');
@@ -49,6 +51,16 @@ export function AdminUsersPage() {
       await updateAdminSetting('notify_registration', newVal ? 'true' : 'false');
     } catch {
       setNotifyRegistration(!newVal);
+    }
+  };
+
+  const toggleNotifyErrors = async () => {
+    const newVal = !notifyErrors;
+    setNotifyErrors(newVal);
+    try {
+      await updateAdminSetting('notify_errors', newVal ? 'true' : 'false');
+    } catch {
+      setNotifyErrors(!newVal);
     }
   };
 
@@ -289,6 +301,18 @@ export function AdminUsersPage() {
           >
             {notifyRegistration ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
             <span className="hidden sm:inline">{t('admin.notifyRegistration')}</span>
+          </button>
+          <button
+            onClick={toggleNotifyErrors}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              notifyErrors
+                ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
+                : 'bg-neutral-800 text-neutral-500 hover:bg-neutral-700'
+            }`}
+            title={t('admin.notifyErrorsHint')}
+          >
+            <AlertTriangle className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('admin.notifyErrors')}</span>
           </button>
         </div>
       </div>

@@ -40,6 +40,12 @@ async def lifespan(app: FastAPI):
         proxy_url=settings.proxy_url,
     )
 
+    # Install error notification handler (emails admins on ERROR/CRITICAL)
+    import logging
+    from app.utils.error_notifier import handler as error_handler
+    logging.getLogger().addHandler(error_handler)
+    error_handler.start(asyncio.get_running_loop())
+
     # Start autonomous scheduler (daily character gen, counter growth, cleanup)
     import asyncio
     from app.autonomous.scheduler import run_scheduler
@@ -47,6 +53,8 @@ async def lifespan(app: FastAPI):
 
     yield
 
+    error_handler.stop()
+    await error_handler._do_flush()
     scheduler_task.cancel()
 
 

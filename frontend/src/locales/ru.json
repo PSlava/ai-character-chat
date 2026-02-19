@@ -547,6 +547,8 @@
 
   "admin.notifyRegistration": "Email о регистрации",
   "admin.notifyRegistrationHint": "Отправлять email админу при регистрации нового пользователя",
+  "admin.notifyErrors": "Ошибки",
+  "admin.notifyErrorsHint": "Отправлять email админам при ошибках бэкенда",
   "admin.paidMode": "Платный режим",
   "admin.paidModeHint": "Платные LLM (Groq+Together), без rate limits",
   "admin.dailyMessageLimit": "Лимит/день",

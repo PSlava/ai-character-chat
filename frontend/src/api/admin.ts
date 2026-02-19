@@ -71,6 +71,7 @@ export async function deleteUser(userId: string): Promise<void> {
 // Admin settings
 export interface AdminSettings {
   notify_registration: string;
+  notify_errors: string;
   paid_mode: string;
   daily_message_limit: string;
   max_personas: string;
