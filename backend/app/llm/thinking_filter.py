@@ -40,8 +40,9 @@ def has_mixed_languages(text: str, target_lang: str = "ru") -> bool:
 
 
 def strip_thinking(text: str) -> str:
-    """Remove <think>...</think> blocks from text."""
-    return _THINK_RE.sub("", text).strip()
+    """Remove <think>...</think> blocks and foreign chars from text."""
+    cleaned = _THINK_RE.sub("", text).strip()
+    return _FOREIGN_CHARS_RE.sub("", cleaned)
 
 
 class ThinkingFilter:
@@ -97,4 +98,8 @@ class ThinkingFilter:
                     self._inside_think = True
                     self._buffer = self._buffer[start + len("<think>"):]
 
-        return "".join(result)
+        text = "".join(result)
+        # Strip CJK/foreign chars that slip into ru/en/es text
+        if text and _FOREIGN_CHARS_RE.search(text):
+            text = _FOREIGN_CHARS_RE.sub("", text)
+        return text
