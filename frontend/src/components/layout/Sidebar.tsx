@@ -74,7 +74,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
         )}
         {isAuthenticated && (
           <Link
-            to="/profile"
+            to="/profile?tab=characters"
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
           >
             <Sparkles className="w-4 h-4" />

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { getMyCharacters } from '@/api/characters';
 import { getProfile, updateProfile, deleteAccount } from '@/api/users';
 import type { UserProfile } from '@/api/users';
@@ -24,7 +24,12 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const logout = useAuthStore((s) => s.logout);
-  const [activeTab, setActiveTab] = useState<ProfileTab>('profile');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab') as ProfileTab | null;
+  const validTabs: ProfileTab[] = ['profile', 'characters', 'personas', 'account'];
+  const [activeTab, setActiveTab] = useState<ProfileTab>(
+    tabParam && validTabs.includes(tabParam) ? tabParam : 'profile'
+  );
   const [myCharacters, setMyCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
