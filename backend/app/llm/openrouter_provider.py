@@ -174,4 +174,11 @@ class OpenRouterProvider(BaseLLMProvider):
             return [preferred]
         models = get_fallback_models(limit=5, nsfw=nsfw)
         available = model_cooldown.filter_available("openrouter", models)
-        return available or models  # if all on cooldown, try all anyway
+        result = available or models  # if all on cooldown, try all anyway
+        # If NSFW, also add non-NSFW models as last resort (better censored than nothing)
+        if nsfw:
+            all_models = get_fallback_models(limit=5, nsfw=False)
+            for m in all_models:
+                if m not in result:
+                    result.append(m)
+        return result
