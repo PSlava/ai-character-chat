@@ -28,9 +28,10 @@ _DEFAULTS = {
             "- Передавай возбуждение через ТЕЛО: выгнутая спина, впившиеся в простыню пальцы, сбитое дыхание, расширенные зрачки, дрожь в коленях — а НЕ через слова «она возбудилась» или «ему стало хорошо».\n"
             "- Описывай процесс ДЕТАЛЬНО: каждое движение, каждое прикосновение, каждую реакцию тела. Не перескакивай. Растягивай сцену.\n"
             "- Чередуй темп: медленные сенсорные описания → резкие движения → пауза с внутренней мыслью → нарастание.\n"
-            "- Используй ВСЕ органы чувств: осязание (фактура кожи, температура, давление), обоняние (запах волос, тела), слух (стоны, шёпот, дыхание), вкус, зрение (выражение лица, движения тела).\n"
+            "- В каждом ответе выбирай 1-2 чувства для акцента (осязание, обоняние, слух, вкус, зрение). ЧЕРЕДУЙ их между ответами — не описывай одни и те же ощущения повторно.\n"
             "- Нецензурная лексика допустима в прямой речи и мыслях, если соответствует персонажу и моменту.\n"
-            "- НЕ обрывай сцену на полуслове. Доводи до логического завершения."
+            "- НЕ обрывай сцену на полуслове. Доводи до логического завершения.\n"
+            "- ЗАПРЕЩЕНО повторять описания ощущений, которые уже были в предыдущих ответах. Если ты уже описал «дрожь», «учащённое дыхание», «тепло кожи» — найди НОВЫЕ детали и ощущения."
         ),
         "structured_tags_header": "## Особенности персонажа",
         "extra_instructions": "## Дополнительные инструкции",
@@ -127,9 +128,10 @@ _DEFAULTS = {
             "- Convey arousal through the BODY: arched back, fingers digging into sheets, ragged breath, dilated pupils, trembling knees — NOT through words like 'she was aroused' or 'it felt good'.\n"
             "- Describe the process in DETAIL: every movement, every touch, every bodily reaction. Don't skip moments. Draw out the scene.\n"
             "- Alternate pace: slow sensory descriptions → sudden movements → pause with inner thought → escalation.\n"
-            "- Use ALL senses: touch (skin texture, temperature, pressure), smell (hair, body), hearing (moans, whispers, breathing), taste, sight (facial expressions, body movements).\n"
+            "- Each response, pick 1-2 senses to highlight (touch, smell, hearing, taste, sight). ROTATE them between responses — don't describe the same sensations repeatedly.\n"
             "- Profanity is acceptable in dialogue and thoughts if it fits the character and moment.\n"
-            "- Do NOT cut a scene short. Carry it to its natural conclusion."
+            "- Do NOT cut a scene short. Carry it to its natural conclusion.\n"
+            "- NEVER repeat sensation descriptions from previous responses. If you already described 'trembling', 'quickened breath', 'warmth of skin' — find NEW details and sensations."
         ),
         "structured_tags_header": "## Character Traits",
         "extra_instructions": "## Additional Instructions",
@@ -225,9 +227,10 @@ _DEFAULTS = {
             "- Transmite la excitación a través del CUERPO: espalda arqueada, dedos clavados en la sábana, respiración entrecortada, pupilas dilatadas, temblor en las rodillas — NO con frases como «ella se excitó» o «se sintió bien».\n"
             "- Describe el proceso con DETALLE: cada movimiento, cada caricia, cada reacción del cuerpo. No saltes momentos. Extiende la escena.\n"
             "- Alterna el ritmo: descripciones sensoriales lentas → movimientos bruscos → pausa con pensamiento interior → crescendo.\n"
-            "- Usa TODOS los sentidos: tacto (textura de piel, temperatura, presión), olfato (cabello, cuerpo), oído (gemidos, susurros, respiración), gusto, vista (expresiones faciales, movimientos).\n"
+            "- En cada respuesta, elige 1-2 sentidos para destacar (tacto, olfato, oído, gusto, vista). ROTA entre respuestas — no describas las mismas sensaciones repetidamente.\n"
             "- El lenguaje vulgar es aceptable en diálogo y pensamientos si encaja con el personaje y el momento.\n"
-            "- NO cortes una escena a medias. Llévala a su conclusión natural."
+            "- NO cortes una escena a medias. Llévala a su conclusión natural.\n"
+            "- NUNCA repitas descripciones de sensaciones de respuestas anteriores. Si ya describiste «temblor», «respiración acelerada», «calor de piel» — encuentra NUEVOS detalles y sensaciones."
         ),
         "structured_tags_header": "## Rasgos del personaje",
         "extra_instructions": "## Instrucciones adicionales",
@@ -321,9 +324,10 @@ _DEFAULTS = {
             "- Transmets l'excitation par le CORPS : dos cambré, doigts agrippant les draps, souffle haletant, pupilles dilatées, genoux tremblants — PAS avec des phrases comme « elle était excitée ».\n"
             "- Décris le processus en DÉTAIL : chaque mouvement, chaque caresse, chaque réaction du corps. Ne saute pas de moments. Étire la scène.\n"
             "- Alterne le rythme : descriptions sensorielles lentes → mouvements brusques → pause avec pensée intérieure → crescendo.\n"
-            "- Utilise TOUS les sens : toucher (texture de peau, température, pression), odorat (cheveux, corps), ouïe (gémissements, murmures, respiration), goût, vue (expressions faciales, mouvements).\n"
+            "- À chaque réponse, choisis 1-2 sens à mettre en avant (toucher, odorat, ouïe, goût, vue). ALTERNE-les entre les réponses — ne décris pas les mêmes sensations à répétition.\n"
             "- La vulgarité est acceptable dans le dialogue et les pensées si elle correspond au personnage et au moment.\n"
-            "- NE coupe PAS une scène en plein milieu. Mène-la à sa conclusion naturelle."
+            "- NE coupe PAS une scène en plein milieu. Mène-la à sa conclusion naturelle.\n"
+            "- INTERDIT de répéter des descriptions de sensations déjà présentes dans les réponses précédentes. Si tu as déjà décrit « tremblement », « souffle haletant », « chaleur de la peau » — trouve de NOUVEAUX détails et sensations."
         ),
         "structured_tags_header": "## Traits du personnage",
         "extra_instructions": "## Instructions supplémentaires",
@@ -417,9 +421,10 @@ _DEFAULTS = {
             "- Vermittle Erregung durch den KÖRPER: durchgebogener Rücken, ins Laken krallende Finger, keuchender Atem, geweitete Pupillen, zitternde Knie — NICHT durch Worte wie 'sie war erregt' oder 'es fühlte sich gut an'.\n"
             "- Beschreibe den Prozess DETAILLIERT: jede Bewegung, jede Berührung, jede Körperreaktion. Überspringe nichts. Dehne die Szene.\n"
             "- Wechsle das Tempo: langsame sensorische Beschreibungen → plötzliche Bewegungen → Pause mit innerem Gedanken → Steigerung.\n"
-            "- Nutze ALLE Sinne: Tastsinn (Hautstruktur, Temperatur, Druck), Geruch (Haare, Körper), Gehör (Stöhnen, Flüstern, Atmen), Geschmack, Sicht (Gesichtsausdruck, Körperbewegungen).\n"
+            "- Wähle in jeder Antwort 1-2 Sinne zum Hervorheben (Tastsinn, Geruch, Gehör, Geschmack, Sicht). WECHSLE sie zwischen Antworten ab — beschreibe nicht dieselben Empfindungen wiederholt.\n"
             "- Vulgarität ist im Dialog und in Gedanken akzeptabel, wenn sie zur Figur und zum Moment passt.\n"
-            "- Brich eine Szene NICHT mittendrin ab. Führe sie zu ihrem natürlichen Abschluss."
+            "- Brich eine Szene NICHT mittendrin ab. Führe sie zu ihrem natürlichen Abschluss.\n"
+            "- VERBOTEN: Empfindungsbeschreibungen aus vorherigen Antworten wiederholen. Wenn du bereits 'Zittern', 'beschleunigten Atem', 'Hautwärme' beschrieben hast — finde NEUE Details und Empfindungen."
         ),
         "structured_tags_header": "## Charaktereigenschaften",
         "extra_instructions": "## Zusätzliche Anweisungen",
@@ -512,9 +517,10 @@ _DEFAULTS = {
             "- Transmita excitação pelo CORPO: costas arqueadas, dedos agarrando o lençol, respiração ofegante, pupilas dilatadas, joelhos tremendo — NÃO com frases como 'ela ficou excitada' ou 'foi bom'.\n"
             "- Descreva o processo em DETALHE: cada movimento, cada toque, cada reação do corpo. Não pule momentos. Estenda a cena.\n"
             "- Alterne o ritmo: descrições sensoriais lentas → movimentos bruscos → pausa com pensamento interior → crescendo.\n"
-            "- Use TODOS os sentidos: tato (textura de pele, temperatura, pressão), olfato (cabelo, corpo), audição (gemidos, sussurros, respiração), paladar, visão (expressões faciais, movimentos).\n"
+            "- Em cada resposta, escolha 1-2 sentidos para destacar (tato, olfato, audição, paladar, visão). ALTERNE-os entre respostas — não descreva as mesmas sensações repetidamente.\n"
             "- Palavrões são aceitáveis no diálogo e pensamentos se combinam com o personagem e o momento.\n"
-            "- NÃO corte uma cena pela metade. Leve até sua conclusão natural."
+            "- NÃO corte uma cena pela metade. Leve até sua conclusão natural.\n"
+            "- PROIBIDO repetir descrições de sensações de respostas anteriores. Se já descreveu 'tremor', 'respiração acelerada', 'calor da pele' — encontre NOVOS detalhes e sensações."
         ),
         "structured_tags_header": "## Traços do Personagem",
         "extra_instructions": "## Instruções Adicionais",
@@ -608,9 +614,10 @@ _DEFAULTS = {
             "- Trasmetti l'eccitazione attraverso il CORPO: schiena inarcata, dita che afferrano le lenzuola, respiro affannoso, pupille dilatate, ginocchia tremanti — NON con frasi come 'era eccitata' o 'si sentiva bene'.\n"
             "- Descrivi il processo in DETTAGLIO: ogni movimento, ogni tocco, ogni reazione del corpo. Non saltare momenti. Distendi la scena.\n"
             "- Alterna il ritmo: descrizioni sensoriali lente → movimenti bruschi → pausa con pensiero interiore → crescendo.\n"
-            "- Usa TUTTI i sensi: tatto (texture della pelle, temperatura, pressione), olfatto (capelli, corpo), udito (gemiti, sussurri, respiro), gusto, vista (espressioni facciali, movimenti).\n"
+            "- In ogni risposta, scegli 1-2 sensi da evidenziare (tatto, olfatto, udito, gusto, vista). ALTERNALI tra le risposte — non descrivere le stesse sensazioni ripetutamente.\n"
             "- La volgarità è accettabile nel dialogo e nei pensieri se si adatta al personaggio e al momento.\n"
-            "- NON interrompere una scena a metà. Portala alla sua conclusione naturale."
+            "- NON interrompere una scena a metà. Portala alla sua conclusione naturale.\n"
+            "- VIETATO ripetere descrizioni di sensazioni dalle risposte precedenti. Se hai già descritto 'tremore', 'respiro accelerato', 'calore della pelle' — trova NUOVI dettagli e sensazioni."
         ),
         "structured_tags_header": "## Tratti del Personaggio",
         "extra_instructions": "## Istruzioni Aggiuntive",
