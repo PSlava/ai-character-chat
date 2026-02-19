@@ -491,10 +491,7 @@ async def send_message(
 
     if is_auto:
         paid_mode = await _is_paid_mode(db)
-        if paid_mode:
-            auto_order = ["groq", "openrouter"]
-        else:
-            auto_order = ["openrouter"]
+        auto_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip()]
 
         async def event_stream():
             errors: list[str] = []
