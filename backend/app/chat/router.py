@@ -416,8 +416,12 @@ async def send_message(
     model_name = chat.model_used or settings.default_model
     content_rating = character.content_rating.value if character.content_rating else "sfw"
 
-    # Save user message
-    user_msg = await service.save_message(db, chat_id, "user", body.content)
+    # Dedup: skip saving if last message is the same user text (e.g. page reload after error)
+    last_msgs, _ = await service.get_chat_messages(db, chat_id, limit=1)
+    if last_msgs and last_msgs[0].role.value == "user" and last_msgs[0].content == body.content:
+        user_msg = last_msgs[0]
+    else:
+        user_msg = await service.save_message(db, chat_id, "user", body.content)
 
     # Get user display name and language for system prompt
     if user:
