@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 # Static quality scores for known models (higher = better for roleplay)
 QUALITY_SCORES: dict[str, int] = {
-    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": 9,
-    "meta-llama/Llama-3.3-70B-Instruct-Turbo": 8,
+    "meta-llama/Llama-3.3-70B-Instruct-Turbo": 9,
+    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8": 8,
     "Qwen/Qwen3-32B": 7,
     "meta-llama/Llama-4-Scout-17B-16E-Instruct": 7,
     "deepseek-ai/DeepSeek-R1": 6,
@@ -40,8 +40,8 @@ CACHE_TTL = 3600  # 1 hour
 
 # Fallback if API unavailable
 FALLBACK_MODELS = [
-    {"id": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8", "name": "Llama 4 Maverick", "quality": 9, "nsfw": True, "note": ""},
-    {"id": "meta-llama/Llama-3.3-70B-Instruct-Turbo", "name": "Llama 3.3 70B Turbo", "quality": 8, "nsfw": True, "note": ""},
+    {"id": "meta-llama/Llama-3.3-70B-Instruct-Turbo", "name": "Llama 3.3 70B Turbo", "quality": 9, "nsfw": True, "note": ""},
+    {"id": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8", "name": "Llama 4 Maverick", "quality": 8, "nsfw": True, "note": ""},
     {"id": "Qwen/Qwen3-32B", "name": "Qwen 3 32B", "quality": 7, "nsfw": True, "note": ""},
     {"id": "meta-llama/Llama-4-Scout-17B-16E-Instruct", "name": "Llama 4 Scout", "quality": 7, "nsfw": True, "note": ""},
     {"id": "deepseek-ai/DeepSeek-V3", "name": "DeepSeek V3", "quality": 6, "nsfw": True, "note": ""},
