@@ -356,7 +356,12 @@ export function ChatPage() {
             )}
           </div>
           {chatDetail?.chat.persona_name && (
-            <span className="text-xs text-rose-400">{t('chat.asPersona', { name: chatDetail.chat.persona_name })}</span>
+            <span className="text-xs text-rose-400">
+              {t('chat.asPersona', { name: chatDetail.chat.persona_name })}
+              {chatDetail.chat.persona_slug && (
+                <span className="text-neutral-500"> ({chatDetail.chat.persona_slug})</span>
+              )}
+            </span>
           )}
           <p className="text-xs text-neutral-500">
             {character?.profiles?.username && `@${character.profiles.username}`}
@@ -479,6 +484,7 @@ export function ChatPage() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-white">{p.name}</span>
+                    {p.slug && <span className="text-xs text-neutral-500">({p.slug})</span>}
                     {p.is_default && <Star className="w-3.5 h-3.5 text-amber-400" />}
                   </div>
                   {p.description && (

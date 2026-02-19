@@ -85,12 +85,14 @@ def message_to_dict(m):
 
 
 def chat_to_dict(c):
+    persona = getattr(c, 'persona', None)
     d = {
         "id": c.id,
         "user_id": c.user_id,
         "character_id": c.character_id,
         "persona_id": getattr(c, 'persona_id', None),
         "persona_name": getattr(c, 'persona_name', None),
+        "persona_slug": persona.slug if persona else None,
         "title": c.title,
         "model_used": c.model_used,
         "has_summary": bool(getattr(c, 'summary', None)),

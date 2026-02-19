@@ -108,7 +108,10 @@ async def get_or_create_chat(
 async def get_chat(db: AsyncSession, chat_id: str, user_id: str | None = None, anon_session_id: str | None = None):
     q = (
         select(Chat)
-        .options(selectinload(Chat.character).selectinload(Character.creator))
+        .options(
+            selectinload(Chat.character).selectinload(Character.creator),
+            selectinload(Chat.persona),
+        )
         .where(Chat.id == chat_id)
     )
     if anon_session_id:
