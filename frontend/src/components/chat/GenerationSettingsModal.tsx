@@ -115,12 +115,60 @@ const GEN_DEFAULTS = {
   context_limit: 0,
 };
 
+// Per-provider parameter limits
+type ParamLimits = {
+  temperature: { max: number };
+  top_k: boolean;
+  frequency_penalty: { max: number } | false;
+  presence_penalty: { max: number } | false;
+};
+
+const PROVIDER_LIMITS: Record<string, ParamLimits> = {
+  default:    { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
+  groq:       { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
+  cerebras:   { temperature: { max: 1.5 }, top_k: false, frequency_penalty: false, presence_penalty: false },
+  together:   { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
+  openrouter: { temperature: { max: 2 }, top_k: true,  frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
+  deepseek:   { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
+  qwen:       { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
+  claude:     { temperature: { max: 1 }, top_k: false, frequency_penalty: false, presence_penalty: false },
+  openai:     { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 2 }, presence_penalty: { max: 2 } },
+  gemini:     { temperature: { max: 2 }, top_k: false, frequency_penalty: false, presence_penalty: false },
+};
+
+function getProvider(modelId: string): string {
+  if (modelId === 'auto') return 'default';
+  if (modelId.startsWith('groq:') || modelId === 'groq') return 'groq';
+  if (modelId.startsWith('cerebras:') || modelId === 'cerebras') return 'cerebras';
+  if (modelId.startsWith('together:') || modelId === 'together') return 'together';
+  if (modelId.includes('/')) return 'openrouter';
+  if (modelId === 'openrouter') return 'openrouter';
+  if (['deepseek', 'qwen', 'claude', 'openai', 'gemini'].includes(modelId)) return modelId;
+  return 'default';
+}
+
+function getLimits(modelId: string): ParamLimits {
+  return PROVIDER_LIMITS[getProvider(modelId)] || PROVIDER_LIMITS.default;
+}
+
+function clampToLimits(settings: typeof GEN_DEFAULTS, modelId: string): typeof GEN_DEFAULTS {
+  const limits = getLimits(modelId);
+  const s = { ...settings };
+  s.temperature = Math.min(s.temperature, limits.temperature.max);
+  if (limits.frequency_penalty === false) s.frequency_penalty = 0;
+  else s.frequency_penalty = Math.min(s.frequency_penalty, limits.frequency_penalty.max);
+  if (limits.presence_penalty === false) s.presence_penalty = 0;
+  else s.presence_penalty = Math.min(s.presence_penalty, limits.presence_penalty.max);
+  if (!limits.top_k) s.top_k = 0;
+  return s;
+}
+
 export function loadModelSettings(modelId: string): typeof GEN_DEFAULTS {
   try {
     const raw = localStorage.getItem(`model-settings:${modelId}`);
-    if (raw) return { ...GEN_DEFAULTS, ...JSON.parse(raw) };
+    if (raw) return clampToLimits({ ...GEN_DEFAULTS, ...JSON.parse(raw) }, modelId);
   } catch {}
-  return { ...GEN_DEFAULTS };
+  return clampToLimits({ ...GEN_DEFAULTS }, modelId);
 }
 
 function saveModelSettings(modelId: string, s: typeof GEN_DEFAULTS) {
@@ -213,7 +261,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
                     return (
                       <button
                         key={m.id}
-                        onClick={() => { if (!disabled) { setModel(m.id); setLocal(loadModelSettings(m.id)); } }}
+                        onClick={() => { if (!disabled) { setModel(m.id); setLocal(clampToLimits(loadModelSettings(m.id), m.id)); } }}
                         disabled={disabled}
                         className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
                           disabled
@@ -258,70 +306,84 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
           </div>
         </div>
 
-        {/* Cerebras penalty warning */}
-        {(model === 'cerebras' || model.startsWith('cerebras:')) && (
-          <p className="text-xs text-amber-400/80 mb-4">
-            {t('settings.cerebrasNoPenalty')}
-          </p>
-        )}
-
-        {/* Generation params */}
-        <div className="space-y-5">
-          <Slider
-            label={t('settings.temperature')}
-            tooltip={t('settings.temperatureTooltip')}
-            value={local.temperature}
-            onChange={(v) => update('temperature', v)}
-            min={0}
-            max={2}
-            step={0.01}
-          />
-          <Slider
-            label={t('settings.topP')}
-            tooltip={t('settings.topPTooltip')}
-            value={local.top_p}
-            onChange={(v) => update('top_p', v)}
-            min={0}
-            max={1}
-            step={0.01}
-          />
-          <Slider
-            label={t('settings.topK')}
-            tooltip={t('settings.topKTooltip')}
-            value={local.top_k}
-            onChange={(v) => update('top_k', Math.round(v))}
-            min={0}
-            max={100}
-            step={1}
-          />
-          <Slider
-            label={t('settings.frequencyPenalty')}
-            tooltip={t('settings.frequencyPenaltyTooltip')}
-            value={local.frequency_penalty}
-            onChange={(v) => update('frequency_penalty', v)}
-            min={0}
-            max={2}
-            step={0.01}
-          />
-          <Slider
-            label={t('settings.presencePenalty')}
-            tooltip={t('settings.presencePenaltyTooltip')}
-            value={local.presence_penalty}
-            onChange={(v) => update('presence_penalty', v)}
-            min={0}
-            max={2}
-            step={0.01}
-          />
-          <Slider
-            label={t('settings.maxTokens')}
-            tooltip={t('settings.maxTokensTooltip')}
-            value={local.max_tokens}
-            onChange={(v) => update('max_tokens', Math.round(v))}
-            min={256}
-            max={4096}
-            step={128}
-          />
-        </div>
+        {/* Generation params — dynamic limits per provider */}
+        {(() => {
+          const limits = getLimits(model);
+          return (
+            <div className="space-y-5">
+              <Slider
+                label={t('settings.temperature')}
+                tooltip={t('settings.temperatureTooltip')}
+                value={local.temperature}
+                onChange={(v) => update('temperature', Math.min(v, limits.temperature.max))}
+                min={0}
+                max={limits.temperature.max}
+                step={0.01}
+              />
+              <Slider
+                label={t('settings.topP')}
+                tooltip={t('settings.topPTooltip')}
+                value={local.top_p}
+                onChange={(v) => update('top_p', v)}
+                min={0}
+                max={1}
+                step={0.01}
+              />
+              {limits.top_k && (
+                <Slider
+                  label={t('settings.topK')}
+                  tooltip={t('settings.topKTooltip')}
+                  value={local.top_k}
+                  onChange={(v) => update('top_k', Math.round(v))}
+                  min={0}
+                  max={100}
+                  step={1}
+                />
+              )}
+              {limits.frequency_penalty !== false ? (
+                <Slider
+                  label={t('settings.frequencyPenalty')}
+                  tooltip={t('settings.frequencyPenaltyTooltip')}
+                  value={local.frequency_penalty}
+                  onChange={(v) => update('frequency_penalty', Math.min(v, (limits.frequency_penalty as { max: number }).max))}
+                  min={0}
+                  max={(limits.frequency_penalty as { max: number }).max}
+                  step={0.01}
+                />
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm text-neutral-500">{t('settings.frequencyPenalty')}</span>
+                  <span className="text-xs text-neutral-600">— {t('settings.notSupported')}</span>
+                </div>
+              )}
+              {limits.presence_penalty !== false ? (
+                <Slider
+                  label={t('settings.presencePenalty')}
+                  tooltip={t('settings.presencePenaltyTooltip')}
+                  value={local.presence_penalty}
+                  onChange={(v) => update('presence_penalty', Math.min(v, (limits.presence_penalty as { max: number }).max))}
+                  min={0}
+                  max={(limits.presence_penalty as { max: number }).max}
+                  step={0.01}
+                />
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm text-neutral-500">{t('settings.presencePenalty')}</span>
+                  <span className="text-xs text-neutral-600">— {t('settings.notSupported')}</span>
+                </div>
+              )}
+              <Slider
+                label={t('settings.maxTokens')}
+                tooltip={t('settings.maxTokensTooltip')}
+                value={local.max_tokens}
+                onChange={(v) => update('max_tokens', Math.round(v))}
+                min={256}
+                max={4096}
+                step={128}
+              />
+            </div>
+          );
+        })()}
 
         <div className="flex gap-3 mt-6">
           <button

@@ -269,6 +269,7 @@
   "settings.contextLimitTooltip": "Wie viel Gesprächsverlauf das Modell sieht.\n\n4K — ~10–15 Nachrichten, schnelle Antworten.\n8K — ~25–35 Nachrichten, gute Balance.\n16K — ~50–70 Nachrichten, tiefer Kontext.\n∞ — kein Limit, gesamter Verlauf (kann Modellgrenzen erreichen).\n\nÄltere Nachrichten jenseits des Limits werden vom Modell 'vergessen'.\n\nStandard: ∞ (kein Limit)",
   "settings.nsfwBlocked": "Dieses Modell unterstützt keine NSFW-Inhalte",
   "settings.cerebrasNoPenalty": "Cerebras unterstützt keine Häufigkeits-/Präsenzstrafe. Diese Einstellungen werden ignoriert.",
+  "settings.notSupported": "von diesem Modell nicht unterstützt",
   "settings.maxTokensTooltip": "Maximale Antwortlänge. 1 Token ≈ 3–4 Zeichen.\n\n256 — sehr kurz (~750 Zeichen).\n1024 — kurz (~3000 Zeichen).\n2048 — mittel (~6000 Zeichen).\n4096 — lang (~12000 Zeichen).\n\nHarte Grenze: Antwort wird abgeschnitten, wenn überschritten.\n\nStandard: 2048",
 
   "admin.users": "Benutzer",

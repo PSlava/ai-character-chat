@@ -269,6 +269,7 @@
   "settings.contextLimitTooltip": "Quanto do histórico da conversa o modelo vê.\n\n4K — ~10-15 mensagens, respostas rápidas.\n8K — ~25-35 mensagens, bom equilíbrio.\n16K — ~50-70 mensagens, contexto profundo.\n∞ — sem limite, todo o histórico (pode atingir limites do modelo).\n\nMensagens mais antigas além do limite são \"esquecidas\" pelo modelo.\n\nPadrão: ∞ (sem limite)",
   "settings.nsfwBlocked": "Este modelo não suporta conteúdo NSFW",
   "settings.cerebrasNoPenalty": "Cerebras não suporta penalidade de frequência/presença. Essas configurações serão ignoradas.",
+  "settings.notSupported": "não suportado por este modelo",
   "settings.maxTokensTooltip": "Tamanho máximo da resposta. 1 token ≈ 3-4 caracteres.\n\n256 — muito curta (~750 caracteres).\n1024 — curta (~3000 caracteres).\n2048 — média (~6000 caracteres).\n4096 — longa (~12000 caracteres).\n\nLimite rígido: a resposta será cortada se exceder.\n\nPadrão: 2048",
 
   "admin.users": "Usuários",
