@@ -736,9 +736,9 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
         links = []
         for l in LANGS:
             url = f"{SITE_URL}/{l}{path}" if path else f"{SITE_URL}/{l}"
-            links.append(f'<xhtml:link rel="alternate" hreflang="{l}" href="{url}"/>')
-        links.append(f'<xhtml:link rel="alternate" hreflang="x-default" href="{SITE_URL}/en{path}"/>')
-        return "".join(links)
+            links.append(f'  <xhtml:link rel="alternate" hreflang="{l}" href="{url}"/>')
+        links.append(f'  <xhtml:link rel="alternate" hreflang="x-default" href="{SITE_URL}/en{path}"/>')
+        return "\n".join(links)
 
     def image_tag(avatar_url: str | None, name: str) -> str:
         if not avatar_url:
@@ -746,16 +746,16 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
         img_url = avatar_url if avatar_url.startswith("http") else f"{SITE_URL}{avatar_url}"
         safe_name = name.replace("&", "&amp;").replace("<", "&lt;").replace('"', "&quot;")
         return (
-            f'<image:image><image:loc>{img_url}</image:loc>'
-            f'<image:title>{safe_name}</image:title></image:image>'
+            f'\n  <image:image>\n    <image:loc>{img_url}</image:loc>'
+            f'\n    <image:title>{safe_name}</image:title>\n  </image:image>'
         )
 
     urls = []
 
     # Root URL without language prefix
     urls.append(
-        f'<url><loc>{SITE_URL}/</loc><lastmod>{now}</lastmod>'
-        f'<changefreq>daily</changefreq><priority>1.0</priority></url>'
+        f'<url>\n  <loc>{SITE_URL}/</loc>\n  <lastmod>{now}</lastmod>'
+        f'\n  <changefreq>daily</changefreq>\n  <priority>1.0</priority>\n</url>'
     )
 
     # Static pages × languages
@@ -773,9 +773,9 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
         for l in LANGS:
             loc = f"{SITE_URL}/{l}{path}" if path else f"{SITE_URL}/{l}"
             urls.append(
-                f"<url><loc>{loc}</loc><lastmod>{lastmod}</lastmod>"
-                f"<changefreq>{freq}</changefreq><priority>{prio}</priority>"
-                f"{alternates(path)}</url>"
+                f"<url>\n  <loc>{loc}</loc>\n  <lastmod>{lastmod}</lastmod>"
+                f"\n  <changefreq>{freq}</changefreq>\n  <priority>{prio}</priority>"
+                f"\n{alternates(path)}\n</url>"
             )
 
     # Character pages × languages (with image extension)
@@ -785,16 +785,16 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
         img = image_tag(avatar_url, name)
         for l in LANGS:
             urls.append(
-                f"<url><loc>{SITE_URL}/{l}{path}</loc><lastmod>{lastmod}</lastmod>"
-                f"<changefreq>weekly</changefreq><priority>0.8</priority>"
-                f"{img}{alternates(path)}</url>"
+                f"<url>\n  <loc>{SITE_URL}/{l}{path}</loc>\n  <lastmod>{lastmod}</lastmod>"
+                f"\n  <changefreq>weekly</changefreq>\n  <priority>0.8</priority>"
+                f"{img}\n{alternates(path)}\n</url>"
             )
 
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-{"".join(urls)}
+{chr(10).join(urls)}
 </urlset>"""
 
     _sitemap_cache = xml
