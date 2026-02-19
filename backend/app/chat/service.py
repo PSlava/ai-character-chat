@@ -21,7 +21,7 @@ async def get_or_create_chat(
         # Check for existing chat
         q = (
             select(Chat)
-            .options(selectinload(Chat.character))
+            .options(selectinload(Chat.character), selectinload(Chat.persona))
             .where(Chat.character_id == character_id)
         )
         if anon_session_id:
@@ -98,7 +98,7 @@ async def get_or_create_chat(
     # Re-fetch with relationships loaded
     result = await db.execute(
         select(Chat)
-        .options(selectinload(Chat.character))
+        .options(selectinload(Chat.character), selectinload(Chat.persona))
         .where(Chat.id == chat.id)
     )
     chat = result.scalar_one()
@@ -156,7 +156,7 @@ async def get_chat_messages(db: AsyncSession, chat_id: str, limit: int = 0, befo
 async def list_user_chats(db: AsyncSession, user_id: str):
     result = await db.execute(
         select(Chat)
-        .options(selectinload(Chat.character))
+        .options(selectinload(Chat.character), selectinload(Chat.persona))
         .where(Chat.user_id == user_id)
         .order_by(Chat.updated_at.desc())
     )
