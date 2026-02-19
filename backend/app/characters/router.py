@@ -194,7 +194,7 @@ async def generate_from_story(
 
 @router.get("")
 async def browse_characters(
-    limit: int = Query(15, le=50),
+    limit: int = Query(15, le=100),
     offset: int = Query(0, ge=0),
     search: str | None = None,
     tag: str | None = None,
