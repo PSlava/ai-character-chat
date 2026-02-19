@@ -591,7 +591,7 @@
   "groupChat.deleteTitle": "Supprimer la discussion de groupe ?",
   "groupChat.deleteConfirm": "Supprimer cette discussion de groupe ? Tous les messages seront perdus.",
   "groupChat.create": "Nouvelle discussion de groupe",
-  "groupChat.selectCharacters": "Sélectionnez 2 à 5 personnages pour la discussion de groupe",
+  "groupChat.selectCharacters": "Sélectionnez 2 à 3 personnages pour la discussion de groupe",
   "groupChat.selected": "{{count}} sélectionnés",
   "groupChat.minCharacters": "Sélectionnez au moins 2 personnages",
   "groupChat.creating": "Création...",

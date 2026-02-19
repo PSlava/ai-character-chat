@@ -40,7 +40,7 @@ export function CreateGroupChatModal({ onClose }: Props) {
     setSelected((prev) =>
       prev.includes(id)
         ? prev.filter((x) => x !== id)
-        : prev.length < 5
+        : prev.length < 3
           ? [...prev, id]
           : prev
     );
@@ -90,7 +90,7 @@ export function CreateGroupChatModal({ onClose }: Props) {
           </div>
           {selected.length > 0 && (
             <p className="text-xs text-rose-400 mt-2">
-              {t('groupChat.selected', { count: selected.length })} / 5
+              {t('groupChat.selected', { count: selected.length })} / 3
             </p>
           )}
         </div>

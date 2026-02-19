@@ -591,7 +591,7 @@
   "groupChat.deleteTitle": "¿Eliminar chat grupal?",
   "groupChat.deleteConfirm": "¿Eliminar este chat grupal? Se perderán todos los mensajes.",
   "groupChat.create": "Chat grupal",
-  "groupChat.selectCharacters": "Selecciona 2-5 personajes para el chat grupal",
+  "groupChat.selectCharacters": "Selecciona 2-3 personajes para el chat grupal",
   "groupChat.selected": "{{count}} seleccionados",
   "groupChat.minCharacters": "Selecciona al menos 2 personajes",
   "groupChat.creating": "Creando...",

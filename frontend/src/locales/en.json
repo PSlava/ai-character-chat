@@ -591,7 +591,7 @@
   "groupChat.deleteTitle": "Delete group chat?",
   "groupChat.deleteConfirm": "Delete this group chat? All messages will be lost.",
   "groupChat.create": "New Group Chat",
-  "groupChat.selectCharacters": "Select 2-5 characters for the group chat",
+  "groupChat.selectCharacters": "Select 2-3 characters for the group chat",
   "groupChat.selected": "{{count}} selected",
   "groupChat.minCharacters": "Select at least 2 characters",
   "groupChat.creating": "Creating...",

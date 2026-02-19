@@ -21,7 +21,7 @@ from app.chat.daily_limit import check_daily_limit
 
 router = APIRouter(prefix="/api/group-chats", tags=["group-chat"])
 
-MAX_MEMBERS = 5
+MAX_MEMBERS = 3
 MIN_MEMBERS = 2
 MAX_CONTEXT_MESSAGES = 30
 
@@ -252,7 +252,7 @@ async def send_group_message(
                     "\nЭто ГРУППОВОЙ ЧАТ. Другие персонажи: {others}."
                     "\nОтвечай ТОЛЬКО как {name} — не пиши за других персонажей и не продолжай их текст."
                     "\nСообщения других персонажей помечены [Имя]: — это НЕ твои реплики."
-                    "\nДержи ответ коротким (1-2 абзаца). Реагируй на сказанное другими."
+                    "\nОтвет СТРОГО 1-2 абзаца, НЕ длиннее. Реагируй на сказанное другими."
                     "\nПиши ТОЛЬКО на русском языке. Не вставляй английские слова."
                 ),
                 "en": (
@@ -260,42 +260,42 @@ async def send_group_message(
                     "\nThis is a GROUP CHAT. Other characters present: {others}."
                     "\nRespond ONLY as {name} — do not write for other characters or continue their text."
                     "\nMessages from other characters are marked [Name]: — these are NOT your lines."
-                    "\nKeep responses short (1-2 paragraphs). React to what others said."
+                    "\nSTRICTLY 1-2 paragraphs, NO longer. React to what others said."
                 ),
                 "es": (
                     "\n\n## Chat Grupal"
                     "\nEste es un CHAT GRUPAL. Otros personajes: {others}."
                     "\nResponde SOLO como {name} — no escribas por otros personajes ni continúes su texto."
                     "\nLos mensajes de otros personajes están marcados [Nombre]: — NO son tus líneas."
-                    "\nMantén respuestas cortas (1-2 párrafos). Reacciona a lo dicho por otros."
+                    "\nESTRICTAMENTE 1-2 párrafos, NO más. Reacciona a lo dicho por otros."
                 ),
                 "fr": (
                     "\n\n## Chat de Groupe"
                     "\nCeci est un CHAT DE GROUPE. Autres personnages : {others}."
                     "\nRéponds UNIQUEMENT en tant que {name} — n'écris pas pour d'autres personnages."
                     "\nLes messages des autres personnages sont marqués [Nom] : — ce ne sont PAS tes répliques."
-                    "\nGarde les réponses courtes (1-2 paragraphes). Réagis à ce que les autres ont dit."
+                    "\nSTRICTEMENT 1-2 paragraphes, PAS plus. Réagis à ce que les autres ont dit."
                 ),
                 "de": (
                     "\n\n## Gruppenchat"
                     "\nDies ist ein GRUPPENCHAT. Andere Charaktere: {others}."
                     "\nAntworte NUR als {name} — schreibe nicht für andere Charaktere."
                     "\nNachrichten anderer Charaktere sind mit [Name]: markiert — das sind NICHT deine Zeilen."
-                    "\nHalte Antworten kurz (1-2 Absätze). Reagiere auf das Gesagte."
+                    "\nSTRIKT 1-2 Absätze, NICHT länger. Reagiere auf das Gesagte."
                 ),
                 "pt": (
                     "\n\n## Chat em Grupo"
                     "\nEste é um CHAT EM GRUPO. Outros personagens: {others}."
                     "\nResponda APENAS como {name} — não escreva por outros personagens."
                     "\nMensagens de outros personagens são marcadas [Nome]: — NÃO são suas falas."
-                    "\nMantenha respostas curtas (1-2 parágrafos). Reaja ao que os outros disseram."
+                    "\nESTRITAMENTE 1-2 parágrafos, NÃO mais. Reaja ao que os outros disseram."
                 ),
                 "it": (
                     "\n\n## Chat di Gruppo"
                     "\nQuesta è una CHAT DI GRUPPO. Altri personaggi: {others}."
                     "\nRispondi SOLO come {name} — non scrivere per altri personaggi."
                     "\nI messaggi degli altri personaggi sono contrassegnati [Nome]: — NON sono le tue battute."
-                    "\nMantieni risposte brevi (1-2 paragrafi). Reagisci a ciò che gli altri hanno detto."
+                    "\nRIGOROSAMENTE 1-2 paragrafi, NON di più. Reagisci a ciò che gli altri hanno detto."
                 ),
             }
             lang_key = language if language in _group_context_templates else "en"
