@@ -245,7 +245,61 @@ async def send_group_message(
 
             # Build group-aware system prompt addition
             other_names = [m.character.name for m in members if m.character and m.character.id != character.id]
-            group_context = f"\nThis is a GROUP CHAT with multiple characters. Other characters present: {', '.join(other_names)}. Keep responses shorter (1-2 paragraphs). React to what others said. Don't repeat what other characters already said."
+            _group_context_templates = {
+                "ru": (
+                    "\n\n## Групповой чат"
+                    "\nЭто ГРУППОВОЙ ЧАТ. Другие персонажи: {others}."
+                    "\nОтвечай ТОЛЬКО как {name} — не пиши за других персонажей и не продолжай их текст."
+                    "\nСообщения других персонажей помечены [Имя]: — это НЕ твои реплики."
+                    "\nДержи ответ коротким (1-2 абзаца). Реагируй на сказанное другими."
+                ),
+                "en": (
+                    "\n\n## Group Chat"
+                    "\nThis is a GROUP CHAT. Other characters present: {others}."
+                    "\nRespond ONLY as {name} — do not write for other characters or continue their text."
+                    "\nMessages from other characters are marked [Name]: — these are NOT your lines."
+                    "\nKeep responses short (1-2 paragraphs). React to what others said."
+                ),
+                "es": (
+                    "\n\n## Chat Grupal"
+                    "\nEste es un CHAT GRUPAL. Otros personajes: {others}."
+                    "\nResponde SOLO como {name} — no escribas por otros personajes ni continúes su texto."
+                    "\nLos mensajes de otros personajes están marcados [Nombre]: — NO son tus líneas."
+                    "\nMantén respuestas cortas (1-2 párrafos). Reacciona a lo dicho por otros."
+                ),
+                "fr": (
+                    "\n\n## Chat de Groupe"
+                    "\nCeci est un CHAT DE GROUPE. Autres personnages : {others}."
+                    "\nRéponds UNIQUEMENT en tant que {name} — n'écris pas pour d'autres personnages."
+                    "\nLes messages des autres personnages sont marqués [Nom] : — ce ne sont PAS tes répliques."
+                    "\nGarde les réponses courtes (1-2 paragraphes). Réagis à ce que les autres ont dit."
+                ),
+                "de": (
+                    "\n\n## Gruppenchat"
+                    "\nDies ist ein GRUPPENCHAT. Andere Charaktere: {others}."
+                    "\nAntworte NUR als {name} — schreibe nicht für andere Charaktere."
+                    "\nNachrichten anderer Charaktere sind mit [Name]: markiert — das sind NICHT deine Zeilen."
+                    "\nHalte Antworten kurz (1-2 Absätze). Reagiere auf das Gesagte."
+                ),
+                "pt": (
+                    "\n\n## Chat em Grupo"
+                    "\nEste é um CHAT EM GRUPO. Outros personagens: {others}."
+                    "\nResponda APENAS como {name} — não escreva por outros personagens."
+                    "\nMensagens de outros personagens são marcadas [Nome]: — NÃO são suas falas."
+                    "\nMantenha respostas curtas (1-2 parágrafos). Reaja ao que os outros disseram."
+                ),
+                "it": (
+                    "\n\n## Chat di Gruppo"
+                    "\nQuesta è una CHAT DI GRUPPO. Altri personaggi: {others}."
+                    "\nRispondi SOLO come {name} — non scrivere per altri personaggi."
+                    "\nI messaggi degli altri personaggi sono contrassegnati [Nome]: — NON sono le tue battute."
+                    "\nMantieni risposte brevi (1-2 paragrafi). Reagisci a ciò che gli altri hanno detto."
+                ),
+            }
+            lang_key = language if language in _group_context_templates else "en"
+            group_context = _group_context_templates[lang_key].format(
+                others=", ".join(other_names), name=character.name,
+            )
 
             system_prompt = await build_system_prompt(
                 char_dict, language=language, engine=db_engine,
@@ -253,14 +307,24 @@ async def send_group_message(
             system_prompt += group_context
 
             # Build conversation messages for this character
+            # Key: current character's messages = assistant, other characters = user with [Name] prefix
             llm_msgs = [LLMMessage(role="system", content=system_prompt)]
             for msg in context_msgs:
                 role_val = msg.role.value if hasattr(msg.role, 'value') else msg.role
                 if role_val == "user":
                     llm_msgs.append(LLMMessage(role="user", content=msg.content))
-                else:
-                    # Other characters' messages appear as assistant (with name prefix)
+                elif getattr(msg, 'character_id', None) == character.id:
+                    # This character's own previous messages
                     llm_msgs.append(LLMMessage(role="assistant", content=msg.content))
+                else:
+                    # Other character's message — present as user with name prefix
+                    other_char_name = None
+                    for m in members:
+                        if m.character and m.character.id == getattr(msg, 'character_id', None):
+                            other_char_name = m.character.name
+                            break
+                    prefix = f"[{other_char_name}]: " if other_char_name else ""
+                    llm_msgs.append(LLMMessage(role="user", content=f"{prefix}{msg.content}"))
 
             config = LLMConfig(model="", temperature=0.8, max_tokens=1024)
 
