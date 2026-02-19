@@ -127,7 +127,7 @@ class GroqProvider(BaseLLMProvider):
             others = [m for m in fallbacks if m != preferred]
             return [preferred] + others
         available = model_cooldown.filter_available(PROVIDER, fallbacks)
-        return available or fallbacks[:1]
+        return available or fallbacks
 
     @staticmethod
     def _extract_reason(e: Exception) -> str:
