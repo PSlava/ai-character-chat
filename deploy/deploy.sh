@@ -36,19 +36,14 @@ wait_for_healthy() {
 }
 
 # --- Deploy backend with recovery ---
-echo "Restarting backend (force-recreate)..."
-$DC up -d --no-deps --force-recreate backend
+echo "Restarting backend (stop+rm+up with deps)..."
+$DC stop backend
+$DC rm -f backend
+$DC up -d backend
 
 if ! wait_for_healthy 30; then
-    echo "First attempt failed. Doing full stop+rm+up (with deps)..."
-    $DC stop backend
-    $DC rm -f backend
-    $DC up -d backend
-
-    if ! wait_for_healthy 30; then
-        echo "ERROR: Backend still unhealthy after recovery. Deploy failed."
-        exit 1
-    fi
+    echo "ERROR: Backend still unhealthy after deploy. Deploy failed."
+    exit 1
 fi
 
 echo "Restarting nginx..."
