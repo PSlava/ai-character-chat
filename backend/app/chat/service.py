@@ -10,6 +10,46 @@ from app.llm.base import LLMMessage
 MAX_CONTEXT_MESSAGES = 50
 DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/token
 
+# Post-history reminder — injected AFTER chat history, closest to generation point.
+# Short (~50 tokens) reinforcement of key rules. Most effective position per SillyTavern research.
+_POST_HISTORY = {
+    "ru": (
+        "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи. "
+        "Продвинь сюжет — новое действие или изменение. "
+        "НЕ повторяй описания и фразы из предыдущих ответов. Удиви читателя.]"
+    ),
+    "en": (
+        "[Continue the scene as {name}. Third person. Show, don't tell. "
+        "Advance the plot — a new action or change. "
+        "Do NOT repeat descriptions or phrases from previous responses. Surprise the reader.]"
+    ),
+    "es": (
+        "[Continúa la escena como {name}. Tercera persona. Muestra, no cuentes. "
+        "Avanza la trama — una nueva acción o cambio. "
+        "NO repitas descripciones ni frases de respuestas anteriores. Sorprende al lector.]"
+    ),
+    "fr": (
+        "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas. "
+        "Fais avancer l'intrigue — une nouvelle action ou un changement. "
+        "NE répète PAS les descriptions ou phrases des réponses précédentes. Surprends le lecteur.]"
+    ),
+    "de": (
+        "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen. "
+        "Bringe die Handlung voran — eine neue Aktion oder Veränderung. "
+        "Wiederhole NICHT Beschreibungen oder Phrasen aus vorherigen Antworten. Überrasche den Leser.]"
+    ),
+    "pt": (
+        "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte. "
+        "Avance a trama — uma nova ação ou mudança. "
+        "NÃO repita descrições ou frases de respostas anteriores. Surpreenda o leitor.]"
+    ),
+    "it": (
+        "[Continua la scena come {name}. Terza persona. Mostra, non raccontare. "
+        "Fai avanzare la trama — una nuova azione o cambiamento. "
+        "NON ripetere descrizioni o frasi dalle risposte precedenti. Sorprendi il lettore.]"
+    ),
+}
+
 
 async def get_or_create_chat(
     db: AsyncSession, user_id: str, character_id: str,
@@ -355,4 +395,10 @@ async def build_conversation_messages(
         label = summary_labels.get(language, summary_labels["en"])
         result_list.append(LLMMessage(role="system", content=f"{label}\n{summary}"))
 
-    return result_list + messages
+    # Post-history reminder (closest to generation = strongest reinforcement)
+    content_rating = char_dict.get("content_rating", "sfw")
+    lang = language if language in _POST_HISTORY else "en"
+    reminder = _POST_HISTORY[lang].format(name=character.name)
+    all_messages = result_list + messages
+    all_messages.append(LLMMessage(role="system", content=reminder))
+    return all_messages
