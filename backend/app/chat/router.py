@@ -391,7 +391,8 @@ async def send_message(
 
     if user:
         check_message_rate(user["id"])
-        check_message_interval(user["id"])
+        if not body.is_regenerate:
+            check_message_interval(user["id"])
         await check_daily_limit(user["id"], user.get("role", "user"))
         chat = await service.get_chat(db, chat_id, user_id=user["id"])
     else:
@@ -399,7 +400,8 @@ async def send_message(
         if not anon_session_id:
             raise HTTPException(status_code=401, detail="Authentication required")
         check_message_rate(f"anon:{anon_session_id}")
-        check_message_interval(f"anon:{anon_session_id}")
+        if not body.is_regenerate:
+            check_message_interval(f"anon:{anon_session_id}")
         anon_remaining = await check_anon_limit(anon_session_id)  # raises 403 if exceeded
         chat = await service.get_chat(db, chat_id, anon_session_id=anon_session_id)
 

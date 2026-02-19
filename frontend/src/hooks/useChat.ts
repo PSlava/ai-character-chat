@@ -154,9 +154,9 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
         },
         async onopen(response) {
           if (response.ok) return;
+          let detail = '';
+          try { const body = await response.json(); detail = body.detail || ''; } catch {}
           if (response.status === 403) {
-            let detail = '';
-            try { const body = await response.json(); detail = body.detail || ''; } catch {}
             if (detail === 'anon_limit_reached' || detail === 'anon_chat_disabled') {
               setAnonLimitReached(true);
               // Remove optimistic messages
@@ -165,19 +165,22 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               throw new Error(detail);
             }
           }
-          throw new Error(`HTTP ${response.status}`);
+          throw new Error(detail || `HTTP ${response.status}`);
         },
         onerror(err) {
           if (err?.message === 'anon_limit_reached' || err?.message === 'anon_chat_disabled') {
             throw err; // Don't retry
           }
+          const errText = err?.message && err.message !== 'Failed to fetch'
+            ? err.message
+            : t('chat.connectionError');
           setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
             if (last.role === 'assistant' && !last.content) {
               updated[updated.length - 1] = {
                 ...last,
-                content: t('chat.connectionError'),
+                content: errText,
                 isError: true,
               };
             }
