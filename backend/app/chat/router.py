@@ -489,7 +489,7 @@ async def send_message(
         "max_tokens": body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048),
         "top_p": body.top_p if body.top_p is not None else 0.95,
         "top_k": body.top_k if body.top_k is not None else 0,
-        "frequency_penalty": body.frequency_penalty if body.frequency_penalty is not None else 0.0,
+        "frequency_penalty": body.frequency_penalty if body.frequency_penalty is not None else (0.5 if content_rating == "nsfw" else 0.3),
         "presence_penalty": body.presence_penalty if body.presence_penalty is not None else 0.3,
         "content_rating": content_rating,
     }

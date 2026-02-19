@@ -25,12 +25,16 @@ _SUMMARY_PROVIDERS = ("groq", "cerebras", "openrouter")
 _TIMEOUT = 30.0
 
 _SUMMARY_PROMPT = """Summarize the following roleplay conversation concisely. Preserve:
-- Key plot points and events
+- CURRENT LOCATION and setting (where are the characters RIGHT NOW?)
+- Key plot points and events in chronological order
 - Character relationships and dynamics
 - Important decisions and agreements
 - Emotional states and character development
+- Any ongoing actions or situations
 
-Write in the same language as the conversation. Be concise (200-400 words max).
+IMPORTANT: The summary MUST end with a clear statement of where the characters currently are and what they are doing.
+
+Write in the same language as the conversation. Be concise (200-500 words max).
 Do NOT add commentary — just the summary.
 
 Conversation:

@@ -14,39 +14,53 @@ DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/t
 # Short (~50 tokens) reinforcement of key rules. Most effective position per SillyTavern research.
 _POST_HISTORY = {
     "ru": (
-        "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи. "
-        "Продвинь сюжет — новое действие или изменение. "
-        "НЕ повторяй описания и фразы из предыдущих ответов. Удиви читателя.]"
+        "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи.\n"
+        "ОБЯЗАТЕЛЬНО: сохраняй текущую локацию и обстановку из предыдущих сообщений. Не теряй место действия.\n"
+        "Продвинь сюжет — новое действие или изменение.\n"
+        "СТРОГО ЗАПРЕЩЕНО повторять фразы, описания, звуки и реакции из предыдущих ответов. "
+        "Перечитай свои последние ответы — используй ДРУГИЕ слова, ДРУГИЕ описания, ДРУГИЕ реакции. Удиви читателя.]"
     ),
     "en": (
-        "[Continue the scene as {name}. Third person. Show, don't tell. "
-        "Advance the plot — a new action or change. "
-        "Do NOT repeat descriptions or phrases from previous responses. Surprise the reader.]"
+        "[Continue the scene as {name}. Third person. Show, don't tell.\n"
+        "REQUIRED: maintain the current location and setting from previous messages. Don't lose the scene's place.\n"
+        "Advance the plot — a new action or change.\n"
+        "STRICTLY FORBIDDEN to repeat phrases, descriptions, sounds, or reactions from previous responses. "
+        "Re-read your recent responses — use DIFFERENT words, DIFFERENT descriptions, DIFFERENT reactions. Surprise the reader.]"
     ),
     "es": (
-        "[Continúa la escena como {name}. Tercera persona. Muestra, no cuentes. "
-        "Avanza la trama — una nueva acción o cambio. "
-        "NO repitas descripciones ni frases de respuestas anteriores. Sorprende al lector.]"
+        "[Continua la escena como {name}. Tercera persona. Muestra, no cuentes.\n"
+        "OBLIGATORIO: mantén la ubicación y el entorno actuales de los mensajes anteriores. No pierdas el lugar de la escena.\n"
+        "Avanza la trama — una nueva acción o cambio.\n"
+        "ESTRICTAMENTE PROHIBIDO repetir frases, descripciones, sonidos o reacciones de respuestas anteriores. "
+        "Relee tus respuestas recientes — usa OTRAS palabras, OTRAS descripciones, OTRAS reacciones. Sorprende al lector.]"
     ),
     "fr": (
-        "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas. "
-        "Fais avancer l'intrigue — une nouvelle action ou un changement. "
-        "NE répète PAS les descriptions ou phrases des réponses précédentes. Surprends le lecteur.]"
+        "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas.\n"
+        "OBLIGATOIRE : maintiens le lieu et le décor actuels des messages précédents. Ne perds pas le cadre de la scène.\n"
+        "Fais avancer l'intrigue — une nouvelle action ou un changement.\n"
+        "STRICTEMENT INTERDIT de répéter des phrases, descriptions, sons ou réactions des réponses précédentes. "
+        "Relis tes réponses récentes — utilise D'AUTRES mots, D'AUTRES descriptions, D'AUTRES réactions. Surprends le lecteur.]"
     ),
     "de": (
-        "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen. "
-        "Bringe die Handlung voran — eine neue Aktion oder Veränderung. "
-        "Wiederhole NICHT Beschreibungen oder Phrasen aus vorherigen Antworten. Überrasche den Leser.]"
+        "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen.\n"
+        "PFLICHT: Behalte den aktuellen Ort und die Umgebung aus den vorherigen Nachrichten bei. Verliere den Schauplatz nicht.\n"
+        "Bringe die Handlung voran — eine neue Aktion oder Veränderung.\n"
+        "STRENG VERBOTEN, Phrasen, Beschreibungen, Geräusche oder Reaktionen aus vorherigen Antworten zu wiederholen. "
+        "Lies deine letzten Antworten erneut — verwende ANDERE Worte, ANDERE Beschreibungen, ANDERE Reaktionen. Überrasche den Leser.]"
     ),
     "pt": (
-        "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte. "
-        "Avance a trama — uma nova ação ou mudança. "
-        "NÃO repita descrições ou frases de respostas anteriores. Surpreenda o leitor.]"
+        "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte.\n"
+        "OBRIGATÓRIO: mantenha a localização e o cenário atuais das mensagens anteriores. Não perca o lugar da cena.\n"
+        "Avance a trama — uma nova ação ou mudança.\n"
+        "ESTRITAMENTE PROIBIDO repetir frases, descrições, sons ou reações de respostas anteriores. "
+        "Releia suas respostas recentes — use OUTRAS palavras, OUTRAS descrições, OUTRAS reações. Surpreenda o leitor.]"
     ),
     "it": (
-        "[Continua la scena come {name}. Terza persona. Mostra, non raccontare. "
-        "Fai avanzare la trama — una nuova azione o cambiamento. "
-        "NON ripetere descrizioni o frasi dalle risposte precedenti. Sorprendi il lettore.]"
+        "[Continua la scena come {name}. Terza persona. Mostra, non raccontare.\n"
+        "OBBLIGATORIO: mantieni la posizione e l'ambientazione attuali dai messaggi precedenti. Non perdere il luogo della scena.\n"
+        "Fai avanzare la trama — una nuova azione o cambiamento.\n"
+        "SEVERAMENTE VIETATO ripetere frasi, descrizioni, suoni o reazioni dalle risposte precedenti. "
+        "Rileggi le tue risposte recenti — usa ALTRE parole, ALTRE descrizioni, ALTRE reazioni. Sorprendi il lettore.]"
     ),
 }
 
