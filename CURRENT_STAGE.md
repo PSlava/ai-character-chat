@@ -53,7 +53,7 @@
 **Production**: `151.245.217.191` (sweetsin.cc) — 2 CPU, 1.8GB RAM, Ubuntu 22.04, `WEB_WORKERS=1`
 **Тестовый**: `89.116.31.138` (test.sweetsin.cc) — 4 CPU, 7.8GB RAM, SSL + `X-Robots-Tag: noindex, nofollow`
 
-Docker Compose: 4 контейнера, автодеплой через GitHub webhook.
+Docker Compose: 5 контейнеров (+ autoheal), автодеплой через GitHub webhook.
 
 ```bash
 # Вариант 1 — Интерактивная установка (спросит ключи):
@@ -79,6 +79,7 @@ docker compose up -d
 | backend | FastAPI + gunicorn + uvicorn workers | 8000 (internal) |
 | nginx | Static frontend + reverse proxy /api → backend + uploads | 80, 443 |
 | webhook | GitHub webhook → auto-deploy | 9000 |
+| autoheal | Мониторинг и перезапуск unhealthy контейнеров | — |
 
 Автодеплой:
 - **GitHub Webhook** — Flask-сервер на порту 9000, при push в main → `git pull && docker compose build && up -d`
@@ -256,6 +257,7 @@ docker compose up -d
 - **Сохранение настроек** — настройки генерации сохраняются в localStorage **per-model** (`model-settings:{modelId}`), модель per-chat (`chat-model:{chatId}`). При смене модели в модалке — слайдеры переключаются на сохранённые настройки этой модели
 - **Смена модели mid-chat** — сохраняется в БД на чате
 - **Синхронизация ID сообщений** — фронтенд обновляет локальные UUID на реальные из БД (в т.ч. при ошибках)
+- **Дедупликация user-сообщений** — при отправке бэкенд проверяет: если последнее сообщение в чате — тот же текст от user, переиспользует его вместо создания дубля (предотвращает дубли при перезагрузке страницы после ошибки генерации)
 - **Фильтрация thinking-токенов** — `<think>...</think>` блоки вырезаются из стриминга (Qwen3, DeepSeek R1)
 - **Фильтрация иероглифов** — CJK/вьетнамские символы в ответе → retry с другой моделью (Qwen artifact). `has_foreign_chars()` в `thinking_filter.py`
 - **Фильтрация подмешивания языков** — 2+ латинских слова в ru/es тексте → retry. `has_mixed_languages()` в `thinking_filter.py`
@@ -338,7 +340,15 @@ docker compose up -d
   - Системные пользователи (админы, @sweetsin, anonymous) полностью исключены из статистики (page views, регистрации, сообщения, чаты)
   - **GeoIP страны посетителей** — локальная база DB-IP Lite (MMDB, ~5MB), instant lookup через maxminddb. Автообновление при старте если база старше 30 дней. Страны с флагами на дашборде. `country` колонка на `page_views`
 - **Email-уведомления о регистрации** — при новой регистрации (email или Google OAuth) администратору отправляется email с данными нового пользователя (email, username, метод регистрации). Toggle вкл/выкл на странице `/admin/users` (кнопка Bell). Настройка хранится в `prompt_templates` как `setting.notify_registration`. Админы не получают уведомление о своей регистрации
-- **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.paid_mode` (bool) — платный режим LLM, `setting.max_personas` (int, дефолт 5) — лимит персон на пользователя, `setting.daily_message_limit` (int, дефолт 1000) — дневной лимит сообщений, `setting.anon_message_limit` (int, дефолт 50) — лимит сообщений для анонимных гостей (0 = отключено)
+- **Автоматический мониторинг ошибок** — custom `logging.Handler` на root-логгере:
+  - Ловит все `ERROR`/`CRITICAL` записи автоматически (все `logger.error()`/`logger.exception()` по всему бэкенду)
+  - Батчинг: копит ошибки в `deque(maxlen=50)`, отправляет дайджест каждые 5 минут (CRITICAL — немедленно)
+  - Дедупликация: одинаковые ошибки за 5 мин не дублируются
+  - Защита от рекурсии: игнорирует ошибки из самого нотификатора и email модуля
+  - Переключатель: `setting.notify_errors` (кнопка AlertTriangle на AdminUsersPage)
+  - Отправка всем `ADMIN_EMAILS` через существующую email-инфраструктуру (Resend/SMTP)
+  - Модуль: `backend/app/utils/error_notifier.py`
+- **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.notify_errors` (bool) — email при ошибках бэкенда, `setting.paid_mode` (bool) — платный режим LLM, `setting.max_personas` (int, дефолт 5) — лимит персон на пользователя, `setting.daily_message_limit` (int, дефолт 1000) — дневной лимит сообщений, `setting.anon_message_limit` (int, дефолт 50) — лимит сообщений для анонимных гостей (0 = отключено)
 - **Настройки админа** — API `GET /api/admin/settings` и `PUT /api/admin/settings/{key}` для key-value настроек (хранятся в `prompt_templates` с префиксом `setting.`)
 - **Платный режим (Paid Mode)** — админ-тоггл на странице пользователей (иконка DollarSign). Когда включён: auto-fallback использует `["groq", "openrouter"]` (Groq с flex tier, OpenRouter как fallback). Когда выключен: `["openrouter"]` (только бесплатные). Настройка `setting.paid_mode` с 60-секундным in-memory кэшем. UI: зелёная кнопка когда вкл, серая когда выкл
 - Ссылки в сайдбаре: «Пользователи» + «Промпты» + «Жалобы» + «Аналитика» видны только админу
@@ -419,7 +429,7 @@ docker compose up -d
 **Together AI**: платный (pay-per-token, от $0.02/M), OpenAI-совместимый. **Без модерации контента** — Qwen и Llama работают без NSFW-ограничений. Поддерживает все параметры генерации.
 
 **Режимы выбора модели:**
-- **Auto (Все провайдеры)** — кросс-провайдерный fallback. **Paid mode**: Groq → OpenRouter (Groq с flex tier). **Free mode**: только OpenRouter. Дефолт для новых персонажей
+- **Auto (Все провайдеры)** — кросс-провайдерный fallback. **Paid mode**: Groq → Together → OpenRouter. **Free mode**: Groq → Cerebras → OpenRouter → Together. Дефолт для новых персонажей
 - **Auto (OpenRouter / Groq / Cerebras / Together)** — автоматический перебор топ-3 по качеству внутри одного провайдера, с NSFW-фильтрацией
 - **Конкретная модель** — выбор конкретной модели провайдера (напр. `groq:llama-3.3-70b-versatile`)
 - **Прямой провайдер** (DeepSeek, Qwen) — напрямую через API, минуя агрегаторы
@@ -481,13 +491,13 @@ docker compose up -d
 - **Мобильные действия с сообщениями** — вертикальное троеточие (⋮) вместо hover-кнопок, dropdown-меню
 - **Дизайн сообщений** — header row (аватар + имя + кнопки действий) над баблом, имя пользователя из профиля
 - Автоматическое пробуждение Render (wake-up) с индикатором статуса
-- **Профиль**: смена display name, username (с валидацией), языка, аватар, статистика (сообщения + чаты), удаление аккаунта (danger zone с ConfirmDialog)
+- **Профиль с табами** — 4 вкладки: Profile (аватар, имя, язык, статистика), Characters (персонажи пользователя), Personas (CRUD персон), Account (удаление аккаунта). Горизонтальные табы с иконками (User, Users, Star, Shield), скроллируемые на мобильном
 - **Перевод ошибок бэкенда** — `ERROR_MAP` в AuthPage маппит английские ошибки на i18n-ключи (emailTaken, usernameTaken, invalidCredentials, usernameInvalid, banned, tooManyRequests)
 - **Age gate (18+)** — полноэкранный оверлей с backdrop blur для неавторизованных, подтверждение в localStorage, отказ → google.com
 - **Cookie consent** — баннер внизу экрана с кнопкой «Понятно» и ссылкой на Privacy Policy, localStorage, i18n (en/ru/es)
 - **Toast notifications** — react-hot-toast (bottom-center, dark theme neutral-800). Тосты при: like/unlike, delete, copy message, report, import, ошибках
 - **Skeleton loading** — детальные скелетоны для карточек персонажей (аватар-круг + линии текста + теги), страницы персонажа и чата
-- **PWA (Progressive Web App)** — vite-plugin-pwa, manifest (standalone, theme #171717), service worker с NetworkFirst для `/api/`, установка на домашний экран
+- **PWA (Progressive Web App)** — vite-plugin-pwa, manifest (standalone, theme #171717), service worker с NetworkFirst для `/api/`, `navigateFallbackDenylist` для `/sitemap.xml`, `/robots.txt`, `/feed.xml` (предотвращает перехват SPA), установка на домашний экран
 - **Open Graph / SEO** — og:image PNG (1200×630), og:url, og:type, og:locale, twitter:card/title/description/image мета-теги. Hreflang для 7 языков
 - **RSS фид** — `/feed.xml` (RSS 2.0, 30 последних персонажей с аватарами, EN translations для имён/описаний). `<link rel="alternate">` в HTML
 - **JSON-LD** — WebSite + Organization (@graph) на главной, CreativeWork на персонажах (реальные счётчики, без base_chat_count; author, datePublished UTC, inLanguage, isPartOf), FAQPage на /faq, BreadcrumbList на персонажах и тегах, CollectionPage на тегах
@@ -537,12 +547,13 @@ docker compose up -d
 - Авто-миграции: `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` при старте (отдельные транзакции)
 - SSL для подключения к Supabase (CERT_REQUIRED, check_hostname=False для pooler)
 - **Файловое хранилище** — `data/uploads/` с Docker volume, nginx раздача с кэшированием
-- **Docker Compose** — полный VPS-деплой (PostgreSQL + Backend + Nginx + Webhook)
+- **Docker Compose** — полный VPS-деплой (PostgreSQL + Backend + Nginx + Webhook + Autoheal)
 - **Multi-stage Docker build** — frontend собирается в node:20, nginx.conf baked в образ (не volume mount)
 - **GitHub Webhook** — автодеплой при push в main (Flask на порту 9000), tracking статуса (done/failed/timeout)
 - **Zero-downtime deploy** — build → force-recreate backend → health check (до 60с) → auto-recovery (stop+rm+up) if unhealthy → restart nginx
 - **Same-path mount** — webhook контейнер монтирует репо по `HOST_REPO_DIR:HOST_REPO_DIR`, чтобы Docker daemon видел корректные пути для build context и volumes
 - **Health endpoints** — `/api/health` и `:9000/health` с commit hash, started_at, last_deploy
+- **Autoheal** — `willfarrell/autoheal` контейнер мониторит все сервисы каждые 30с, автоматически перезапускает unhealthy контейнеры
 - **setup.sh** — установка на Ubuntu VPS (интерактивный + `--auto` режим с предзаполненным `.env`), настройка email (Resend/SMTP), ADMIN_EMAILS, авто-определение FRONTEND_URL
 - **SSL** — Certbot (Let's Encrypt), настроен для sweetsin.cc, авто-обновление через cron
 - **WEB_WORKERS** — настраиваемое кол-во gunicorn workers через env (дефолт 2, для 888MB RAM используется 1)
@@ -584,8 +595,15 @@ docker compose up -d
 - [x] ~~Slug (псевдоним) персонажа — уникальный per-creator, валидация, проверка доступности с debounce~~
 - [x] ~~Streaming scroll fix — rAF-батчинг, React.memo на MessageBubble, устранение jank~~
 - [x] ~~Admin-only поля в CharacterForm (модель, длина ответа, макс токенов, system prompt suffix)~~
-- [x] ~~Paid mode обновлён: groq→openrouter (paid), openrouter only (free)~~
+- [x] ~~Paid mode обновлён: groq→together→openrouter (paid), groq→cerebras→openrouter→together (free)~~
 - [x] ~~Persona generation — только для админа~~
+- [x] ~~Профиль с табами (Profile, Characters, Personas, Account)~~
+- [x] ~~Autoheal контейнер (willfarrell/autoheal, перезапуск unhealthy)~~
+- [x] ~~Sitemap: 2-часовой кеш, image extension, lastmod, root URL~~
+- [x] ~~Together SDK v2 совместимость (refresh_models)~~
+- [x] ~~Автоматический мониторинг ошибок (AdminEmailHandler, email digest)~~
+- [x] ~~Дедупликация user-сообщений (предотвращение дублей при reload после ошибки)~~
+- [x] ~~PWA navigateFallbackDenylist (sitemap.xml, robots.txt, feed.xml)~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
