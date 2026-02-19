@@ -74,7 +74,10 @@ class OpenRouterProvider(BaseLLMProvider):
                     raise RuntimeError("Модель вернула пустой ответ")
                 return
             except Exception as e:
-                model_cooldown.mark_failed("openrouter", model)
+                if self._is_not_found(e):
+                    model_cooldown.mark_not_found("openrouter", model)
+                else:
+                    model_cooldown.mark_failed("openrouter", model)
                 reason = self._extract_reason(e)
                 errors.append((model.split("/")[-1].replace(":free", ""), reason))
                 if self._is_retryable(e):
@@ -126,7 +129,10 @@ class OpenRouterProvider(BaseLLMProvider):
                 errors.append((model.split("/")[-1].replace(":free", ""), "таймаут"))
                 continue
             except Exception as e:
-                model_cooldown.mark_failed("openrouter", model)
+                if self._is_not_found(e):
+                    model_cooldown.mark_not_found("openrouter", model)
+                else:
+                    model_cooldown.mark_failed("openrouter", model)
                 reason = self._extract_reason(e)
                 errors.append((model.split("/")[-1].replace(":free", ""), reason))
                 if self._is_retryable(e):
@@ -156,6 +162,11 @@ class OpenRouterProvider(BaseLLMProvider):
         if len(err) > 150:
             err = err[:150] + "..."
         return err
+
+    @staticmethod
+    def _is_not_found(e: Exception) -> bool:
+        err = str(e).lower()
+        return "404" in str(e) or "does not exist" in err or "not found" in err or "no endpoints" in err
 
     @staticmethod
     def _is_retryable(e: Exception) -> bool:

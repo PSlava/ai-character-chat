@@ -75,7 +75,10 @@ class GroqProvider(BaseLLMProvider):
                 except Exception as e:
                     if use_flex and self._is_flex_unavailable(e):
                         continue  # retry same model without flex
-                    model_cooldown.mark_failed(PROVIDER, model)
+                    if self._is_not_found(e):
+                        model_cooldown.mark_not_found(PROVIDER, model)
+                    else:
+                        model_cooldown.mark_failed(PROVIDER, model)
                     reason = self._extract_reason(e)
                     errors.append((model, reason))
                     if self._is_retryable(e):
@@ -111,7 +114,10 @@ class GroqProvider(BaseLLMProvider):
                 except Exception as e:
                     if use_flex and self._is_flex_unavailable(e):
                         continue  # retry same model without flex
-                    model_cooldown.mark_failed(PROVIDER, model)
+                    if self._is_not_found(e):
+                        model_cooldown.mark_not_found(PROVIDER, model)
+                    else:
+                        model_cooldown.mark_failed(PROVIDER, model)
                     reason = self._extract_reason(e)
                     errors.append((model, reason))
                     if self._is_retryable(e):
@@ -147,6 +153,11 @@ class GroqProvider(BaseLLMProvider):
         """Flex tier returns 498 when capacity is exceeded."""
         err = str(e)
         return "498" in err or "capacity_exceeded" in err.lower()
+
+    @staticmethod
+    def _is_not_found(e: Exception) -> bool:
+        err = str(e).lower()
+        return "404" in str(e) or "does not exist" in err or "not found" in err
 
     @staticmethod
     def _is_retryable(e: Exception) -> bool:

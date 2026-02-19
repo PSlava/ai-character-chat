@@ -60,7 +60,10 @@ class CerebrasProvider(BaseLLMProvider):
                     raise RuntimeError("Модель вернула пустой ответ")
                 return
             except Exception as e:
-                model_cooldown.mark_failed(PROVIDER, model)
+                if self._is_not_found(e):
+                    model_cooldown.mark_not_found(PROVIDER, model)
+                else:
+                    model_cooldown.mark_failed(PROVIDER, model)
                 reason = self._extract_reason(e)
                 errors.append((model, reason))
                 if self._is_retryable(e):
@@ -97,7 +100,10 @@ class CerebrasProvider(BaseLLMProvider):
                     raise RuntimeError(f"CJK/foreign chars in response from {model}")
                 return result
             except Exception as e:
-                model_cooldown.mark_failed(PROVIDER, model)
+                if self._is_not_found(e):
+                    model_cooldown.mark_not_found(PROVIDER, model)
+                else:
+                    model_cooldown.mark_failed(PROVIDER, model)
                 reason = self._extract_reason(e)
                 errors.append((model, reason))
                 if self._is_retryable(e):
@@ -127,6 +133,11 @@ class CerebrasProvider(BaseLLMProvider):
             pass
         err = str(e)
         return err[:150] + "..." if len(err) > 150 else err
+
+    @staticmethod
+    def _is_not_found(e: Exception) -> bool:
+        err = str(e).lower()
+        return "404" in str(e) or "does not exist" in err or "not found" in err
 
     @staticmethod
     def _is_retryable(e: Exception) -> bool:
