@@ -18,17 +18,19 @@ export function Layout() {
     trackPageView(pathname);
   }, [pathname]);
 
+  const isChatPage = pathname.startsWith('/chat/') || pathname.startsWith('/group-chat/');
+
   return (
     <div className="h-screen flex flex-col">
       <Header onToggleSidebar={() => setSidebarOpen((v) => !v)} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main ref={mainRef} className="flex-1 overflow-y-auto">
-          <div className="min-h-full flex flex-col">
+        <main ref={mainRef} className={`flex-1 ${isChatPage ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+          <div className={`${isChatPage ? 'h-full' : 'min-h-full'} flex flex-col`}>
             <div className="flex-1">
               <Outlet />
             </div>
-            <Footer />
+            {!isChatPage && <Footer />}
           </div>
         </main>
       </div>
