@@ -491,7 +491,8 @@ async def send_message(
 
     if is_auto:
         paid_mode = await _is_paid_mode(db)
-        auto_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip()]
+        order_str = settings.auto_provider_order_paid if paid_mode else settings.auto_provider_order
+        auto_order = [p.strip() for p in order_str.split(",") if p.strip()]
 
         async def event_stream():
             errors: list[str] = []
@@ -584,8 +585,10 @@ async def send_message(
                         is_refusal = True
 
                 if is_refusal:
-                    # Try auto-fallback on refusal
-                    fallback_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip() and p.strip() != provider_name]
+                    # Try auto-fallback on refusal (use paid order if paid mode)
+                    paid = await _is_paid_mode(db)
+                    fb_str = settings.auto_provider_order_paid if paid else settings.auto_provider_order
+                    fallback_order = [p.strip() for p in fb_str.split(",") if p.strip() and p.strip() != provider_name]
                     for fb_name in fallback_order:
                         try:
                             fb_prov = get_provider(fb_name)
