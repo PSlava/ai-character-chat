@@ -13,11 +13,25 @@ OPENROUTER_FREE_MODELS = [
         "note": "лучшая для RP, Venice нестабилен",
     },
     {
+        "id": "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+        "name": "Dolphin Mistral 24B",
+        "quality": 8,
+        "nsfw": True,
+        "note": "без цензуры, Venice edition",
+    },
+    {
         "id": "meta-llama/llama-3.3-70b-instruct:free",
         "name": "Llama 3.3 70B",
         "quality": 8,
         "nsfw": True,
         "note": "хорошая для RP, Venice нестабилен",
+    },
+    {
+        "id": "mistralai/mistral-small-3.1-24b-instruct:free",
+        "name": "Mistral Small 3.1 24B",
+        "quality": 7,
+        "nsfw": True,
+        "note": "стабильная, Mistral инфра",
     },
     {
         "id": "google/gemma-3-27b-it:free",
