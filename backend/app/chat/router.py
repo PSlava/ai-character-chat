@@ -42,10 +42,29 @@ async def _is_paid_mode(db: AsyncSession) -> bool:
 _GENERIC_ERROR_RU = "Ошибка генерации ответа. Попробуйте позже."
 _MODERATION_KEYWORDS = ("data_inspection_failed", "content_policy", "content_filter", "moderation", "safety system")
 
+# Refusal phrases in model responses (model returns refusal as normal text)
+_REFUSAL_PHRASES = (
+    "не могу продолжить", "не могу продолжать", "незаконный контент",
+    "не могу помочь", "не в состоянии помочь",
+    "i cannot continue", "i can't continue", "i can't help",
+    "i cannot help", "against my guidelines", "i'm not able to",
+    "i must refuse", "i cannot generate", "i can't generate",
+    "illegal content", "i cannot assist", "i can't assist",
+    "no puedo continuar", "no puedo ayudar", "contenido ilegal",
+)
+
 
 def _is_moderation_error(err: str) -> bool:
     low = err.lower()
     return any(kw in low for kw in _MODERATION_KEYWORDS)
+
+
+def _is_refusal_response(text: str) -> bool:
+    """Check if model response is a content refusal (not a real answer)."""
+    low = text.strip().lower()
+    if len(low) > 500:
+        return False  # Real responses are longer
+    return any(phrase in low for phrase in _REFUSAL_PHRASES)
 
 
 def _user_error(err: str, is_admin: bool) -> str:
@@ -486,11 +505,43 @@ async def send_message(
                     continue  # provider not configured
                 config = LLMConfig(model="", use_flex=paid_mode and pname == "groq", **base_config)
                 full_response: list[str] = []
+                buffered: list[str] = []
+                buffer_flushed = False
+                is_refusal = False
                 try:
                     async for chunk in prov.generate_stream(messages, config):
                         full_response.append(chunk)
-                        yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+                        if not buffer_flushed:
+                            buffered.append(chunk)
+                            buf_text = "".join(buffered)
+                            if len(buf_text) >= 200:
+                                # Check buffered text for refusal
+                                if _is_refusal_response(buf_text):
+                                    is_refusal = True
+                                    break
+                                # Flush buffer
+                                for b in buffered:
+                                    yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
+                                buffer_flushed = True
+                        else:
+                            yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+
+                    if is_refusal:
+                        actual_m = getattr(prov, 'last_model_used', '') or ''
+                        errors.append(f"{pname}:{actual_m}: content refusal")
+                        continue
+
+                    # Check short responses that finished before buffer flush
                     complete_text = "".join(full_response)
+                    if not buffer_flushed:
+                        if _is_refusal_response(complete_text):
+                            actual_m = getattr(prov, 'last_model_used', '') or ''
+                            errors.append(f"{pname}:{actual_m}: content refusal")
+                            continue
+                        # Flush remaining buffer
+                        for b in buffered:
+                            yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
+
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
                     saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
                     await service.increment_message_count(character.id, language, user_id_for_increment)
@@ -511,12 +562,66 @@ async def send_message(
 
         async def event_stream():
             full_response = []
+            buffered: list[str] = []
+            buffer_flushed = False
+            is_refusal = False
             try:
                 async for chunk in provider.generate_stream(messages, config):
                     full_response.append(chunk)
-                    yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+                    if not buffer_flushed:
+                        buffered.append(chunk)
+                        buf_text = "".join(buffered)
+                        if len(buf_text) >= 200:
+                            if _is_refusal_response(buf_text):
+                                is_refusal = True
+                                break
+                            for b in buffered:
+                                yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
+                            buffer_flushed = True
+                    else:
+                        yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
 
                 complete_text = "".join(full_response)
+                if not buffer_flushed and not is_refusal:
+                    if _is_refusal_response(complete_text):
+                        is_refusal = True
+
+                if is_refusal:
+                    # Try auto-fallback on refusal
+                    fallback_order = [p.strip() for p in settings.auto_provider_order.split(",") if p.strip() and p.strip() != provider_name]
+                    for fb_name in fallback_order:
+                        try:
+                            fb_prov = get_provider(fb_name)
+                        except ValueError:
+                            continue
+                        fb_config = LLMConfig(model="", **base_config)
+                        try:
+                            fb_response: list[str] = []
+                            async for chunk in fb_prov.generate_stream(messages, fb_config):
+                                fb_response.append(chunk)
+                                yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+                            fb_text = "".join(fb_response)
+                            if _is_refusal_response(fb_text):
+                                continue
+                            actual_model = f"{fb_name}:{getattr(fb_prov, 'last_model_used', '') or ''}"
+                            saved_msg = await service.save_message(db, chat_id, "assistant", fb_text, model_used=actual_model)
+                            await service.increment_message_count(character.id, language, user_id_for_increment)
+                            _asyncio.create_task(maybe_summarize(chat_id))
+                            done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
+                            if anon_session_id and anon_remaining is not None:
+                                done_data['anon_messages_left'] = anon_remaining - 1
+                            yield f"data: {json.dumps(done_data)}\n\n"
+                            return
+                        except Exception:
+                            continue
+                    # All fallbacks failed or refused too
+                    yield f"data: {json.dumps({'type': 'error', 'content': 'Модель отказала в генерации. Попробуйте другую модель.', 'user_message_id': user_msg.id})}\n\n"
+                    return
+
+                if not buffer_flushed:
+                    for b in buffered:
+                        yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
+
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
                 saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
                 await service.increment_message_count(character.id, language, user_id_for_increment)
