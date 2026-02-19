@@ -333,8 +333,8 @@ export function ChatPage() {
   return (
     <div className="h-full flex flex-col">
       {character?.name && <SEO title={`${t('chat.chatWith')} ${character.name}`} />}
-      {/* Chat header */}
-      <div className="border-b border-neutral-800 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
+      {/* Chat header — sticky so it stays visible when main scrolls */}
+      <div className="sticky top-0 z-10 bg-neutral-950 border-b border-neutral-800 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
         <button
           type="button"
           onClick={() => character?.avatar_url && setShowAvatarLightbox(true)}

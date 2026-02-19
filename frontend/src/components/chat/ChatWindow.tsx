@@ -43,18 +43,14 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
       }
       isPrependingRef.current = false;
     } else if (isNearBottomRef.current) {
-      if (isStreaming) {
-        // During streaming: instant scroll batched with rAF to avoid layout thrashing
-        cancelAnimationFrame(scrollRAFRef.current);
-        scrollRAFRef.current = requestAnimationFrame(() => {
-          const container = containerRef.current;
-          if (container) {
-            container.scrollTop = container.scrollHeight;
-          }
-        });
-      } else {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Scroll only the chat container (NOT parent main) to avoid header jumping
+      cancelAnimationFrame(scrollRAFRef.current);
+      scrollRAFRef.current = requestAnimationFrame(() => {
+        const container = containerRef.current;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      });
     }
     prevMsgCountRef.current = messages.length;
   }, [messages, isStreaming]);
@@ -104,7 +100,10 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
   }
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = containerRef.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    }
   };
 
   return (
