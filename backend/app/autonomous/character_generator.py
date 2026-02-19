@@ -249,23 +249,35 @@ async def _generate_avatar(avatar_prompt: str) -> str | None:
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://api.openai.com/v1/images/generations",
-                json={
-                    "model": "dall-e-3",
-                    "prompt": avatar_prompt,
-                    "n": 1,
-                    "size": "1024x1024",
-                    "quality": "standard",
-                    "response_format": "b64_json",
-                },
-                headers={
-                    "Authorization": f"Bearer {settings.openai_api_key}",
-                    "Content-Type": "application/json",
-                },
-                timeout=120,
-            )
-            response.raise_for_status()
+            # Try original prompt, retry with sanitized version on 400
+            for attempt, prompt in enumerate([
+                avatar_prompt,
+                f"SFW digital art portrait, anime style, detailed face, atmospheric background, bust shot. Character: young person with expressive eyes.",
+            ]):
+                response = await client.post(
+                    "https://api.openai.com/v1/images/generations",
+                    json={
+                        "model": "dall-e-3",
+                        "prompt": prompt,
+                        "n": 1,
+                        "size": "1024x1024",
+                        "quality": "standard",
+                        "response_format": "b64_json",
+                    },
+                    headers={
+                        "Authorization": f"Bearer {settings.openai_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    timeout=120,
+                )
+                if response.status_code == 400:
+                    err_body = response.text[:300]
+                    logger.warning("DALL-E 400 (attempt %d): %s | prompt: %s", attempt, err_body, prompt[:100])
+                    continue
+                response.raise_for_status()
+                break
+            else:
+                raise RuntimeError("DALL-E rejected all prompt variants")
 
         b64 = response.json()["data"][0]["b64_json"]
         img_bytes = base64.b64decode(b64)
