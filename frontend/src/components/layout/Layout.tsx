@@ -26,12 +26,16 @@ export function Layout() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main ref={mainRef} className={`flex-1 ${isChatPage ? 'overflow-hidden' : 'overflow-y-auto'}`}>
-          <div className={`${isChatPage ? 'h-full' : 'min-h-full'} flex flex-col`}>
-            <div className="flex-1">
-              <Outlet />
+          {isChatPage ? (
+            <Outlet />
+          ) : (
+            <div className="min-h-full flex flex-col">
+              <div className="flex-1">
+                <Outlet />
+              </div>
+              <Footer />
             </div>
-            {!isChatPage && <Footer />}
-          </div>
+          )}
         </main>
       </div>
       <AgeGate />
