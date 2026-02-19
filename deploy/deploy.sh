@@ -36,18 +36,28 @@ wait_for_healthy() {
 }
 
 # --- Deploy backend with recovery ---
-echo "Restarting backend (stop+rm+up with deps)..."
-$DC stop backend
-$DC rm -f backend
-$DC up -d backend
+deploy_backend() {
+    echo "Restarting backend (stop+rm+up with deps)..."
+    $DC stop backend
+    sleep 2
+    $DC rm -f backend
+    $DC up -d backend
+}
 
+deploy_backend
 if ! wait_for_healthy 30; then
-    echo "ERROR: Backend still unhealthy after deploy. Deploy failed."
-    exit 1
+    echo "WARN: Backend unhealthy, retrying deploy..."
+    deploy_backend
+    if ! wait_for_healthy 30; then
+        echo "ERROR: Backend still unhealthy after retry. Deploy failed."
+        exit 1
+    fi
 fi
 
 echo "Restarting nginx..."
-$DC up -d --no-deps nginx
+$DC stop nginx
+$DC rm -f nginx
+$DC up -d nginx
 
 # Clean up old images
 docker image prune -f
