@@ -69,18 +69,22 @@ async def refresh_models(client) -> list[dict]:
     global _cached_models, _cache_time
     try:
         response = await client.models.list()
+        # Together SDK v2 returns a list directly; older versions return object with .data
+        items = response.data if hasattr(response, "data") else response
         models = []
-        for m in response.data:
-            model_type = getattr(m, "type", None) or ""
+        for m in items:
+            model_id = m.id if hasattr(m, "id") else m.get("id", "")
+            model_type = getattr(m, "type", None) or (m.get("type") if isinstance(m, dict) else "") or ""
+            owned_by = getattr(m, "owned_by", None) or (m.get("owned_by") if isinstance(m, dict) else "") or ""
             if model_type and model_type not in INCLUDE_TYPES:
                 continue
-            if _should_include(m.id):
-                models.append(_build_model_entry(m.id, getattr(m, "owned_by", "")))
+            if _should_include(model_id):
+                models.append(_build_model_entry(model_id, owned_by))
         if models:
             models.sort(key=lambda x: x["quality"], reverse=True)
             _cached_models = models
             _cache_time = time.monotonic()
-            logger.info(f"Together models refreshed: {[m['id'] for m in models[:10]]}...")
+            logger.info(f"Together models refreshed: {len(models)} models, top: {[m['id'] for m in models[:5]]}")
     except Exception as e:
         logger.warning(f"Failed to refresh Together models: {e}")
     return _cached_models
