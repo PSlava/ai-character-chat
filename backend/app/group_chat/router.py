@@ -16,6 +16,7 @@ from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
 from app.config import settings
 from app.chat.prompt_builder import build_system_prompt
+from app.chat.service import _POST_HISTORY
 from app.chat.daily_limit import check_daily_limit
 
 router = APIRouter(prefix="/api/group-chats", tags=["group-chat"])
@@ -252,6 +253,7 @@ async def send_group_message(
                     "\nОтвечай ТОЛЬКО как {name} — не пиши за других персонажей и не продолжай их текст."
                     "\nСообщения других персонажей помечены [Имя]: — это НЕ твои реплики."
                     "\nДержи ответ коротким (1-2 абзаца). Реагируй на сказанное другими."
+                    "\nПиши ТОЛЬКО на русском языке. Не вставляй английские слова."
                 ),
                 "en": (
                     "\n\n## Group Chat"
@@ -326,7 +328,12 @@ async def send_group_message(
                     prefix = f"[{other_char_name}]: " if other_char_name else ""
                     llm_msgs.append(LLMMessage(role="user", content=f"{prefix}{msg.content}"))
 
-            config = LLMConfig(model="", temperature=0.8, max_tokens=1024)
+            # Post-history reminder (closest to generation = strongest effect)
+            lang_ph = language if language in _POST_HISTORY else "en"
+            reminder = _POST_HISTORY[lang_ph].format(name=character.name)
+            llm_msgs.append(LLMMessage(role="system", content=reminder))
+
+            config = LLMConfig(model="", temperature=0.8, max_tokens=600)
 
             # Signal which character is about to respond
             yield f"data: {json.dumps({'type': 'character_start', 'character_id': character.id, 'character_name': character.name})}\n\n"
