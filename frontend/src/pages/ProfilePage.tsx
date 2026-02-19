@@ -24,7 +24,7 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const logout = useAuthStore((s) => s.logout);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') as ProfileTab | null;
   const validTabs: ProfileTab[] = ['profile', 'characters', 'personas', 'account'];
   const [activeTab, setActiveTab] = useState<ProfileTab>(
