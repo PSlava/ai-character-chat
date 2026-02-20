@@ -334,7 +334,6 @@ async def prerender_tag(
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SweetSin">
 <meta property="og:image" content="{SITE_URL}/og-image.png">
-<meta property="og:site_name" content="SweetSin">
 <meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{_escape(label)} — AI Characters">

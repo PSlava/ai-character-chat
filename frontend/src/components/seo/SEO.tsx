@@ -45,6 +45,9 @@ export function SEO({ title, description, image, url, jsonLd }: SEOProps) {
       <meta property="og:url" content={canonical} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content={SITE_NAME} />
+      <meta property="og:locale" content={i18n.language} />
+      {ogImage && <meta property="og:image:width" content="1200" />}
+      {ogImage && <meta property="og:image:height" content="630" />}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title || `${SITE_NAME} — AI Character Chat`} />
       {description && <meta name="twitter:description" content={description} />}
