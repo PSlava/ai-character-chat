@@ -16,10 +16,11 @@
 | **Favicon** | SVG (`public/favicon.svg`) + ICO multi-size 16/32/48px (`public/favicon.ico`) |
 
 **SEO (index.html):**
-- Title: `SweetSin — AI Character Chat | Roleplay & Fantasy`
-- Meta description: Chat with AI characters without limits. Immersive roleplay, uncensored conversations, and endless fantasy.
-- Keywords: AI chat, AI roleplay, character AI alternative, NSFW AI chat, AI companion, uncensored AI, roleplay chatbot, AI girlfriend, AI boyfriend, fantasy chat, AI characters, SweetSin
+- Title: `SweetSin — Character Chat | Roleplay & Fantasy`
+- Meta description: Chat with unique AI characters. Immersive roleplay, creative storytelling, and endless fantasy. Create your own characters or explore thousands of others.
+- Keywords: AI character chat, AI roleplay, character AI alternative, roleplay chatbot, fantasy chat, AI companion, AI characters, creative writing, SweetSin
 - Open Graph: title, description, type, site_name
+- **SEO softening** (feb 2026): убраны "NSFW"/"uncensored" из мета-тегов и пререндера, NSFW-тэглайны скрыты от ботов (имена видны), `<meta name="rating" content="adult">` для NSFW-персонажей, priority 0.4 в sitemap, `Disallow: /*nsfw*` в robots.txt, RSS фид без NSFW-тэглайнов
 
 **Рассматривались домены (feb 2026):**
 - .ai зона (~$50-80/год): naughtai.ai, sweetsin.ai, temptai.ai, darkrose.ai, velvetai.ai — все свободны
@@ -631,6 +632,7 @@ docker compose up -d
 - [x] ~~Favicon ICO (multi-size 16/32/48px из SVG)~~
 - [x] ~~NSFW anti-repetition fix: frequency_penalty 0.5 (NSFW) / 0.3 (SFW), усиленный post-history reminder с сохранением локации~~
 - [x] ~~Sitemap nginx fix: proxy headers + no-cache для GSC~~
+- [x] ~~SEO softening: убраны "NSFW"/"uncensored" из мета-тегов, NSFW-тэглайны скрыты от ботов, `<meta name="rating" content="adult">` для NSFW-персонажей, priority 0.4 в sitemap, robots.txt `/*nsfw*`~~
 - [x] ~~Расширенные промпт-улучшения: mental review, мягкая структура, fiction author frame (SFW/moderate), NSFW scene pacing, позитивные формулировки, расширенные banned phrases (7 языков)~~
 - [x] ~~Speech Pattern — поле для речевых паттернов персонажа (DB, prompt injection, form, export/import, generator, rewrite script, 7 языков i18n)~~
 - [x] ~~Response length открыт всем пользователям (убран isAdmin wrapper)~~

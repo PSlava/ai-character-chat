@@ -63,8 +63,10 @@
 - [x] Домен подтверждён, sitemap отправлен
 - (Своя аналитика уже есть: pageviews, unique visitors, страны, устройства, модели)
 
-### 12. Bing Webmaster Tools
-- Submit sitemap
+### 12. Bing Webmaster Tools ⚠️
+- [x] Submit sitemap — отправлен
+- ⚠️ "Discovered but not crawled" — Bing нашёл URL, но не индексирует
+- [x] SEO softening (feb 2026): убраны "NSFW"/"uncensored" из мета, NSFW-тэглайны скрыты от ботов, `<meta name="rating" content="adult">` для NSFW-персонажей, sitemap priority 0.4, robots.txt `/*nsfw*`
 
 ### 13. Twitter/X dev account
 - Нужно: создать аккаунт + API ключи
