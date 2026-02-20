@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { getCharacters } from '@/api/characters';
+import { Link, useNavigate } from 'react-router-dom';
+import { getCharacters, suggestCharacters, type CharacterSuggestion } from '@/api/characters';
 import { CharacterGrid } from '@/components/characters/CharacterGrid';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { SEO } from '@/components/seo/SEO';
@@ -28,6 +28,7 @@ const PAGE_SIZE = 15;
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [total, setTotal] = useState(0);
@@ -38,6 +39,13 @@ export function HomePage() {
   const [page, setPage] = useState(1);
   const prevLangRef = useRef(i18n.language);
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Autocomplete state
+  const [suggestions, setSuggestions] = useState<CharacterSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState(-1);
+  const suggestRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -72,6 +80,55 @@ export function HomePage() {
     }, search ? 300 : 0);
     return () => clearTimeout(timer);
   }, [search, activeTag, activeGender, page, i18n.language]);
+
+  // Autocomplete suggestions
+  useEffect(() => {
+    if (!search || search.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      suggestCharacters(search, i18n.language)
+        .then((res) => {
+          setSuggestions(res);
+          setShowSuggestions(res.length > 0);
+          setSelectedIdx(-1);
+        })
+        .catch(() => setSuggestions([]));
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [search, i18n.language]);
+
+  // Close suggestions on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (suggestRef.current && !suggestRef.current.contains(e.target as Node) &&
+          inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIdx((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIdx((prev) => Math.max(prev - 1, -1));
+    } else if (e.key === 'Enter' && selectedIdx >= 0) {
+      e.preventDefault();
+      const s = suggestions[selectedIdx];
+      navigate(localePath(s.slug ? `/c/${s.slug}` : `/character/${s.id}`));
+      setShowSuggestions(false);
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  }, [showSuggestions, suggestions, selectedIdx, navigate]);
 
   // Featured character of the day — pick from top 5 (already sorted by language preference)
   const featuredCharacter = characters.length > 0
@@ -163,13 +220,46 @@ export function HomePage() {
         </div>
 
         <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 z-10" />
           <input
+            ref={inputRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            onKeyDown={handleSearchKeyDown}
             placeholder={t('home.search')}
             className="w-full bg-neutral-800 border border-neutral-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500"
+            autoComplete="off"
           />
+          {showSuggestions && suggestions.length > 0 && (
+            <div
+              ref={suggestRef}
+              className="absolute z-50 top-full mt-1 w-full bg-neutral-800 border border-neutral-700 rounded-xl shadow-xl overflow-hidden"
+            >
+              {suggestions.map((s, i) => (
+                <Link
+                  key={s.id}
+                  to={localePath(s.slug ? `/c/${s.slug}` : `/character/${s.id}`)}
+                  onClick={() => setShowSuggestions(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
+                    i === selectedIdx ? 'bg-neutral-700' : 'hover:bg-neutral-700/50'
+                  }`}
+                >
+                  {s.avatar_url ? (
+                    <img src={s.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-neutral-600 shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-white truncate">{s.name}</div>
+                    {s.tagline && (
+                      <div className="text-xs text-neutral-400 truncate">{s.tagline}</div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Featured character of the day */}

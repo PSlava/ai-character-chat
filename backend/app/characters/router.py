@@ -224,6 +224,16 @@ async def my_characters(
     return [character_to_dict(c, is_admin=is_admin) for c in characters]
 
 
+@router.get("/suggest")
+async def suggest_characters(
+    q: str = Query("", min_length=1, max_length=100),
+    language: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Lightweight autocomplete suggestions (max 5)."""
+    return await service.suggest_characters(db, q, language=language)
+
+
 @router.get("/structured-tags")
 async def list_structured_tags():
     from app.characters.structured_tags import CATEGORIES, get_tags_by_category

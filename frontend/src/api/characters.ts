@@ -26,6 +26,21 @@ export async function getCharacters(params?: {
   return data;
 }
 
+export interface CharacterSuggestion {
+  id: string;
+  name: string;
+  slug: string | null;
+  avatar_url: string | null;
+  tagline: string;
+}
+
+export async function suggestCharacters(q: string, language?: string): Promise<CharacterSuggestion[]> {
+  const { data } = await api.get<CharacterSuggestion[]>('/characters/suggest', {
+    params: { q, ...(language ? { language } : {}) },
+  });
+  return data;
+}
+
 export async function getCharacter(id: string, language?: string) {
   const { data } = await api.get<Character>(`/characters/${id}`, {
     params: language ? { language } : undefined,

@@ -52,7 +52,13 @@ async def list_public_characters(
     )
     if search:
         escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        query = query.where(Character.name.ilike(f"%{escaped}%"))
+        query = query.where(
+            or_(
+                Character.name.ilike(f"%{escaped}%"),
+                Character.tagline.ilike(f"%{escaped}%"),
+                Character.tags.ilike(f"%{escaped}%"),
+            )
+        )
     if tag:
         query = query.where(Character.tags.contains(tag))
     if gender and gender in ("male", "female"):
@@ -87,8 +93,15 @@ async def count_public_characters(
 
     query = select(func.count()).select_from(Character).where(visibility)
     if search:
+        from sqlalchemy import or_
         escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-        query = query.where(Character.name.ilike(f"%{escaped}%"))
+        query = query.where(
+            or_(
+                Character.name.ilike(f"%{escaped}%"),
+                Character.tagline.ilike(f"%{escaped}%"),
+                Character.tags.ilike(f"%{escaped}%"),
+            )
+        )
     if tag:
         query = query.where(Character.tags.contains(tag))
     if gender and gender in ("male", "female"):
@@ -97,6 +110,53 @@ async def count_public_characters(
 
     result = await db.execute(query)
     return result.scalar_one()
+
+
+async def suggest_characters(
+    db: AsyncSession,
+    query_str: str,
+    language: str | None = None,
+    limit: int = 5,
+) -> list[dict]:
+    """Lightweight character suggestions for autocomplete. Returns minimal fields."""
+    from sqlalchemy import or_
+
+    escaped = query_str.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    q = (
+        select(Character.id, Character.name, Character.slug, Character.avatar_url, Character.tagline, Character.translations)
+        .where(
+            Character.is_public == True,
+            or_(
+                Character.name.ilike(f"%{escaped}%"),
+                Character.tagline.ilike(f"%{escaped}%"),
+                Character.tags.ilike(f"%{escaped}%"),
+            ),
+        )
+        .order_by(Character.chat_count.desc())
+        .limit(limit)
+    )
+    result = await db.execute(q)
+    rows = result.all()
+
+    suggestions = []
+    for row in rows:
+        name = row.name
+        tagline = row.tagline or ""
+        # Use cached translations if available
+        if language and row.translations:
+            tr = row.translations.get(language, {})
+            if "name" in tr:
+                name = tr["name"]
+            if "tagline" in tr:
+                tagline = tr["tagline"]
+        suggestions.append({
+            "id": row.id,
+            "name": name,
+            "slug": row.slug,
+            "avatar_url": row.avatar_url,
+            "tagline": tagline,
+        })
+    return suggestions
 
 
 async def get_character(db: AsyncSession, character_id: str):
