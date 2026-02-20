@@ -895,7 +895,6 @@ Disallow: /admin/
 Disallow: /favorites
 Disallow: /create
 Disallow: /auth
-Disallow: /*nsfw*
 
 Sitemap: {SITE_URL}/sitemap.xml
 """
