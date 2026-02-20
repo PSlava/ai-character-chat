@@ -285,24 +285,44 @@ async def delete_character(db: AsyncSession, character_id: str, creator_id: str,
     return True
 
 
-async def get_similar_characters(db: AsyncSession, character_id: str, limit: int = 6) -> list:
-    """Find similar characters by matching tags. Exclude the given character."""
-    # Fetch the source character to get its tags
+async def get_similar_characters(db: AsyncSession, character_id: str, limit: int = 8) -> list:
+    """Find similar characters by matching tags, structured_tags, and content_rating."""
     result = await db.execute(select(Character).where(Character.id == character_id))
     character = result.scalar_one_or_none()
-    if not character or not character.tags:
+    if not character:
         return []
 
-    tags = [t.strip() for t in character.tags.split(",") if t.strip()]
-    if not tags:
+    tags = [t.strip() for t in (character.tags or "").split(",") if t.strip()]
+    struct_tags = [t.strip() for t in (character.structured_tags or "").split(",") if t.strip()]
+    src_rating = getattr(character.content_rating, 'value', character.content_rating) or "sfw"
+
+    if not tags and not struct_tags:
         return []
 
-    # Build a score expression: count how many of the source tags each candidate has
-    # Each tag contributes 1 to the score if it appears in the candidate's tags field
-    score = sum(
-        case((Character.tags.contains(tag), 1), else_=0)
-        for tag in tags
+    # Weighted score: free-form tags +2, structured tags +3, same content_rating +2, same creator -5
+    score_parts = []
+    for tag in tags:
+        score_parts.append(case((Character.tags.contains(tag), 2), else_=0))
+    for stag in struct_tags:
+        score_parts.append(
+            case(
+                (text(f"(',' || COALESCE(structured_tags, '') || ',') LIKE '%,{stag},%'"), 3),
+                else_=0,
+            )
+        )
+    # Bonus for same content rating
+    score_parts.append(
+        case(
+            (text(f"COALESCE(content_rating, 'sfw') = '{src_rating}'"), 2),
+            else_=0,
+        )
     )
+    # Penalty for same creator (avoid flooding with same-author chars)
+    score_parts.append(
+        case((Character.creator_id == character.creator_id, -5), else_=0)
+    )
+
+    score = sum(score_parts)
 
     query = (
         select(Character)
