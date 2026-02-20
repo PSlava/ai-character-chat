@@ -131,7 +131,6 @@ const PROVIDER_LIMITS: Record<string, ParamLimits> = {
   openrouter: { temperature: { max: 2 }, top_k: true,  frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
   deepseek:   { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
   qwen:       { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 1 }, presence_penalty: { max: 1 } },
-  claude:     { temperature: { max: 1 }, top_k: false, frequency_penalty: false, presence_penalty: false },
   openai:     { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 2 }, presence_penalty: { max: 2 } },
   gemini:     { temperature: { max: 2 }, top_k: false, frequency_penalty: false, presence_penalty: false },
 };
@@ -143,7 +142,7 @@ function getProvider(modelId: string): string {
   if (modelId.startsWith('together:') || modelId === 'together') return 'together';
   if (modelId.includes('/')) return 'openrouter';
   if (modelId === 'openrouter') return 'openrouter';
-  if (['deepseek', 'qwen', 'claude', 'openai', 'gemini'].includes(modelId)) return modelId;
+  if (['deepseek', 'qwen', 'openai', 'gemini'].includes(modelId)) return modelId;
   return 'default';
 }
 
@@ -222,7 +221,6 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
     { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct', nsfwOk: false },
     // Paid
     { id: 'gemini', label: 'Gemini', group: 'paid', nsfwOk: true },
-    { id: 'claude', label: 'Claude', group: 'paid', nsfwOk: true },
     { id: 'openai', label: 'GPT-4o', group: 'paid', nsfwOk: true },
   ];
 

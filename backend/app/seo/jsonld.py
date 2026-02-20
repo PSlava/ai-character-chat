@@ -78,7 +78,7 @@ def software_application_jsonld() -> dict:
         "url": SITE_URL,
         "applicationCategory": "EntertainmentApplication",
         "operatingSystem": "Web",
-        "description": "AI Character Chat — Roleplay & Fantasy with 9 AI providers",
+        "description": "Creative roleplay and character-driven conversations. Immersive storytelling experiences.",
         "offers": {
             "@type": "Offer",
             "price": "0",

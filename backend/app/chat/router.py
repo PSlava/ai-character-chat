@@ -126,7 +126,7 @@ async def create_chat(
     if user:
         chat, character, created = await service.get_or_create_chat(
             db, user["id"], body.character_id, body.model, persona_id=body.persona_id,
-            force_new=body.force_new,
+            force_new=body.force_new, language=body.language,
         )
     else:
         anon_session_id = request.headers.get("x-anon-session")
@@ -140,7 +140,7 @@ async def create_chat(
         chat, character, created = await service.get_or_create_chat(
             db, anon_uid, body.character_id, body.model,
             force_new=body.force_new,
-            anon_session_id=anon_session_id,
+            anon_session_id=anon_session_id, language=body.language,
         )
 
     if not chat:
@@ -487,7 +487,6 @@ async def send_message(
 
     # Resolve provider and model ID
     PROVIDER_MODELS = {
-        "claude": "claude-sonnet-4-5-20250929",
         "openai": "gpt-4o",
         "gemini": "gemini-2.0-flash",
         "deepseek": "deepseek-chat",

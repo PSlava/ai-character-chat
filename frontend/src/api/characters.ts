@@ -159,7 +159,7 @@ export async function wakeUpServer(
 export async function generateFromStory(
   storyText: string,
   characterName?: string,
-  preferredModel: string = 'claude',
+  preferredModel: string = 'auto',
   contentRating: string = 'sfw',
   extraInstructions?: string,
 ) {

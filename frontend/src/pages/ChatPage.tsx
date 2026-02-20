@@ -24,7 +24,6 @@ import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 
 const MODEL_ALIASES: Record<string, string> = {
-  claude: 'Claude',
   openai: 'GPT-4o',
   gemini: 'Gemini',
   openrouter: 'OpenRouter Auto',
@@ -54,7 +53,7 @@ export function ChatPage() {
   const [showPersonaModal, setShowPersonaModal] = useState(false);
   const [personas, setPersonas] = useState<Persona[]>([]);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
   const removeChat = useChatStore((s) => s.removeChat);
   const isAdmin = authUser?.role === 'admin';
@@ -106,7 +105,7 @@ export function ChatPage() {
 
         let model = savedModel || data.chat.model_used || 'openrouter';
         // Non-admin users can't use paid models — fallback to auto
-        if (!isAdmin && ['gemini', 'claude', 'openai'].includes(model)) {
+        if (!isAdmin && ['gemini', 'openai'].includes(model)) {
           model = 'auto';
         }
         setActiveModel(model);
@@ -247,12 +246,12 @@ export function ChatPage() {
       setPersonas(list);
       if (list.length === 0) {
         // No personas — create directly
-        const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, undefined, true);
+        const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, undefined, true, i18n.language);
         await useChatStore.getState().fetchChats();
         navigate(`/chat/${newChat.id}`);
       } else if (list.length === 1 && list[0].is_default) {
         // Single default persona — use automatically
-        const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, list[0].id, true);
+        const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, list[0].id, true, i18n.language);
         await useChatStore.getState().fetchChats();
         navigate(`/chat/${newChat.id}`);
       } else {
@@ -267,7 +266,7 @@ export function ChatPage() {
     if (!chatDetail?.chat.character_id) return;
     setShowPersonaModal(false);
     try {
-      const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, personaId, true);
+      const { chat: newChat } = await createChat(chatDetail.chat.character_id, undefined, personaId, true, i18n.language);
       await useChatStore.getState().fetchChats();
       navigate(`/chat/${newChat.id}`);
     } catch {

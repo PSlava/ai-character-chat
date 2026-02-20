@@ -231,7 +231,6 @@ export function CreateCharacterPage() {
               <option value="qwen">{t('create.qwen')}</option>
               <option disabled>───────────</option>
               <option value="gemini">{t('create.geminiPaid')}</option>
-              <option value="claude">{t('create.claudePaid')}</option>
               <option value="openai">{t('create.gptPaid')}</option>
             </select>
           </div>

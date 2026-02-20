@@ -91,7 +91,6 @@ async def generate_from_story(
 
     # Admin: direct provider selection; Regular users: auto with fallback
     PROVIDER_MODELS = {
-        "claude": "claude-sonnet-4-5-20250929",
         "openai": "gpt-4o",
         "gemini": "gemini-2.0-flash",
         "deepseek": "deepseek-chat",

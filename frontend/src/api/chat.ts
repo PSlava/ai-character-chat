@@ -8,12 +8,13 @@ export interface AnonLimit {
   enabled: boolean;
 }
 
-export async function createChat(characterId: string, model?: string, personaId?: string, forceNew?: boolean) {
+export async function createChat(characterId: string, model?: string, personaId?: string, forceNew?: boolean, language?: string) {
   const { data } = await api.post<ChatDetail>('/chats', {
     character_id: characterId,
     model,
     persona_id: personaId,
     force_new: forceNew || false,
+    language,
   });
   return data;
 }

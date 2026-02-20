@@ -78,7 +78,7 @@ export function CharacterPage() {
     setShowPersonaModal(false);
     setLoading(true);
     try {
-      const { chat } = await createChat(character.id, undefined, personaId, forceNew);
+      const { chat } = await createChat(character.id, undefined, personaId, forceNew, i18n.language);
       setForceNewChat(false);
       await fetchChats();
       navigate(`/chat/${chat.id}`);
@@ -94,7 +94,7 @@ export function CharacterPage() {
     if (!isAuthenticated) {
       setLoading(true);
       try {
-        const { chat } = await createChat(character.id);
+        const { chat } = await createChat(character.id, undefined, undefined, false, i18n.language);
         navigate(`/chat/${chat.id}`);
       } catch (err: any) {
         if (err?.response?.status === 403) {

@@ -69,6 +69,7 @@ async def get_or_create_chat(
     db: AsyncSession, user_id: str, character_id: str,
     model: str | None = None, persona_id: str | None = None,
     force_new: bool = False, anon_session_id: str | None = None,
+    language: str | None = None,
 ):
     """Return existing chat with this character, or create a new one."""
     if not force_new:
@@ -92,7 +93,7 @@ async def get_or_create_chat(
     if not character:
         return None, None, False
 
-    model_used = model or character.preferred_model or "claude"
+    model_used = model or character.preferred_model or "auto"
 
     # Load persona snapshot if persona_id provided (not for anonymous)
     p_name = None
@@ -117,8 +118,17 @@ async def get_or_create_chat(
     db.add(chat)
     await db.flush()
 
-    # Apply {{char}}/{{user}} template variables in greeting
+    # Use cached translated greeting if available for the user's language
     greeting_text = character.greeting_message
+    char_name = character.name
+    if language and language != "ru" and character.translations:
+        tr = character.translations.get(language, {})
+        if tr.get("greeting_message"):
+            greeting_text = tr["greeting_message"]
+        if tr.get("name"):
+            char_name = tr["name"]
+
+    # Apply {{char}}/{{user}} template variables in greeting
     if "{{char}}" in greeting_text or "{{user}}" in greeting_text:
         if anon_session_id:
             u_name = "User"
@@ -128,7 +138,7 @@ async def get_or_create_chat(
                 user_result = await db.execute(select(User).where(User.id == user_id))
                 user_obj = user_result.scalar_one_or_none()
                 u_name = user_obj.display_name if user_obj and user_obj.display_name else "User"
-        greeting_text = greeting_text.replace("{{char}}", character.name).replace("{{user}}", u_name)
+        greeting_text = greeting_text.replace("{{char}}", char_name).replace("{{user}}", u_name)
 
     greeting = Message(
         chat_id=chat.id,

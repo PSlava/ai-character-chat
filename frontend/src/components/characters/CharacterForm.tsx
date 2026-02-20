@@ -37,9 +37,9 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     tags: Array.isArray(initial?.tags) ? initial.tags.join(', ') : '',
     structured_tags: initial?.structured_tags || [] as string[],
     is_public: initial?.is_public ?? true,
-    preferred_model: (!isAdmin && ['gemini', 'claude', 'openai'].includes(initial?.preferred_model || ''))
+    preferred_model: (!isAdmin && ['gemini', 'openai'].includes(initial?.preferred_model || ''))
       ? 'auto'
-      : (initial?.preferred_model || 'qwen'),
+      : (initial?.preferred_model || 'auto'),
     max_tokens: initial?.max_tokens ?? 2048,
     response_length: initial?.response_length || 'long',
   });
@@ -327,7 +327,6 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
             <option value="qwen" disabled={form.content_rating === 'nsfw'}>Qwen (DashScope)</option>
             <option disabled>{t('form.paidSeparator')}</option>
             <option value="gemini">Gemini</option>
-            <option value="claude">Claude</option>
             <option value="openai">GPT-4o</option>
           </select>
         </div>
