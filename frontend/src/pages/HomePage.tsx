@@ -7,6 +7,7 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { SEO } from '@/components/seo/SEO';
 import { localePath } from '@/lib/lang';
 import { useAuth } from '@/hooks/useAuth';
+import { getOnboardingPrefs } from '@/components/ui/OnboardingModal';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Character } from '@/types';
 
@@ -34,8 +35,8 @@ export function HomePage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [activeGender, setActiveGender] = useState<string | null>(null);
+  const [activeTag, setActiveTag] = useState<string | null>(() => getOnboardingPrefs()?.tag ?? null);
+  const [activeGender, setActiveGender] = useState<string | null>(() => getOnboardingPrefs()?.gender ?? null);
   const [page, setPage] = useState(1);
   const prevLangRef = useRef(i18n.language);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -48,6 +49,19 @@ export function HomePage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Apply onboarding preferences when onboarding completes
+  useEffect(() => {
+    const handler = () => {
+      const prefs = getOnboardingPrefs();
+      if (prefs) {
+        setActiveGender(prefs.gender);
+        setActiveTag(prefs.tag);
+      }
+    };
+    window.addEventListener('onboarding-complete', handler);
+    return () => window.removeEventListener('onboarding-complete', handler);
+  }, []);
 
   useEffect(() => {
     // Reset to page 1 when search, tag, gender, or language changes

@@ -622,5 +622,16 @@
   "pwa.install": "Установить SweetSin",
   "pwa.installDescription": "Добавьте на главный экран для быстрого доступа",
   "pwa.installButton": "Установить",
-  "pwa.later": "Позже"
+  "pwa.later": "Позже",
+
+  "onboarding.title": "Добро пожаловать в SweetSin",
+  "onboarding.subtitle": "Настроим ваши предпочтения",
+  "onboarding.genderQuestion": "Кто вас интересует?",
+  "onboarding.female": "Женщины",
+  "onboarding.male": "Мужчины",
+  "onboarding.both": "Все",
+  "onboarding.tagQuestion": "Какой жанр предпочитаете?",
+  "onboarding.next": "Далее",
+  "onboarding.finish": "Поехали!",
+  "onboarding.skip": "Пропустить"
 }

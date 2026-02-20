@@ -622,5 +622,16 @@
   "pwa.install": "Installer SweetSin",
   "pwa.installDescription": "Ajouter à l'écran d'accueil pour un accès rapide",
   "pwa.installButton": "Installer",
-  "pwa.later": "Plus tard"
+  "pwa.later": "Plus tard",
+
+  "onboarding.title": "Bienvenue sur SweetSin",
+  "onboarding.subtitle": "Personnalisons votre expérience",
+  "onboarding.genderQuestion": "Qui vous intéresse ?",
+  "onboarding.female": "Femmes",
+  "onboarding.male": "Hommes",
+  "onboarding.both": "Les deux",
+  "onboarding.tagQuestion": "Quel genre préférez-vous ?",
+  "onboarding.next": "Suivant",
+  "onboarding.finish": "C'est parti !",
+  "onboarding.skip": "Passer pour l'instant"
 }
