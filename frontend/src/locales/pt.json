@@ -617,5 +617,10 @@
   "anon.register": "Criar Conta Gratuita",
   "anon.later": "Talvez depois",
   "anon.messagesLeft": "{{count}} mensagens gratuitas restantes",
-  "anon.registerLink": "Cadastre-se para acesso ilimitado"
+  "anon.registerLink": "Cadastre-se para acesso ilimitado",
+
+  "pwa.install": "Instalar SweetSin",
+  "pwa.installDescription": "Adicionar à tela inicial para acesso rápido",
+  "pwa.installButton": "Instalar",
+  "pwa.later": "Depois"
 }

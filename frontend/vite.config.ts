@@ -25,6 +25,7 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/sitemap\.xml$/, /^\/robots\.txt$/, /^\/feed\.xml$/, /^\/api\//],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}', 'offline.html'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\/api\//,

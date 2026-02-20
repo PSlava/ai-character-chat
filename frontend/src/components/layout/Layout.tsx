@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { AgeGate } from '@/components/ui/AgeGate';
 import { CookieConsent } from '@/components/ui/CookieConsent';
+import { InstallPrompt } from '@/components/ui/InstallPrompt';
 import { trackPageView } from '@/api/analytics';
 
 export function Layout() {
@@ -40,6 +41,7 @@ export function Layout() {
       </div>
       <AgeGate />
       <CookieConsent />
+      <InstallPrompt />
       <Toaster
         position="bottom-center"
         toastOptions={{
