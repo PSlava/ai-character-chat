@@ -111,6 +111,8 @@
   "chat.you": "You",
   "chat.regenerate": "Regenerate",
   "chat.regenerateTooltip": "Regenerate response",
+  "chat.continue": "Continue",
+  "chat.continueTooltip": "Continue generating (response was truncated)",
   "chat.retry": "Retry",
   "chat.retryTooltip": "Retry sending",
   "chat.editTooltip": "Edit and send",

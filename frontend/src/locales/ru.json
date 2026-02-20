@@ -111,6 +111,8 @@
   "chat.you": "Вы",
   "chat.regenerate": "Перегенерировать",
   "chat.regenerateTooltip": "Перегенерировать ответ",
+  "chat.continue": "Продолжить",
+  "chat.continueTooltip": "Продолжить генерацию (ответ был обрезан)",
   "chat.retry": "Повторить",
   "chat.retryTooltip": "Повторить отправку",
   "chat.editTooltip": "Редактировать и отправить",

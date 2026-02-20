@@ -111,6 +111,8 @@
   "chat.you": "Sie",
   "chat.regenerate": "Neu generieren",
   "chat.regenerateTooltip": "Antwort neu generieren",
+  "chat.continue": "Fortsetzen",
+  "chat.continueTooltip": "Generierung fortsetzen (Antwort wurde abgeschnitten)",
   "chat.retry": "Erneut versuchen",
   "chat.retryTooltip": "Erneut senden",
   "chat.editTooltip": "Bearbeiten und senden",

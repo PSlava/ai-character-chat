@@ -19,6 +19,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
   const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [truncated, setTruncated] = useState(false);
   const [anonLimitReached, setAnonLimitReached] = useState(false);
   const [anonMessagesLeft, setAnonMessagesLeft] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -117,6 +118,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               }
               return updated;
             });
+            setTruncated(!!data.truncated);
             // Track anonymous messages remaining
             if (data.anon_messages_left !== undefined) {
               setAnonMessagesLeft(data.anon_messages_left);
@@ -196,6 +198,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
 
   const regenerate = useCallback(
     async (messageId: string) => {
+      setTruncated(false);
       // Extract info from current messages synchronously
       let userContent: string | null = null;
       let userMsgId: string | null = null;
@@ -276,10 +279,100 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     [chatId, sendMessage]
   );
 
+  const continueMessage = useCallback(
+    async () => {
+      const { token, anonSessionId } = getAuthOrAnonToken();
+      if (!token && !anonSessionId) return;
+
+      setIsStreaming(true);
+      setTruncated(false);
+
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
+
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      } else if (anonSessionId) {
+        headers['X-Anon-Session'] = anonSessionId;
+      }
+
+      const s = settingsRef.current;
+      await fetchEventSource(`/api/chats/${chatId}/message`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          content: '',
+          is_continue: true,
+          language: i18n.language,
+          ...(s.model && { model: s.model }),
+          ...(s.temperature !== undefined && { temperature: s.temperature }),
+          ...(s.top_p !== undefined && { top_p: s.top_p }),
+          ...(s.top_k !== undefined && { top_k: s.top_k }),
+          ...(s.frequency_penalty !== undefined && { frequency_penalty: s.frequency_penalty }),
+          ...(s.presence_penalty !== undefined && { presence_penalty: s.presence_penalty }),
+          ...(s.max_tokens !== undefined && { max_tokens: s.max_tokens }),
+          ...(s.context_limit && { context_limit: s.context_limit }),
+        }),
+        signal: ctrl.signal,
+        onmessage(event) {
+          let data: any;
+          try { data = JSON.parse(event.data); } catch { return; }
+          if (data.type === 'token') {
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last.role === 'assistant') {
+                updated[updated.length - 1] = { ...last, content: last.content + data.content };
+              }
+              return updated;
+            });
+          }
+          if (data.type === 'done') {
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last.role === 'assistant') {
+                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used };
+              }
+              return updated;
+            });
+            setTruncated(!!data.truncated);
+            setIsStreaming(false);
+          }
+          if (data.type === 'error') {
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last.role === 'assistant') {
+                updated[updated.length - 1] = {
+                  ...last,
+                  content: last.content + '\n\n' + (data.content || t('chat.generationError')),
+                  isError: true,
+                };
+              }
+              return updated;
+            });
+            setIsStreaming(false);
+          }
+        },
+        async onopen(response) {
+          if (response.ok) return;
+          throw new Error(`HTTP ${response.status}`);
+        },
+        onerror(err) {
+          setIsStreaming(false);
+          throw err;
+        },
+      });
+    },
+    [chatId]
+  );
+
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort();
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
 }

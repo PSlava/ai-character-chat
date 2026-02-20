@@ -10,8 +10,8 @@ from app.db.session import get_db
 from app.chat.schemas import CreateChatRequest, SendMessageRequest
 from app.chat import service
 from app.chat.anon import get_anon_user_id, check_anon_limit, get_anon_remaining, get_anon_message_limit
-from app.db.models import User, Persona, Message
-from app.llm.base import LLMConfig
+from app.db.models import User, Persona, Message, Chat
+from app.llm.base import LLMConfig, LLMMessage
 from app.llm.registry import get_provider
 from app.config import settings
 from app.auth.rate_limit import check_message_rate, check_message_interval
@@ -383,6 +383,25 @@ async def generate_persona_reply(
     return {"content": generated_text.strip()}
 
 
+async def _append_to_message(db: AsyncSession, message_id: str, appended_text: str, model_used: str, est_prompt: int, est_completion: int):
+    """Append text to an existing assistant message (for continue feature)."""
+    from datetime import datetime
+    result = await db.execute(select(Message).where(Message.id == message_id))
+    msg = result.scalar_one_or_none()
+    if not msg:
+        return
+    msg.content = (msg.content or "") + appended_text
+    msg.token_count = len(msg.content) // 4
+    msg.model_used = model_used
+    msg.prompt_tokens = (msg.prompt_tokens or 0) + (est_prompt or 0)
+    msg.completion_tokens = (msg.completion_tokens or 0) + (est_completion or 0)
+    chat_result = await db.execute(select(Chat).where(Chat.id == msg.chat_id))
+    chat_obj = chat_result.scalar_one_or_none()
+    if chat_obj:
+        chat_obj.updated_at = datetime.utcnow()
+    await db.commit()
+
+
 @router.post("/{chat_id}/message")
 async def send_message(
     chat_id: str,
@@ -396,7 +415,7 @@ async def send_message(
 
     if user:
         check_message_rate(user["id"])
-        if not body.is_regenerate:
+        if not body.is_regenerate and not body.is_continue:
             check_message_interval(user["id"])
         await check_daily_limit(user["id"], user.get("role", "user"))
         chat = await service.get_chat(db, chat_id, user_id=user["id"])
@@ -405,7 +424,7 @@ async def send_message(
         if not anon_session_id:
             raise HTTPException(status_code=401, detail="Authentication required")
         check_message_rate(f"anon:{anon_session_id}")
-        if not body.is_regenerate:
+        if not body.is_regenerate and not body.is_continue:
             check_message_interval(f"anon:{anon_session_id}")
         anon_remaining = await check_anon_limit(anon_session_id)  # raises 403 if exceeded
         chat = await service.get_chat(db, chat_id, anon_session_id=anon_session_id)
@@ -423,12 +442,24 @@ async def send_message(
     model_name = chat.model_used or settings.default_model
     content_rating = character.content_rating.value if character.content_rating else "sfw"
 
-    # Dedup: skip saving if last message is the same user text (e.g. page reload after error)
-    last_msgs, _ = await service.get_chat_messages(db, chat_id, limit=1)
-    if last_msgs and last_msgs[0].role.value == "user" and last_msgs[0].content == body.content:
-        user_msg = last_msgs[0]
+    # Handle "continue" — append to last assistant message
+    continue_msg_id = None
+    if body.is_continue:
+        last_msgs, _ = await service.get_chat_messages(db, chat_id, limit=1)
+        if last_msgs and last_msgs[0].role.value == "assistant":
+            continue_msg_id = last_msgs[0].id
+        # Create a virtual user message (not saved to DB) for the response
+        user_msg = type('FakeMsg', (), {'id': 'continue'})()
     else:
-        user_msg = await service.save_message(db, chat_id, "user", body.content)
+        # Dedup: skip saving if last message is the same user text (e.g. page reload after error)
+        last_msgs, _ = await service.get_chat_messages(db, chat_id, limit=1)
+        if last_msgs and last_msgs[0].role.value == "user" and last_msgs[0].content == body.content:
+            user_msg = last_msgs[0]
+        else:
+            user_msg = await service.save_message(db, chat_id, "user", body.content)
+
+    is_admin = user.get("role") == "admin" if user else False
+    tier = get_user_tier(user)
 
     # Get user display name and language for system prompt
     if user:
@@ -449,6 +480,10 @@ async def send_message(
         language=language, context_limit=body.context_limit,
         max_context_messages=tier_ctx_limit,
     )
+
+    # For "continue": add instruction to continue from where the model left off
+    if body.is_continue:
+        messages.append(LLMMessage(role="user", content="Continue writing exactly from where you stopped. Do not repeat anything already written. Pick up mid-sentence if needed."))
 
     # Resolve provider and model ID
     PROVIDER_MODELS = {
@@ -491,8 +526,6 @@ async def send_message(
         provider_name = model_name
         model_id = PROVIDER_MODELS.get(model_name, "")
 
-    is_admin = user.get("role") == "admin" if user else False
-    tier = get_user_tier(user)
     requested_max_tokens = body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048)
     capped_max_tokens = cap_max_tokens(requested_max_tokens, tier)
 
@@ -577,13 +610,21 @@ async def send_message(
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
                     est_prompt = _estimate_prompt_tokens(messages)
                     est_completion = len(complete_text) // 4
-                    saved_msg = await service.save_message(
-                        db, chat_id, "assistant", complete_text, model_used=actual_model,
-                        prompt_tokens=est_prompt, completion_tokens=est_completion,
-                    )
+                    truncated = est_completion >= capped_max_tokens * 0.85
+
+                    if continue_msg_id:
+                        # Append to existing assistant message
+                        await _append_to_message(db, continue_msg_id, complete_text, actual_model, est_prompt, est_completion)
+                        saved_msg_id = continue_msg_id
+                    else:
+                        saved_msg = await service.save_message(
+                            db, chat_id, "assistant", complete_text, model_used=actual_model,
+                            prompt_tokens=est_prompt, completion_tokens=est_completion,
+                        )
+                        saved_msg_id = saved_msg.id
                     await service.increment_message_count(character.id, language, user_id_for_increment)
                     _asyncio.create_task(maybe_summarize(chat_id))
-                    done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
+                    done_data = {'type': 'done', 'message_id': saved_msg_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': truncated}
                     if anon_session_id and anon_remaining is not None:
                         done_data['anon_messages_left'] = anon_remaining - 1
                     yield f"data: {json.dumps(done_data)}\n\n"
@@ -645,13 +686,19 @@ async def send_message(
                             actual_model = f"{fb_name}:{getattr(fb_prov, 'last_model_used', '') or ''}"
                             est_prompt = _estimate_prompt_tokens(messages)
                             est_completion = len(fb_text) // 4
-                            saved_msg = await service.save_message(
-                                db, chat_id, "assistant", fb_text, model_used=actual_model,
-                                prompt_tokens=est_prompt, completion_tokens=est_completion,
-                            )
+                            fb_truncated = est_completion >= capped_max_tokens * 0.85
+                            if continue_msg_id:
+                                await _append_to_message(db, continue_msg_id, fb_text, actual_model, est_prompt, est_completion)
+                                fb_saved_id = continue_msg_id
+                            else:
+                                saved_msg = await service.save_message(
+                                    db, chat_id, "assistant", fb_text, model_used=actual_model,
+                                    prompt_tokens=est_prompt, completion_tokens=est_completion,
+                                )
+                                fb_saved_id = saved_msg.id
                             await service.increment_message_count(character.id, language, user_id_for_increment)
                             _asyncio.create_task(maybe_summarize(chat_id))
-                            done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
+                            done_data = {'type': 'done', 'message_id': fb_saved_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': fb_truncated}
                             if anon_session_id and anon_remaining is not None:
                                 done_data['anon_messages_left'] = anon_remaining - 1
                             yield f"data: {json.dumps(done_data)}\n\n"
@@ -669,13 +716,19 @@ async def send_message(
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
                 est_prompt = _estimate_prompt_tokens(messages)
                 est_completion = len(complete_text) // 4
-                saved_msg = await service.save_message(
-                    db, chat_id, "assistant", complete_text, model_used=actual_model,
-                    prompt_tokens=est_prompt, completion_tokens=est_completion,
-                )
+                truncated = est_completion >= capped_max_tokens * 0.85
+                if continue_msg_id:
+                    await _append_to_message(db, continue_msg_id, complete_text, actual_model, est_prompt, est_completion)
+                    saved_msg_id = continue_msg_id
+                else:
+                    saved_msg = await service.save_message(
+                        db, chat_id, "assistant", complete_text, model_used=actual_model,
+                        prompt_tokens=est_prompt, completion_tokens=est_completion,
+                    )
+                    saved_msg_id = saved_msg.id
                 await service.increment_message_count(character.id, language, user_id_for_increment)
                 _asyncio.create_task(maybe_summarize(chat_id))
-                done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
+                done_data = {'type': 'done', 'message_id': saved_msg_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': truncated}
                 if anon_session_id and anon_remaining is not None:
                     done_data['anon_messages_left'] = anon_remaining - 1
                 yield f"data: {json.dumps(done_data)}\n\n"

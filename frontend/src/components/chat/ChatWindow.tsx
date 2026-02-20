@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshCw, Pencil, Send, Loader2, ArrowDown } from 'lucide-react';
+import { RefreshCw, Pencil, Send, Loader2, ArrowDown, ArrowRight } from 'lucide-react';
 import type { Message } from '@/types';
 import { MessageBubble } from './MessageBubble';
 
@@ -16,10 +16,12 @@ interface Props {
   onLoadMore?: () => void;
   onDeleteMessage?: (messageId: string) => void;
   onRegenerate?: (messageId: string) => void;
+  onContinue?: () => void;
+  truncated?: boolean;
   onResendLast?: (editedContent?: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, userName, isStreaming, isAdmin, hasMore, loadingMore, onLoadMore, onDeleteMessage, onRegenerate, onResendLast }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, userName, isStreaming, isAdmin, hasMore, loadingMore, onLoadMore, onDeleteMessage, onRegenerate, onContinue, truncated, onResendLast }: Props) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -129,7 +131,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
           ))}
 
         {!isStreaming && lastAssistant && onRegenerate && (
-          <div className="flex justify-start">
+          <div className="flex justify-start gap-1">
             <button
               onClick={() => onRegenerate(lastAssistant.id)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-rose-400 hover:bg-neutral-800 rounded-lg transition-colors"
@@ -138,6 +140,16 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
               <RefreshCw size={13} />
               {t('chat.regenerate')}
             </button>
+            {truncated && onContinue && (
+              <button
+                onClick={onContinue}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-500 hover:text-emerald-400 hover:bg-neutral-800 rounded-lg transition-colors"
+                title={t('chat.continueTooltip')}
+              >
+                <ArrowRight size={13} />
+                {t('chat.continue')}
+              </button>
+            )}
           </div>
         )}
 

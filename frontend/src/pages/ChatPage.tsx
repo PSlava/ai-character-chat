@@ -59,7 +59,7 @@ export function ChatPage() {
   const removeChat = useChatStore((s) => s.removeChat);
   const isAdmin = authUser?.role === 'admin';
 
-  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
+  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
     chatId || ''
   );
   const [showAnonLimit, setShowAnonLimit] = useState(false);
@@ -416,6 +416,8 @@ export function ChatPage() {
         onLoadMore={handleLoadMore}
         onDeleteMessage={handleDeleteMessage}
         onRegenerate={!isStreaming ? regenerate : undefined}
+        onContinue={!isStreaming ? continueMessage : undefined}
+        truncated={truncated}
         onResendLast={!isStreaming ? resendLast : undefined}
       />
 

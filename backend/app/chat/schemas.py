@@ -9,7 +9,7 @@ class CreateChatRequest(BaseModel):
 
 
 class SendMessageRequest(BaseModel):
-    content: str = Field(max_length=20000)
+    content: str = Field(default="", max_length=20000)
     model: str | None = Field(default=None, max_length=200)
     temperature: float | None = Field(default=None, ge=0, le=2)
     top_p: float | None = Field(default=None, ge=0, le=1)
@@ -20,3 +20,4 @@ class SendMessageRequest(BaseModel):
     context_limit: int | None = Field(default=None, ge=0, le=128000)
     language: str | None = Field(default=None, max_length=10)
     is_regenerate: bool = False
+    is_continue: bool = False
