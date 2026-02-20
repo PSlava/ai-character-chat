@@ -151,6 +151,15 @@ async def prerender_character(
     title = f"{name} — {tagline}" if tagline else name
     title_full = f"{title} | SweetSin"
 
+    # Check if NSFW — truncate content for bots
+    _rating = getattr(character.content_rating, 'value', character.content_rating) or "sfw"
+    is_nsfw = _rating == "nsfw"
+    if is_nsfw:
+        personality = _truncate(personality, 100)
+        scenario = _truncate(scenario, 100)
+        appearance = ""
+        greeting = ""
+
     # noindex for thin pages: short content without substantial description
     content_length = len(scenario) + len(personality) + len(appearance) + len(greeting)
     noindex = content_length < 100
@@ -237,6 +246,7 @@ async def prerender_character(
 <meta name="description" content="{description}">
 <meta name="keywords" content="{keywords}">
 {'<meta name="robots" content="noindex, follow">' if noindex else ''}
+{'<meta name="rating" content="adult">' if is_nsfw else ''}
 <link rel="canonical" href="{canonical}">
 <meta property="og:title" content="{_escape(title)}">
 <meta property="og:description" content="{description}">
@@ -281,7 +291,12 @@ async def prerender_tag(
 
     result = await db.execute(
         select(Character)
-        .where(Character.is_public == True, Character.slug.isnot(None), tag_filters)
+        .where(
+            Character.is_public == True,
+            Character.slug.isnot(None),
+            tag_filters,
+            Character.content_rating != "nsfw",
+        )
         .order_by(Character.chat_count.desc())
         .limit(50)
     )
@@ -639,7 +654,11 @@ async def prerender_home(
 ):
     result = await db.execute(
         select(Character)
-        .where(Character.is_public == True, Character.slug.isnot(None))
+        .where(
+            Character.is_public == True,
+            Character.slug.isnot(None),
+            Character.content_rating != "nsfw",
+        )
         .order_by(Character.chat_count.desc())
         .limit(50)
     )
@@ -674,10 +693,10 @@ async def prerender_home(
 <head>
 <meta charset="UTF-8">
 <title>SweetSin — AI Character Chat | Roleplay &amp; Fantasy</title>
-<meta name="description" content="Chat with unique AI characters without limits. Immersive roleplay, uncensored conversations, and endless fantasy.">
+<meta name="description" content="Chat with unique AI characters. Immersive roleplay, creative storytelling, and endless fantasy.">
 <link rel="canonical" href="{canonical}">
 <meta property="og:title" content="SweetSin — Where Fantasy Comes Alive">
-<meta property="og:description" content="AI Character Chat Platform. Immersive roleplay, uncensored conversations, no limits.">
+<meta property="og:description" content="AI Character Chat Platform. Immersive roleplay, creative storytelling, endless possibilities.">
 <meta property="og:image" content="{SITE_URL}/og-image.png">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
@@ -685,14 +704,14 @@ async def prerender_home(
 <meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SweetSin — Where Fantasy Comes Alive">
-<meta name="twitter:description" content="AI Character Chat Platform. Immersive roleplay, uncensored conversations, no limits.">
+<meta name="twitter:description" content="AI Character Chat Platform. Immersive roleplay, creative storytelling, endless possibilities.">
 <meta name="twitter:image" content="{SITE_URL}/og-image.png">
 {_hreflang_tags("")}
 <script type="application/ld+json">{ld_graph}</script>
 </head>
 <body>
 <h1>SweetSin — AI Character Chat</h1>
-<p>Chat with unique AI characters. Immersive roleplay, uncensored conversations, and endless fantasy.</p>
+<p>Chat with unique AI characters. Immersive roleplay, creative storytelling, and endless fantasy.</p>
 <h2>Characters</h2>
 <ul>
 {"".join(char_links)}
@@ -718,7 +737,7 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
 
     # Quality gate: only include characters with substantial content
     result = await db.execute(
-        select(Character.slug, Character.updated_at, Character.avatar_url, Character.name)
+        select(Character.slug, Character.updated_at, Character.avatar_url, Character.name, Character.content_rating)
         .where(
             Character.is_public == True,
             Character.slug.isnot(None),
@@ -779,14 +798,16 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
             )
 
     # Character pages × languages (with image extension)
-    for slug, updated_at, avatar_url, name in characters:
+    for slug, updated_at, avatar_url, name, content_rating in characters:
         lastmod = updated_at.strftime("%Y-%m-%d") if updated_at else now
         path = f"/c/{slug}"
         img = image_tag(avatar_url, name)
+        _cr = getattr(content_rating, 'value', content_rating) or "sfw"
+        prio = "0.4" if _cr == "nsfw" else "0.7"
         for l in LANGS:
             urls.append(
                 f"<url>\n  <loc>{SITE_URL}/{l}{path}</loc>\n  <lastmod>{lastmod}</lastmod>"
-                f"\n  <changefreq>weekly</changefreq>\n  <priority>0.8</priority>"
+                f"\n  <changefreq>weekly</changefreq>\n  <priority>{prio}</priority>"
                 f"{img}\n{alternates(path)}\n</url>"
             )
 
@@ -804,10 +825,14 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
 
 @router.api_route("/feed.xml", methods=["GET", "HEAD"])
 async def rss_feed(db: AsyncSession = Depends(get_db)):
-    """RSS 2.0 feed of latest public characters."""
+    """RSS 2.0 feed of latest public characters (SFW + moderate only)."""
     result = await db.execute(
         select(Character)
-        .where(Character.is_public == True, Character.slug.isnot(None))
+        .where(
+            Character.is_public == True,
+            Character.slug.isnot(None),
+            Character.content_rating != "nsfw",
+        )
         .order_by(Character.created_at.desc())
         .limit(30)
     )
@@ -845,7 +870,7 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
 <channel>
 <title>SweetSin — New AI Characters</title>
 <link>{SITE_URL}</link>
-<description>Latest AI characters for roleplay and chat on SweetSin</description>
+<description>Latest AI characters for roleplay and creative storytelling on SweetSin</description>
 <language>en</language>
 <lastBuildDate>{now}</lastBuildDate>
 <atom:link href="{SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
@@ -866,6 +891,8 @@ Disallow: /admin/
 Disallow: /favorites
 Disallow: /create
 Disallow: /auth
+Disallow: /*nsfw*
+
 Sitemap: {SITE_URL}/sitemap.xml
 """
     return Response(content=content, media_type="text/plain")
