@@ -246,8 +246,75 @@ async def _generate_character_data(category: str, gender: str) -> dict | None:
     return None
 
 
-async def _generate_avatar(avatar_prompt: str) -> str | None:
-    """Generate avatar via DALL-E 3. Returns filename or None."""
+# Words that trigger DALL-E content policy rejections
+_UNSAFE_WORDS = {
+    "nude", "naked", "lingerie", "revealing", "seductive", "sultry", "sensual",
+    "sexy", "provocative", "skimpy", "cleavage", "bikini", "underwear",
+    "bdsm", "bondage", "submissive", "dominant", "erotic", "sexual",
+    "topless", "busty", "voluptuous", "curvy", "thicc", "nsfw",
+    "blood", "gore", "violent", "weapon", "knife", "gun", "sword",
+    "child", "minor", "underage", "loli", "shota",
+    "slave", "chains", "whip", "torture", "kill", "murder",
+    "demon", "demonic", "satanic", "devil",
+    "succubus", "incubus", "harem",
+    "tight", "exposed", "bare", "flesh", "skin-tight",
+    "мечом", "оружие", "кровь", "демон", "суккуб", "инкуб",
+}
+
+
+def _sanitize_prompt(prompt: str) -> str:
+    """Remove potentially problematic words from a DALL-E prompt."""
+    import re
+    words = prompt.split()
+    cleaned = []
+    for word in words:
+        stripped = re.sub(r"[.,!?;:\"'()\[\]{}]", "", word).lower()
+        if stripped not in _UNSAFE_WORDS:
+            cleaned.append(word)
+    return " ".join(cleaned)
+
+
+def _build_avatar_prompts(original_prompt: str, appearance: str = "", gender: str = "") -> list[str]:
+    """Build progressively safer DALL-E prompts (most specific → most generic)."""
+    prompts = []
+
+    # Level 0: Original LLM-generated prompt
+    if original_prompt:
+        prompts.append(original_prompt)
+
+    # Level 1: Sanitized version of original (strip unsafe words)
+    if original_prompt:
+        sanitized = _sanitize_prompt(original_prompt)
+        if sanitized != original_prompt:
+            prompts.append(sanitized)
+
+    # Level 2: Build from appearance text with safe framing
+    if appearance:
+        safe_app = _sanitize_prompt(appearance[:200])
+        prompts.append(
+            f"SFW digital art portrait, anime style. {safe_app}. "
+            "Detailed face, soft lighting, atmospheric background, bust shot."
+        )
+
+    # Level 3: Gender-based with minimal description
+    gender_desc = "young woman" if gender == "female" else "young man" if gender == "male" else "young person"
+    prompts.append(
+        f"SFW digital art portrait of a {gender_desc}, anime style. "
+        "Detailed face, expressive eyes, colorful hair, soft lighting, "
+        "atmospheric fantasy background, bust shot, high quality."
+    )
+
+    # Level 4: Ultra-generic (should never fail)
+    prompts.append(
+        "SFW digital art portrait, anime style, character with expressive eyes, "
+        "colorful hair, soft lighting, atmospheric background, bust shot, high quality."
+    )
+
+    return prompts
+
+
+async def _generate_avatar(avatar_prompt: str, appearance: str = "", gender: str = "") -> str | None:
+    """Generate avatar via DALL-E 3 with progressive prompt softening. Returns filename or None."""
     if not settings.openai_api_key:
         logger.info("No OPENAI_API_KEY, skipping avatar generation")
         return None
@@ -257,13 +324,11 @@ async def _generate_avatar(avatar_prompt: str) -> str | None:
     avatars_dir.mkdir(parents=True, exist_ok=True)
     filepath = avatars_dir / filename
 
+    prompts = _build_avatar_prompts(avatar_prompt, appearance, gender)
+
     try:
         async with httpx.AsyncClient() as client:
-            # Try original prompt, retry with sanitized version on 400
-            for attempt, prompt in enumerate([
-                avatar_prompt,
-                f"SFW digital art portrait, anime style, detailed face, atmospheric background, bust shot. Character: young person with expressive eyes.",
-            ]):
+            for attempt, prompt in enumerate(prompts):
                 response = await client.post(
                     "https://api.openai.com/v1/images/generations",
                     json={
@@ -282,12 +347,17 @@ async def _generate_avatar(avatar_prompt: str) -> str | None:
                 )
                 if response.status_code == 400:
                     err_body = response.text[:300]
-                    logger.warning("DALL-E 400 (attempt %d): %s | prompt: %s", attempt, err_body, prompt[:100])
+                    logger.warning(
+                        "DALL-E 400 (attempt %d/%d): %s | prompt: %s",
+                        attempt + 1, len(prompts), err_body, prompt[:100],
+                    )
                     continue
                 response.raise_for_status()
+
+                logger.info("DALL-E accepted prompt on attempt %d/%d", attempt + 1, len(prompts))
                 break
             else:
-                raise RuntimeError("DALL-E rejected all prompt variants")
+                raise RuntimeError(f"DALL-E rejected all {len(prompts)} prompt variants")
 
         b64 = response.json()["data"][0]["b64_json"]
         img_bytes = base64.b64decode(b64)
@@ -374,7 +444,11 @@ async def generate_daily_character() -> bool:
         appearance = char_data.get("appearance", "")
         avatar_prompt = f"Digital art portrait of a character: {appearance[:200]}. Detailed face, atmospheric background, bust shot."
 
-    avatar_filename = await _generate_avatar(avatar_prompt)
+    avatar_filename = await _generate_avatar(
+        avatar_prompt,
+        appearance=char_data.get("appearance", ""),
+        gender=gender,
+    )
     avatar_url = f"/api/uploads/avatars/{avatar_filename}" if avatar_filename else None
 
     # 4) Get system user
