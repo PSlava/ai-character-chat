@@ -15,6 +15,7 @@ export interface Character {
   avatar_url: string | null;
   personality: string;
   appearance: string | null;
+  speech_pattern: string | null;
   scenario: string | null;
   greeting_message: string;
   example_dialogues: string | null;

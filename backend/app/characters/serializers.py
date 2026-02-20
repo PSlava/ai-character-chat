@@ -18,6 +18,7 @@ def character_to_dict(c: Character, language: str = None, is_admin: bool = False
         "greeting_message": tr["greeting_message"] if tr and "greeting_message" in tr else c.greeting_message,
         "example_dialogues": c.example_dialogues,
         "appearance": tr["appearance"] if tr and "appearance" in tr else getattr(c, 'appearance', None),
+        "speech_pattern": getattr(c, 'speech_pattern', None),
         "content_rating": c.content_rating.value if hasattr(c.content_rating, 'value') else (c.content_rating or "sfw"),
         "system_prompt_suffix": c.system_prompt_suffix,
         "tags": tr["tags"] if tr and "tags" in tr else ([t for t in c.tags.split(",") if t] if c.tags else []),

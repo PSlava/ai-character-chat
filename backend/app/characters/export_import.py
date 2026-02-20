@@ -24,6 +24,7 @@ def character_to_card(char: Character) -> dict:
                 "sweetsin": {
                     "content_rating": char.content_rating.value if char.content_rating else "sfw",
                     "appearance": char.appearance or "",
+                    "speech_pattern": getattr(char, 'speech_pattern', None) or "",
                     "tagline": char.tagline or "",
                 }
             },
@@ -48,6 +49,7 @@ def card_to_character_data(card: dict) -> dict:
     example_dialogues = data.get("mes_example") or data.get("example_dialogue") or ""
     system_prompt = data.get("system_prompt") or data.get("post_history_instructions") or ""
     appearance = sweetsin_ext.get("appearance") or data.get("creator_notes") or ""
+    speech_pattern = sweetsin_ext.get("speech_pattern") or ""
 
     # Tags
     tags_raw = data.get("tags", [])
@@ -70,6 +72,7 @@ def card_to_character_data(card: dict) -> dict:
         "example_dialogues": example_dialogues if example_dialogues else None,
         "system_prompt_suffix": system_prompt if system_prompt else None,
         "appearance": appearance if appearance else None,
+        "speech_pattern": speech_pattern if speech_pattern else None,
         "tags": tags_str,
         "content_rating": content_rating,
         "is_public": True,

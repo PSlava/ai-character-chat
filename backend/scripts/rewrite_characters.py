@@ -27,10 +27,11 @@ _TIMEOUT = 60.0
 
 _REWRITE_PROMPT = """Перепиши текст описания персонажа для ролевого чат-сайта. Сохрани смысл, но сделай текст:
 
-1. ЖИВЫМ и конкретным — убери абстрактные описания, добавь детали
-2. БЕЗ AI-клише — никаких "пронизан", "гобелен чувств", "поистине", "бесчисленный", "многогранный", "tapestry", "delve", "vibrant", "enigmatic", "realm", "journey"
-3. ЕСТЕСТВЕННЫМ — как написал бы живой автор, а не ИИ
+1. ЖИВЫМ и конкретным — убери абстрактные описания, добавь физические детали и действия
+2. БЕЗ AI-клише — никаких "пронизан", "гобелен чувств", "поистине", "бесчисленный", "многогранный", "tapestry", "delve", "vibrant", "enigmatic", "realm", "journey", "внутренний конфликт", "сложная натура"
+3. ЕСТЕСТВЕННЫМ — как написал бы живой автор, а не ИИ. Короткие предложения чередуй с длинными
 4. В ТОМ ЖЕ ФОРМАТЕ — сохрани структуру, длину примерно ту же (±20%), стиль от 2-го лица для personality
+5. ПСИХОЛОГИЧЕСКАЯ ГЛУБИНА — добавь 1-2 внутренних противоречия (напр. "жёсткий снаружи, уязвимый внутри"), конкретные привычки, странности
 
 Верни ТОЛЬКО переписанный текст, без пояснений и кавычек.
 
@@ -38,19 +39,35 @@ _REWRITE_PROMPT = """Перепиши текст описания персона
 {text}"""
 
 _REWRITE_GREETING_PROMPT = """Перепиши приветственное сообщение персонажа для ролевого чат-сайта. Сохрани:
-- Литературный формат: 3-е лицо (он/она), действия обычным текстом, диалоги через тире «—», мысли через *звёздочки*
+- Литературный формат: 3-е лицо (он/она), действия обычным текстом, диалоги через обычный дефис «-» (НЕ длинное тире «—»!), мысли через *звёздочки*
 - Смысл и сюжет сцены
 - Примерную длину (±20%)
 
 Сделай текст:
-1. Живым и конкретным — конкретные действия, физические детали
-2. Без AI-клише — никаких "пронизан", "таинственный", "enigmatic" и т.п.
+1. Живым и конкретным — конкретные действия, физические детали, ощущения
+2. Без AI-клише — никаких "пронизан", "таинственный", "enigmatic", "электрический разряд"
 3. Естественным — как написал бы живой автор
+4. С физическими деталями — запах, текстура, температура, звуки
+
+ВАЖНО: используй обычный дефис «-» для диалогов, НЕ длинное тире «—». Это маркер ИИ.
 
 Верни ТОЛЬКО переписанный текст.
 
 Оригинал:
 {text}"""
+
+_GENERATE_SPEECH_PATTERN_PROMPT = """На основе описания персонажа, определи его уникальный речевой стиль. Опиши кратко (2-4 предложения):
+- Уровень формальности (официальный, разговорный, грубый, книжный)
+- Характерные словечки или фразы, которые персонаж часто использует
+- Особенности речи (заикание, акцент, паузы, междометия)
+- Темп речи (быстрый, медленный, рваный)
+
+Если персонаж говорит обычно, без ярких особенностей — верни ТОЛЬКО слово: NONE
+
+Персонаж: {name}
+Описание: {personality}
+
+Верни ТОЛЬКО описание речевого стиля (или NONE), без пояснений."""
 
 
 async def _rewrite_field(text: str, is_greeting: bool = False) -> str | None:
@@ -89,6 +106,41 @@ async def _rewrite_field(text: str, is_greeting: bool = False) -> str | None:
     return None
 
 
+async def _generate_speech_pattern(name: str, personality: str) -> str | None:
+    """Generate speech pattern from personality description."""
+    if not personality or len(personality) < 30:
+        return None
+
+    prompt = _GENERATE_SPEECH_PATTERN_PROMPT.format(name=name, personality=personality[:1000])
+    messages = [
+        LLMMessage(role="system", content="Ты — эксперт по речевым паттернам персонажей. Определяешь уникальный стиль речи."),
+        LLMMessage(role="user", content=prompt),
+    ]
+    config = LLMConfig(model="", temperature=0.7, max_tokens=300)
+
+    for provider_name in _PROVIDER_ORDER:
+        try:
+            provider = get_provider(provider_name)
+        except ValueError:
+            continue
+
+        try:
+            raw = await asyncio.wait_for(
+                provider.generate(messages, config),
+                timeout=_TIMEOUT,
+            )
+            result = raw.strip()
+            if result and result.upper() != "NONE" and len(result) > 10:
+                result = humanize_text(result)
+                logger.info("  Speech pattern via %s (%d chars)", provider_name, len(result))
+                return result
+        except Exception as e:
+            logger.warning("  %s failed for speech: %s", provider_name, str(e)[:100])
+            continue
+
+    return None
+
+
 async def main():
     # Initialize providers
     init_providers(
@@ -122,7 +174,7 @@ async def main():
     from sqlalchemy import text
     async with db_engine.connect() as conn:
         result = await conn.execute(text("""
-            SELECT c.id, c.name, c.personality, c.appearance, c.scenario, c.greeting_message
+            SELECT c.id, c.name, c.personality, c.appearance, c.scenario, c.greeting_message, c.speech_pattern
             FROM characters c
             JOIN users u ON c.creator_id = u.id
             WHERE u.email = 'system@sweetsin.cc'
@@ -134,7 +186,7 @@ async def main():
 
     updated = 0
     for char in characters:
-        char_id, name, personality, appearance, scenario, greeting = char
+        char_id, name, personality, appearance, scenario, greeting, speech_pattern = char
         logger.info("\n=== %s (id=%s) ===", name, char_id[:8])
 
         updates = {}
@@ -162,6 +214,12 @@ async def main():
             new_val = await _rewrite_field(greeting, is_greeting=True)
             if new_val:
                 updates["greeting_message"] = new_val
+
+        # Generate speech pattern if missing
+        if not speech_pattern and personality:
+            new_val = await _generate_speech_pattern(name, updates.get("personality", personality))
+            if new_val:
+                updates["speech_pattern"] = new_val
 
         if updates:
             # Update DB + clear translation cache

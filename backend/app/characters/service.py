@@ -2,14 +2,14 @@ from datetime import datetime
 from sqlalchemy import select, func, text, case
 from app.utils.sanitize import strip_html_tags
 
-_TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "scenario",
-                            "greeting_message", "example_dialogues", "system_prompt_suffix"}
+_TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "speech_pattern",
+                            "scenario", "greeting_message", "example_dialogues", "system_prompt_suffix"}
 
 _CHARACTER_ALLOWED_FIELDS = {
     "name", "tagline", "avatar_url", "personality", "appearance",
-    "scenario", "greeting_message", "example_dialogues", "content_rating",
-    "system_prompt_suffix", "is_public", "preferred_model", "max_tokens",
-    "response_length",
+    "speech_pattern", "scenario", "greeting_message", "example_dialogues",
+    "content_rating", "system_prompt_suffix", "is_public", "preferred_model",
+    "max_tokens", "response_length",
 }
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload

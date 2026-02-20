@@ -94,6 +94,8 @@ async def init_db():
         "DROP INDEX IF EXISTS ix_characters_slug",
         "ALTER TABLE characters DROP CONSTRAINT IF EXISTS characters_slug_key",
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_characters_creator_slug ON characters (creator_id, slug)",
+        # Speech pattern field
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS speech_pattern TEXT",
         # Persona slug (user-editable)
         "ALTER TABLE personas ADD COLUMN IF NOT EXISTS slug VARCHAR",
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_personas_user_slug ON personas (user_id, slug)",

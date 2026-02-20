@@ -13,7 +13,7 @@
 | **Цветовая схема** | Rose (rose-500/600/700) — ранее purple |
 | **Иконка** | SVG сердце с дьявольскими рожками и хвостом (компонент `Logo.tsx`) |
 | **Логотип** | SVG-иконка + текст: **Sweet** (белый) + **Sin** (rose-500) |
-| **Favicon** | SVG favicon в том же стиле (`public/favicon.svg`) |
+| **Favicon** | SVG (`public/favicon.svg`) + ICO multi-size 16/32/48px (`public/favicon.ico`) |
 
 **SEO (index.html):**
 - Title: `SweetSin — AI Character Chat | Roleplay & Fantasy`
@@ -180,7 +180,8 @@ docker compose up -d
 - **Внешность (Appearance)** — отдельное поле для описания внешности персонажа (включается в system prompt)
 - **Шаблонные переменные** — `{{char}}` и `{{user}}` в примерах диалогов заменяются на реальные имена
 - **Структурированные теги** — 33 предустановленных тега в 5 категориях (пол, роль, характер, сеттинг, стиль ответов). Каждый тег добавляет свой промпт-сниппет в system prompt. Кликабельные pills в форме создания/редактирования
-- **Длина ответа** — настройка на персонаже: короткий / средний / длинный / очень длинный
+- **Речевой стиль (Speech Pattern)** — отдельное поле для описания речевых паттернов персонажа (формальность, словечки, акцент, темп). Инжектируется в system prompt между appearance и scenario. Поддержка в export/import SillyTavern, форке, генераторе
+- **Длина ответа** — настройка на персонаже: короткий / средний / длинный / очень длинный (доступно всем пользователям)
 - **Макс. токенов** — настраиваемый лимит (256–4096, дефолт 2048) — только для админа
 - **Генерация персонажа из текста** — вставляешь рассказ, AI создаёт профиль
 - **Импорт из SillyTavern** — загрузка JSON character card (v1/v2) в формате SillyTavern/TavernAI; маппинг полей (personality→description, tagline→personality, greeting→first_mes), SweetSin-специфичные поля в `extensions.sweetsin`
@@ -239,7 +240,7 @@ docker compose up -d
   - **Анти-повтор правила** (на 7 языках: ru/en/es/fr/de/pt/it): запрет эхо/пересказа слов собеседника, обязательное новое физическое действие в каждом ответе, продвижение сюжета вперёд, запрет слов-костылей
   - **Анти-ИИ правила** — запрещённые AI-маркерные слова по языкам (RU: пронизан, гобелен, поистине, многогранный и др.; EN: delve, tapestry, testament, realm, landscape и др.), обязательная вариация длины предложений, запрет длинного тире `—`
   - **Расширенные запрещённые фразы** — RU: «сердце пропустило удар», «электрический разряд», «каждая клеточка тела»; EN: «a mix of», «every fiber of being», «eyes darkened with desire», «ministrations»; новые списки для ES/FR/DE/PT/IT (~9 фраз на язык)
-  - **Post-history injection** — `_POST_HISTORY` в `service.py` — краткое напоминание после истории чата (7 языков): "Продолжай как {name}. Третье лицо. НЕ повторяй фразы. Удиви читателя." Ближе к генерации = сильнее эффект (исследование SillyTavern)
+  - **Post-history injection** — `_POST_HISTORY` в `service.py` — краткое напоминание после истории чата (7 языков): "Продолжай как {name}. Третье лицо. Сохраняй локацию. СТРОГО ЗАПРЕЩЕНО повторять фразы. Удиви читателя." Ближе к генерации = сильнее эффект (исследование SillyTavern)
   - **Mental review** — "Перед ответом просмотри свои последние 3 ответа. Выбери другие описания и фразы" (7 языков)
   - **Мягкая структура** — "обычно включай внутреннюю мысль" вместо "ОБЯЗАН включать"; допускает сцены чистого действия/диалога
   - **Позитивная формулировка** — "Пиши в третьем лице (она/он)" вместо "НИКОГДА не пиши от первого лица"
@@ -257,7 +258,7 @@ docker compose up -d
 - **Ошибки в чате** — красные баблы; обычные пользователи видят «Ошибка генерации», админы — полный текст; ошибки модерации видны всем
 - **Настройки генерации** — модалка «Модель и настройки» с:
   - Выбор модели (карточки с категориями: OpenRouter / Groq / Cerebras / Together / Прямой API / Платные)
-  - Temperature, Top-P, Top-K, Frequency penalty (**дефолт 0.3**), Presence penalty, Макс. токенов (256–4096)
+  - Temperature, Top-P, Top-K, Frequency penalty (**дефолт 0.5 NSFW / 0.3 остальные**), Presence penalty, Макс. токенов (256–4096)
   - **Память** (контекст): 4K / 8K / 16K / ∞
   - **Per-provider parameter limits** — слайдеры динамически подстраиваются под выбранного провайдера: Cerebras/Claude/Gemini скрывают penalty-слайдеры (не поддерживаются), Claude ограничивает temperature до 1.0, OpenAI допускает penalty до 2.0, остальные до 1.0. Значения автоматически обрезаются (clamp) при смене модели
 - **Сохранение настроек** — настройки генерации сохраняются в localStorage **per-model** (`model-settings:{modelId}`), модель per-chat (`chat-model:{chatId}`). При смене модели в модалке — слайдеры переключаются на сохранённые настройки этой модели
@@ -624,6 +625,19 @@ docker compose up -d
 - [x] ~~Автоматический мониторинг ошибок (AdminEmailHandler, email digest)~~
 - [x] ~~Дедупликация user-сообщений (предотвращение дублей при reload после ошибки)~~
 - [x] ~~PWA navigateFallbackDenylist (sitemap.xml, robots.txt, feed.xml)~~
+- [x] ~~Cookie consent баннер (bottom, localStorage, i18n, ссылка на Privacy Policy)~~
+- [x] ~~Code splitting (React.lazy для 11 страниц) + популярные персонажи в Footer (SEO internal linking)~~
+- [x] ~~Inter font (Google Fonts preconnect + display=swap, Tailwind fontFamily.sans)~~
+- [x] ~~Favicon ICO (multi-size 16/32/48px из SVG)~~
+- [x] ~~NSFW anti-repetition fix: frequency_penalty 0.5 (NSFW) / 0.3 (SFW), усиленный post-history reminder с сохранением локации~~
+- [x] ~~Sitemap nginx fix: proxy headers + no-cache для GSC~~
+- [x] ~~Расширенные промпт-улучшения: mental review, мягкая структура, fiction author frame (SFW/moderate), NSFW scene pacing, позитивные формулировки, расширенные banned phrases (7 языков)~~
+- [x] ~~Speech Pattern — поле для речевых паттернов персонажа (DB, prompt injection, form, export/import, generator, rewrite script, 7 языков i18n)~~
+- [x] ~~Response length открыт всем пользователям (убран isAdmin wrapper)~~
+- [x] ~~Подсказки в форме: greeting hint (третье лицо), example dialogues hint (2-3 примера, {{char}}/{{user}}), speech pattern hint~~
+- [x] ~~Бюджет токенов промпта (estimated tokens display, amber/red warning)~~
+- [x] ~~Улучшение генератора персонажей: психологическая глубина, противоречия, speech pattern, NSFW-правила~~
+- [x] ~~Улучшение rewrite_characters.py: speech pattern генерация, anti-AI промпты, физические детали~~
 
 ### Монетизация (Revenue)
 - [ ] **Freemium с дневным лимитом** — 50-100 сообщений/день бесплатно, потом платно. Quick win
@@ -635,7 +649,7 @@ docker compose up -d
 
 ### Engagement (Удержание)
 - [x] ~~**Lorebooks / World Info** — keyword-triggered лор, инжектится в контекст при упоминании~~
-- [x] ~~**Память чата (Chat Memory)** — LLM автосуммаризация, контекст длинных разговоров~~
+- [x] ~~**Память чата (Chat Memory)** — LLM автосуммаризация (40+ сообщений → сохранение 20 последних + summary). Обязательное отслеживание текущей локации и обстановки. Groq → Cerebras → OpenRouter, 30с timeout~~
 - [x] ~~**Групповые чаты** — пользователь + несколько ИИ-персонажей, поочерёдные ответы~~
 - [x] ~~**Мониторинг моделей** — ежедневная проверка Groq/Cerebras/Together/OpenRouter, email при изменениях~~
 - [x] ~~**Обновление About/FAQ/Hero** — 10 feature-карточек, 12 FAQ, 6 hero-карточек, 3 языка~~
@@ -653,6 +667,26 @@ docker compose up -d
 - [ ] **Emotional tone detection** — определение эмоции пользователя → адаптация тона ответа (JanitorAI Immersive Mode)
 - [ ] **Bring-your-own-API** — пользователь подключает свой ключ OpenAI/Anthropic (JanitorAI)
 - [ ] **Больше структурированных тегов** — расширить реестр, новые категории
+
+### Character Quality (из исследования RP/NSFW)
+- [x] ~~**Открыть response_length всем пользователям** — dropdown длины ответа доступен всем в CharacterForm~~
+- [x] ~~**Валидация/подсказки для greeting** — hint про третье лицо и формат в Textarea (7 языков)~~
+- [x] ~~**Поле "Speech Pattern"** — отдельное поле для речевых паттернов (DB, prompt injection, form, export/import, generator)~~
+- [ ] **NSFW-шаблоны поведения в lorebook** — keyword-triggered вместо основного personality
+- [x] ~~**Подсказки для example dialogues** — UI-hints с рекомендацией 2-3 примеров и {{char}}/{{user}} (7 языков)~~
+- [x] ~~**Бюджет токенов промпта** — ~N tokens в system prompt, amber >2000, red >3000~~
+- [ ] **Структурированный режим personality** — PList/guided формат вместо свободного текста
+- [ ] **Preview/test персонажа** — тестовый чат перед публикацией
+
+### Оптимизация расходов на LLM
+- [ ] **Трекинг расходов** — `tokens_used` на Message, приблизительная стоимость по провайдерам, админ-дашборд
+- [ ] **Тиерная система** — аноним (20 msg/day, free only, 1024 max_tokens, 10 ctx) / зарег (200/day, free+auto, 2048, 30 ctx) / premium (∞, все, 4096, 50 ctx)
+- [ ] **Оптимизация контекста** — агрессивнее суммаризировать (20 msg), сокращённый system prompt для free, лимит контекста для анонимов
+- [ ] **cost_mode** — admin-настройка quality/balanced/economy, переключение на лету без рестарта
+- [ ] Кеш приветственных сообщений (greeting cache)
+- [ ] Умный роутинг по сложности сообщений
+- [ ] Лимит Together запросов/час
+- [ ] Подготовка инфраструктуры монетизации (user.tier)
 
 ## Стек технологий
 

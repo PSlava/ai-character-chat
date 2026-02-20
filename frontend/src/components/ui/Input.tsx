@@ -31,9 +31,10 @@ export function Input({ label, className = '', hideCount, ...props }: InputProps
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   hideCount?: boolean;
+  hint?: string;
 }
 
-export function Textarea({ label, className = '', hideCount, ...props }: TextareaProps) {
+export function Textarea({ label, className = '', hideCount, hint, ...props }: TextareaProps) {
   const len = typeof props.value === 'string' ? props.value.length : 0;
   const max = props.maxLength;
   const showCount = !hideCount && max && max > 0;
@@ -42,6 +43,9 @@ export function Textarea({ label, className = '', hideCount, ...props }: Textare
     <div>
       {label && (
         <label className="block text-sm text-neutral-400 mb-1">{label}</label>
+      )}
+      {hint && (
+        <p className="text-xs text-neutral-500 mb-1">{hint}</p>
       )}
       <textarea
         className={`w-full bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white placeholder-neutral-500 focus:outline-none focus:border-rose-500 resize-none ${className}`}

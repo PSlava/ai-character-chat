@@ -810,6 +810,10 @@ async def build_system_prompt(
     if character.get("appearance"):
         parts.append(f"\n{_get(lang, 'appearance')}\n{tpl(character['appearance'])}")
 
+    if character.get("speech_pattern"):
+        speech_header = {"ru": "## Речевой стиль", "en": "## Speech Style", "es": "## Estilo de Habla", "fr": "## Style de Parole", "de": "## Sprechstil", "pt": "## Estilo de Fala", "it": "## Stile di Parlata"}
+        parts.append(f"\n{speech_header.get(lang, speech_header['en'])}\n{tpl(character['speech_pattern'])}")
+
     if character.get("scenario"):
         parts.append(f"\n{_get(lang, 'scenario')}\n{tpl(character['scenario'])}")
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Input, Textarea } from '@/components/ui/Input';
@@ -28,6 +28,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     tagline: str(initial?.tagline),
     personality: str(initial?.personality),
     appearance: str(initial?.appearance),
+    speech_pattern: str(initial?.speech_pattern),
     scenario: str(initial?.scenario),
     greeting_message: str(initial?.greeting_message),
     example_dialogues: str(initial?.example_dialogues),
@@ -59,6 +60,13 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
   const update = (field: string, value: string | boolean | number) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  // Approximate token count for system prompt (~4 chars/token for Latin, ~2 for Cyrillic/CJK)
+  const estimatedTokens = useMemo(() => {
+    const text = [form.personality, form.appearance, form.speech_pattern, form.scenario, form.greeting_message, form.example_dialogues].join(' ');
+    const hasCyrillic = /[\u0400-\u04FF]/.test(text);
+    return Math.round(text.length / (hasCyrillic ? 2 : 4));
+  }, [form.personality, form.appearance, form.speech_pattern, form.scenario, form.greeting_message, form.example_dialogues]);
 
   const toggleTag = (tagId: string) =>
     setForm((prev) => ({
@@ -186,6 +194,16 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
       />
 
       <Textarea
+        label={t('form.speechPattern')}
+        hint={t('form.speechPatternHint')}
+        value={form.speech_pattern}
+        onChange={(e) => update('speech_pattern', e.target.value)}
+        placeholder={t('form.speechPatternPlaceholder')}
+        rows={2}
+        maxLength={3000}
+      />
+
+      <Textarea
         label={t('form.scenario')}
         value={form.scenario}
         onChange={(e) => update('scenario', e.target.value)}
@@ -196,6 +214,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
       <Textarea
         label={t('form.greeting')}
+        hint={t('form.greetingHint')}
         value={form.greeting_message}
         onChange={(e) => update('greeting_message', e.target.value)}
         placeholder={t('form.greetingPlaceholder')}
@@ -206,6 +225,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
       <Textarea
         label={t('form.exampleDialogues')}
+        hint={t('form.exampleDialoguesHint')}
         value={form.example_dialogues}
         onChange={(e) => update('example_dialogues', e.target.value)}
         placeholder={t('form.exampleDialoguesPlaceholder')}
@@ -248,7 +268,6 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
           </select>
         </div>
 
-        {isAdmin && (
         <div>
           <label className="block text-sm text-neutral-400 mb-1">
             {t('form.responseLength')}
@@ -264,7 +283,6 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
             <option value="very_long">{t('form.lengthVeryLong')}</option>
           </select>
         </div>
-        )}
 
         {isAdmin && (
         <div className="flex-1 min-w-[200px]">
@@ -349,6 +367,13 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
           {t('form.maxTokensHelp')}
         </p>
       </div>
+      )}
+
+      {/* Token budget indicator */}
+      {estimatedTokens > 0 && (
+        <div className={`text-xs text-center ${estimatedTokens > 2000 ? 'text-amber-400' : estimatedTokens > 3000 ? 'text-red-400' : 'text-neutral-500'}`}>
+          {t('form.tokenBudget', { tokens: estimatedTokens })}
+        </div>
       )}
 
       <Button type="submit" disabled={loading} className="w-full">
