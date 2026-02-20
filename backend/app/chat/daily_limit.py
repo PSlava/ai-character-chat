@@ -1,4 +1,8 @@
-"""Daily message limit per user. Admins are exempt."""
+"""Daily message limit per user. Admins are exempt.
+
+Tier system: anon/free/premium/admin with different limits.
+Cost mode: quality/balanced/economy controls provider ordering.
+"""
 import time
 from datetime import datetime, timezone
 
@@ -12,6 +16,59 @@ from app.db.session import engine as db_engine
 # Generic setting cache: key -> (value, timestamp)
 _setting_cache: dict[str, tuple[int, float]] = {}
 _CACHE_TTL = 60  # seconds
+
+# ── Tier system ──────────────────────────────────────────────
+TIER_LIMITS = {
+    "anon":    {"daily_messages": 20,   "max_tokens": 1024, "max_context_messages": 10, "allow_paid": False},
+    "free":    {"daily_messages": 200,  "max_tokens": 2048, "max_context_messages": 30, "allow_paid": True},
+    "premium": {"daily_messages": 0,    "max_tokens": 4096, "max_context_messages": 50, "allow_paid": True},  # 0 = unlimited
+    "admin":   {"daily_messages": 0,    "max_tokens": 4096, "max_context_messages": 50, "allow_paid": True},
+}
+
+
+def get_user_tier(user: dict | None) -> str:
+    """Determine tier from user dict (JWT payload). None = anonymous."""
+    if not user:
+        return "anon"
+    role = user.get("role", "user")
+    if role == "admin":
+        return "admin"
+    return user.get("tier", "free")
+
+
+def get_tier_limits(tier: str) -> dict:
+    """Get limits dict for a tier."""
+    return TIER_LIMITS.get(tier, TIER_LIMITS["free"])
+
+
+def cap_max_tokens(requested: int, tier: str) -> int:
+    """Cap max_tokens to tier limit."""
+    tier_max = get_tier_limits(tier)["max_tokens"]
+    return min(requested, tier_max)
+
+
+# ── Cost mode cache ──────────────────────────────────────────
+_cost_mode_cache: tuple[str, float] = ("quality", 0.0)
+
+
+async def get_cost_mode() -> str:
+    """Get cost_mode setting: quality | balanced | economy. Cached 60s."""
+    global _cost_mode_cache
+    now = time.monotonic()
+    if now - _cost_mode_cache[1] < _CACHE_TTL:
+        return _cost_mode_cache[0]
+    try:
+        async with db_engine.connect() as conn:
+            row = await conn.execute(
+                sa_text("SELECT value FROM prompt_templates WHERE key = 'setting.cost_mode'")
+            )
+            val = row.scalar_one_or_none() or "quality"
+    except Exception:
+        val = "quality"
+    if val not in ("quality", "balanced", "economy"):
+        val = "quality"
+    _cost_mode_cache = (val, now)
+    return val
 
 
 async def _get_setting_int(key: str, default: int) -> int:

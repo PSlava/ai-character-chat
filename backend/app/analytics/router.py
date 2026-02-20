@@ -339,6 +339,96 @@ async def _query_bot_stats(db: AsyncSession, since: datetime) -> dict:
     return {"views": row[0] if row else 0, "unique": row[1] if row else 0}
 
 
+@router.get("/admin/analytics/costs")
+async def analytics_costs(
+    days: int = Query(default=7, ge=1, le=365),
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Admin cost analytics — token usage by day, provider, and top users."""
+    since = datetime.utcnow() - timedelta(days=days)
+
+    daily_res, provider_res, top_users_res, totals_res = await asyncio.gather(
+        _query_daily_tokens(db, since),
+        _query_tokens_by_provider(db, since),
+        _query_top_users_by_tokens(db, since),
+        _query_token_totals(db, since),
+    )
+
+    return {
+        "totals": totals_res,
+        "daily": daily_res,
+        "by_provider": provider_res,
+        "top_users": top_users_res,
+    }
+
+
+async def _query_daily_tokens(db: AsyncSession, since: datetime) -> list[dict]:
+    """Daily token usage (prompt + completion)."""
+    rows = (await db.execute(text("""
+        SELECT DATE(m.created_at) as d,
+               COALESCE(SUM(m.prompt_tokens), 0) as prompt,
+               COALESCE(SUM(m.completion_tokens), 0) as completion
+        FROM messages m
+        WHERE m.created_at >= :since AND m.role = 'assistant'
+        AND (m.prompt_tokens IS NOT NULL OR m.completion_tokens IS NOT NULL)
+        GROUP BY DATE(m.created_at) ORDER BY d
+    """), {"since": since})).fetchall()
+    return [{"date": str(r[0]), "prompt_tokens": r[1], "completion_tokens": r[2], "total": r[1] + r[2]} for r in rows]
+
+
+async def _query_tokens_by_provider(db: AsyncSession, since: datetime) -> list[dict]:
+    """Token usage grouped by provider (extracted from model_used 'provider:model')."""
+    rows = (await db.execute(text("""
+        SELECT SPLIT_PART(model_used, ':', 1) as provider,
+               COUNT(*) as messages,
+               COALESCE(SUM(prompt_tokens), 0) as prompt,
+               COALESCE(SUM(completion_tokens), 0) as completion
+        FROM messages
+        WHERE created_at >= :since AND role = 'assistant' AND model_used IS NOT NULL
+        AND (prompt_tokens IS NOT NULL OR completion_tokens IS NOT NULL)
+        GROUP BY provider ORDER BY completion DESC
+    """), {"since": since})).fetchall()
+    return [{"provider": r[0], "messages": r[1], "prompt_tokens": r[2], "completion_tokens": r[3], "total": r[2] + r[3]} for r in rows]
+
+
+async def _query_top_users_by_tokens(db: AsyncSession, since: datetime) -> list[dict]:
+    """Top 10 users by token consumption."""
+    rows = (await db.execute(text(f"""
+        SELECT u.id, u.username, u.email,
+               COUNT(m.id) as messages,
+               COALESCE(SUM(m.prompt_tokens), 0) as prompt,
+               COALESCE(SUM(m.completion_tokens), 0) as completion
+        FROM messages m
+        JOIN chats ch ON ch.id = m.chat_id
+        JOIN users u ON u.id = ch.user_id
+        WHERE m.created_at >= :since AND m.role = 'assistant'
+        AND (m.prompt_tokens IS NOT NULL OR m.completion_tokens IS NOT NULL)
+        {_EXCLUDE_SYSTEM.format(user_col='ch.user_id')}
+        GROUP BY u.id, u.username, u.email
+        ORDER BY completion DESC LIMIT 10
+    """), {"since": since})).fetchall()
+    return [{"user_id": r[0], "username": r[1], "email": r[2], "messages": r[3], "prompt_tokens": r[4], "completion_tokens": r[5], "total": r[4] + r[5]} for r in rows]
+
+
+async def _query_token_totals(db: AsyncSession, since: datetime) -> dict:
+    """Total token usage summary."""
+    row = (await db.execute(text("""
+        SELECT COUNT(*) as messages,
+               COALESCE(SUM(prompt_tokens), 0) as prompt,
+               COALESCE(SUM(completion_tokens), 0) as completion
+        FROM messages
+        WHERE created_at >= :since AND role = 'assistant'
+        AND (prompt_tokens IS NOT NULL OR completion_tokens IS NOT NULL)
+    """), {"since": since})).fetchone()
+    return {
+        "messages": row[0] if row else 0,
+        "prompt_tokens": row[1] if row else 0,
+        "completion_tokens": row[2] if row else 0,
+        "total_tokens": (row[1] or 0) + (row[2] or 0) if row else 0,
+    }
+
+
 def _merge_daily(
     pv: dict[str, dict],
     reg: dict[str, int],

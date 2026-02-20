@@ -1,7 +1,7 @@
 from typing import AsyncIterator
 import httpx
 import anthropic
-from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 
 
 class AnthropicProvider(BaseLLMProvider):
@@ -40,6 +40,14 @@ class AnthropicProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        result = await self.generate_with_usage(messages, config)
+        return result.content
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
         system_prompt = ""
         api_messages = []
         for msg in messages:
@@ -56,4 +64,10 @@ class AnthropicProvider(BaseLLMProvider):
             system=system_prompt,
             messages=api_messages,
         )
-        return response.content[0].text
+        usage = getattr(response, "usage", None)
+        return LLMResult(
+            content=response.content[0].text,
+            prompt_tokens=getattr(usage, "input_tokens", 0) or 0,
+            completion_tokens=getattr(usage, "output_tokens", 0) or 0,
+            model=config.model or "claude-sonnet-4-5-20250929",
+        )

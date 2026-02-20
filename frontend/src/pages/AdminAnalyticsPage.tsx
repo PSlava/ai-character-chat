@@ -2,12 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
-import { getAnalyticsOverview } from '@/api/analytics';
-import type { AnalyticsOverview } from '@/api/analytics';
+import { getAnalyticsOverview, getCostAnalytics } from '@/api/analytics';
+import type { AnalyticsOverview, CostAnalytics } from '@/api/analytics';
 import { Avatar } from '@/components/ui/Avatar';
 import {
   Users, UserPlus, Eye, Globe, MessageCircle, MessagesSquare,
-  Smartphone, Monitor, Tablet, Bot,
+  Smartphone, Monitor, Tablet, Bot, Coins,
 } from 'lucide-react';
 
 const PERIOD_OPTIONS = [
@@ -23,16 +23,21 @@ export function AdminAnalyticsPage() {
   const isAdmin = user?.role === 'admin';
 
   const [data, setData] = useState<AnalyticsOverview | null>(null);
+  const [costData, setCostData] = useState<CostAnalytics | null>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [days, setDays] = useState(7);
+  const [tab, setTab] = useState<'traffic' | 'costs'>('traffic');
 
   useEffect(() => {
     if (!isAdmin) return;
     setLoadingData(true);
-    getAnalyticsOverview(days)
-      .then(setData)
-      .catch(() => setData(null))
-      .finally(() => setLoadingData(false));
+    Promise.all([
+      getAnalyticsOverview(days).catch(() => null),
+      getCostAnalytics(days).catch(() => null),
+    ]).then(([overview, costs]) => {
+      setData(overview);
+      setCostData(costs);
+    }).finally(() => setLoadingData(false));
   }, [isAdmin, days]);
 
   if (loading) return null;
@@ -47,20 +52,42 @@ export function AdminAnalyticsPage() {
           <h1 className="text-2xl font-bold">{t('admin.analyticsTitle')}</h1>
           <p className="text-neutral-400 text-sm mt-1">{t('admin.analyticsSubtitle')}</p>
         </div>
-        <div className="flex gap-1 bg-neutral-800/50 rounded-lg p-1">
-          {PERIOD_OPTIONS.map((opt) => (
+        <div className="flex items-center gap-3">
+          {/* Tab switcher */}
+          <div className="flex gap-1 bg-neutral-800/50 rounded-lg p-1">
             <button
-              key={opt.days}
-              onClick={() => setDays(opt.days)}
+              onClick={() => setTab('traffic')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                days === opt.days
-                  ? 'bg-rose-600 text-white'
-                  : 'text-neutral-400 hover:text-white'
+                tab === 'traffic' ? 'bg-neutral-700 text-white' : 'text-neutral-400 hover:text-white'
               }`}
             >
-              {opt.label}
+              Traffic
             </button>
-          ))}
+            <button
+              onClick={() => setTab('costs')}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                tab === 'costs' ? 'bg-neutral-700 text-white' : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <Coins className="w-3.5 h-3.5" /> Costs
+            </button>
+          </div>
+          {/* Period selector */}
+          <div className="flex gap-1 bg-neutral-800/50 rounded-lg p-1">
+            {PERIOD_OPTIONS.map((opt) => (
+              <button
+                key={opt.days}
+                onClick={() => setDays(opt.days)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  days === opt.days
+                    ? 'bg-rose-600 text-white'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -70,6 +97,8 @@ export function AdminAnalyticsPage() {
             <div key={i} className="bg-neutral-800/50 rounded-xl p-4 animate-pulse h-24" />
           ))}
         </div>
+      ) : tab === 'costs' ? (
+        <CostsView data={costData} />
       ) : !data ? (
         <p className="text-neutral-500 text-center py-12">{t('admin.analyticsError')}</p>
       ) : (
@@ -257,6 +286,141 @@ export function AdminAnalyticsPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// --- Costs view ---
+
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toString();
+}
+
+function CostsView({ data }: { data: CostAnalytics | null }) {
+  if (!data) return <p className="text-neutral-500 text-center py-12">No cost data yet</p>;
+
+  const { totals, daily, by_provider, top_users } = data;
+  const maxDaily = Math.max(1, ...daily.map(d => d.total));
+
+  return (
+    <div className="space-y-6">
+      {/* Totals */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-4">
+          <div className="text-xs text-neutral-500 mb-2">Total Tokens</div>
+          <div className="text-2xl font-bold text-neutral-200 tabular-nums">{formatTokens(totals.total_tokens)}</div>
+        </div>
+        <div className="bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-4">
+          <div className="text-xs text-neutral-500 mb-2">Prompt Tokens</div>
+          <div className="text-2xl font-bold text-blue-400 tabular-nums">{formatTokens(totals.prompt_tokens)}</div>
+        </div>
+        <div className="bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-4">
+          <div className="text-xs text-neutral-500 mb-2">Completion Tokens</div>
+          <div className="text-2xl font-bold text-green-400 tabular-nums">{formatTokens(totals.completion_tokens)}</div>
+        </div>
+        <div className="bg-neutral-800/50 border border-neutral-700/50 rounded-xl p-4">
+          <div className="text-xs text-neutral-500 mb-2">Messages</div>
+          <div className="text-2xl font-bold text-neutral-200 tabular-nums">{totals.messages.toLocaleString()}</div>
+        </div>
+      </div>
+
+      {/* Daily token chart */}
+      {daily.length > 0 && (
+        <Section title="Daily Token Usage">
+          <div className="flex items-end gap-[2px] h-32">
+            {daily.map((d) => {
+              const pH = (d.prompt_tokens / maxDaily) * 100;
+              const cH = (d.completion_tokens / maxDaily) * 100;
+              const dayLabel = d.date.slice(5);
+              return (
+                <div key={d.date} className="flex-1 flex flex-col items-center gap-0.5 group relative">
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-lg">
+                    <div className="font-semibold text-neutral-200 mb-1">{d.date}</div>
+                    <div className="text-blue-400">Prompt: {formatTokens(d.prompt_tokens)}</div>
+                    <div className="text-green-400">Completion: {formatTokens(d.completion_tokens)}</div>
+                    <div className="text-neutral-400">Total: {formatTokens(d.total)}</div>
+                  </div>
+                  <div className="w-full flex flex-col items-stretch h-24 justify-end">
+                    <div
+                      className="bg-blue-500/50 rounded-t-sm min-h-[1px]"
+                      style={{ height: `${Math.max(1, pH)}%` }}
+                    />
+                    <div
+                      className="bg-green-500/50 min-h-[1px]"
+                      style={{ height: `${Math.max(1, cH)}%` }}
+                    />
+                  </div>
+                  {daily.length <= 14 || daily.indexOf(d) % Math.ceil(daily.length / 14) === 0 ? (
+                    <span className="text-[9px] text-neutral-600 mt-1">{dayLabel}</span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-4 mt-3 text-xs text-neutral-500 justify-center">
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 bg-blue-500/50 rounded-sm" /> Prompt
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 bg-green-500/50 rounded-sm" /> Completion
+            </span>
+          </div>
+        </Section>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* By provider */}
+        <Section title="Token Usage by Provider">
+          {by_provider.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="space-y-2">
+              {by_provider.map((p) => {
+                const maxTotal = by_provider[0]?.total || 1;
+                return (
+                  <div key={p.provider} className="flex items-center gap-2">
+                    <span className="text-xs text-neutral-400 w-20 truncate">{p.provider}</span>
+                    <div className="flex-1 h-2 bg-neutral-800 rounded-full">
+                      <div
+                        className="h-full bg-amber-500/60 rounded-full"
+                        style={{ width: `${(p.total / maxTotal) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-neutral-500 tabular-nums w-14 text-right">{formatTokens(p.total)}</span>
+                    <span className="text-xs text-neutral-600 tabular-nums w-10 text-right">{p.messages}m</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Section>
+
+        {/* Top users */}
+        <Section title="Top Users by Tokens">
+          {top_users.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <table className="w-full text-sm">
+              <thead><tr className="text-neutral-500 text-xs">
+                <th className="text-left pb-2">User</th>
+                <th className="text-right pb-2">Msgs</th>
+                <th className="text-right pb-2">Tokens</th>
+              </tr></thead>
+              <tbody>
+                {top_users.map((u) => (
+                  <tr key={u.user_id} className="border-t border-neutral-800/50">
+                    <td className="py-1.5 text-neutral-300 truncate max-w-[150px]">{u.username}</td>
+                    <td className="py-1.5 text-right text-neutral-400 tabular-nums">{u.messages}</td>
+                    <td className="py-1.5 text-right text-neutral-400 tabular-nums">{formatTokens(u.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Section>
+      </div>
     </div>
   );
 }

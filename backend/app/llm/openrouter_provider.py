@@ -2,7 +2,7 @@ import asyncio
 from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
-from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 from app.llm.openrouter_models import get_fallback_models
 from app.llm.thinking_filter import ThinkingFilter, strip_thinking
 from app.llm import model_cooldown
@@ -91,6 +91,14 @@ class OpenRouterProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        result = await self.generate_with_usage(messages, config)
+        return result.content
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
         models_to_try = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
 
@@ -116,14 +124,19 @@ class OpenRouterProvider(BaseLLMProvider):
                 )
                 msg = response.choices[0].message if response.choices else None
                 content = msg.content if msg else None
-                # Thinking models (Nemotron) put response in reasoning field
                 if not content and msg:
                     reasoning = getattr(msg, "reasoning", None)
                     if reasoning:
                         content = reasoning
                 if not content:
                     raise RuntimeError("Модель вернула пустой ответ")
-                return strip_thinking(content)
+                usage = getattr(response, "usage", None)
+                return LLMResult(
+                    content=strip_thinking(content),
+                    prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+                    completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+                    model=model,
+                )
             except asyncio.TimeoutError:
                 model_cooldown.mark_failed("openrouter", model)
                 errors.append((model.split("/")[-1].replace(":free", ""), "таймаут"))

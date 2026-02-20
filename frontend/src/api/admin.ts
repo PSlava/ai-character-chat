@@ -73,6 +73,7 @@ export interface AdminSettings {
   notify_registration: string;
   notify_errors: string;
   paid_mode: string;
+  cost_mode: string;
   daily_message_limit: string;
   max_personas: string;
   anon_message_limit: string;

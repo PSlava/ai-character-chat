@@ -33,9 +33,10 @@ _SETTING_DEFAULTS: dict[str, str] = {
     "setting.notify_registration": "true",
     "setting.notify_errors": "true",
     "setting.paid_mode": "false",
+    "setting.cost_mode": "quality",  # quality | balanced | economy
     "setting.daily_message_limit": "1000",
     "setting.max_personas": "5",
-    "setting.anon_message_limit": "50",
+    "setting.anon_message_limit": "20",
 }
 
 

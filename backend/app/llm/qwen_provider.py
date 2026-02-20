@@ -1,7 +1,7 @@
 from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI, BadRequestError
-from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 from app.llm.thinking_filter import strip_thinking
 
 CONTENT_MODERATION_MSG = "Qwen отклонил запрос из-за модерации контента. Попробуйте переформулировать сообщение или используйте другую модель (DeepSeek, OpenRouter)."
@@ -52,6 +52,14 @@ class QwenProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        result = await self.generate_with_usage(messages, config)
+        return result.content
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         try:
             response = await self.client.chat.completions.create(
@@ -71,6 +79,11 @@ class QwenProvider(BaseLLMProvider):
         content = response.choices[0].message.content if response.choices else None
         if not content:
             raise RuntimeError("Qwen returned empty response")
-        # Safety fallback: strip thinking tags if they still appear
         content = strip_thinking(content)
-        return content
+        usage = getattr(response, "usage", None)
+        return LLMResult(
+            content=content,
+            prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+            model=config.model or "qwen3-32b",
+        )

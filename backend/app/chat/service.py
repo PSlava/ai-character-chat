@@ -229,13 +229,20 @@ async def delete_chat(db: AsyncSession, chat_id: str, user_id: str):
     return True
 
 
-async def save_message(db: AsyncSession, chat_id: str, role: str, content: str, model_used: str | None = None):
+async def save_message(
+    db: AsyncSession, chat_id: str, role: str, content: str,
+    model_used: str | None = None,
+    prompt_tokens: int | None = None,
+    completion_tokens: int | None = None,
+):
     msg = Message(
         chat_id=chat_id,
         role=MessageRole(role),
         content=content,
         token_count=len(content) // 4,
         model_used=model_used,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
     )
     db.add(msg)
 
@@ -340,6 +347,7 @@ async def build_conversation_messages(
     user_description: str | None = None,
     language: str = "ru",
     context_limit: int | None = None,
+    max_context_messages: int | None = None,
 ) -> list[LLMMessage]:
     char_dict = {
         "name": character.name,
@@ -389,7 +397,8 @@ async def build_conversation_messages(
         messages.insert(0, LLMMessage(role=msg.role.value if hasattr(msg.role, 'value') else msg.role, content=msg.content))
         total_tokens += est_tokens
 
-    messages = messages[-MAX_CONTEXT_MESSAGES:]
+    effective_max = max_context_messages or MAX_CONTEXT_MESSAGES
+    messages = messages[-effective_max:]
 
     result_list = [LLMMessage(role="system", content=system_prompt)]
 

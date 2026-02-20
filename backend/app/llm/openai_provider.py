@@ -1,7 +1,7 @@
 from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
-from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 
 
 class OpenAIProvider(BaseLLMProvider):
@@ -38,6 +38,14 @@ class OpenAIProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        result = await self.generate_with_usage(messages, config)
+        return result.content
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
 
         response = await self.client.chat.completions.create(
@@ -49,4 +57,10 @@ class OpenAIProvider(BaseLLMProvider):
             frequency_penalty=config.frequency_penalty,
             presence_penalty=config.presence_penalty,
         )
-        return response.choices[0].message.content
+        usage = getattr(response, "usage", None)
+        return LLMResult(
+            content=response.choices[0].message.content,
+            prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+            model=config.model or "gpt-4o",
+        )

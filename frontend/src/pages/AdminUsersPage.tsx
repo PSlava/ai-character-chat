@@ -6,7 +6,7 @@ import { getAdminUsers, banUser, unbanUser, deleteUser, getAdminSettings, update
 import type { AdminUser } from '@/api/admin';
 import { Avatar } from '@/components/ui/Avatar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle, UserPlus, AlertTriangle } from 'lucide-react';
+import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle, UserPlus, AlertTriangle, Gauge } from 'lucide-react';
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
@@ -24,8 +24,9 @@ export function AdminUsersPage() {
   const [editingLimit, setEditingLimit] = useState(false);
   const [maxPersonas, setMaxPersonas] = useState('5');
   const [editingPersonas, setEditingPersonas] = useState(false);
-  const [anonLimit, setAnonLimit] = useState('50');
+  const [anonLimit, setAnonLimit] = useState('20');
   const [editingAnonLimit, setEditingAnonLimit] = useState(false);
+  const [costMode, setCostMode] = useState<'quality' | 'balanced' | 'economy'>('quality');
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -39,7 +40,10 @@ export function AdminUsersPage() {
         setPaidMode(s.paid_mode === 'true');
         setDailyLimit(s.daily_message_limit || '1000');
         setMaxPersonas(s.max_personas || '5');
-        setAnonLimit(s.anon_message_limit || '50');
+        setAnonLimit(s.anon_message_limit || '20');
+        if (s.cost_mode && ['quality', 'balanced', 'economy'].includes(s.cost_mode)) {
+          setCostMode(s.cost_mode as 'quality' | 'balanced' | 'economy');
+        }
       })
       .catch(() => {});
   }, [isAdmin]);
@@ -95,6 +99,18 @@ export function AdminUsersPage() {
       await updateAdminSetting('max_personas', String(num));
     } catch {
       // revert on error
+    }
+  };
+
+  const cycleCostMode = async () => {
+    const order: Array<'quality' | 'balanced' | 'economy'> = ['quality', 'balanced', 'economy'];
+    const idx = order.indexOf(costMode);
+    const next = order[(idx + 1) % order.length];
+    setCostMode(next);
+    try {
+      await updateAdminSetting('cost_mode', next);
+    } catch {
+      setCostMode(costMode);
     }
   };
 
@@ -278,6 +294,20 @@ export function AdminUsersPage() {
               </div>
             )}
           </div>
+          <button
+            onClick={cycleCostMode}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              costMode === 'quality'
+                ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+                : costMode === 'balanced'
+                ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-900/50'
+                : 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50'
+            }`}
+            title={`Cost mode: ${costMode}. Click to cycle.`}
+          >
+            <Gauge className="w-4 h-4" />
+            <span className="hidden sm:inline">{costMode}</span>
+          </button>
           <button
             onClick={togglePaidMode}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${

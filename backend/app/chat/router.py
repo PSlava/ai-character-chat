@@ -15,7 +15,7 @@ from app.llm.base import LLMConfig
 from app.llm.registry import get_provider
 from app.config import settings
 from app.auth.rate_limit import check_message_rate, check_message_interval
-from app.chat.daily_limit import check_daily_limit, get_daily_usage
+from app.chat.daily_limit import check_daily_limit, get_daily_usage, get_cost_mode, get_user_tier, get_tier_limits, cap_max_tokens
 from app.chat.summarizer import maybe_summarize
 import asyncio as _asyncio
 
@@ -65,6 +65,11 @@ def _is_refusal_response(text: str) -> bool:
     if len(low) > 500:
         return False  # Real responses are longer
     return any(phrase in low for phrase in _REFUSAL_PHRASES)
+
+
+def _estimate_prompt_tokens(messages) -> int:
+    """Estimate prompt tokens from LLM messages (rough: chars / 4)."""
+    return sum(len(m.content) for m in messages) // 4
 
 
 def _user_error(err: str, is_admin: bool) -> str:
@@ -437,10 +442,12 @@ async def send_message(
         user_name = None
         user_description = None
 
-    # Build context
+    # Build context (respect tier limits)
+    tier_ctx_limit = get_tier_limits(tier)["max_context_messages"]
     messages = await service.build_conversation_messages(
         db, chat_id, character, user_name=user_name, user_description=user_description,
         language=language, context_limit=body.context_limit,
+        max_context_messages=tier_ctx_limit,
     )
 
     # Resolve provider and model ID
@@ -484,9 +491,14 @@ async def send_message(
         provider_name = model_name
         model_id = PROVIDER_MODELS.get(model_name, "")
 
+    is_admin = user.get("role") == "admin" if user else False
+    tier = get_user_tier(user)
+    requested_max_tokens = body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048)
+    capped_max_tokens = cap_max_tokens(requested_max_tokens, tier)
+
     base_config = {
         "temperature": body.temperature if body.temperature is not None else 0.7,
-        "max_tokens": body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048),
+        "max_tokens": capped_max_tokens,
         "top_p": body.top_p if body.top_p is not None else 0.95,
         "top_k": body.top_k if body.top_k is not None else 0,
         "frequency_penalty": body.frequency_penalty if body.frequency_penalty is not None else (0.5 if content_rating == "nsfw" else 0.3),
@@ -494,12 +506,25 @@ async def send_message(
         "content_rating": content_rating,
     }
 
-    is_admin = user.get("role") == "admin" if user else False
     user_id_for_increment = user["id"] if user else None
 
     if is_auto:
-        paid_mode = await _is_paid_mode(db)
-        order_str = settings.auto_provider_order_paid if paid_mode else settings.auto_provider_order
+        cost_mode = await get_cost_mode()
+        tier_limits = get_tier_limits(tier)
+        # Determine provider order based on cost_mode and tier
+        if cost_mode == "economy":
+            # Free providers only for everyone
+            order_str = settings.auto_provider_order
+        elif cost_mode == "balanced":
+            # Paid for registered users, free for anon
+            if tier_limits["allow_paid"]:
+                order_str = settings.auto_provider_order_paid
+            else:
+                order_str = settings.auto_provider_order
+        else:
+            # quality mode: use paid_mode setting as before
+            paid_mode = await _is_paid_mode(db)
+            order_str = settings.auto_provider_order_paid if paid_mode else settings.auto_provider_order
         auto_order = [p.strip() for p in order_str.split(",") if p.strip()]
 
         async def event_stream():
@@ -509,7 +534,8 @@ async def send_message(
                     prov = get_provider(pname)
                 except ValueError:
                     continue  # provider not configured
-                config = LLMConfig(model="", use_flex=paid_mode and pname == "groq", **base_config)
+                use_flex = cost_mode != "economy" and pname == "groq"
+                config = LLMConfig(model="", use_flex=use_flex, **base_config)
                 full_response: list[str] = []
                 buffered: list[str] = []
                 buffer_flushed = False
@@ -549,7 +575,12 @@ async def send_message(
                             yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
 
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
-                    saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
+                    est_prompt = _estimate_prompt_tokens(messages)
+                    est_completion = len(complete_text) // 4
+                    saved_msg = await service.save_message(
+                        db, chat_id, "assistant", complete_text, model_used=actual_model,
+                        prompt_tokens=est_prompt, completion_tokens=est_completion,
+                    )
                     await service.increment_message_count(character.id, language, user_id_for_increment)
                     _asyncio.create_task(maybe_summarize(chat_id))
                     done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
@@ -612,7 +643,12 @@ async def send_message(
                             if _is_refusal_response(fb_text):
                                 continue
                             actual_model = f"{fb_name}:{getattr(fb_prov, 'last_model_used', '') or ''}"
-                            saved_msg = await service.save_message(db, chat_id, "assistant", fb_text, model_used=actual_model)
+                            est_prompt = _estimate_prompt_tokens(messages)
+                            est_completion = len(fb_text) // 4
+                            saved_msg = await service.save_message(
+                                db, chat_id, "assistant", fb_text, model_used=actual_model,
+                                prompt_tokens=est_prompt, completion_tokens=est_completion,
+                            )
                             await service.increment_message_count(character.id, language, user_id_for_increment)
                             _asyncio.create_task(maybe_summarize(chat_id))
                             done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}
@@ -631,7 +667,12 @@ async def send_message(
                         yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
 
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
-                saved_msg = await service.save_message(db, chat_id, "assistant", complete_text, model_used=actual_model)
+                est_prompt = _estimate_prompt_tokens(messages)
+                est_completion = len(complete_text) // 4
+                saved_msg = await service.save_message(
+                    db, chat_id, "assistant", complete_text, model_used=actual_model,
+                    prompt_tokens=est_prompt, completion_tokens=est_completion,
+                )
                 await service.increment_message_count(character.id, language, user_id_for_increment)
                 _asyncio.create_task(maybe_summarize(chat_id))
                 done_data = {'type': 'done', 'message_id': saved_msg.id, 'user_message_id': user_msg.id, 'model_used': actual_model}

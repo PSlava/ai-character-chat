@@ -20,7 +20,7 @@ _anon_user_id: str | None = None
 ANON_EMAIL = "anonymous@system.local"
 
 # Setting cache: (value, timestamp)
-_limit_cache: tuple[int, float] = (50, 0.0)
+_limit_cache: tuple[int, float] = (20, 0.0)
 _CACHE_TTL = 60
 
 
@@ -60,9 +60,9 @@ async def get_anon_message_limit() -> int:
                 sa_text("SELECT value FROM prompt_templates WHERE key = 'setting.anon_message_limit'")
             )
             val = row.scalar_one_or_none()
-            result = int(val) if val else 50
+            result = int(val) if val else 20
     except Exception:
-        result = 50
+        result = 20
     _limit_cache = (result, now)
     return result
 

@@ -96,6 +96,54 @@ export interface AnalyticsOverview {
   bot_views: BotStats;
 }
 
+// --- Cost analytics ---
+
+export interface CostTotals {
+  messages: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+}
+
+export interface DailyCost {
+  date: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total: number;
+}
+
+export interface ProviderCost {
+  provider: string;
+  messages: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total: number;
+}
+
+export interface TopUserTokens {
+  user_id: string;
+  username: string;
+  email: string;
+  messages: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total: number;
+}
+
+export interface CostAnalytics {
+  totals: CostTotals;
+  daily: DailyCost[];
+  by_provider: ProviderCost[];
+  top_users: TopUserTokens[];
+}
+
+export async function getCostAnalytics(days: number = 7): Promise<CostAnalytics> {
+  const { data } = await api.get<CostAnalytics>('/admin/analytics/costs', {
+    params: { days },
+  });
+  return data;
+}
+
 export async function getAnalyticsOverview(days: number = 7): Promise<AnalyticsOverview> {
   const { data } = await api.get<AnalyticsOverview>('/admin/analytics/overview', {
     params: { days },

@@ -1,7 +1,7 @@
 from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
-from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 from app.llm.thinking_filter import ThinkingFilter, strip_thinking, has_foreign_chars
 from app.llm.groq_models import get_fallback_models, refresh_models, is_cache_stale
 from app.llm import model_cooldown
@@ -92,6 +92,14 @@ class GroqProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        result = await self.generate_with_usage(messages, config)
+        return result.content
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
         await self.ensure_models_loaded()
         models = self._get_models_to_try(config.model, nsfw=config.content_rating == "nsfw")
         errors: list[tuple[str, str]] = []
@@ -110,7 +118,13 @@ class GroqProvider(BaseLLMProvider):
                     result = strip_thinking(content)
                     if has_foreign_chars(result):
                         raise RuntimeError(f"CJK/foreign chars in response from {model}")
-                    return result
+                    usage = getattr(response, "usage", None)
+                    return LLMResult(
+                        content=result,
+                        prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+                        completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+                        model=model,
+                    )
                 except Exception as e:
                     if use_flex and self._is_flex_unavailable(e):
                         continue  # retry same model without flex

@@ -17,9 +17,9 @@ from app.llm.registry import get_provider
 logger = logging.getLogger("summarizer")
 
 # Summarize when total messages exceed this threshold
-SUMMARIZE_THRESHOLD = 40
+SUMMARIZE_THRESHOLD = 25
 # Keep the most recent N messages unsummarized (always in context)
-KEEP_RECENT = 20
+KEEP_RECENT = 15
 # Providers to try (fast + cheap)
 _SUMMARY_PROVIDERS = ("groq", "cerebras", "openrouter")
 _TIMEOUT = 30.0

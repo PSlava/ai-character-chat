@@ -22,6 +22,14 @@ class LLMConfig:
     use_flex: bool = False  # Groq Flex tier (10x rate limits, same price)
 
 
+@dataclass
+class LLMResult:
+    content: str
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    model: str = ""
+
+
 class BaseLLMProvider(ABC):
     @abstractmethod
     async def generate_stream(
@@ -40,3 +48,12 @@ class BaseLLMProvider(ABC):
     ) -> str:
         """Return the complete response."""
         ...
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
+        """Return complete response with token usage. Override in providers that support it."""
+        content = await self.generate(messages, config)
+        return LLMResult(content=content)

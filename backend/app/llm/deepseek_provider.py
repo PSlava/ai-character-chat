@@ -2,7 +2,7 @@ import asyncio
 from typing import AsyncIterator
 import httpx
 from openai import AsyncOpenAI
-from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 
 TIMEOUT = 60  # DeepSeek-reasoner can be slow
 
@@ -46,6 +46,14 @@ class DeepSeekProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        result = await self.generate_with_usage(messages, config)
+        return result.content
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         response = await asyncio.wait_for(
             self.client.chat.completions.create(
@@ -66,4 +74,10 @@ class DeepSeekProvider(BaseLLMProvider):
             content = getattr(msg, "reasoning_content", None)
         if not content:
             raise RuntimeError("DeepSeek returned empty response")
-        return content
+        usage = getattr(response, "usage", None)
+        return LLMResult(
+            content=content,
+            prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
+            model=config.model or "deepseek-chat",
+        )

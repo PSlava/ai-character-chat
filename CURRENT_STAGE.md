@@ -276,7 +276,7 @@ docker compose up -d
   - Системный пользователь `anonymous@system.local` — общий аккаунт для анонимных чатов (избегает nullable FK)
   - Сессия трекается через UUID в localStorage (`anon_session_id`), передаётся в `X-Anon-Session` header
   - `anon_session_id` на модели Chat — разделяет чаты разных анонимных сессий
-  - Лимит сообщений: админ-настройка `setting.anon_message_limit` (дефолт 50, 0 = отключено)
+  - Лимит сообщений: админ-настройка `setting.anon_message_limit` (дефолт 20, 0 = отключено)
   - Серверная проверка: бэкенд считает сообщения по `anon_session_id`, возвращает 403 при превышении
   - Клиентский трекинг: `anon_messages_left` в ответе создания чата и SSE `done` событиях
   - Опциональная авторизация: `get_current_user_optional` — None для анонимных запросов
@@ -368,7 +368,7 @@ docker compose up -d
   - Переключатель: `setting.notify_errors` (кнопка AlertTriangle на AdminUsersPage)
   - Отправка всем `ADMIN_EMAILS` через существующую email-инфраструктуру (Resend/SMTP)
   - Модуль: `backend/app/utils/error_notifier.py`
-- **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.notify_errors` (bool) — email при ошибках бэкенда, `setting.paid_mode` (bool) — платный режим LLM, `setting.max_personas` (int, дефолт 5) — лимит персон на пользователя, `setting.daily_message_limit` (int, дефолт 1000) — дневной лимит сообщений, `setting.anon_message_limit` (int, дефолт 50) — лимит сообщений для анонимных гостей (0 = отключено)
+- **Настройки**: `setting.notify_registration` (bool) — email при регистрации, `setting.notify_errors` (bool) — email при ошибках бэкенда, `setting.paid_mode` (bool) — платный режим LLM, `setting.cost_mode` (quality/balanced/economy) — режим расходов на LLM, `setting.max_personas` (int, дефолт 5) — лимит персон на пользователя, `setting.daily_message_limit` (int, дефолт 1000) — дневной лимит сообщений, `setting.anon_message_limit` (int, дефолт 20) — лимит сообщений для анонимных гостей (0 = отключено)
 - **Настройки админа** — API `GET /api/admin/settings` и `PUT /api/admin/settings/{key}` для key-value настроек (хранятся в `prompt_templates` с префиксом `setting.`)
 - **Платный режим (Paid Mode)** — админ-тоггл на странице пользователей (иконка DollarSign). Когда включён: auto-fallback использует `["groq", "openrouter"]` (Groq с flex tier, OpenRouter как fallback). Когда выключен: `["openrouter"]` (только бесплатные). Настройка `setting.paid_mode` с 60-секундным in-memory кэшем. UI: зелёная кнопка когда вкл, серая когда выкл
 - Ссылки в сайдбаре: «Пользователи» + «Промпты» + «Жалобы» + «Аналитика» видны только админу
@@ -449,7 +449,7 @@ docker compose up -d
 **Together AI**: платный (pay-per-token, от $0.02/M), OpenAI-совместимый. **Без модерации контента** — Qwen и Llama работают без NSFW-ограничений. Поддерживает все параметры генерации.
 
 **Режимы выбора модели:**
-- **Auto (Все провайдеры)** — кросс-провайдерный fallback. **Paid mode**: Groq → Together → OpenRouter. **Free mode**: Groq → Cerebras → OpenRouter → Together. Дефолт для новых персонажей
+- **Auto (Все провайдеры)** — кросс-провайдерный fallback. **cost_mode=quality**: Groq → Together → OpenRouter. **cost_mode=balanced**: платные для зарегистрированных / бесплатные для анонимов. **cost_mode=economy**: Groq → Cerebras → OpenRouter (только бесплатные). Дефолт для новых персонажей
 - **Auto (OpenRouter / Groq / Cerebras / Together)** — автоматический перебор топ-3 по качеству внутри одного провайдера, с NSFW-фильтрацией
 - **Конкретная модель** — выбор конкретной модели провайдера (напр. `groq:llama-3.3-70b-versatile`)
 - **Прямой провайдер** (DeepSeek, Qwen) — напрямую через API, минуя агрегаторы
@@ -679,14 +679,15 @@ docker compose up -d
 - [ ] **Preview/test персонажа** — тестовый чат перед публикацией
 
 ### Оптимизация расходов на LLM
-- [ ] **Трекинг расходов** — `tokens_used` на Message, приблизительная стоимость по провайдерам, админ-дашборд
-- [ ] **Тиерная система** — аноним (20 msg/day, free only, 1024 max_tokens, 10 ctx) / зарег (200/day, free+auto, 2048, 30 ctx) / premium (∞, все, 4096, 50 ctx)
-- [ ] **Оптимизация контекста** — агрессивнее суммаризировать (20 msg), сокращённый system prompt для free, лимит контекста для анонимов
-- [ ] **cost_mode** — admin-настройка quality/balanced/economy, переключение на лету без рестарта
+- [x] ~~**Трекинг токенов** — `prompt_tokens`/`completion_tokens` на Message, `LLMResult` dataclass + `generate_with_usage()` на всех 9 провайдерах. Оценка по длине для streaming, точный подсчёт для non-streaming. Админ-дашборд «Costs» на `/admin/analytics`: дневной расход, по провайдерам, топ-10 пользователей~~
+- [x] ~~**Тиерная система** — 4 уровня на User (`tier` + `tokens_used_today`/`tokens_used_month`): anon (20 msg/day, 1024 max_tokens, 10 ctx msgs), free (200/day, 2048, 30 ctx), premium (∞, 4096, 50 ctx), admin (∞, 4096, 50 ctx). `cap_max_tokens()` ограничивает max_tokens по тиру. `max_context_messages` передаётся в `build_conversation_messages()`~~
+- [x] ~~**Оптимизация контекста** — суммаризация при 25 сообщениях (было 40), хранение 15 последних (было 20). Тиерные лимиты контекстных сообщений (10/30/50)~~
+- [x] ~~**cost_mode** — admin-настройка quality/balanced/economy (`setting.cost_mode`): quality = paid_mode как раньше, balanced = платные для зарегистрированных / бесплатные для анонимов, economy = бесплатные провайдеры для всех. 3-state toggle на AdminUsersPage (Gauge icon, цветовая индикация: зелёный/янтарный/синий)~~
+- [x] ~~**Сокращение анонимного лимита** — дефолт 50 → 20 сообщений для гостей~~
 - [ ] Кеш приветственных сообщений (greeting cache)
 - [ ] Умный роутинг по сложности сообщений
 - [ ] Лимит Together запросов/час
-- [ ] Подготовка инфраструктуры монетизации (user.tier)
+- [ ] Подготовка инфраструктуры монетизации (stripe, payment page)
 
 ## Стек технологий
 

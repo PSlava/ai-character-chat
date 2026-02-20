@@ -99,6 +99,14 @@ async def init_db():
         # Persona slug (user-editable)
         "ALTER TABLE personas ADD COLUMN IF NOT EXISTS slug VARCHAR",
         "CREATE UNIQUE INDEX IF NOT EXISTS uq_personas_user_slug ON personas (user_id, slug)",
+        # Token tracking on messages
+        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS prompt_tokens INTEGER",
+        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS completion_tokens INTEGER",
+        # User tier system
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS tier VARCHAR DEFAULT 'free'",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS tokens_used_today INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS tokens_used_month INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS tokens_reset_date TIMESTAMP",
     ]
     for sql in migrations:
         try:

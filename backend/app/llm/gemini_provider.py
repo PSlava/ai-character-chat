@@ -1,7 +1,7 @@
 from typing import AsyncIterator
 from google import genai
 from google.genai import types
-from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig
+from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 
 
 class GeminiProvider(BaseLLMProvider):
@@ -36,6 +36,14 @@ class GeminiProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> str:
+        result = await self.generate_with_usage(messages, config)
+        return result.content
+
+    async def generate_with_usage(
+        self,
+        messages: list[LLMMessage],
+        config: LLMConfig,
+    ) -> LLMResult:
         model = config.model or "gemini-2.0-flash"
         system_instruction, contents = self._build_contents(messages)
 
@@ -51,7 +59,13 @@ class GeminiProvider(BaseLLMProvider):
             contents=contents,
             config=gen_config,
         )
-        return response.text
+        usage = getattr(response, "usage_metadata", None)
+        return LLMResult(
+            content=response.text,
+            prompt_tokens=getattr(usage, "prompt_token_count", 0) or 0,
+            completion_tokens=getattr(usage, "candidates_token_count", 0) or 0,
+            model=model,
+        )
 
     def _build_contents(self, messages: list[LLMMessage]):
         system_instruction = None
