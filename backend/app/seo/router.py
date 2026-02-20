@@ -291,12 +291,7 @@ async def prerender_tag(
 
     result = await db.execute(
         select(Character)
-        .where(
-            Character.is_public == True,
-            Character.slug.isnot(None),
-            tag_filters,
-            Character.content_rating != "nsfw",
-        )
+        .where(Character.is_public == True, Character.slug.isnot(None), tag_filters)
         .order_by(Character.chat_count.desc())
         .limit(50)
     )
@@ -309,9 +304,14 @@ async def prerender_tag(
     for c in characters:
         tr = (c.translations or {}).get(lang)
         name = _escape(tr["name"] if tr and "name" in tr else c.name)
-        tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
+        _cr = getattr(c.content_rating, 'value', c.content_rating) or "sfw"
+        if _cr == "nsfw":
+            tagline = ""
+        else:
+            tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
         url = f"{SITE_URL}/{lang}/c/{c.slug}"
-        char_links.append(f'<li><a href="{url}">{name}</a> — {tagline}</li>')
+        line = f'<li><a href="{url}">{name}</a> — {tagline}</li>' if tagline else f'<li><a href="{url}">{name}</a></li>'
+        char_links.append(line)
 
     ld_collection = json.dumps(
         collection_jsonld(label, slug, lang, len(characters)), ensure_ascii=False
@@ -654,11 +654,7 @@ async def prerender_home(
 ):
     result = await db.execute(
         select(Character)
-        .where(
-            Character.is_public == True,
-            Character.slug.isnot(None),
-            Character.content_rating != "nsfw",
-        )
+        .where(Character.is_public == True, Character.slug.isnot(None))
         .order_by(Character.chat_count.desc())
         .limit(50)
     )
@@ -682,9 +678,15 @@ async def prerender_home(
     for c in characters:
         tr = (c.translations or {}).get(lang)
         name = _escape(tr["name"] if tr and "name" in tr else c.name)
-        tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
+        # Hide NSFW taglines from bots — show only name
+        _cr = getattr(c.content_rating, 'value', c.content_rating) or "sfw"
+        if _cr == "nsfw":
+            tagline = ""
+        else:
+            tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
         url = f"{SITE_URL}/{lang}/c/{c.slug}"
-        char_links.append(f'<li><a href="{url}">{name}</a> — {tagline}</li>')
+        line = f'<li><a href="{url}">{name}</a> — {tagline}</li>' if tagline else f'<li><a href="{url}">{name}</a></li>'
+        char_links.append(line)
 
     canonical = f"{SITE_URL}/{lang}"
 
@@ -825,14 +827,10 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
 
 @router.api_route("/feed.xml", methods=["GET", "HEAD"])
 async def rss_feed(db: AsyncSession = Depends(get_db)):
-    """RSS 2.0 feed of latest public characters (SFW + moderate only)."""
+    """RSS 2.0 feed of latest public characters."""
     result = await db.execute(
         select(Character)
-        .where(
-            Character.is_public == True,
-            Character.slug.isnot(None),
-            Character.content_rating != "nsfw",
-        )
+        .where(Character.is_public == True, Character.slug.isnot(None))
         .order_by(Character.created_at.desc())
         .limit(30)
     )
@@ -845,8 +843,14 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
         # Use English translations if available (RSS links to /en/)
         tr = (c.translations or {}).get("en")
         name = _escape(tr["name"] if tr and "name" in tr else c.name)
-        tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
-        scenario_text = tr["scenario"] if tr and "scenario" in tr else (c.scenario or c.tagline or "")
+        _cr = getattr(c.content_rating, 'value', c.content_rating) or "sfw"
+        # Hide NSFW details from feed
+        if _cr == "nsfw":
+            tagline = ""
+            scenario_text = name
+        else:
+            tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
+            scenario_text = tr["scenario"] if tr and "scenario" in tr else (c.scenario or c.tagline or "")
         desc = _escape(_truncate(scenario_text, 300))
         link = f"{SITE_URL}/en/c/{c.slug}"
         pub_date = c.created_at.strftime("%a, %d %b %Y %H:%M:%S +0000") if c.created_at else now
