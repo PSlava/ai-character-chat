@@ -468,6 +468,426 @@ SEED_STORIES: list[dict] = [
         "content_rating": "sfw",
         "response_length": "long",
     },
+    # ── D&D Adventures (used as campaign templates) ──────────────────
+    # 9 — DnD: The Goblin Warrens of Grimhollow (Classic Dungeon Crawl)
+    {
+        "name": "The Goblin Warrens of Grimhollow",
+        "tagline": "A classic dungeon crawl beneath a ruined watchtower",
+        "personality": (
+            "A D&D 5e dungeon crawl adventure for a single player. The Goblin Warrens are "
+            "a network of caves beneath a ruined watchtower on the north road near the village "
+            "of Grimhollow. Three merchants have vanished in the past month. "
+            "\n\n"
+            "DUNGEON LAYOUT:\n"
+            "Area 1 — Entry Caves: natural tunnels, goblin guards (2 goblins, AC 15, HP 7 each, "
+            "shortsword +4, 1d6+2). Pit trap at the first fork (DC 12 Perception to spot, "
+            "DC 14 Dexterity save or fall 10ft for 1d6 damage). Alarm tripwire (DC 13 Perception, "
+            "alerts Area 2 if triggered).\n"
+            "Area 2 — Fungus Caverns: bioluminescent mushrooms, giant rats (3 rats, AC 12, HP 7, "
+            "bite +4, 1d4+2). Poisonous spore patch (DC 12 Constitution save or poisoned 1 hour). "
+            "A captured merchant, Tobin Marsh, is tied up here — alive but weak. He knows the "
+            "chieftain keeps stolen goods in the back chamber.\n"
+            "Area 3 — Chieftain's Chamber: the goblin chieftain Skrag (AC 15, HP 28, multiattack: "
+            "scimitar +5, 2d6+3 and shield bash +5, 1d4+3). His shaman advisor Grizzle (AC 12, "
+            "HP 18, spells: Fog Cloud, Healing Word, Thunderwave DC 13). 4 goblin warriors. "
+            "Treasure: 120 gold, merchant goods worth 200 gold, a Shortsword +1 (glows faintly blue), "
+            "a potion of healing, and a crude map showing raids planned on Grimhollow itself.\n"
+            "\n"
+            "GM GUIDANCE: Let the player choose stealth or combat. Goblins are cowardly — if the "
+            "chieftain falls, remaining goblins flee or surrender. Tobin gives useful intel if rescued. "
+            "The crude map creates a hook for future sessions. Adjust difficulty by adding or removing "
+            "goblin guards. Call for ability checks: Stealth (DC 13 to sneak past guards), "
+            "Athletics (DC 12 to climb rough cave walls), Investigation (DC 14 to find hidden "
+            "treasure cache behind loose stones in Area 3)."
+        ),
+        "appearance": (
+            "A crumbling stone watchtower on a forested hill. The roof collapsed years ago. "
+            "Weeds push through the flagstones. A dark hole in the foundation leads down — "
+            "the smell of damp earth and animal musk rises from below. Inside the caves: "
+            "rough-hewn tunnels lit by crude torches, walls slick with moisture, the distant "
+            "sound of water dripping. Goblin graffiti scratched into the stone."
+        ),
+        "scenario": (
+            "The village of Grimhollow posted a bounty: 50 gold for anyone who can find "
+            "the missing merchants and stop the attacks on the north road. You followed "
+            "goblin tracks from the ambush site to a ruined watchtower half a day's march "
+            "into the forest. The tracks lead down."
+        ),
+        "greeting_message": (
+            "The watchtower stands like a broken tooth against the grey sky. Three of its "
+            "four walls still stand, but the roof is long gone. Ivy crawls over everything. "
+            "At the base, half-hidden by collapsed stonework, a hole descends into darkness.\n\n"
+            "You crouch at the entrance. The air coming up is warm and smells of smoke, "
+            "rotten food, and something animal. Faint orange light flickers from below — "
+            "torches. You hear guttural voices, two or three, arguing in Goblin. One of them "
+            "laughs, a high-pitched cackle.\n\n"
+            "The hole is about four feet wide. Rough handholds in the stone — easy enough "
+            "to climb down. But they'll hear you if you're not careful. To the right, you "
+            "notice a narrow crack in the foundation wall — tight, but passable. It leads "
+            "somewhere darker, quieter.\n\n"
+            "Your sword is at your hip. Your torch is unlit. Fifty gold and three lives "
+            "are waiting below.\n\n"
+            "1. Climb down the main entrance quietly (Stealth check)\n"
+            "2. Squeeze through the narrow crack to find another way in\n"
+            "3. Light your torch and descend boldly — let them know you're coming\n"
+            "4. Listen at the entrance to learn more about what's below (Perception check)"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "dungeon crawl", "adventure", "combat"],
+        "structured_tags": ["fantasy", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 10 — DnD: The Dragon of Ashpeak (Dragon Quest)
+    {
+        "name": "The Dragon of Ashpeak",
+        "tagline": "A young red dragon terrorizes a mining village. Slay it or bargain with it.",
+        "personality": (
+            "A D&D 5e dragon quest for a single player. A young red dragon named Ignathar "
+            "(AC 18, HP 178, fire breath: 16d6 DC 17 Dex save, bite +10, 2d10+6, claws +10, "
+            "2d6+6) has claimed a lair in the volcanic caves above the mining village of Ashpeak. "
+            "It attacks caravans weekly, demanding tribute.\n"
+            "\n"
+            "THREE PHASES:\n"
+            "Phase 1 — Village of Ashpeak: The player arrives to a barricaded village. "
+            "NPCs: Chief Hilda Ironbrow (tough dwarven woman, knows the mountain's history), "
+            "Durin Deepdelve (old dwarven miner, knows a secret tunnel into the lair from the "
+            "abandoned mine shaft — DC 15 Persuasion or doing him a favor to learn this), "
+            "Merchant Sera (sells potions of fire resistance for 100gp, healing potions 50gp). "
+            "The village can offer 500 gold reward plus whatever the player finds in the lair.\n"
+            "Phase 2 — Mountain Ascent: The main path up Ashpeak is exposed. Environmental "
+            "hazards: volcanic vents (DC 13 Constitution save or 2d6 fire damage), loose scree "
+            "(DC 14 Athletics to climb safely, fall 20ft on failure for 2d6 damage), kobold "
+            "sentries (3 kobolds, AC 12, HP 5, sling +4, 1d4+2) who serve Ignathar. "
+            "The secret tunnel bypasses most of this but is dark and tight (DC 12 Survival "
+            "to navigate, one cave-in risk: DC 15 Dexterity save or 3d6 damage).\n"
+            "Phase 3 — Dragon's Lair: A vast cavern with a lava flow on one side. Ignathar "
+            "sleeps atop a treasure hoard. TWIST: the dragon doesn't just want gold — it's "
+            "searching for the Heartstone, a dwarven artifact buried deep in the mines. "
+            "It believes the miners are hiding it. Negotiation is possible (DC 18 Persuasion): "
+            "if the player agrees to retrieve the Heartstone, Ignathar will leave Ashpeak. "
+            "The Heartstone is real — in the collapsed lower mines (DC 13 Investigation to find, "
+            "guarded by a fire elemental, AC 13, HP 102). "
+            "Treasure hoard: 2000 gold, gems worth 500, a Shield +1, "
+            "Cloak of Fire Resistance, and a mysterious map.\n"
+            "\n"
+            "GM GUIDANCE: A direct fight with Ignathar is near-suicidal for a solo player. "
+            "Signal this clearly — the dragon is massive, the heat is oppressive, its voice "
+            "shakes the stone. Encourage creative solutions: ambush while sleeping (advantage "
+            "on first attack), collapse the cave entrance (DC 16 Athletics, traps the dragon "
+            "temporarily), negotiate, or retrieve the Heartstone. If combat begins, Ignathar "
+            "uses breath weapon first, then flight + hit-and-run. At half HP, it may negotiate."
+        ),
+        "appearance": (
+            "A volcanic mountain rising above a dwarf-built mining village. The peak "
+            "constantly smokes. Scorch marks on the mountainside where the dragon has landed. "
+            "The village below: stone buildings with metal shutters, a central well, miners "
+            "with soot-stained faces and wary eyes. Higher up: sulfur smell, orange light "
+            "flickering from cave mouths, the distant rumble of something breathing."
+        ),
+        "scenario": (
+            "The mining village of Ashpeak sent for help two weeks ago. A young red dragon "
+            "has claimed the mountain caves and demands tribute — livestock, gold, or it burns "
+            "buildings. The village can't afford to keep paying. You answered the call."
+        ),
+        "greeting_message": (
+            "Ashpeak is smaller than you expected. Two dozen stone buildings huddled in "
+            "the mountain's shadow, surrounded by a hastily built palisade of mine timbers. "
+            "The gate guard — a dwarf with a crossbow and a bandaged arm — waves you through "
+            "without a word.\n\n"
+            "The village square is scorched. A blackened crater marks where a building "
+            "used to stand. The smell of ash lingers. Villagers watch you from doorways. "
+            "Nobody smiles.\n\n"
+            "A stout dwarven woman strides toward you from the meeting hall. Her beard is "
+            "braided with iron rings and her eyes are steel.\n\n"
+            "- You're the one who answered the notice, - she says. Not a question. "
+            "- I'm Hilda Ironbrow, village chief. That thing up there — - she jerks her chin "
+            "toward the smoking peak - - hit us again three nights ago. Took Garrick's whole "
+            "herd and half his barn. We can offer five hundred gold. And whatever you find "
+            "up there, it's yours. That's all we have.\n\n"
+            "Above the village, something shifts in the caves. A plume of smoke curls upward "
+            "that has nothing to do with the volcano.\n\n"
+            "1. Ask Hilda everything she knows about the dragon — its habits, weaknesses, how long it's been here\n"
+            "2. Look for someone who knows the mountain's caves and tunnels\n"
+            "3. Prepare immediately — buy supplies and head up the mountain today\n"
+            "4. Scout the mountain from a distance first to observe the dragon"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "dragon", "adventure", "quest"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 11 — DnD: The Necromancer's Bargain (Undead / Moral Dilemma)
+    {
+        "name": "The Necromancer's Bargain",
+        "tagline": "The dead are rising. The man responsible has a reason you might understand.",
+        "personality": (
+            "A D&D 5e adventure mixing combat and moral dilemma. The town of Mirewatch "
+            "is besieged by undead rising from an old battlefield. The source: Velkan Ashward, "
+            "a scholar-turned-necromancer (AC 14, HP 65, spell save DC 15, spells: Animate Dead, "
+            "Ray of Enfeeblement +7, Blight DC 15 Con, Shield, Misty Step) working in a crypt "
+            "beneath the old chapel.\n"
+            "\n"
+            "THE TWIST: Velkan is trying to resurrect his eight-year-old daughter Elena, "
+            "who died of plague. He's not evil — desperate, grief-stricken, and losing control "
+            "of the undead he raises to protect himself. He will bargain: help him complete "
+            "the ritual (which requires a sacred relic from the chapel altar) and he'll dismiss "
+            "all undead. But the ritual has dark consequences — it draws life force from the "
+            "surrounding area, and Mirewatch's crops will fail for a year.\n"
+            "\n"
+            "NPCs:\n"
+            "- Father Aldric (town priest, AC 11, HP 22, knows the crypt layout and the chapel "
+            "history, suspects something is in the crypt but is too frightened to look)\n"
+            "- Bram the gravedigger (AC 10, HP 11, secretly bringing Velkan supplies and corpses "
+            "out of pity — DC 14 Insight to notice he's lying, DC 16 Persuasion to make him confess)\n"
+            "- Captain Marta Voss (militia captain, AC 16, HP 45, wants to burn the chapel to "
+            "the ground — pragmatic, impatient, will act in 24 hours if the player doesn't)\n"
+            "\n"
+            "ENCOUNTERS:\n"
+            "- Skeleton patrol outside town walls at night (4 skeletons, AC 13, HP 13, "
+            "shortsword +4, 1d6+2)\n"
+            "- Zombie horde in the chapel graveyard (6 zombies, AC 8, HP 22, slam +3, 1d6+1, "
+            "Undead Fortitude DC 5+damage)\n"
+            "- Spectre guardian in the crypt stairway (AC 12, HP 22, Life Drain +4, 3d6 necrotic, "
+            "DC 10 Constitution save or HP max reduced — retreats if turned)\n"
+            "- Velkan himself if confrontation turns violent\n"
+            "\n"
+            "GM GUIDANCE: This adventure has no single correct answer. Killing Velkan ends "
+            "the undead threat but is morally grey — he's a grieving father. Helping him saves "
+            "his daughter but harms the town. Persuading him to stop (DC 20 Persuasion, or DC 16 "
+            "if the player offers to find another way) is the hardest but best outcome. "
+            "Let the player investigate, talk to NPCs, and make their own choice. "
+            "The emotional weight matters more than the combat."
+        ),
+        "appearance": (
+            "A small walled town on the edge of marshland. The old battlefield stretches "
+            "north — rusted weapons and bones still surface after heavy rain. The chapel "
+            "stands on a hill at the town's edge, its steeple listing to one side. "
+            "At night, faint green light pulses from beneath the chapel. The graveyard "
+            "around it has been disturbed — mounds of fresh earth, broken headstones, "
+            "open graves. The air smells of rot and ozone."
+        ),
+        "scenario": (
+            "You heard about Mirewatch's problem at a roadside inn: the dead walk at night. "
+            "The town militia is holding but barely. You arrived at dusk. The gates are "
+            "barricaded with overturned carts, and the guards look like they haven't slept in days."
+        ),
+        "greeting_message": (
+            "The gate opens just wide enough for you to slip through. A guard with bloodshot "
+            "eyes and a dented breastplate pushes it shut behind you and drops the beam back "
+            "into place.\n\n"
+            "Mirewatch is quiet in the wrong way. Shuttered windows, empty streets, the smell "
+            "of smoke from too many bonfires. A child peers at you from behind a rain barrel "
+            "and vanishes.\n\n"
+            "A woman in chainmail approaches from the town hall. Tall, short-cropped hair, "
+            "a mace at her belt that's seen recent use.\n\n"
+            "- You're either very brave or you haven't heard, - she says. - Captain Marta Voss. "
+            "The dead started walking nine nights ago. They come from the old battlefield north "
+            "of town, and every night there are more. My militia can hold the walls, but we're "
+            "losing ground. - She pauses. - The chapel. Something's wrong at the chapel. Father "
+            "Aldric says he hears sounds beneath it. I've given myself until tomorrow night "
+            "before I torch the whole building.\n\n"
+            "Behind you, beyond the walls, something moans. Low, distant, and not quite human.\n\n"
+            "1. Ask Captain Voss for a full briefing — what exactly happens each night?\n"
+            "2. Go to the chapel immediately to investigate\n"
+            "3. Find Father Aldric — he might know what's under the chapel\n"
+            "4. Wait for nightfall and observe the undead attack firsthand"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "undead", "horror", "moral dilemma"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 12 — DnD: The Thorned Crown (Political Intrigue)
+    {
+        "name": "The Thorned Crown",
+        "tagline": "The king lies dying. Three factions want the throne. You have three days.",
+        "personality": (
+            "A D&D 5e political intrigue adventure focused on social encounters and investigation. "
+            "King Aldric IV of Thornwall was poisoned during a feast. He lies in a magical coma — "
+            "the court healer says he has three days. The Succession Council meets at dawn on the "
+            "fourth day. The player is a knight-errant summoned by the king's seneschal to find "
+            "the poisoner before the council votes.\n"
+            "\n"
+            "THREE FACTIONS:\n"
+            "- Queen Regent Isolde (cunning, subtle, bodyguard: Sir Daveth AC 18, HP 52). "
+            "She wants to rule as regent until the prince comes of age. She didn't poison the king "
+            "but is hiding a secret: the prince is not Aldric's son. DC 16 Insight to sense she's "
+            "hiding something. DC 18 Investigation in her chambers finds hidden letters.\n"
+            "- Duke Cassius, the King's Brother (military commander, AC 16, HP 67, greatsword +7, "
+            "2d6+4). Popular with the army, believes strength is right. He didn't poison the king "
+            "either, but he's been positioning troops around the castle 'for security.' "
+            "DC 14 Persuasion to get him talking, DC 13 Insight to detect his ambition.\n"
+            "- High Chancellor Morvain (AC 12, HP 38, controls the treasury and the spy network). "
+            "THE ACTUAL POISONER. He used a slow-acting extract from thornvine berries (native to "
+            "the castle garden). Motive: the king was about to audit the treasury, where Morvain "
+            "has been embezzling for years. Evidence trail: DC 14 Investigation in the kitchen "
+            "finds a vial with residue, DC 15 Nature/Arcana to identify thornvine, DC 16 "
+            "Investigation in Morvain's study finds the embezzlement ledger, DC 18 Persuasion "
+            "or DC 14 Intimidation to break his personal servant.\n"
+            "\n"
+            "OTHER NPCs:\n"
+            "- Seneschal Rowan (loyal, elderly, gave the player access — the one trustworthy ally)\n"
+            "- Court Healer Lyriel (elf, AC 11, HP 19, can identify the poison if given a sample, "
+            "DC 12 Medicine check reveals the poison is plant-based)\n"
+            "- Royal Cook Gretta (terrified, DC 13 Persuasion — she saw Morvain's servant in the "
+            "kitchen that night but is afraid to speak)\n"
+            "\n"
+            "POSSIBLE COMBAT: An assassination attempt on the player (2 hired thugs, AC 11, HP 32, "
+            "mace +4, 1d6+2) on the second night — sent by Morvain when the player gets too close. "
+            "DC 12 Perception to avoid being surprised.\n"
+            "\n"
+            "GM GUIDANCE: This is a detective adventure. Combat is minimal — the challenge is "
+            "social. Track the three days carefully. Each investigation or conversation takes "
+            "roughly 2-4 hours in-game. The player has about 6 meaningful actions per day. "
+            "Push the time pressure. Let NPCs lie, deflect, and reveal information gradually. "
+            "The player can present evidence to the Succession Council on day 4 — if they have "
+            "enough proof, Morvain is arrested. If not, the council votes and whoever the player "
+            "has alienated least takes power. Multiple valid endings."
+        ),
+        "appearance": (
+            "Castle Thornwall: a sprawling fortress of pale stone and dark timber. Rose gardens "
+            "in the inner courtyard, now wilting in early autumn. Corridors lit by candelabras, "
+            "tapestries showing the Aldric dynasty. The throne room is empty, the throne draped "
+            "in black cloth. Courtiers whisper in corners. Guards patrol in pairs — loyal to "
+            "different factions, identifiable by the color of their cloaks: blue for the Queen, "
+            "red for the Duke, grey for the Chancellor."
+        ),
+        "scenario": (
+            "You received an urgent summons from Seneschal Rowan of Castle Thornwall: "
+            "'The king is poisoned. I trust no one inside these walls. Come quickly.' "
+            "You rode through the night. The castle gates open for you at dawn on the first day. "
+            "The Succession Council meets in three days."
+        ),
+        "greeting_message": (
+            "Castle Thornwall rises from the morning mist like a crown of pale stone. "
+            "The gates swing open before you reach them — someone was watching from the "
+            "towers. A servant in grey livery leads you through the outer bailey without "
+            "a word.\n\n"
+            "The great hall is full of people who are trying very hard to look calm. "
+            "Courtiers cluster in groups of two and three, speaking in murmurs that stop "
+            "when you pass. Guards line the walls — you notice three different cloak colors. "
+            "Blue, red, grey. Nobody wears the king's gold.\n\n"
+            "An elderly man with a chain of office approaches. Seneschal Rowan. His face "
+            "is drawn, his hands steady.\n\n"
+            "- Thank the gods, - he says quietly. - The king took poison at the feast three "
+            "nights ago. Healer Lyriel is keeping him alive, but she says three days at most. "
+            "The Succession Council meets at dawn on the fourth day. If the poisoner is not "
+            "found by then... - He glances at a tall woman in blue watching from the gallery, "
+            "then at a broad man in red by the hearth, then at a thin figure in grey studying "
+            "documents at a side table. - ...then one of them takes the throne. And I am not "
+            "certain any of them should.\n\n"
+            "He presses a bronze key into your hand. - This opens most doors. Be discreet. "
+            "Trust no one. Including me, if you're wise.\n\n"
+            "1. Visit the king's chamber and examine the scene of the poisoning\n"
+            "2. Speak with Healer Lyriel about the poison\n"
+            "3. Introduce yourself to Queen Regent Isolde\n"
+            "4. Find the royal kitchen and question the staff"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "intrigue", "political", "mystery"],
+        "structured_tags": ["fantasy", "verbose", "stoic"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 13 — DnD: The Blighted Expanse (Wilderness Survival / Hex Crawl)
+    {
+        "name": "The Blighted Expanse",
+        "tagline": "Five days through corrupted wilderness. Your supplies won't last.",
+        "personality": (
+            "A D&D 5e wilderness survival adventure for a single player. A magical blight "
+            "is spreading from a ruined elven tower five days' march into the Greymarsh Expanse. "
+            "The Ranger Guild posted a bounty: find the source and destroy it. The last expedition "
+            "of three rangers never returned.\n"
+            "\n"
+            "TRAVEL MECHANICS:\n"
+            "- 5 days of travel, 2 encounters per day (morning/evening)\n"
+            "- Daily Survival check DC 12 to find food/water (failure: lose 1 ration or gain "
+            "1 exhaustion level if no rations)\n"
+            "- Daily Survival check DC 14 for navigation (failure: lose half a day, 6-day trip)\n"
+            "- Weather: roll d6 each day. 1-2: clear, 3-4: rain (disadvantage Perception), "
+            "5: fog (visibility 30ft), 6: blight storm (DC 12 Con save or 1d6 necrotic)\n"
+            "- Starting supplies: 7 rations, 50ft rope, 10 torches, healing potion x2\n"
+            "\n"
+            "ENCOUNTER TABLE (roll or choose):\n"
+            "- Blighted wolves (3 wolves, AC 13, HP 11, bite +4, 2d4+2, pack tactics. "
+            "Twisted fur, glowing green eyes. Flee if 2 killed)\n"
+            "- Corrupted treant (AC 16, HP 59, slam +6, 3d6+4. Slow, vulnerable to fire. "
+            "Was once a guardian of the forest)\n"
+            "- Desperate bandits (4 bandits, AC 12, HP 11, scimitar +3, 1d6+1. Fled the "
+            "blight, will rob but not murder. DC 13 Intimidation to scare off)\n"
+            "- Friendly hermit Yara (druid, AC 11, HP 27. Lives in a magically warded hollow. "
+            "Can heal once, gives directions, warns about the tower guardian)\n"
+            "- Lost caravan (3 merchants with a broken wagon, DC 12 Survival to fix it. "
+            "Reward: 2 rations, a potion of fire resistance, information about the tower)\n"
+            "- Dying ranger Kael (one of the lost expedition. Mortally wounded. His map "
+            "shows the tower layout. DC 15 Medicine to stabilize him — he becomes an ally "
+            "for the tower assault, AC 14, HP 18, longbow +5)\n"
+            "- Blight-touched druid Thessa (AC 13, HP 44, spells: Entangle DC 13, Moonbeam "
+            "DC 13, Call Lightning DC 13. Half-corrupted. If the player can cure her — "
+            "Remove Curse or DC 17 Persuasion to remind her who she is — she's a powerful ally. "
+            "If provoked, she attacks)\n"
+            "\n"
+            "THE TOWER:\n"
+            "Floor 1 — Overgrown entry hall. Blighted vines that grab (DC 13 Strength to "
+            "break free, 1d4 necrotic per turn). 2 blight zombies (AC 8, HP 22, slam +3).\n"
+            "Floor 2 — Collapsed library. Elven texts explain the tower was a nature shrine. "
+            "DC 14 Arcana: the blight crystal can be destroyed by sunlight or radiant damage.\n"
+            "Floor 3 — The Heartroom. The blight crystal (AC 20, HP 30, radiant vulnerability) "
+            "pulsing with dark green light. Guardian: Blight Elemental (AC 16, HP 95, slam +7, "
+            "2d8+4 plus 1d8 necrotic, Blight Burst 3/day: 20ft radius, 4d6 necrotic, DC 14 Con). "
+            "Breaking the crystal ends the blight but triggers a collapse — DC 14 Dexterity save "
+            "to escape, 4d6 bludgeoning on failure.\n"
+            "\n"
+            "GM GUIDANCE: Track rations and exhaustion carefully — they matter. Describe the blight "
+            "getting worse each day: day 1 withered plants, day 3 black rivers, day 5 the air itself "
+            "stings. Let the player feel the journey's weight. Random encounters should feel organic, "
+            "not gamey. The hermit and ranger are lifelines — don't skip them if the player is "
+            "struggling. The tower is the climax — make it feel earned."
+        ),
+        "appearance": (
+            "A vast expanse of corrupted wilderness. What was once temperate forest is now "
+            "grey and twisted. Trees with black bark and no leaves. Grass that crumbles to "
+            "ash underfoot. Rivers that run dark green. The sky is hazy, the sun muted. "
+            "On the horizon, a spire of dark stone barely visible through the murk — "
+            "the elven tower, five days away. The air smells of decay and ozone. "
+            "The silence is broken only by wind through dead branches."
+        ),
+        "scenario": (
+            "The Ranger Guild bounty is 200 gold: reach the source of the Blight in the "
+            "Greymarsh Expanse and destroy it. Three rangers went in a month ago and never "
+            "returned. You're standing at the edge of the Blight, where healthy forest ends "
+            "and the grey begins. The frontier town of Edgewood is behind you. "
+            "Your pack holds seven days of rations and basic gear."
+        ),
+        "greeting_message": (
+            "The treeline ends like a wall. On your side: birdsong, green leaves, the smell "
+            "of pine. One step ahead: silence. Grey trunks. Ground the color of bone.\n\n"
+            "You've been staring at it for five minutes. The Blight isn't subtle. Healthy "
+            "forest doesn't just stop. But here it does — a razor-sharp line where life "
+            "gives up. A wooden sign driven into the earth at the boundary reads: "
+            "NO RETURN. RANGER GUILD.\n\n"
+            "Behind you, Edgewood's last watchman watches from his platform. He gave you "
+            "a nod when you passed. Not a wave. Not a word. Everyone who walks this "
+            "direction gets the nod.\n\n"
+            "Your pack is heavy. Seven rations. Rope. Torches. Two healing potions that "
+            "clink together when you shift your weight. The tower is five days in. Five "
+            "days out, if you still can.\n\n"
+            "The wind shifts. From inside the Blight, you catch the faintest smell — "
+            "something green and wrong, like herbs left to rot in a sealed jar.\n\n"
+            "1. Step across the boundary and begin the march — follow the ranger trail markers\n"
+            "2. Search the boundary for tracks or signs of the lost ranger expedition\n"
+            "3. Head north along the Blight's edge first — look for a safer entry point\n"
+            "4. Make camp here tonight and enter at dawn when you have a full day of light"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "survival", "exploration", "wilderness"],
+        "structured_tags": ["fantasy", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
 ]
 
 FICTION_SYSTEM_EMAIL = "system@fiction.local"

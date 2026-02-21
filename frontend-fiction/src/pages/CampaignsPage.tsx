@@ -127,7 +127,7 @@ function CreateCampaignModal({ onClose, onCreate }: { onClose: () => void; onCre
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    getCharacters({ limit: 100 })
+    getCharacters({ limit: 100, tag: 'dnd' })
       .then((res) => setCharacters('items' in res ? res.items : res as any))
       .catch(() => {})
       .finally(() => setLoadingChars(false));
