@@ -6,6 +6,14 @@
   <path d="M32 20C38 16 46 15 56 17V50C46 48 38 49 32 53Z" fill="#a78bfa"/>
   <!-- Spine -->
   <path d="M32 20V53" stroke="#1e1b4b" stroke-width="1.5"/>
+  <!-- Text lines left -->
+  <line x1="14" y1="26" x2="28" y2="28" stroke="#1e1b4b" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+  <line x1="14" y1="32" x2="26" y2="33" stroke="#1e1b4b" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+  <line x1="14" y1="38" x2="27" y2="38" stroke="#1e1b4b" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+  <!-- Text lines right -->
+  <line x1="36" y1="28" x2="50" y2="26" stroke="#1e1b4b" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+  <line x1="36" y1="33" x2="50" y2="32" stroke="#1e1b4b" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+  <line x1="36" y1="38" x2="49" y2="38" stroke="#1e1b4b" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
   <!-- Magic star -->
   <path d="M32 4L34.5 10L41 10L36 13.5L37.8 20L32 16L26.2 20L28 13.5L23 10L29.5 10Z" fill="#e9d5ff"/>
 </svg>

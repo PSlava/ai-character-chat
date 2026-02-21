@@ -29,6 +29,14 @@ export function Logo({ className = 'w-6 h-6' }: Props) {
         strokeWidth="1.5"
         opacity="0.4"
       />
+      {/* Text lines on left page */}
+      <line x1="14" y1="24" x2="28" y2="26" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+      <line x1="14" y1="30" x2="26" y2="31" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+      <line x1="14" y1="36" x2="27" y2="36" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+      {/* Text lines on right page */}
+      <line x1="36" y1="26" x2="50" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+      <line x1="36" y1="31" x2="50" y2="30" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
+      <line x1="36" y1="36" x2="49" y2="36" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3" />
       {/* Magic star/spark above the book */}
       <path
         d="M32 4L34 9L39 9L35 12L36.5 17L32 14L27.5 17L29 12L25 9L30 9Z"
