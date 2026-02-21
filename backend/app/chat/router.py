@@ -524,12 +524,20 @@ async def send_message(
         "gemini": "gemini-2.0-flash",
         "deepseek": "deepseek-chat",
         "qwen": "qwen3-32b",
+        "claude": "claude-sonnet-4-5-20250514",
     }
+    # Claude does not allow NSFW content — block in NSFW mode
+    _NSFW_BLOCKED_PROVIDERS = {"claude"}
     is_auto = model_name == "auto"
 
     if is_auto:
         provider_name = "auto"
         model_id = ""
+    elif model_name == "claude":
+        if content_rating == "nsfw":
+            raise HTTPException(status_code=400, detail="Claude is not available for NSFW content")
+        provider_name = "claude"
+        model_id = PROVIDER_MODELS["claude"]
     elif model_name.startswith("groq:"):
         provider_name = "groq"
         model_id = model_name[5:]
@@ -591,6 +599,9 @@ async def send_message(
             paid_mode = await _is_paid_mode(db)
             order_str = settings.auto_provider_order_paid if paid_mode else settings.auto_provider_order
         auto_order = [p.strip() for p in order_str.split(",") if p.strip()]
+        # Skip NSFW-blocked providers (e.g. Claude) when content is NSFW
+        if content_rating == "nsfw":
+            auto_order = [p for p in auto_order if p not in _NSFW_BLOCKED_PROVIDERS]
 
         async def event_stream():
             errors: list[str] = []

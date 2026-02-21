@@ -2,24 +2,23 @@
   <rect width="1200" height="630" fill="#0a0a0a"/>
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#4c1d2e" stop-opacity="0.6"/>
+      <stop offset="0%" stop-color="#1e1b4b" stop-opacity="0.6"/>
       <stop offset="100%" stop-color="#0a0a0a" stop-opacity="0"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#g)"/>
-  <!-- Heart with devil horns logo -->
-  <g transform="translate(510, 120) scale(3)">
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#e11d48"/>
-    <path d="M7 3 L5 -2 L8 1 Z" fill="#e11d48"/>
-    <path d="M17 3 L19 -2 L16 1 Z" fill="#e11d48"/>
-    <path d="M16.5 18 Q18 20 20 22 Q21 23 20.5 22.5" stroke="#e11d48" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Open book icon -->
+  <g transform="translate(530, 100) scale(4)">
+    <path d="M18 8C14 5.5 10 5 4 6V28C10 27 14 28 18 30C22 28 26 27 32 28V6C26 5 22 5.5 18 8Z" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round"/>
+    <line x1="18" y1="8" x2="18" y2="30" stroke="#a78bfa" stroke-width="1"/>
+    <circle cx="18" cy="3" r="1.5" fill="#a78bfa"/>
   </g>
   <!-- Brand name -->
-  <text x="600" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="800" text-anchor="middle" fill="white">Sweet<tspan fill="#e11d48">Sin</tspan></text>
+  <text x="600" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="68" font-weight="800" text-anchor="middle" fill="white">Interactive <tspan fill="#a78bfa">Fiction</tspan></text>
   <!-- Tagline -->
-  <text x="600" y="400" font-family="system-ui, -apple-system, sans-serif" font-size="28" text-anchor="middle" fill="#a3a3a3">Where Fantasy Comes Alive</text>
+  <text x="600" y="400" font-family="system-ui, -apple-system, sans-serif" font-size="28" text-anchor="middle" fill="#a3a3a3">Choose Your Path, Shape the Story</text>
   <!-- Subtitle -->
-  <text x="600" y="460" font-family="system-ui, -apple-system, sans-serif" font-size="20" text-anchor="middle" fill="#737373">Character Chat Platform — Immersive Roleplay, No Limits</text>
+  <text x="600" y="460" font-family="system-ui, -apple-system, sans-serif" font-size="20" text-anchor="middle" fill="#737373">AI-Powered Stories — Fantasy, Horror, Sci-Fi, Mystery &amp; More</text>
   <!-- Bottom accent line -->
-  <rect x="450" y="520" width="300" height="3" rx="2" fill="#e11d48" opacity="0.6"/>
+  <rect x="450" y="520" width="300" height="3" rx="2" fill="#7c3aed" opacity="0.6"/>
 </svg>

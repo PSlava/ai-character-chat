@@ -3,6 +3,8 @@ import httpx
 import anthropic
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 
+DEFAULT_MODEL = "claude-sonnet-4-5-20250514"
+
 
 class AnthropicProvider(BaseLLMProvider):
     def __init__(self, api_key: str, proxy_url: str | None = None):
@@ -11,27 +13,41 @@ class AnthropicProvider(BaseLLMProvider):
             kwargs["http_client"] = httpx.AsyncClient(proxy=proxy_url)
         self.client = anthropic.AsyncAnthropic(**kwargs)
 
+    @staticmethod
+    def _prepare(messages: list[LLMMessage]) -> tuple[list[dict], list[dict]]:
+        """Split messages into system content blocks (with cache_control) and API messages."""
+        system_blocks: list[dict] = []
+        api_messages: list[dict] = []
+        for msg in messages:
+            if msg.role == "system":
+                system_blocks.append({
+                    "type": "text",
+                    "text": msg.content,
+                    "cache_control": {"type": "ephemeral"},
+                })
+            else:
+                api_messages.append({"role": msg.role, "content": msg.content})
+        return system_blocks, api_messages
+
     async def generate_stream(
         self,
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> AsyncIterator[str]:
-        system_prompt = ""
-        api_messages = []
-        for msg in messages:
-            if msg.role == "system":
-                system_prompt = msg.content
-            else:
-                api_messages.append({"role": msg.role, "content": msg.content})
+        system_blocks, api_messages = self._prepare(messages)
 
-        async with self.client.messages.stream(
-            model=config.model or "claude-sonnet-4-5-20250929",
-            max_tokens=config.max_tokens,
-            temperature=config.temperature,
-            top_p=config.top_p,
-            system=system_prompt,
-            messages=api_messages,
-        ) as stream:
+        kwargs: dict = {
+            "model": config.model or DEFAULT_MODEL,
+            "max_tokens": config.max_tokens,
+            "temperature": config.temperature,
+            "messages": api_messages,
+        }
+        if system_blocks:
+            kwargs["system"] = system_blocks
+        if config.top_p is not None:
+            kwargs["top_p"] = config.top_p
+
+        async with self.client.messages.stream(**kwargs) as stream:
             async for text in stream.text_stream:
                 yield text
 
@@ -48,26 +64,24 @@ class AnthropicProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> LLMResult:
-        system_prompt = ""
-        api_messages = []
-        for msg in messages:
-            if msg.role == "system":
-                system_prompt = msg.content
-            else:
-                api_messages.append({"role": msg.role, "content": msg.content})
+        system_blocks, api_messages = self._prepare(messages)
 
-        response = await self.client.messages.create(
-            model=config.model or "claude-sonnet-4-5-20250929",
-            max_tokens=config.max_tokens,
-            temperature=config.temperature,
-            top_p=config.top_p,
-            system=system_prompt,
-            messages=api_messages,
-        )
+        kwargs: dict = {
+            "model": config.model or DEFAULT_MODEL,
+            "max_tokens": config.max_tokens,
+            "temperature": config.temperature,
+            "messages": api_messages,
+        }
+        if system_blocks:
+            kwargs["system"] = system_blocks
+        if config.top_p is not None:
+            kwargs["top_p"] = config.top_p
+
+        response = await self.client.messages.create(**kwargs)
         usage = getattr(response, "usage", None)
         return LLMResult(
             content=response.content[0].text,
             prompt_tokens=getattr(usage, "input_tokens", 0) or 0,
             completion_tokens=getattr(usage, "output_tokens", 0) or 0,
-            model=config.model or "claude-sonnet-4-5-20250929",
+            model=config.model or DEFAULT_MODEL,
         )

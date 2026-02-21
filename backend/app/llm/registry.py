@@ -6,6 +6,7 @@ from app.llm.deepseek_provider import DeepSeekProvider
 from app.llm.qwen_provider import QwenProvider
 from app.llm.groq_provider import GroqProvider
 from app.llm.cerebras_provider import CerebrasProvider
+from app.llm.anthropic_provider import AnthropicProvider
 from app.llm.together_provider import TogetherProvider
 
 _providers: dict[str, BaseLLMProvider] = {}
@@ -14,6 +15,7 @@ _providers: dict[str, BaseLLMProvider] = {}
 def init_providers(
     openai_key: str | None,
     gemini_key: str | None = None,
+    anthropic_key: str | None = None,
     openrouter_key: str | None = None,
     deepseek_key: str | None = None,
     qwen_key: str | None = None,
@@ -22,6 +24,8 @@ def init_providers(
     together_key: str | None = None,
     proxy_url: str | None = None,
 ):
+    if anthropic_key:
+        _providers["claude"] = AnthropicProvider(api_key=anthropic_key, proxy_url=proxy_url)
     if openai_key:
         _providers["openai"] = OpenAIProvider(api_key=openai_key, proxy_url=proxy_url)
     if gemini_key:
