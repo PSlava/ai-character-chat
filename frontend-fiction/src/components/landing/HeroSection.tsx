@@ -41,8 +41,7 @@ export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
           <Logo className="w-16 h-16 md:w-20 md:h-20 text-purple-500 mx-auto mb-6" />
 
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            <span className="text-white">Interactive</span>
-            <span className="text-purple-500">Fiction</span>
+            <span className="text-white">Grim</span><span className="text-purple-500">Quill</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-purple-300/80 font-medium mb-3">

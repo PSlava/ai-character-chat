@@ -1,5 +1,5 @@
 {
-  "header.appName": "Interaktive Fiktion",
+  "header.appName": "GrimQuill",
   "header.create": "Geschichte erstellen",
   "header.login": "Anmelden",
 
@@ -396,10 +396,10 @@
   "footer.faq": "FAQ",
   "footer.contact": "Kontakt",
   "footer.popularCharacters": "Beliebte Geschichten",
-  "footer.copyright": "© {{year}} Interaktive Fiktion. Alle Rechte vorbehalten.",
+  "footer.copyright": "© {{year}} GrimQuill. Alle Rechte vorbehalten.",
 
-  "about.title": "Über Interaktive Fiktion",
-  "about.p1": "Interaktive Fiktion ist eine Plattform für KI-gestützte Abenteuer-Geschichten. Reichhaltige Erzählungen kombiniert mit fortschrittlichen Sprachmodellen schaffen immersive, verzweigte Handlungsstränge, in denen deine Entscheidungen wirklich zählen.",
+  "about.title": "Über GrimQuill",
+  "about.p1": "GrimQuill ist eine Plattform für KI-gestützte Abenteuer-Geschichten. Reichhaltige Erzählungen kombiniert mit fortschrittlichen Sprachmodellen schaffen immersive, verzweigte Handlungsstränge, in denen deine Entscheidungen wirklich zählen.",
   "about.p2": "Angetrieben von mehreren kostenlosen KI-Anbietern mit automatischem Fallback — deine Geschichte stoppt nie. Jede Antwort bietet bedeutungsvolle Entscheidungen, die die Handlung auf unerwartete Weise formen.",
   "about.p3": "Erstelle deine eigenen interaktiven Geschichten von Grund auf oder generiere sie aus beliebigem Text. Entdecke Fantasy, Sci-Fi, Horror, Krimi, Romantik und mehr — in 7 Sprachen.",
   "about.featuresTitle": "Hauptfunktionen",
@@ -424,10 +424,10 @@
   "about.f.privacy.title": "Datenschutz zuerst",
   "about.f.privacy.desc": "Deine Geschichten und Entscheidungen sind privat. Lösche dein Konto und alle Daten jederzeit.",
   "about.teamTitle": "Unsere Mission",
-  "about.teamDesc": "Wir glauben an die Kraft des interaktiven Geschichtenerzählens. Interaktive Fiktion bringt die Magie der Abenteuer-Spielbücher ins KI-Zeitalter — mit reichhaltigen Erzählungen, bedeutungsvollen Entscheidungen und endlosen Möglichkeiten.",
+  "about.teamDesc": "Wir glauben an die Kraft des interaktiven Geschichtenerzählens. GrimQuill bringt die Magie der Abenteuer-Spielbücher ins KI-Zeitalter — mit reichhaltigen Erzählungen, bedeutungsvollen Entscheidungen und endlosen Möglichkeiten.",
 
   "terms.title": "Nutzungsbedingungen",
-  "terms.intro": "Durch die Nutzung von Interaktive Fiktion stimmen Sie den folgenden Bedingungen zu:",
+  "terms.intro": "Durch die Nutzung von GrimQuill stimmen Sie den folgenden Bedingungen zu:",
   "terms.section1Title": "1. Berechtigung",
   "terms.section1": "Sie müssen mindestens 13 Jahre alt sein, um diesen Dienst zu nutzen. Durch die Erstellung eines Kontos bestätigen Sie, dass Sie diese Anforderung erfüllen.",
   "terms.section2Title": "2. Benutzerinhalte",
@@ -435,7 +435,7 @@
   "terms.section3Title": "3. Akzeptable Nutzung",
   "terms.section3": "Sie verpflichten sich, die Plattform nicht zu missbrauchen, nicht zu versuchen, den Dienst zurückzuentwickeln, oder automatisierte Tools zum Scrapen von Inhalten zu verwenden. Wir behalten uns das Recht vor, Konten zu sperren, die gegen diese Bedingungen verstoßen.",
   "terms.section4Title": "4. Haftungsausschluss",
-  "terms.section4": "Interaktive Fiktion wird ohne Gewähr bereitgestellt. Wir garantieren keinen ununterbrochenen Dienst oder die Verfügbarkeit bestimmter Modelle. Generierte Inhalte können Ungenauigkeiten enthalten.",
+  "terms.section4": "GrimQuill wird ohne Gewähr bereitgestellt. Wir garantieren keinen ununterbrochenen Dienst oder die Verfügbarkeit bestimmter Modelle. Generierte Inhalte können Ungenauigkeiten enthalten.",
 
   "privacy.title": "Datenschutzrichtlinie",
   "privacy.intro": "Ihr Datenschutz ist uns wichtig. So gehen wir mit Ihren Daten um:",
@@ -449,7 +449,7 @@
   "privacy.section4": "Sie können Ihr Konto jederzeit über Ihre Profilseite löschen. Dadurch werden alle Ihre Daten, Geschichten und Ihr Leseverlauf dauerhaft entfernt.",
 
   "faq.title": "Häufig gestellte Fragen",
-  "faq.q1": "Ist Interaktive Fiktion kostenlos?",
+  "faq.q1": "Ist GrimQuill kostenlos?",
   "faq.a1": "Ja! Alle Geschichten sind völlig kostenlos spielbar. Wir nutzen kostenlose KI-Modelle von mehreren Anbietern mit automatischem Fallback für Zuverlässigkeit.",
   "faq.q2": "Wie funktioniert interaktive Fiktion?",
   "faq.a2": "Wähle eine Geschichte und beginne zu lesen. Der KI-Erzähler beschreibt Szenen und bietet dir Wahlmöglichkeiten. Wähle eine Option oder tippe deine eigene Aktion — die Geschichte passt sich deinen Entscheidungen in Echtzeit an.",
@@ -472,7 +472,7 @@
   "faq.q11": "Kann ich meine Geschichten teilen?",
   "faq.a11": "Ja! Geschichten, die du erstellst, können öffentlich gemacht werden. Teile sie über einen direkten Link oder lass andere sie auf der Startseite entdecken.",
   "faq.q12": "Ist der Inhalt für alle Altersgruppen geeignet?",
-  "faq.a12": "Alle Geschichten auf Interaktive Fiktion sind SFW (sicher für die Arbeit). Inhalte werden moderiert, um ein sicheres und angenehmes Erlebnis für alle zu gewährleisten.",
+  "faq.a12": "Alle Geschichten auf GrimQuill sind SFW (sicher für die Arbeit). Inhalte werden moderiert, um ein sicheres und angenehmes Erlebnis für alle zu gewährleisten.",
 
   "toast.liked": "Zu Favoriten hinzugefügt",
   "toast.unliked": "Aus Favoriten entfernt",
@@ -612,10 +612,10 @@
   "groupChat.section": "Gruppenchats",
 
   "seo.home.description": "Interaktive Fiktion mit KI. Wähle dein Abenteuer — jede Entscheidung formt die Geschichte. Fantasy, Sci-Fi, Horror, Krimi und mehr.",
-  "seo.about.description": "Über Interaktive Fiktion — KI-gestützte Abenteuer-Geschichten in allen Genres.",
-  "seo.terms.description": "Nutzungsbedingungen für Interaktive Fiktion — KI-gestützte interaktive Geschichtenplattform.",
-  "seo.privacy.description": "Datenschutzrichtlinie für Interaktive Fiktion — wie wir mit Ihren Daten umgehen und Ihre Privatsphäre schützen.",
-  "seo.faq.description": "Häufig gestellte Fragen über Interaktive Fiktion — KI-Geschichten, Entscheidungen und interaktive Abenteuer erstellen.",
+  "seo.about.description": "Über GrimQuill — KI-gestützte Abenteuer-Geschichten in allen Genres.",
+  "seo.terms.description": "Nutzungsbedingungen für GrimQuill — KI-gestützte interaktive Geschichtenplattform.",
+  "seo.privacy.description": "Datenschutzrichtlinie für GrimQuill — wie wir mit Ihren Daten umgehen und Ihre Privatsphäre schützen.",
+  "seo.faq.description": "Häufig gestellte Fragen über GrimQuill — KI-Geschichten, Entscheidungen und interaktive Abenteuer erstellen.",
 
   "anon.limitTitle": "Registrierung erforderlich",
   "anon.limitMessage": "Sie haben alle kostenlosen Aktionen verbraucht. Erstellen Sie ein kostenloses Konto, um Ihre Abenteuer fortzusetzen — es dauert nur wenige Sekunden!",
@@ -624,12 +624,12 @@
   "anon.messagesLeft": "{{count}} kostenlose Aktionen übrig",
   "anon.registerLink": "Registrieren für unbegrenzte Abenteuer",
 
-  "pwa.install": "Interaktive Fiktion installieren",
+  "pwa.install": "GrimQuill installieren",
   "pwa.installDescription": "Zum Startbildschirm hinzufügen für schnellen Zugriff und Offline-Nutzung",
   "pwa.installButton": "Installieren",
   "pwa.later": "Später",
 
-  "onboarding.title": "Willkommen bei Interaktive Fiktion",
+  "onboarding.title": "Willkommen bei GrimQuill",
   "onboarding.subtitle": "Personalisieren wir dein Erlebnis",
   "onboarding.genderQuestion": "Wer interessiert dich?",
   "onboarding.female": "Frauen",

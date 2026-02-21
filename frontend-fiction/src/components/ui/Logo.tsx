@@ -6,7 +6,7 @@ export function Logo({ className = 'w-6 h-6' }: Props) {
   return (
     <img
       src="/logo.png"
-      alt="Interactive Fiction"
+      alt="GrimQuill"
       className={className}
       draggable={false}
     />

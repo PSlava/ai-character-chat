@@ -36,7 +36,7 @@ export function Header({ onToggleSidebar }: Props) {
         <Link to="/" className="flex items-center gap-1.5 text-lg font-bold">
           <Logo className="w-6 h-6 text-purple-500" />
           <span className="hidden sm:inline">
-            <span className="text-white">Interactive</span><span className="text-purple-500">Fiction</span>
+            <span className="text-white">Grim</span><span className="text-purple-500">Quill</span>
           </span>
         </Link>
       </div>

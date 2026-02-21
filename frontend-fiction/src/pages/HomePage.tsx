@@ -157,13 +157,13 @@ export function HomePage() {
           '@graph': [
             {
               '@type': 'WebSite',
-              name: 'Interactive Fiction',
+              name: 'GrimQuill',
               url: window.location.origin,
-              description: 'AI-Powered Interactive Fiction — Choose Your Adventure',
+              description: 'AI-Powered Interactive Fiction & D&D Game Master — Write Your Fate',
             },
             {
               '@type': 'Organization',
-              name: 'Interactive Fiction',
+              name: 'GrimQuill',
               url: window.location.origin,
             },
           ],

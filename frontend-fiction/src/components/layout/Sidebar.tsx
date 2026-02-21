@@ -184,7 +184,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
             <div className="flex items-center justify-between p-3 border-b border-neutral-800">
               <span className="text-sm font-semibold flex items-center gap-1">
                 <Logo className="w-5 h-5 text-purple-500" />
-                <span className="text-neutral-300">Interactive</span><span className="text-purple-500">Fiction</span>
+                <span className="text-neutral-300">Grim</span><span className="text-purple-500">Quill</span>
               </span>
               <button onClick={onClose} className="p-1 text-neutral-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />

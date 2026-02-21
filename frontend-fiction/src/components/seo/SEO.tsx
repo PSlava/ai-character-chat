@@ -2,8 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGS } from '@/lib/lang';
 
-const SITE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://interactivefiction.app';
-const SITE_NAME = 'Interactive Fiction';
+const SITE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://grimquill.io';
+const SITE_NAME = 'GrimQuill';
 
 interface SEOProps {
   title?: string;
@@ -25,7 +25,7 @@ function stripLangPrefix(path: string): string {
 
 export function SEO({ title, description, image, url, jsonLd }: SEOProps) {
   const { i18n } = useTranslation();
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — AI Interactive Stories`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Write Your Fate`;
   const canonical = url ? `${SITE_URL}${url}` : `${SITE_URL}/${i18n.language}`;
   const ogImage = image?.startsWith('/') ? `${SITE_URL}${image}` : image;
 
@@ -39,7 +39,7 @@ export function SEO({ title, description, image, url, jsonLd }: SEOProps) {
       <title>{fullTitle}</title>
       {description && <meta name="description" content={description} />}
       <link rel="canonical" href={canonical} />
-      <meta property="og:title" content={title || `${SITE_NAME} — AI Interactive Stories`} />
+      <meta property="og:title" content={title || `${SITE_NAME} — Write Your Fate`} />
       {description && <meta property="og:description" content={description} />}
       {ogImage && <meta property="og:image" content={ogImage} />}
       <meta property="og:url" content={canonical} />
@@ -49,7 +49,7 @@ export function SEO({ title, description, image, url, jsonLd }: SEOProps) {
       {ogImage && <meta property="og:image:width" content="1200" />}
       {ogImage && <meta property="og:image:height" content="630" />}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title || `${SITE_NAME} — AI Interactive Stories`} />
+      <meta name="twitter:title" content={title || `${SITE_NAME} — Write Your Fate`} />
       {description && <meta name="twitter:description" content={description} />}
       {ogImage && <meta name="twitter:image" content={ogImage} />}
       {SUPPORTED_LANGS.map(lang => (

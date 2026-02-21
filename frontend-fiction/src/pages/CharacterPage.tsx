@@ -217,7 +217,7 @@ export function CharacterPage() {
             {
               '@type': 'BreadcrumbList',
               itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Interactive Fiction', item: window.location.origin },
+                { '@type': 'ListItem', position: 1, name: 'GrimQuill', item: window.location.origin },
                 { '@type': 'ListItem', position: 2, name: t('home.title'), item: `${window.location.origin}${localePath('/')}` },
                 { '@type': 'ListItem', position: 3, name: character.name },
               ],

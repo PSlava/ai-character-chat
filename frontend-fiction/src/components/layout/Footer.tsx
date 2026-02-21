@@ -70,7 +70,7 @@ export function Footer() {
           <Link to={localePath('/faq')} className="hover:text-neutral-300 transition-colors">
             {t('footer.faq')}
           </Link>
-          <a href="mailto:support@interactivefiction.app" className="hover:text-neutral-300 transition-colors">
+          <a href="mailto:support@grimquill.io" className="hover:text-neutral-300 transition-colors">
             {t('footer.contact')}
           </a>
         </div>

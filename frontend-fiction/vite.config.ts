@@ -9,9 +9,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Interactive Fiction — AI Stories',
-        short_name: 'Interactive Fiction',
-        description: 'Choose your own adventure in AI-powered interactive stories.',
+        name: 'GrimQuill — Write Your Fate',
+        short_name: 'GrimQuill',
+        description: 'AI-powered interactive fiction and D&D Game Master. Choose your path, roll the dice.',
         theme_color: '#171717',
         background_color: '#171717',
         display: 'standalone',

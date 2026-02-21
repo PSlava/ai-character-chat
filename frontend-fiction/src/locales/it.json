@@ -1,5 +1,5 @@
 {
-  "header.appName": "Narrativa Interattiva",
+  "header.appName": "GrimQuill",
   "header.create": "Crea Storia",
   "header.login": "Accedi",
 
@@ -396,10 +396,10 @@
   "footer.faq": "FAQ",
   "footer.contact": "Contatti",
   "footer.popularCharacters": "Storie popolari",
-  "footer.copyright": "© {{year}} Narrativa Interattiva. Tutti i diritti riservati.",
+  "footer.copyright": "© {{year}} GrimQuill. Tutti i diritti riservati.",
 
-  "about.title": "Informazioni su Narrativa Interattiva",
-  "about.p1": "Narrativa Interattiva è una piattaforma per storie interattive con IA. Narrazioni ricche combinate con modelli linguistici avanzati creano storie immersive e ramificate dove le tue scelte contano davvero.",
+  "about.title": "Informazioni su GrimQuill",
+  "about.p1": "GrimQuill è una piattaforma per storie interattive con IA. Narrazioni ricche combinate con modelli linguistici avanzati creano storie immersive e ramificate dove le tue scelte contano davvero.",
   "about.p2": "Alimentato da molteplici provider IA gratuiti con fallback automatico — la tua storia non si ferma mai. Ogni risposta offre scelte significative che plasmano la trama in modi inaspettati.",
   "about.p3": "Crea le tue storie interattive da zero o generale da qualsiasi testo. Esplora fantasy, fantascienza, orrore, giallo, romantico e altro — in 7 lingue.",
   "about.featuresTitle": "Funzionalità principali",
@@ -424,10 +424,10 @@
   "about.f.privacy.title": "Privacy al primo posto",
   "about.f.privacy.desc": "Le tue storie e le tue scelte sono private. Elimina il tuo account e tutti i dati in qualsiasi momento.",
   "about.teamTitle": "La nostra missione",
-  "about.teamDesc": "Crediamo nel potere della narrazione interattiva. Narrativa Interattiva porta la magia dei libri-gioco nell'era dell'IA — con narrazioni ricche, scelte significative e possibilità infinite.",
+  "about.teamDesc": "Crediamo nel potere della narrazione interattiva. GrimQuill porta la magia dei libri-gioco nell'era dell'IA — con narrazioni ricche, scelte significative e possibilità infinite.",
 
   "terms.title": "Termini di servizio",
-  "terms.intro": "Utilizzando Narrativa Interattiva, accetti i seguenti termini:",
+  "terms.intro": "Utilizzando GrimQuill, accetti i seguenti termini:",
   "terms.section1Title": "1. Requisiti di accesso",
   "terms.section1": "Devi avere almeno 13 anni per utilizzare questo servizio. Creando un account, confermi di soddisfare questo requisito.",
   "terms.section2Title": "2. Contenuti degli utenti",
@@ -435,7 +435,7 @@
   "terms.section3Title": "3. Uso accettabile",
   "terms.section3": "Accetti di non abusare della piattaforma, di non tentare di decompilare il servizio o di usare strumenti automatizzati per raccogliere contenuti. Ci riserviamo il diritto di sospendere gli account che violano questi termini.",
   "terms.section4Title": "4. Esclusione di responsabilità",
-  "terms.section4": "Narrativa Interattiva è fornito così com'è. Non garantiamo un servizio ininterrotto o la disponibilità di modelli specifici. I contenuti generati potrebbero contenere imprecisioni.",
+  "terms.section4": "GrimQuill è fornito così com'è. Non garantiamo un servizio ininterrotto o la disponibilità di modelli specifici. I contenuti generati potrebbero contenere imprecisioni.",
 
   "privacy.title": "Informativa sulla privacy",
   "privacy.intro": "La tua privacy è importante per noi. Ecco come gestiamo i tuoi dati:",
@@ -449,7 +449,7 @@
   "privacy.section4": "Puoi eliminare il tuo account in qualsiasi momento dalla pagina del profilo. Questa azione rimuove definitivamente tutti i tuoi dati, storie e cronologia di lettura.",
 
   "faq.title": "Domande frequenti",
-  "faq.q1": "Narrativa Interattiva è gratuito?",
+  "faq.q1": "GrimQuill è gratuito?",
   "faq.a1": "Sì! Tutte le storie sono completamente gratuite. Usiamo modelli IA gratuiti da molteplici provider con fallback automatico per l'affidabilità.",
   "faq.q2": "Come funziona la narrativa interattiva?",
   "faq.a2": "Scegli una storia e inizia a leggere. Il narratore IA descrive le scene e ti offre delle scelte. Scegli un'opzione o digita la tua azione — la storia si adatta alle tue decisioni in tempo reale.",
@@ -472,7 +472,7 @@
   "faq.q11": "Posso condividere le mie storie?",
   "faq.a11": "Sì! Le storie che crei possono essere rese pubbliche per farle giocare ad altri. Condividile tramite link diretto o lascia che altri le scoprano nella homepage.",
   "faq.q12": "Il contenuto è adatto a tutte le età?",
-  "faq.a12": "Tutte le storie su Narrativa Interattiva sono SFW (sicure per il lavoro). I contenuti sono moderati per garantire un'esperienza sicura e piacevole per tutti.",
+  "faq.a12": "Tutte le storie su GrimQuill sono SFW (sicure per il lavoro). I contenuti sono moderati per garantire un'esperienza sicura e piacevole per tutti.",
 
   "toast.liked": "Aggiunto ai preferiti",
   "toast.unliked": "Rimosso dai preferiti",
@@ -612,10 +612,10 @@
   "groupChat.section": "Chat di gruppo",
 
   "seo.home.description": "Narrativa interattiva con IA. Scegli la tua avventura — ogni decisione plasma la storia. Fantasy, fantascienza, orrore, giallo e altro.",
-  "seo.about.description": "Informazioni su Narrativa Interattiva — storie interattive con IA in tutti i generi.",
-  "seo.terms.description": "Termini di servizio di Narrativa Interattiva — piattaforma di narrazione interattiva con IA.",
-  "seo.privacy.description": "Informativa sulla privacy di Narrativa Interattiva — come gestiamo i tuoi dati e proteggiamo la tua privacy.",
-  "seo.faq.description": "Domande frequenti su Narrativa Interattiva — storie IA, scelte e creazione di avventure interattive.",
+  "seo.about.description": "Informazioni su GrimQuill — storie interattive con IA in tutti i generi.",
+  "seo.terms.description": "Termini di servizio di GrimQuill — piattaforma di narrazione interattiva con IA.",
+  "seo.privacy.description": "Informativa sulla privacy di GrimQuill — come gestiamo i tuoi dati e proteggiamo la tua privacy.",
+  "seo.faq.description": "Domande frequenti su GrimQuill — storie IA, scelte e creazione di avventure interattive.",
 
   "anon.limitTitle": "Registrazione necessaria",
   "anon.limitMessage": "Hai esaurito tutte le azioni gratuite. Crea un account gratuito per continuare le tue avventure — bastano pochi secondi!",
@@ -624,12 +624,12 @@
   "anon.messagesLeft": "{{count}} azioni gratuite rimaste",
   "anon.registerLink": "Registrati per avventure illimitate",
 
-  "pwa.install": "Installa Narrativa Interattiva",
+  "pwa.install": "Installa GrimQuill",
   "pwa.installDescription": "Aggiungi alla schermata iniziale per un accesso rapido e offline",
   "pwa.installButton": "Installa",
   "pwa.later": "Dopo",
 
-  "onboarding.title": "Benvenuto su Narrativa Interattiva",
+  "onboarding.title": "Benvenuto su GrimQuill",
   "onboarding.subtitle": "Personalizziamo la tua esperienza",
   "onboarding.genderQuestion": "Chi ti interessa?",
   "onboarding.female": "Donne",
