@@ -10,37 +10,30 @@ export function Logo({ className = 'w-6 h-6' }: Props) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Quill body — solid filled */}
+      {/* Open book — left page */}
       <path
-        d="M18 50L26 30L42 10C47 5 56 8 53 15L35 34L18 50Z"
+        d="M32 18C26 14 18 13 8 15V48C18 46 26 47 32 51Z"
+        fill="currentColor"
+        opacity="0.6"
+      />
+      {/* Open book — right page */}
+      <path
+        d="M32 18C38 14 46 13 56 15V48C46 46 38 47 32 51Z"
+        fill="currentColor"
+        opacity="0.85"
+      />
+      {/* Spine highlight */}
+      <path
+        d="M32 18V51"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity="0.4"
+      />
+      {/* Magic star/spark above the book */}
+      <path
+        d="M32 4L34 9L39 9L35 12L36.5 17L32 14L27.5 17L29 12L25 9L30 9Z"
         fill="currentColor"
       />
-      {/* Quill shadow edge */}
-      <path
-        d="M18 50L26 30L29 33L20 50Z"
-        fill="currentColor"
-        opacity="0.5"
-      />
-      {/* Three branch paths — thick filled wedges */}
-      <path
-        d="M35 34L50 28L49 33L36 36Z"
-        fill="currentColor"
-        opacity="0.75"
-      />
-      <path
-        d="M35 34L48 46L44 48L34 37Z"
-        fill="currentColor"
-        opacity="0.75"
-      />
-      <path
-        d="M35 34L28 48L25 45L33 36Z"
-        fill="currentColor"
-        opacity="0.75"
-      />
-      {/* Choice dots — solid */}
-      <circle cx="51" cy="30" r="3.5" fill="currentColor" />
-      <circle cx="49" cy="48" r="3.5" fill="currentColor" />
-      <circle cx="26" cy="49" r="3.5" fill="currentColor" />
     </svg>
   );
 }

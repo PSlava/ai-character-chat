@@ -1,15 +1,11 @@
 <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="32" cy="32" r="30" fill="#1e1b4b"/>
-  <!-- Quill body -->
-  <path d="M18 50L26 30L42 10C47 5 56 8 53 15L35 34L18 50Z" fill="#a78bfa"/>
-  <!-- Quill shadow -->
-  <path d="M18 50L26 30L29 33L20 50Z" fill="#7c3aed"/>
-  <!-- Branch paths -->
-  <path d="M35 34L50 28L49 33L36 36Z" fill="#c4b5fd"/>
-  <path d="M35 34L48 46L44 48L34 37Z" fill="#c4b5fd"/>
-  <path d="M35 34L28 48L25 45L33 36Z" fill="#c4b5fd"/>
-  <!-- Choice dots -->
-  <circle cx="51" cy="30" r="3.5" fill="#e9d5ff"/>
-  <circle cx="49" cy="48" r="3.5" fill="#e9d5ff"/>
-  <circle cx="26" cy="49" r="3.5" fill="#e9d5ff"/>
+  <circle cx="32" cy="34" r="30" fill="#1e1b4b"/>
+  <!-- Left page -->
+  <path d="M32 20C26 16 18 15 8 17V50C18 48 26 49 32 53Z" fill="#7c3aed"/>
+  <!-- Right page -->
+  <path d="M32 20C38 16 46 15 56 17V50C46 48 38 49 32 53Z" fill="#a78bfa"/>
+  <!-- Spine -->
+  <path d="M32 20V53" stroke="#1e1b4b" stroke-width="1.5"/>
+  <!-- Magic star -->
+  <path d="M32 4L34.5 10L41 10L36 13.5L37.8 20L32 16L26.2 20L28 13.5L23 10L29.5 10Z" fill="#e9d5ff"/>
 </svg>
