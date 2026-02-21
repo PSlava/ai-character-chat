@@ -7,14 +7,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.db.models import User, Message, Character, Chat
+from app.config import settings
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
-BASE_USERS = 1200
-BASE_MESSAGES = 45000
+BASE_USERS = 1200 if settings.is_nsfw_mode else 0
+BASE_MESSAGES = 45000 if settings.is_nsfw_mode else 0
 
 # System emails excluded from public stats
-_SYSTEM_EMAILS = ("system@sweetsin.cc", "anonymous@system.local")
+_SYSTEM_EMAILS = ("system@sweetsin.cc", "system@fiction.local", "anonymous@system.local")
 
 
 @router.get("")

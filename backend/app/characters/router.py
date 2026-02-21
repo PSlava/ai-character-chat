@@ -492,7 +492,11 @@ async def create_character(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    from app.config import settings
     is_admin = user.get("role") == "admin"
+    # SFW/fiction mode: only allow SFW characters
+    if not settings.is_nsfw_mode and getattr(body, 'content_rating', 'sfw') != "sfw":
+        raise HTTPException(status_code=400, detail="Only SFW characters are allowed on this site")
     # Public characters require an avatar
     if body.is_public and not body.avatar_url:
         raise HTTPException(status_code=400, detail="Public characters require an avatar")

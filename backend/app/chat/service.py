@@ -12,6 +12,61 @@ DEFAULT_CONTEXT_TOKENS = 24000  # ~6k real tokens; Russian text needs ~4 chars/t
 
 # Post-history reminder — injected AFTER chat history, closest to generation point.
 # Short (~50 tokens) reinforcement of key rules. Most effective position per SillyTavern research.
+_FICTION_POST_HISTORY = {
+    "ru": (
+        "[Продолжай историю от второго лица. Сохраняй текущую локацию.\n"
+        "Продвинь сюжет - новое событие, открытие или поворот.\n"
+        "ОБЯЗАТЕЛЬНО заверши ответ 2-4 пронумерованными вариантами выбора.\n"
+        "НЕ повторяй описания из предыдущих ответов.]"
+    ),
+    "en": (
+        "[Continue the story in second person. Maintain the current location.\n"
+        "Advance the plot - a new event, discovery, or twist.\n"
+        "You MUST end your response with 2-4 numbered choices.\n"
+        "Do NOT repeat descriptions from previous responses.]"
+    ),
+    "es": (
+        "[Continua la historia en segunda persona. Manten la ubicacion actual.\n"
+        "Avanza la trama - un nuevo evento, descubrimiento o giro.\n"
+        "DEBES terminar tu respuesta con 2-4 opciones numeradas.\n"
+        "NO repitas descripciones de respuestas anteriores.]"
+    ),
+    "fr": (
+        "[Continue l'histoire a la deuxieme personne. Maintiens le lieu actuel.\n"
+        "Fais avancer l'intrigue - un nouvel evenement, decouverte ou rebondissement.\n"
+        "Tu DOIS terminer ta reponse par 2-4 choix numerotes.\n"
+        "NE repete PAS les descriptions des reponses precedentes.]"
+    ),
+    "de": (
+        "[Setze die Geschichte in der zweiten Person fort. Behalte den aktuellen Ort bei.\n"
+        "Bringe die Handlung voran - ein neues Ereignis, eine Entdeckung oder Wendung.\n"
+        "Du MUSST deine Antwort mit 2-4 nummerierten Optionen beenden.\n"
+        "Wiederhole KEINE Beschreibungen aus vorherigen Antworten.]"
+    ),
+    "pt": (
+        "[Continue a historia na segunda pessoa. Mantenha a localizacao atual.\n"
+        "Avance a trama - um novo evento, descoberta ou reviravolta.\n"
+        "Voce DEVE terminar sua resposta com 2-4 opcoes numeradas.\n"
+        "NAO repita descricoes de respostas anteriores.]"
+    ),
+    "it": (
+        "[Continua la storia in seconda persona. Mantieni la posizione attuale.\n"
+        "Fai avanzare la trama - un nuovo evento, scoperta o colpo di scena.\n"
+        "DEVI terminare la tua risposta con 2-4 scelte numerate.\n"
+        "NON ripetere descrizioni dalle risposte precedenti.]"
+    ),
+}
+
+_TUTOR_POST_HISTORY = {
+    "en": "[Continue as {name}. If the user made language errors, gently correct 1-2 of them. Introduce a new word or phrase naturally. Keep it conversational.]",
+    "ru": "[\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0430\u0439 \u043a\u0430\u043a {name}. \u0415\u0441\u043b\u0438 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u043e\u0448\u0438\u0431\u043a\u0438, \u043c\u044f\u0433\u043a\u043e \u0438\u0441\u043f\u0440\u0430\u0432\u044c 1-2. \u0412\u0432\u0435\u0434\u0438 \u043d\u043e\u0432\u043e\u0435 \u0441\u043b\u043e\u0432\u043e \u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d\u043d\u043e. \u0413\u043e\u0432\u043e\u0440\u0438 \u0440\u0430\u0437\u0433\u043e\u0432\u043e\u0440\u043d\u043e.]",
+    "es": "[Contin\u00faa como {name}. Si el usuario cometi\u00f3 errores, corrige 1-2 suavemente. Introduce una palabra nueva naturalmente. Mant\u00e9n el tono conversacional.]",
+    "fr": "[Continue en tant que {name}. Si l'utilisateur a fait des erreurs, corrige 1-2 doucement. Introduis un nouveau mot naturellement. Reste conversationnel.]",
+    "de": "[Fahre fort als {name}. Wenn der Benutzer Fehler gemacht hat, korrigiere 1-2 sanft. F\u00fchre ein neues Wort nat\u00fcrlich ein. Bleib im Gespr\u00e4chston.]",
+    "pt": "[Continue como {name}. Se o usu\u00e1rio cometeu erros, corrija 1-2 suavemente. Introduza uma nova palavra naturalmente. Mantenha o tom conversacional.]",
+    "it": "[Continua come {name}. Se l'utente ha commesso errori, correggi 1-2 gentilmente. Introduci una nuova parola naturalmente. Mantieni il tono conversazionale.]",
+}
+
 _POST_HISTORY = {
     "ru": (
         "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи.\n"
@@ -358,6 +413,7 @@ async def build_conversation_messages(
     language: str = "ru",
     context_limit: int | None = None,
     max_context_messages: int | None = None,
+    site_mode: str = "nsfw",
 ) -> list[LLMMessage]:
     char_dict = {
         "name": character.name,
@@ -392,6 +448,7 @@ async def build_conversation_messages(
         char_dict, user_name=user_name, user_description=user_description,
         language=language, engine=db_engine,
         lore_entries=lore_entries, context_text=context_text,
+        site_mode=site_mode,
     )
 
     # context_limit is in "real" tokens; multiply by ~4 for char-based estimation
@@ -429,9 +486,10 @@ async def build_conversation_messages(
         result_list.append(LLMMessage(role="system", content=f"{label}\n{summary}"))
 
     # Post-history reminder (closest to generation = strongest reinforcement)
-    content_rating = char_dict.get("content_rating", "sfw")
-    lang = language if language in _POST_HISTORY else "en"
-    reminder = _POST_HISTORY[lang].format(name=character.name)
+    _POST_HISTORY_MAP = {"sfw": _TUTOR_POST_HISTORY, "fiction": _FICTION_POST_HISTORY}
+    post_history_dict = _POST_HISTORY_MAP.get(site_mode, _POST_HISTORY)
+    lang = language if language in post_history_dict else "en"
+    reminder = post_history_dict[lang].format(name=character.name)
     all_messages = result_list + messages
     all_messages.append(LLMMessage(role="system", content=reminder))
     return all_messages

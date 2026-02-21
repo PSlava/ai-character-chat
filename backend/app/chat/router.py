@@ -17,9 +17,41 @@ from app.config import settings
 from app.auth.rate_limit import check_message_rate, check_message_interval
 from app.chat.daily_limit import check_daily_limit, get_daily_usage, get_cost_mode, get_user_tier, get_tier_limits, cap_max_tokens
 from app.chat.summarizer import maybe_summarize
+import re as _re
 import asyncio as _asyncio
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
+
+# Pattern to match numbered choices at the end of AI response (e.g. "1. Open the door")
+_CHOICE_PATTERN = _re.compile(r'^(\d+)\.\s+(.+)$', _re.MULTILINE)
+
+
+def _parse_choices(text: str) -> list[dict] | None:
+    """Extract numbered choices from the end of the AI response text.
+
+    Returns list of {"number": 1, "text": "Open the door"} or None if no choices found.
+    """
+    # Look at the last ~500 chars for choices
+    tail = text[-500:] if len(text) > 500 else text
+    lines = tail.strip().split('\n')
+
+    # Walk backwards to find consecutive numbered lines
+    choices = []
+    for line in reversed(lines):
+        line = line.strip()
+        if not line:
+            continue
+        m = _CHOICE_PATTERN.match(line)
+        if m:
+            choices.append({"number": int(m.group(1)), "text": m.group(2).strip()})
+        else:
+            break  # Stop at first non-choice line
+
+    if len(choices) < 2:
+        return None
+
+    choices.reverse()
+    return choices
 
 # ── Paid mode cache (60s TTL) ─────────────────────────────────
 _paid_mode_cache: tuple[bool, float] = (False, 0.0)
@@ -479,6 +511,7 @@ async def send_message(
         db, chat_id, character, user_name=user_name, user_description=user_description,
         language=language, context_limit=body.context_limit,
         max_context_messages=tier_ctx_limit,
+        site_mode=settings.site_mode,
     )
 
     # For "continue": add instruction to continue from where the model left off
@@ -624,6 +657,10 @@ async def send_message(
                     await service.increment_message_count(character.id, language, user_id_for_increment)
                     _asyncio.create_task(maybe_summarize(chat_id))
                     done_data = {'type': 'done', 'message_id': saved_msg_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': truncated}
+                    if settings.is_fiction_mode:
+                        choices = _parse_choices(complete_text)
+                        if choices:
+                            done_data['choices'] = choices
                     if anon_session_id and anon_remaining is not None:
                         done_data['anon_messages_left'] = anon_remaining - 1
                     yield f"data: {json.dumps(done_data)}\n\n"
@@ -698,6 +735,10 @@ async def send_message(
                             await service.increment_message_count(character.id, language, user_id_for_increment)
                             _asyncio.create_task(maybe_summarize(chat_id))
                             done_data = {'type': 'done', 'message_id': fb_saved_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': fb_truncated}
+                            if settings.is_fiction_mode:
+                                fb_choices = _parse_choices(fb_text)
+                                if fb_choices:
+                                    done_data['choices'] = fb_choices
                             if anon_session_id and anon_remaining is not None:
                                 done_data['anon_messages_left'] = anon_remaining - 1
                             yield f"data: {json.dumps(done_data)}\n\n"
@@ -728,6 +769,10 @@ async def send_message(
                 await service.increment_message_count(character.id, language, user_id_for_increment)
                 _asyncio.create_task(maybe_summarize(chat_id))
                 done_data = {'type': 'done', 'message_id': saved_msg_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': truncated}
+                if settings.is_fiction_mode:
+                    choices = _parse_choices(complete_text)
+                    if choices:
+                        done_data['choices'] = choices
                 if anon_session_id and anon_remaining is not None:
                     done_data['anon_messages_left'] = anon_remaining - 1
                 yield f"data: {json.dumps(done_data)}\n\n"

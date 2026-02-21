@@ -9,7 +9,14 @@ from app.db.session import get_db
 from app.db.models import Character, PromptTemplate, User
 from app.chat.prompt_builder import get_all_keys, load_overrides, invalidate_cache
 from app.db.session import engine
-from app.admin.seed_data import SEED_CHARACTERS, SWEETSIN_EMAIL, SWEETSIN_USERNAME
+from app.config import settings
+
+if settings.is_fiction_mode:
+    from app.admin.seed_data_fiction import SEED_STORIES as SEED_CHARACTERS
+    from app.admin.seed_data_fiction import FICTION_SYSTEM_EMAIL as SWEETSIN_EMAIL
+    from app.admin.seed_data_fiction import FICTION_SYSTEM_USERNAME as SWEETSIN_USERNAME
+else:
+    from app.admin.seed_data import SEED_CHARACTERS, SWEETSIN_EMAIL, SWEETSIN_USERNAME
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -135,7 +142,7 @@ async def reset_prompt(
 
 
 async def _get_or_create_sweetsin(db: AsyncSession) -> User:
-    """Get or create the internal @sweetsin user."""
+    """Get or create the internal system user for seed content."""
     result = await db.execute(select(User).where(User.email == SWEETSIN_EMAIL))
     user = result.scalar_one_or_none()
     if user:
@@ -144,11 +151,12 @@ async def _get_or_create_sweetsin(db: AsyncSession) -> User:
     import secrets
     import bcrypt as _bcrypt
 
+    display = "Interactive Fiction" if settings.is_fiction_mode else "SweetSin"
     random_password = secrets.token_hex(32).encode()
     user = User(
         email=SWEETSIN_EMAIL,
         username=SWEETSIN_USERNAME,
-        display_name="SweetSin",
+        display_name=display,
         password_hash=_bcrypt.hashpw(random_password, _bcrypt.gensalt()).decode(),
         role="user",
     )

@@ -46,18 +46,22 @@ async def lifespan(app: FastAPI):
     error_handler.start(asyncio.get_running_loop())
 
     # Start autonomous scheduler (daily character gen, counter growth, cleanup)
+    # Only run in NSFW mode — no auto-generation needed for SFW/fiction
     import asyncio
-    from app.autonomous.scheduler import run_scheduler
-    scheduler_task = asyncio.create_task(run_scheduler())
+    scheduler_task = None
+    if settings.is_nsfw_mode:
+        from app.autonomous.scheduler import run_scheduler
+        scheduler_task = asyncio.create_task(run_scheduler())
 
     yield
 
     error_handler.stop()
     await error_handler._do_flush()
-    scheduler_task.cancel()
+    if scheduler_task:
+        scheduler_task.cancel()
 
 
-app = FastAPI(title="SweetSin", lifespan=lifespan)
+app = FastAPI(title=settings.site_name, lifespan=lifespan)
 
 # Use a derived key for session middleware (separate from JWT secret)
 import hashlib as _hashlib

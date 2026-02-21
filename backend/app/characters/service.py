@@ -13,7 +13,8 @@ _CHARACTER_ALLOWED_FIELDS = {
 }
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.db.models import Character, User
+from app.db.models import Character, User, ContentRating
+from app.config import settings
 
 
 async def list_public_characters(
@@ -64,6 +65,8 @@ async def list_public_characters(
     if gender and gender in ("male", "female"):
         # Exact tag match within comma-separated list (avoid "male" matching "female")
         query = query.where(text(f"(',' || structured_tags || ',') LIKE '%,{gender},%'"))
+    if not settings.is_nsfw_mode:
+        query = query.where(Character.content_rating == ContentRating.sfw)
 
     result = await db.execute(query)
     characters = result.scalars().all()
@@ -107,6 +110,8 @@ async def count_public_characters(
     if gender and gender in ("male", "female"):
         # Exact tag match within comma-separated list (avoid "male" matching "female")
         query = query.where(text(f"(',' || structured_tags || ',') LIKE '%,{gender},%'"))
+    if not settings.is_nsfw_mode:
+        query = query.where(Character.content_rating == ContentRating.sfw)
 
     result = await db.execute(query)
     return result.scalar_one()

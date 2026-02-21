@@ -1,0 +1,94 @@
+name: fiction
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fiction
+      POSTGRES_USER: fiction
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata-fiction:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fiction"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://fiction:${POSTGRES_PASSWORD}@postgres:5432/fiction
+      JWT_SECRET: ${JWT_SECRET}
+      SITE_MODE: fiction
+      SITE_NAME: ${SITE_NAME:-Interactive Fiction}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      TOGETHER_API_KEY: ${TOGETHER_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-auto}
+      AUTO_PROVIDER_ORDER: ${AUTO_PROVIDER_ORDER:-groq,cerebras,openrouter}
+      AUTO_PROVIDER_ORDER_PAID: ${AUTO_PROVIDER_ORDER_PAID:-claude,openai,groq,openrouter}
+      PROXY_URL: ${PROXY_URL:-}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      WEB_WORKERS: ${WEB_WORKERS:-2}
+      AUTO_CHARACTER_ENABLED: "false"
+      ENVIRONMENT: production
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-Fiction <noreply@fiction.app>}
+    volumes:
+      - uploads-fiction:/app/data/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  nginx:
+    build:
+      context: .
+      dockerfile: deploy/nginx/Dockerfile.fiction
+      args:
+        NGINX_CONF: ${NGINX_CONF:-nginx-ssl-fiction.conf}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${HOST_REPO_DIR:-.}/deploy/nginx/certs:/etc/nginx/certs:ro
+      - uploads-fiction:/app/uploads:ro
+
+  autoheal:
+    image: willfarrell/autoheal
+    restart: unless-stopped
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: all
+      AUTOHEAL_INTERVAL: 30
+      AUTOHEAL_START_PERIOD: 60
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  pgdata-fiction:
+  uploads-fiction:

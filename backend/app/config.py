@@ -34,9 +34,23 @@ class Settings(BaseSettings):
     max_avatar_size: int = 4 * 1024 * 1024  # 4MB default, override via MAX_AVATAR_SIZE env
     auto_character_enabled: bool = True  # daily auto-generation of characters
     environment: str = "development"  # development | production
+    site_mode: str = "nsfw"  # "nsfw" (SweetSin) | "sfw" (LangTutor) | "fiction" (IF + DnD)
+    site_name: str = "SweetSin"  # display name for emails, titles
 
     class Config:
         env_file = ".env"
+
+    @property
+    def is_sfw_mode(self) -> bool:
+        return self.site_mode == "sfw"
+
+    @property
+    def is_fiction_mode(self) -> bool:
+        return self.site_mode == "fiction"
+
+    @property
+    def is_nsfw_mode(self) -> bool:
+        return self.site_mode == "nsfw"
 
     @property
     def async_database_url(self) -> str:
