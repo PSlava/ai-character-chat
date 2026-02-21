@@ -4,7 +4,6 @@ import { Toaster } from 'react-hot-toast';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
-import { AgeGate } from '@/components/ui/AgeGate';
 import { CookieConsent } from '@/components/ui/CookieConsent';
 import { InstallPrompt } from '@/components/ui/InstallPrompt';
 import { OnboardingModal } from '@/components/ui/OnboardingModal';
@@ -40,7 +39,6 @@ export function Layout() {
           )}
         </main>
       </div>
-      <AgeGate />
       <CookieConsent />
       <InstallPrompt />
       <OnboardingModal />
