@@ -1,17 +1,15 @@
 <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background circle -->
   <circle cx="32" cy="32" r="30" fill="#1e1b4b"/>
-  <!-- Quill/feather pen writing -->
-  <path d="M20 48L28 28L44 12C48 8 54 10 52 16L36 32L20 48Z" fill="#a78bfa"/>
-  <path d="M20 48L28 28L30 30L22 48Z" fill="#7c3aed"/>
-  <!-- Branching paths from the pen tip -->
-  <path d="M36 32Q42 36 48 32" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-  <path d="M36 32Q40 40 44 44" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-  <path d="M36 32Q34 40 30 44" stroke="#c4b5fd" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-  <!-- Choice dots at branch ends -->
-  <circle cx="48" cy="32" r="2.5" fill="#e9d5ff"/>
-  <circle cx="44" cy="44" r="2.5" fill="#e9d5ff"/>
-  <circle cx="30" cy="44" r="2.5" fill="#e9d5ff"/>
-  <!-- Ink sparkle -->
-  <circle cx="20" cy="48" r="2" fill="#c4b5fd"/>
+  <!-- Quill body -->
+  <path d="M18 50L26 30L42 10C47 5 56 8 53 15L35 34L18 50Z" fill="#a78bfa"/>
+  <!-- Quill shadow -->
+  <path d="M18 50L26 30L29 33L20 50Z" fill="#7c3aed"/>
+  <!-- Branch paths -->
+  <path d="M35 34L50 28L49 33L36 36Z" fill="#c4b5fd"/>
+  <path d="M35 34L48 46L44 48L34 37Z" fill="#c4b5fd"/>
+  <path d="M35 34L28 48L25 45L33 36Z" fill="#c4b5fd"/>
+  <!-- Choice dots -->
+  <circle cx="51" cy="30" r="3.5" fill="#e9d5ff"/>
+  <circle cx="49" cy="48" r="3.5" fill="#e9d5ff"/>
+  <circle cx="26" cy="49" r="3.5" fill="#e9d5ff"/>
 </svg>

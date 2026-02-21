@@ -10,46 +10,37 @@ export function Logo({ className = 'w-6 h-6' }: Props) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Quill pen */}
+      {/* Quill body — solid filled */}
       <path
-        d="M20 48L28 28L44 12C48 8 54 10 52 16L36 32L20 48Z"
+        d="M18 50L26 30L42 10C47 5 56 8 53 15L35 34L18 50Z"
         fill="currentColor"
-        opacity="0.9"
       />
+      {/* Quill shadow edge */}
       <path
-        d="M20 48L28 28L30 30L22 48Z"
+        d="M18 50L26 30L29 33L20 50Z"
         fill="currentColor"
-        opacity="0.6"
+        opacity="0.5"
       />
-      {/* Branching paths */}
+      {/* Three branch paths — thick filled wedges */}
       <path
-        d="M36 32Q42 36 48 32"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.7"
+        d="M35 34L50 28L49 33L36 36Z"
+        fill="currentColor"
+        opacity="0.75"
       />
       <path
-        d="M36 32Q40 40 44 44"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.7"
+        d="M35 34L48 46L44 48L34 37Z"
+        fill="currentColor"
+        opacity="0.75"
       />
       <path
-        d="M36 32Q34 40 30 44"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.7"
+        d="M35 34L28 48L25 45L33 36Z"
+        fill="currentColor"
+        opacity="0.75"
       />
-      {/* Choice dots */}
-      <circle cx="48" cy="32" r="2.5" fill="currentColor" opacity="0.8" />
-      <circle cx="44" cy="44" r="2.5" fill="currentColor" opacity="0.8" />
-      <circle cx="30" cy="44" r="2.5" fill="currentColor" opacity="0.8" />
+      {/* Choice dots — solid */}
+      <circle cx="51" cy="30" r="3.5" fill="currentColor" />
+      <circle cx="49" cy="48" r="3.5" fill="currentColor" />
+      <circle cx="26" cy="49" r="3.5" fill="currentColor" />
     </svg>
   );
 }
