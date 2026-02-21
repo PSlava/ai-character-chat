@@ -10,36 +10,46 @@ export function Logo({ className = 'w-6 h-6' }: Props) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Devil horns */}
+      {/* Quill pen */}
       <path
-        d="M16 20L12 4L24 16"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M48 20L52 4L40 16"
-        stroke="currentColor"
-        strokeWidth="3.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Heart */}
-      <path
-        d="M32 56L8 32C2 24 4 14 14 12C20 10 26 14 32 20C38 14 44 10 50 12C60 14 62 24 56 32L32 56Z"
+        d="M20 48L28 28L44 12C48 8 54 10 52 16L36 32L20 48Z"
         fill="currentColor"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
+        opacity="0.9"
       />
-      {/* Devil tail */}
       <path
-        d="M32 56C32 56 40 58 46 54C50 51 48 46 44 48C40 50 38 54 32 56Z"
+        d="M20 48L28 28L30 30L22 48Z"
         fill="currentColor"
-        stroke="currentColor"
-        strokeWidth="1"
+        opacity="0.6"
       />
+      {/* Branching paths */}
+      <path
+        d="M36 32Q42 36 48 32"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.7"
+      />
+      <path
+        d="M36 32Q40 40 44 44"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.7"
+      />
+      <path
+        d="M36 32Q34 40 30 44"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.7"
+      />
+      {/* Choice dots */}
+      <circle cx="48" cy="32" r="2.5" fill="currentColor" opacity="0.8" />
+      <circle cx="44" cy="44" r="2.5" fill="currentColor" opacity="0.8" />
+      <circle cx="30" cy="44" r="2.5" fill="currentColor" opacity="0.8" />
     </svg>
   );
 }
