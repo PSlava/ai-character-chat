@@ -217,8 +217,8 @@ async def import_seed_characters(
             avatar_url=avatar_url,
             is_public=True,
             preferred_model="auto",
-            base_chat_count={"ru": random.randint(300, 3000), "en": random.randint(200, 2500)},
-            base_like_count={"ru": random.randint(100, 800), "en": random.randint(80, 600)},
+            base_chat_count={} if settings.is_fiction_mode else {"ru": random.randint(300, 3000), "en": random.randint(200, 2500)},
+            base_like_count={} if settings.is_fiction_mode else {"ru": random.randint(100, 800), "en": random.randint(80, 600)},
         )
         db.add(char)
 
