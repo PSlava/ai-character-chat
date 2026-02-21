@@ -2,13 +2,11 @@
   "header.appName": "Interactive Fiction",
   "header.create": "Create Story",
   "header.login": "Sign In",
-
   "sidebar.home": "Home",
   "sidebar.favorites": "Favorites",
   "sidebar.myCharacters": "My Stories",
   "sidebar.myChats": "My Adventures",
   "sidebar.loginPrompt": "Sign in to start interactive stories",
-
   "auth.login": "Sign In",
   "auth.register": "Sign Up",
   "auth.loginSubtitle": "Sign in to play interactive stories",
@@ -48,7 +46,6 @@
   "auth.passwordResetSuccess": "Password Reset!",
   "auth.passwordResetSuccessSubtitle": "Your password has been changed. You can now sign in.",
   "auth.invalidResetLink": "Invalid or missing reset link",
-
   "common.loading": "Loading...",
   "common.uploadError": "Upload failed",
   "common.saving": "Saving...",
@@ -60,13 +57,11 @@
   "common.delete": "Delete",
   "common.edit": "Edit",
   "common.send": "Send",
-
   "home.title": "Stories",
   "home.titleAuth": "Explore Stories",
   "home.subtitle": "Choose your adventure. Interactive stories powered by AI — you decide what happens next.",
   "home.search": "Search stories...",
   "home.noCharacters": "No stories found",
-
   "hero.slogan": "Your Story, Your Choices",
   "hero.subtitle": "Interactive fiction powered by AI. Read, choose, and shape the story — every decision matters.",
   "hero.cta": "Start Reading",
@@ -84,7 +79,6 @@
   "hero.feature5.desc": "Play stories in English, Russian, Spanish, French, German, Portuguese, and Italian.",
   "hero.feature6.title": "Endless Adventures",
   "hero.feature6.desc": "AI remembers your choices and adapts the story. Long adventures with context memory.",
-
   "character.chats": "readers",
   "character.scenario": "Setting",
   "character.greeting": "Opening Scene",
@@ -96,7 +90,6 @@
   "character.deleteTitle": "Delete story?",
   "character.deleteError": "Delete error",
   "character.notFound": "Story not found",
-
   "chat.placeholder": "What do you do?",
   "chat.modelAndSettings": "Model & Settings",
   "chat.memoryActive": "Memory active — older messages have been summarized",
@@ -129,7 +122,6 @@
   "chat.generateAsPersona": "Generate reply as persona",
   "chat.generatingReply": "Generating...",
   "chat.noPersonaForGen": "No persona attached to this chat",
-
   "create.title": "Create Story",
   "create.tabManual": "Manual",
   "create.tabFromText": "From Text",
@@ -155,11 +147,9 @@
   "create.saveError": "Save error",
   "create.generateError": "Generation error",
   "create.createButton": "Create Story",
-
   "edit.title": "Edit Story",
   "edit.saveChanges": "Save Changes",
   "edit.saveError": "Failed to save changes",
-
   "lore.title": "World Info / Lorebook",
   "lore.hint": "Add lore entries with keywords. When a keyword appears in chat, the entry is injected into the AI's context.",
   "lore.add": "Add Entry",
@@ -173,7 +163,6 @@
   "lore.errorCreating": "Failed to create entry",
   "lore.errorSaving": "Failed to save entry",
   "lore.errorDeleting": "Failed to delete entry",
-
   "profile.title": "Profile",
   "profile.avatar": "Profile photo",
   "profile.settings": "Settings",
@@ -196,7 +185,6 @@
   "profile.deleteAccountConfirm": "This will permanently delete your account, all your stories, and all reading history. This action cannot be undone.",
   "profile.deleteAccountHint": "Permanently delete your account and all associated data.",
   "profile.deleting": "Deleting...",
-
   "form.avatar": "Avatar",
   "form.avatarHint": "Click to upload (max 4MB)",
   "form.avatarRequired": "Upload an avatar for public characters",
@@ -250,7 +238,6 @@
   "form.maxTokens": "Max response tokens",
   "form.maxTokensHelp": "Maximum response length. 1 token ≈ 3-4 characters. Default: 2048.",
   "form.tokenBudget": "~{{tokens}} tokens in character description",
-
   "settings.groupAuto": "Auto",
   "settings.autoAll": "All Providers (Auto)",
   "settings.title": "Model & Settings",
@@ -273,12 +260,11 @@
   "settings.presencePenaltyTooltip": "Penalizes words and phrases that already appeared in the dialogue context. Helps avoid repeating the same descriptions from message to message.\n\n0.0 — no penalty.\n0.3 — light penalty, fewer cross-message repeats (recommended).\n0.6 — noticeable penalty, more diverse responses.\n1.0+ — strong penalty, model actively avoids previously mentioned topics.\n\nDefault: 0.3",
   "settings.maxTokens": "Max Tokens",
   "settings.contextLimit": "Memory",
-  "settings.contextLimitTooltip": "How much conversation history the model sees.\n\n4K — ~10-15 messages, fast responses.\n8K — ~25-35 messages, good balance.\n16K — ~50-70 messages, deep context.\n\u221E — no limit, all history (may hit model limits).\n\nOlder messages beyond the limit are \"forgotten\" by the model.\n\nDefault: \u221E (no limit)",
+  "settings.contextLimitTooltip": "How much conversation history the model sees.\n\n4K — ~10-15 messages, fast responses.\n8K — ~25-35 messages, good balance.\n16K — ~50-70 messages, deep context.\n∞ — no limit, all history (may hit model limits).\n\nOlder messages beyond the limit are \"forgotten\" by the model.\n\nDefault: ∞ (no limit)",
   "settings.nsfwBlocked": "This model doesn't support mature content",
   "settings.cerebrasNoPenalty": "Cerebras does not support frequency/presence penalty. These settings will be ignored.",
   "settings.notSupported": "not supported by this model",
   "settings.maxTokensTooltip": "Maximum response length. 1 token ≈ 3-4 characters.\n\n256 — very short (~750 chars).\n1024 — short (~3000 chars).\n2048 — medium (~6000 chars).\n4096 — long (~12000 chars).\n\nHard limit: response will be cut off if exceeded.\n\nDefault: 2048",
-
   "admin.users": "Users",
   "admin.usersTitle": "User Management",
   "admin.usersTotal": "users",
@@ -315,17 +301,14 @@
   "admin.cleanupButton": "Clean Orphans",
   "admin.cleanupResult": "Deleted: {{deleted}}, kept: {{kept}}",
   "admin.seedConfirmDelete": "Delete all starter stories?",
-
   "ageGate.title": "Age Verification",
   "ageGate.message": "This website offers interactive stories with various themes, including violence and dark themes. By continuing, you confirm that you are at least 13 years old.",
   "ageGate.confirm": "I am 13 or older — Enter",
   "ageGate.decline": "I am under 13 — Leave",
   "ageGate.disclaimer": "By entering this site, you agree that you are responsible for viewing this content in accordance with the laws of your country.",
-
   "cookie.message": "We use cookies and local storage to improve your experience.",
   "cookie.learnMore": "Privacy Policy",
   "cookie.accept": "Got it",
-
   "persona.title": "My Personas",
   "persona.subtitle": "Create descriptions of yourself so characters adapt to your persona",
   "persona.create": "Create Persona",
@@ -350,11 +333,9 @@
   "persona.none": "No persona",
   "persona.noneHint": "Use profile display name",
   "persona.empty": "You don't have any personas yet",
-
   "favorites.title": "Favorites",
   "favorites.empty": "You don't have any favorite stories yet",
-  "favorites.emptyHint": "Click \u2764\ufe0f on any story card to add it to favorites",
-
+  "favorites.emptyHint": "Click ❤️ on any story card to add it to favorites",
   "lang.en": "English",
   "lang.es": "Español",
   "lang.ru": "Русский",
@@ -362,11 +343,9 @@
   "lang.de": "Deutsch",
   "lang.pt": "Português",
   "lang.it": "Italiano",
-
   "stats.users": "users",
   "stats.messages": "messages",
   "stats.onlineNow": "online now",
-
   "tags.all": "All",
   "tags.fantasy": "Fantasy",
   "tags.romance": "Romance",
@@ -378,7 +357,6 @@
   "gender.all": "All",
   "gender.male": "Male ♂",
   "gender.female": "Female ♀",
-
   "tagPage.count": "{{count}} stories",
   "tagPage.fantasyDesc": "Fantasy interactive fiction — magic, quests, mythical creatures, and epic adventures. Shape your own legend.",
   "tagPage.romanceDesc": "Romantic interactive stories — love, choices, and relationships. Every decision shapes the story.",
@@ -387,9 +365,7 @@
   "tagPage.sci_fiDesc": "Sci-fi interactive fiction — space exploration, futuristic tech, and cosmic mysteries await.",
   "tagPage.mysteryDesc": "Mystery interactive fiction — solve puzzles, uncover clues, and crack the case.",
   "tagPage.adventureDesc": "Adventure interactive fiction — explore unknown lands, face challenges, and discover treasures.",
-
   "featured.title": "Story of the Day",
-
   "footer.about": "About",
   "footer.terms": "Terms of Service",
   "footer.privacy": "Privacy Policy",
@@ -397,7 +373,6 @@
   "footer.contact": "Contact",
   "footer.popularCharacters": "Popular Stories",
   "footer.copyright": "© {{year}} Interactive Fiction. All rights reserved.",
-
   "about.title": "About Interactive Fiction",
   "about.p1": "Interactive Fiction is a platform for AI-powered choose-your-own-adventure stories. Rich narratives meet advanced language models to create immersive, branching storylines where your choices truly matter.",
   "about.p2": "Powered by multiple free AI providers with auto-fallback — your story never stops. Every response offers meaningful choices that shape the narrative in unexpected ways.",
@@ -425,7 +400,6 @@
   "about.f.privacy.desc": "Your stories and choices are private. Delete your account and all data at any time.",
   "about.teamTitle": "Our Mission",
   "about.teamDesc": "We believe in the power of interactive storytelling. Interactive Fiction brings the magic of choose-your-own-adventure books into the AI era — with rich narratives, meaningful choices, and endless possibilities.",
-
   "terms.title": "Terms of Service",
   "terms.intro": "By using Interactive Fiction, you agree to the following terms:",
   "terms.section1Title": "1. Eligibility",
@@ -436,7 +410,6 @@
   "terms.section3": "You agree not to abuse the platform, attempt to reverse-engineer the service, or use automated tools to scrape content. We reserve the right to suspend accounts that violate these terms.",
   "terms.section4Title": "4. Disclaimer",
   "terms.section4": "Interactive Fiction is provided as-is. We do not guarantee uninterrupted service or specific model availability. Generated content may contain inaccuracies.",
-
   "privacy.title": "Privacy Policy",
   "privacy.intro": "Your privacy matters to us. Here is how we handle your data:",
   "privacy.section1Title": "Data We Collect",
@@ -447,7 +420,6 @@
   "privacy.section3": "We use industry-standard encryption and secure hosting. Passwords are hashed and never stored in plain text.",
   "privacy.section4Title": "Your Rights",
   "privacy.section4": "You can delete your account at any time from your profile page. This permanently removes all your data, stories, and reading history.",
-
   "faq.title": "Frequently Asked Questions",
   "faq.q1": "Is Interactive Fiction free?",
   "faq.a1": "Yes! All stories are completely free to play. We use free AI models from multiple providers with automatic fallback for reliability.",
@@ -473,7 +445,6 @@
   "faq.a11": "Yes! Stories you create can be made public for others to play. Share them via direct link or let others discover them on the homepage.",
   "faq.q12": "Is the content safe for all ages?",
   "faq.a12": "All stories on Interactive Fiction are SFW (safe for work). Content is moderated to ensure a safe and enjoyable experience for everyone.",
-
   "toast.liked": "Added to favorites",
   "toast.unliked": "Removed from favorites",
   "toast.copied": "Copied to clipboard",
@@ -482,18 +453,14 @@
   "toast.chatCleared": "Chat cleared",
   "toast.networkError": "Network error. Please try again.",
   "toast.deleteError": "Failed to delete",
-
   "chat.copyMessage": "Copy",
   "chat.newChat": "New Story",
   "chat.newChatTooltip": "Start a new adventure with this story",
-
   "character.continueChat": "Continue Reading",
   "character.newChat": "New Adventure",
-
   "auth.orDivider": "or",
   "auth.googleSignIn": "Sign in with Google",
   "auth.oauthProcessing": "Signing you in...",
-
   "report.title": "Report Character",
   "report.reason": "Reason",
   "report.details": "Details (optional)",
@@ -506,7 +473,6 @@
   "report.reasonHarassment": "Harassment",
   "report.reasonImpersonation": "Impersonation",
   "report.reasonOther": "Other",
-
   "admin.reports": "Reports",
   "admin.reportsTitle": "Report Management",
   "admin.reportReason": "Reason",
@@ -521,7 +487,6 @@
   "admin.reportStatusPending": "Pending",
   "admin.reportStatusReviewed": "Reviewed",
   "admin.reportStatusDismissed": "Dismissed",
-
   "admin.analytics": "Analytics",
   "admin.analyticsTitle": "Analytics",
   "admin.analyticsSubtitle": "Traffic, users, and content statistics",
@@ -558,7 +523,6 @@
   "admin.analyticsSource_referral": "Referral",
   "admin.analyticsOS": "Operating Systems",
   "admin.analyticsBotViews": "Bot Views",
-
   "admin.notifyRegistration": "Email on registration",
   "admin.notifyRegistrationHint": "Send email to admin when a new user registers",
   "admin.notifyErrors": "Error Alerts",
@@ -571,7 +535,6 @@
   "admin.maxPersonasHint": "Max personas per user (0 = unlimited)",
   "admin.anonLimit": "Anon limit",
   "admin.anonLimitHint": "Max messages for anonymous users (0 = disabled)",
-
   "create.tabImport": "Import",
   "create.importTitle": "Import Character Card",
   "create.importHint": "Upload a SillyTavern/Chub character card (.json) or paste JSON below",
@@ -581,12 +544,10 @@
   "create.importError": "Import failed. Check the file format.",
   "create.importSuccess": "Character imported!",
   "create.importing": "Importing...",
-
   "share.label": "Share",
   "share.copyLink": "Copy link",
   "share.linkCopied": "Link copied!",
   "share.copyFailed": "Failed to copy link",
-
   "character.upvote": "Upvote",
   "character.downvote": "Downvote",
   "character.fork": "Fork",
@@ -597,7 +558,6 @@
   "toast.forked": "Character forked! Redirecting to editor...",
   "toast.forkError": "Failed to fork character",
   "toast.voted": "Vote recorded",
-
   "groupChat.title": "Group Chat",
   "groupChat.characters": "characters",
   "groupChat.isTyping": "is typing...",
@@ -610,25 +570,21 @@
   "groupChat.creating": "Creating...",
   "groupChat.searchPlaceholder": "Search characters...",
   "groupChat.section": "Group Chats",
-
   "seo.home.description": "Interactive fiction powered by AI. Choose your adventure — every decision shapes the story. Fantasy, sci-fi, horror, mystery, and more.",
   "seo.about.description": "About Interactive Fiction — AI-powered choose-your-own-adventure stories across all genres.",
   "seo.terms.description": "Terms of service for Interactive Fiction — AI interactive storytelling platform.",
   "seo.privacy.description": "Privacy policy for Interactive Fiction — how we handle your data and protect your privacy.",
   "seo.faq.description": "Frequently asked questions about Interactive Fiction — AI stories, choices, and creating interactive adventures.",
-
   "anon.limitTitle": "Registration Required",
   "anon.limitMessage": "You've used all your free actions. Create a free account to continue your adventures — it takes just a few seconds!",
   "anon.register": "Create Free Account",
   "anon.later": "Maybe later",
   "anon.messagesLeft": "{{count}} free actions left",
   "anon.registerLink": "Register for unlimited adventures",
-
   "pwa.install": "Install Interactive Fiction",
   "pwa.installDescription": "Add to home screen for quick access and offline use",
   "pwa.installButton": "Install",
   "pwa.later": "Later",
-
   "onboarding.title": "Welcome to Interactive Fiction",
   "onboarding.subtitle": "Let us personalize your experience",
   "onboarding.genderQuestion": "Who interests you?",
@@ -638,5 +594,24 @@
   "onboarding.tagQuestion": "What genre do you prefer?",
   "onboarding.next": "Next",
   "onboarding.finish": "Let's go!",
-  "onboarding.skip": "Skip for now"
+  "onboarding.skip": "Skip for now",
+  "game.campaigns": "Campaigns",
+  "game.newCampaign": "New Campaign",
+  "game.noCampaigns": "No campaigns yet. Create your first adventure!",
+  "game.campaignName": "Campaign Name",
+  "game.campaignNamePlaceholder": "The Lost Mines of Phandelver",
+  "game.description": "Description",
+  "game.descriptionPlaceholder": "A brief description of your adventure...",
+  "game.adventureTemplate": "Adventure Template",
+  "game.selectAdventure": "Select an adventure...",
+  "game.startAdventure": "Start Adventure",
+  "game.deleteCampaignConfirm": "Delete this campaign?",
+  "game.campaignDeleted": "Campaign deleted",
+  "game.sessions": "sessions",
+  "game.session": "Session",
+  "game.newSession": "New Session",
+  "game.noSessions": "No sessions yet.",
+  "game.backToCampaigns": "Back to Campaigns",
+  "game.diceRoller": "Dice Roller",
+  "game.roll": "Roll"
 }

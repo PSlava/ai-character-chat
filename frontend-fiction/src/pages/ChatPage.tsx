@@ -12,6 +12,7 @@ import { useChat } from '@/hooks/useChat';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { ChatInput } from '@/components/chat/ChatInput';
 import ChoiceButtons from '@/components/chat/ChoiceButtons';
+import { DiceResultDisplay } from '@/components/game/DiceRoller';
 import { GenerationSettingsModal, loadModelSettings } from '@/components/chat/GenerationSettingsModal';
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -59,7 +60,7 @@ export function ChatPage() {
   const removeChat = useChatStore((s) => s.removeChat);
   const isAdmin = authUser?.role === 'admin';
 
-  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
+  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
     chatId || ''
   );
   const [showAnonLimit, setShowAnonLimit] = useState(false);
@@ -409,6 +410,14 @@ export function ChatPage() {
         truncated={truncated}
         onResendLast={!isStreaming ? resendLast : undefined}
       />
+
+      {diceRolls && diceRolls.length > 0 && !isStreaming && (
+        <div className="px-4 py-2 space-y-2">
+          {diceRolls.map((roll, i) => (
+            <DiceResultDisplay key={i} result={roll} />
+          ))}
+        </div>
+      )}
 
       {choices && choices.length > 0 && !isStreaming && (
         <ChoiceButtons

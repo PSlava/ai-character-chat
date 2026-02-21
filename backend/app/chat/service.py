@@ -57,6 +57,53 @@ _FICTION_POST_HISTORY = {
     ),
 }
 
+_DND_POST_HISTORY = {
+    "ru": (
+        "[Продолжай как Game Master от второго лица. Сохраняй текущую локацию и состояние боя.\n"
+        "Когда нужен бросок — пиши [ROLL выражение описание]. НЕ бросай кубики сам.\n"
+        "Продвинь сюжет — новое событие, столкновение или открытие.\n"
+        "ОБЯЗАТЕЛЬНО заверши ответ 2-4 пронумерованными вариантами действий.\n"
+        "НЕ повторяй описания из предыдущих ответов.]"
+    ),
+    "en": (
+        "[Continue as Game Master in second person. Maintain current location and combat state.\n"
+        "When a roll is needed — write [ROLL expression description]. Do NOT roll dice yourself.\n"
+        "Advance the plot — a new event, encounter, or discovery.\n"
+        "You MUST end your response with 2-4 numbered action choices.\n"
+        "Do NOT repeat descriptions from previous responses.]"
+    ),
+    "es": (
+        "[Continua como Game Master en segunda persona. Manten la ubicacion y estado de combate.\n"
+        "Para tiradas: [ROLL expresion descripcion]. NO tires dados tu mismo.\n"
+        "Avanza la trama. DEBES terminar con 2-4 opciones numeradas.\n"
+        "NO repitas descripciones de respuestas anteriores.]"
+    ),
+    "fr": (
+        "[Continue comme Maitre du Jeu a la deuxieme personne. Maintiens le lieu et l'etat du combat.\n"
+        "Pour les jets: [ROLL expression description]. NE lance PAS les des toi-meme.\n"
+        "Fais avancer l'intrigue. Tu DOIS terminer par 2-4 options numerotees.\n"
+        "NE repete PAS les descriptions des reponses precedentes.]"
+    ),
+    "de": (
+        "[Setze als Spielleiter in der zweiten Person fort. Behalte Ort und Kampfzustand bei.\n"
+        "Fur Wurfe: [ROLL Ausdruck Beschreibung]. Wurfle NICHT selbst.\n"
+        "Bringe die Handlung voran. Du MUSST mit 2-4 nummerierten Optionen enden.\n"
+        "Wiederhole KEINE Beschreibungen aus vorherigen Antworten.]"
+    ),
+    "pt": (
+        "[Continue como Mestre do Jogo na segunda pessoa. Mantenha local e estado de combate.\n"
+        "Para rolagens: [ROLL expressao descricao]. NAO role dados voce mesmo.\n"
+        "Avance a trama. DEVE terminar com 2-4 opcoes numeradas.\n"
+        "NAO repita descricoes de respostas anteriores.]"
+    ),
+    "it": (
+        "[Continua come Game Master in seconda persona. Mantieni posizione e stato del combattimento.\n"
+        "Per i tiri: [ROLL espressione descrizione]. NON tirare i dadi tu stesso.\n"
+        "Fai avanzare la trama. DEVI terminare con 2-4 opzioni numerate.\n"
+        "NON ripetere descrizioni dalle risposte precedenti.]"
+    ),
+}
+
 _TUTOR_POST_HISTORY = {
     "en": "[Continue as {name}. If the user made language errors, gently correct 1-2 of them. Introduce a new word or phrase naturally. Keep it conversational.]",
     "ru": "[\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0430\u0439 \u043a\u0430\u043a {name}. \u0415\u0441\u043b\u0438 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u043e\u0448\u0438\u0431\u043a\u0438, \u043c\u044f\u0433\u043a\u043e \u0438\u0441\u043f\u0440\u0430\u0432\u044c 1-2. \u0412\u0432\u0435\u0434\u0438 \u043d\u043e\u0432\u043e\u0435 \u0441\u043b\u043e\u0432\u043e \u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d\u043d\u043e. \u0413\u043e\u0432\u043e\u0440\u0438 \u0440\u0430\u0437\u0433\u043e\u0432\u043e\u0440\u043d\u043e.]",
@@ -429,6 +476,12 @@ async def build_conversation_messages(
     }
     messages_data, _ = await get_chat_messages(db, chat_id)  # all messages, no limit
 
+    # Check if this chat is part of a campaign (DnD mode)
+    chat_result_obj = await db.execute(select(Chat).where(Chat.id == chat_id))
+    chat_obj = chat_result_obj.scalar_one_or_none()
+    campaign_id = getattr(chat_obj, 'campaign_id', None) if chat_obj else None
+    encounter_state = getattr(chat_obj, 'encounter_state', None) if chat_obj else None
+
     # Load lore entries for this character
     lore_result = await db.execute(
         select(LoreEntry)
@@ -449,6 +502,7 @@ async def build_conversation_messages(
         language=language, engine=db_engine,
         lore_entries=lore_entries, context_text=context_text,
         site_mode=site_mode,
+        campaign_id=campaign_id, encounter_state=encounter_state,
     )
 
     # context_limit is in "real" tokens; multiply by ~4 for char-based estimation
@@ -486,8 +540,12 @@ async def build_conversation_messages(
         result_list.append(LLMMessage(role="system", content=f"{label}\n{summary}"))
 
     # Post-history reminder (closest to generation = strongest reinforcement)
-    _POST_HISTORY_MAP = {"sfw": _TUTOR_POST_HISTORY, "fiction": _FICTION_POST_HISTORY}
-    post_history_dict = _POST_HISTORY_MAP.get(site_mode, _POST_HISTORY)
+    # Campaign chats use DnD post-history regardless of site_mode
+    if campaign_id:
+        post_history_dict = _DND_POST_HISTORY
+    else:
+        _POST_HISTORY_MAP = {"sfw": _TUTOR_POST_HISTORY, "fiction": _FICTION_POST_HISTORY}
+        post_history_dict = _POST_HISTORY_MAP.get(site_mode, _POST_HISTORY)
     lang = language if language in post_history_dict else "en"
     reminder = post_history_dict[lang].format(name=character.name)
     all_messages = result_list + messages

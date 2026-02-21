@@ -143,6 +143,8 @@ class Chat(Base):
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)  # LLM-generated summary of older messages
     summary_up_to_id: Mapped[str | None] = mapped_column(String, nullable=True)  # last message ID included in summary
     anon_session_id: Mapped[str | None] = mapped_column(String, nullable=True)  # anonymous guest session
+    campaign_id: Mapped[str | None] = mapped_column(ForeignKey("campaigns.id", ondelete="SET NULL"), nullable=True)
+    encounter_state: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -150,6 +152,7 @@ class Chat(Base):
     character: Mapped["Character"] = relationship(back_populates="chats")
     persona: Mapped["Persona | None"] = relationship(back_populates="chats")
     messages: Mapped[list["Message"]] = relationship(back_populates="chat", cascade="all, delete-orphan")
+    campaign: Mapped["Campaign | None"] = relationship(back_populates="sessions_chats", foreign_keys=[campaign_id])
 
 
 class Message(Base):
@@ -163,9 +166,52 @@ class Message(Base):
     prompt_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     completion_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     model_used: Mapped[str | None] = mapped_column(String, nullable=True)
+    dice_rolls: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     chat: Mapped["Chat"] = relationship(back_populates="messages")
+
+
+class Campaign(Base):
+    __tablename__ = "campaigns"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    creator_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    system: Mapped[str] = mapped_column(String, default="dnd5e")
+    status: Mapped[str] = mapped_column(String, default="active")  # active/completed/archived
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    creator: Mapped["User"] = relationship()
+    sessions: Mapped[list["CampaignSession"]] = relationship(back_populates="campaign", cascade="all, delete-orphan")
+    sessions_chats: Mapped[list["Chat"]] = relationship(back_populates="campaign", foreign_keys="Chat.campaign_id")
+
+
+class CampaignSession(Base):
+    __tablename__ = "campaign_sessions"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    campaign_id: Mapped[str] = mapped_column(ForeignKey("campaigns.id", ondelete="CASCADE"))
+    chat_id: Mapped[str | None] = mapped_column(ForeignKey("chats.id", ondelete="SET NULL"), nullable=True)
+    number: Mapped[int] = mapped_column(Integer, nullable=False)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String, default="active")  # active/completed
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    campaign: Mapped["Campaign"] = relationship(back_populates="sessions")
+
+
+class DiceRoll(Base):
+    __tablename__ = "dice_rolls"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    chat_id: Mapped[str] = mapped_column(ForeignKey("chats.id", ondelete="CASCADE"))
+    message_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    expression: Mapped[str] = mapped_column(String, nullable=False)
+    result: Mapped[int] = mapped_column(Integer, nullable=False)
+    details: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class Report(Base):

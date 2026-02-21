@@ -79,3 +79,41 @@ export interface ChatDetail {
   messages: Message[];
   has_more: boolean;
 }
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description: string | null;
+  system: string;
+  status: string;
+  session_count?: number;
+  created_at: string | null;
+}
+
+export interface CampaignSession {
+  id: string;
+  chat_id: string;
+  number: number;
+  summary: string | null;
+  status: string;
+  created_at: string | null;
+}
+
+export interface CampaignDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  system: string;
+  status: string;
+  created_at: string | null;
+  sessions: CampaignSession[];
+}
+
+export interface DiceRollResult {
+  expression: string;
+  rolls: number[];
+  kept: number[] | null;
+  modifier: number;
+  total: number;
+  description: string | null;
+}

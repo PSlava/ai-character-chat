@@ -107,6 +107,10 @@ async def init_db():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS tokens_used_today INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS tokens_used_month INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS tokens_reset_date TIMESTAMP",
+        # DnD/Campaign support
+        "ALTER TABLE chats ADD COLUMN IF NOT EXISTS campaign_id VARCHAR",
+        "ALTER TABLE chats ADD COLUMN IF NOT EXISTS encounter_state JSONB",
+        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS dice_rolls JSONB",
     ]
     for sql in migrations:
         try:

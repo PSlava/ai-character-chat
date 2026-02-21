@@ -25,6 +25,9 @@ router = APIRouter(prefix="/api/chats", tags=["chat"])
 # Pattern to match numbered choices at the end of AI response (e.g. "1. Open the door")
 _CHOICE_PATTERN = _re.compile(r'^(\d+)\.\s+(.+)$', _re.MULTILINE)
 
+# Pattern for dice roll requests from GM: [ROLL expression description]
+_ROLL_PATTERN = _re.compile(r'\[ROLL\s+(\S+)\s*(.*?)\]')
+
 
 def _parse_choices(text: str) -> list[dict] | None:
     """Extract numbered choices from the end of the AI response text.
@@ -52,6 +55,29 @@ def _parse_choices(text: str) -> list[dict] | None:
 
     choices.reverse()
     return choices
+
+def _parse_dice_rolls(text: str) -> list[dict] | None:
+    """Find [ROLL expr description] patterns in AI response and execute rolls."""
+    matches = _ROLL_PATTERN.findall(text)
+    if not matches:
+        return None
+    from app.game.dice import roll as dice_roll
+    results = []
+    for expr, desc in matches:
+        try:
+            result = dice_roll(expr)
+            results.append({
+                "expression": result.expression,
+                "rolls": result.rolls,
+                "kept": result.kept,
+                "modifier": result.modifier,
+                "total": result.total,
+                "description": desc.strip() if desc.strip() else None,
+            })
+        except ValueError:
+            continue
+    return results if results else None
+
 
 # ── Paid mode cache (60s TTL) ─────────────────────────────────
 _paid_mode_cache: tuple[bool, float] = (False, 0.0)
@@ -672,6 +698,11 @@ async def send_message(
                         choices = _parse_choices(complete_text)
                         if choices:
                             done_data['choices'] = choices
+                    # Parse dice rolls for campaign chats
+                    if getattr(chat, 'campaign_id', None):
+                        dice_rolls = _parse_dice_rolls(complete_text)
+                        if dice_rolls:
+                            done_data['dice_rolls'] = dice_rolls
                     if anon_session_id and anon_remaining is not None:
                         done_data['anon_messages_left'] = anon_remaining - 1
                     yield f"data: {json.dumps(done_data)}\n\n"
@@ -750,6 +781,10 @@ async def send_message(
                                 fb_choices = _parse_choices(fb_text)
                                 if fb_choices:
                                     done_data['choices'] = fb_choices
+                            if getattr(chat, 'campaign_id', None):
+                                fb_dice = _parse_dice_rolls(fb_text)
+                                if fb_dice:
+                                    done_data['dice_rolls'] = fb_dice
                             if anon_session_id and anon_remaining is not None:
                                 done_data['anon_messages_left'] = anon_remaining - 1
                             yield f"data: {json.dumps(done_data)}\n\n"
@@ -784,6 +819,10 @@ async def send_message(
                     choices = _parse_choices(complete_text)
                     if choices:
                         done_data['choices'] = choices
+                if getattr(chat, 'campaign_id', None):
+                    dice_rolls = _parse_dice_rolls(complete_text)
+                    if dice_rolls:
+                        done_data['dice_rolls'] = dice_rolls
                 if anon_session_id and anon_remaining is not None:
                     done_data['anon_messages_left'] = anon_remaining - 1
                 yield f"data: {json.dumps(done_data)}\n\n"

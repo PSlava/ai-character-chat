@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getAuthOrAnonToken, deleteChatMessage } from '@/api/chat';
-import type { Message } from '@/types';
+import type { Message, DiceRollResult } from '@/types';
 
 export interface GenerationSettings {
   model?: string;
@@ -21,6 +21,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [truncated, setTruncated] = useState(false);
   const [choices, setChoices] = useState<{number: number; text: string}[] | null>(null);
+  const [diceRolls, setDiceRolls] = useState<DiceRollResult[] | null>(null);
   const [anonLimitReached, setAnonLimitReached] = useState(false);
   const [anonMessagesLeft, setAnonMessagesLeft] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -46,6 +47,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
       setMessages((prev) => [...prev, userMsg]);
       setIsStreaming(true);
       setChoices(null);
+      setDiceRolls(null);
 
       // Add empty assistant message for streaming
       const assistantMsg: Message = {
@@ -124,6 +126,10 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
             // Set choices from fiction mode
             if (data.choices) {
               setChoices(data.choices);
+            }
+            // Set dice rolls from DnD campaign mode
+            if (data.dice_rolls) {
+              setDiceRolls(data.dice_rolls);
             }
             // Track anonymous messages remaining
             if (data.anon_messages_left !== undefined) {
@@ -380,5 +386,5 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
 }

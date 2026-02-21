@@ -147,6 +147,11 @@ app.include_router(analytics_router)
 app.include_router(lore_router)
 app.include_router(group_chat_router)
 
+# Game/campaign routes (fiction mode only)
+if settings.is_fiction_mode:
+    from app.game.router import router as game_router
+    app.include_router(game_router)
+
 # Serve uploaded files (avatars etc.) — must be after routers
 # Create directory before mounting (StaticFiles checks at import time)
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)

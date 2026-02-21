@@ -25,6 +25,8 @@ const AdminUsersPage = lazy(() => import('@/pages/AdminUsersPage').then(m => ({ 
 const AdminAnalyticsPage = lazy(() => import('@/pages/AdminAnalyticsPage').then(m => ({ default: m.AdminAnalyticsPage })));
 const OAuthCallbackPage = lazy(() => import('@/pages/OAuthCallbackPage').then(m => ({ default: m.OAuthCallbackPage })));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const CampaignsPage = lazy(() => import('@/pages/CampaignsPage').then(m => ({ default: m.CampaignsPage })));
+const CampaignDetailPage = lazy(() => import('@/pages/CampaignDetailPage').then(m => ({ default: m.CampaignDetailPage })));
 
 export default function App() {
   return (
@@ -65,6 +67,8 @@ export default function App() {
             <Route path="/admin/prompts" element={<AdminPromptsPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+            <Route path="/campaigns" element={<CampaignsPage />} />
+            <Route path="/campaigns/:campaignId" element={<CampaignDetailPage />} />
           </Route>
         </Routes>
       </Suspense>
