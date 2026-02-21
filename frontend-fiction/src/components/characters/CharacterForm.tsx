@@ -264,7 +264,6 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
           >
             <option value="sfw">SFW</option>
             <option value="moderate">Moderate</option>
-            <option value="nsfw">NSFW</option>
           </select>
         </div>
 

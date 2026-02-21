@@ -197,7 +197,6 @@ export function CreateCharacterPage() {
             >
               <option value="sfw">{t('create.sfwLabel')}</option>
               <option value="moderate">{t('create.moderateLabel')}</option>
-              <option value="nsfw">{t('create.nsfwLabel')}</option>
             </select>
           </div>
 
