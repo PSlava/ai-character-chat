@@ -48,7 +48,10 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
     now = datetime.now(timezone.utc)
     window = f"{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute // 5}"
     seed = int(hashlib.md5(window.encode()).hexdigest()[:8], 16)
-    online_now = 15 + (seed % 31)  # 15-45
+    if settings.is_nsfw_mode:
+        online_now = 15 + (seed % 31)  # 15-45
+    else:
+        online_now = 2 + (seed % 6)  # 2-7
 
     return {
         "users": users + BASE_USERS,
