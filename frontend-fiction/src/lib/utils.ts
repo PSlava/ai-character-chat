@@ -14,6 +14,12 @@ export function formatDate(dateStr: string): string {
   });
 }
 
-export function isCharacterOnline(_characterId: string): boolean {
-  return true;
+export function isCharacterOnline(characterId: string): boolean {
+  const hour = new Date().getHours();
+  const str = characterId + hour;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % 3 === 0;
 }
