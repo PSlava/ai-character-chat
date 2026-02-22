@@ -364,6 +364,108 @@ async def prerender_tag(
 
 @router.get("/faq", response_class=HTMLResponse)
 async def prerender_faq(lang: str = Query("en")):
+    # Fiction-mode FAQ (GrimQuill — interactive fiction & D&D)
+    _faq_fiction = {
+        "en": [
+            ("Is GrimQuill free?", "Yes! All adventures and the AI Game Master are completely free. We use multiple AI providers with automatic fallback to ensure the best experience at no cost."),
+            ("How does interactive fiction work?", "Choose a story, read the opening scene, and make choices that shape the narrative. The AI generates unique responses based on your decisions — no two playthroughs are the same."),
+            ("How does D&D mode work?", "The AI acts as your Game Master running D&D 5e rules. Create a character, explore dungeons, fight monsters, and make decisions. The GM tracks your stats, manages combat, and adapts the story to your choices."),
+            ("How does dice rolling work?", "The AI Game Master rolls dice automatically using standard D&D notation (d20, 2d6+3, etc.). Attack rolls, saving throws, ability checks — all resolved with visible dice results that affect the outcome."),
+            ("What is the combat tracker?", "During encounters, the GM tracks hit points, armor class, conditions, and turn order. You see your character's status and can make tactical decisions each round."),
+            ("Can I create my own adventures?", "Yes! Click 'Create' to build your own interactive fiction story or D&D campaign. Define the setting, characters, and opening scene — the AI handles the rest."),
+            ("Is my progress saved?", "Yes. Your chat history and campaign progress are saved automatically. You can return to any adventure and continue where you left off."),
+            ("What languages are supported?", "The interface supports English, Spanish, Russian, French, German, Portuguese, and Italian. The AI Game Master responds in whatever language you write in."),
+            ("How does the AI Game Master work?", "The GM uses advanced language models to generate narrative responses, manage game mechanics, and adapt to your playstyle. It follows D&D 5e rules while maintaining an engaging story."),
+            ("Can I play with friends?", "Currently GrimQuill is designed for solo play — one player with the AI Game Master. Multiplayer campaigns are on our roadmap for future updates."),
+            ("What D&D rules are supported?", "GrimQuill follows D&D 5e core rules: ability checks, saving throws, attack rolls, spell slots, conditions, and more. The GM handles the mechanics so you can focus on the adventure."),
+            ("Is my data private?", "Yes. Your conversations and campaign data are private and visible only to you. We do not share your data with anyone."),
+        ],
+        "es": [
+            ("¿GrimQuill es gratis?", "¡Sí! Todas las aventuras y el Game Master con IA son completamente gratis. Usamos múltiples proveedores de IA con cambio automático para garantizar la mejor experiencia sin costo."),
+            ("¿Cómo funciona la ficción interactiva?", "Elige una historia, lee la escena inicial y toma decisiones que dan forma a la narrativa. La IA genera respuestas únicas basadas en tus decisiones — ninguna partida es igual."),
+            ("¿Cómo funciona el modo D&D?", "La IA actúa como tu Game Master siguiendo las reglas de D&D 5e. Crea un personaje, explora mazmorras, lucha contra monstruos y toma decisiones. El GM rastrea tus estadísticas y adapta la historia."),
+            ("¿Cómo funcionan las tiradas de dados?", "El Game Master tira dados automáticamente usando notación estándar de D&D (d20, 2d6+3, etc.). Tiradas de ataque, salvación, habilidad — todo se resuelve con resultados visibles."),
+            ("¿Qué es el rastreador de combate?", "Durante los encuentros, el GM rastrea puntos de vida, clase de armadura, condiciones y orden de turno. Ves el estado de tu personaje y puedes tomar decisiones tácticas cada ronda."),
+            ("¿Puedo crear mis propias aventuras?", "¡Sí! Haz clic en 'Crear' para construir tu propia historia interactiva o campaña de D&D. Define el escenario, los personajes y la escena inicial — la IA se encarga del resto."),
+            ("¿Se guarda mi progreso?", "Sí. Tu historial de chat y progreso de campaña se guardan automáticamente. Puedes volver a cualquier aventura y continuar donde lo dejaste."),
+            ("¿Qué idiomas están disponibles?", "La interfaz soporta inglés, español, ruso, francés, alemán, portugués e italiano. El Game Master responde en el idioma en que le escribas."),
+            ("¿Cómo funciona el Game Master con IA?", "El GM usa modelos de lenguaje avanzados para generar respuestas narrativas, gestionar mecánicas de juego y adaptarse a tu estilo. Sigue las reglas de D&D 5e manteniendo una historia envolvente."),
+            ("¿Puedo jugar con amigos?", "Actualmente GrimQuill está diseñado para juego en solitario — un jugador con el Game Master. Las campañas multijugador están en nuestra hoja de ruta."),
+            ("¿Qué reglas de D&D se soportan?", "GrimQuill sigue las reglas básicas de D&D 5e: pruebas de habilidad, salvaciones, ataques, espacios de conjuro, condiciones y más. El GM maneja las mecánicas para que te centres en la aventura."),
+            ("¿Mis datos son privados?", "Sí. Tus conversaciones y datos de campaña son privados y solo visibles para ti. No compartimos tus datos con nadie."),
+        ],
+        "ru": [
+            ("GrimQuill бесплатный?", "Да! Все приключения и AI Game Master полностью бесплатны. Мы используем несколько провайдеров ИИ с автоматическим переключением для лучшего опыта без затрат."),
+            ("Как работает интерактивная фантастика?", "Выберите историю, прочитайте вступительную сцену и принимайте решения, которые формируют сюжет. ИИ генерирует уникальные ответы на основе ваших решений — каждое прохождение уникально."),
+            ("Как работает режим D&D?", "ИИ выступает в роли вашего Game Master по правилам D&D 5e. Создайте персонажа, исследуйте подземелья, сражайтесь с монстрами и принимайте решения. GM отслеживает ваши характеристики и адаптирует историю."),
+            ("Как работают броски кубиков?", "AI Game Master автоматически бросает кубики по стандартной нотации D&D (d20, 2d6+3 и т.д.). Броски атаки, спасброски, проверки способностей — все с видимыми результатами."),
+            ("Что такое трекер боя?", "Во время столкновений GM отслеживает очки здоровья, класс брони, состояния и порядок хода. Вы видите статус персонажа и принимаете тактические решения каждый раунд."),
+            ("Могу ли я создавать свои приключения?", "Да! Нажмите 'Создать', чтобы построить свою интерактивную историю или кампанию D&D. Задайте сеттинг, персонажей и вступительную сцену — ИИ сделает остальное."),
+            ("Мой прогресс сохраняется?", "Да. История чата и прогресс кампании сохраняются автоматически. Вы можете вернуться к любому приключению и продолжить с того места, где остановились."),
+            ("Какие языки поддерживаются?", "Интерфейс поддерживает английский, испанский, русский, французский, немецкий, португальский и итальянский. AI Game Master отвечает на том языке, на котором вы пишете."),
+            ("Как работает AI Game Master?", "GM использует продвинутые языковые модели для генерации нарратива, управления игровыми механиками и адаптации к вашему стилю игры. Он следует правилам D&D 5e, поддерживая увлекательный сюжет."),
+            ("Можно играть с друзьями?", "Сейчас GrimQuill рассчитан на одиночную игру — один игрок с AI Game Master. Мультиплеерные кампании в планах на будущее."),
+            ("Какие правила D&D поддерживаются?", "GrimQuill следует базовым правилам D&D 5e: проверки способностей, спасброски, атаки, ячейки заклинаний, состояния и многое другое. GM берет механику на себя, чтобы вы могли сосредоточиться на приключении."),
+            ("Мои данные приватны?", "Да. Ваши разговоры и данные кампаний приватны и видны только вам. Мы не передаем ваши данные третьим лицам."),
+        ],
+        "fr": [
+            ("GrimQuill est-il gratuit ?", "Oui ! Toutes les aventures et le Game Master IA sont entierement gratuits. Nous utilisons plusieurs fournisseurs d'IA avec basculement automatique pour la meilleure experience sans frais."),
+            ("Comment fonctionne la fiction interactive ?", "Choisissez une histoire, lisez la scene d'ouverture et faites des choix qui faconnent le recit. L'IA genere des reponses uniques basees sur vos decisions — chaque partie est unique."),
+            ("Comment fonctionne le mode D&D ?", "L'IA agit comme votre Game Master en suivant les regles de D&D 5e. Creez un personnage, explorez des donjons, combattez des monstres et prenez des decisions. Le GM suit vos statistiques et adapte l'histoire."),
+            ("Comment fonctionnent les lancers de des ?", "Le Game Master lance les des automatiquement en notation D&D standard (d20, 2d6+3, etc.). Jets d'attaque, de sauvegarde, de competence — tous resolus avec des resultats visibles."),
+            ("Qu'est-ce que le suivi de combat ?", "Pendant les rencontres, le GM suit les points de vie, la classe d'armure, les conditions et l'ordre de tour. Vous voyez l'etat de votre personnage et prenez des decisions tactiques chaque tour."),
+            ("Puis-je creer mes propres aventures ?", "Oui ! Cliquez sur 'Creer' pour construire votre propre fiction interactive ou campagne D&D. Definissez le cadre, les personnages et la scene d'ouverture — l'IA fait le reste."),
+            ("Ma progression est-elle sauvegardee ?", "Oui. Votre historique de chat et votre progression de campagne sont sauvegardes automatiquement. Vous pouvez revenir a n'importe quelle aventure et continuer la ou vous en etiez."),
+            ("Quelles langues sont disponibles ?", "L'interface supporte l'anglais, l'espagnol, le russe, le francais, l'allemand, le portugais et l'italien. Le Game Master repond dans la langue dans laquelle vous ecrivez."),
+            ("Comment fonctionne le Game Master IA ?", "Le GM utilise des modeles de langage avances pour generer des reponses narratives, gerer les mecaniques de jeu et s'adapter a votre style. Il suit les regles de D&D 5e tout en maintenant une histoire captivante."),
+            ("Puis-je jouer avec des amis ?", "Actuellement GrimQuill est concu pour le jeu solo — un joueur avec le Game Master IA. Les campagnes multijoueurs sont prevues dans les futures mises a jour."),
+            ("Quelles regles de D&D sont supportees ?", "GrimQuill suit les regles de base de D&D 5e : tests de competence, jets de sauvegarde, attaques, emplacements de sorts, conditions et plus. Le GM gere les mecaniques pour que vous vous concentriez sur l'aventure."),
+            ("Mes donnees sont-elles privees ?", "Oui. Vos conversations et donnees de campagne sont privees et visibles uniquement par vous. Nous ne partageons vos donnees avec personne."),
+        ],
+        "de": [
+            ("Ist GrimQuill kostenlos?", "Ja! Alle Abenteuer und der KI-Spielleiter sind komplett kostenlos. Wir nutzen mehrere KI-Anbieter mit automatischem Wechsel fuer das beste Erlebnis ohne Kosten."),
+            ("Wie funktioniert interaktive Fiktion?", "Waehle eine Geschichte, lies die Eroeffnungsszene und triff Entscheidungen, die die Handlung formen. Die KI generiert einzigartige Antworten basierend auf deinen Entscheidungen — kein Durchgang gleicht dem anderen."),
+            ("Wie funktioniert der D&D-Modus?", "Die KI agiert als dein Spielleiter nach D&D-5e-Regeln. Erstelle einen Charakter, erkunde Dungeons, kaempfe gegen Monster und triff Entscheidungen. Der GM verfolgt deine Werte und passt die Geschichte an."),
+            ("Wie funktionieren Wuerfelwuerfe?", "Der Spielleiter wuerfelt automatisch in Standard-D&D-Notation (d20, 2d6+3 usw.). Angriffswuerfe, Rettungswuerfe, Faehigkeitsproben — alles mit sichtbaren Ergebnissen."),
+            ("Was ist der Kampftracker?", "Waehrend Begegnungen verfolgt der GM Trefferpunkte, Ruestungsklasse, Zustaende und Zugreihenfolge. Du siehst den Status deines Charakters und triffst jede Runde taktische Entscheidungen."),
+            ("Kann ich eigene Abenteuer erstellen?", "Ja! Klicke auf 'Erstellen', um deine eigene interaktive Geschichte oder D&D-Kampagne zu bauen. Definiere Setting, Charaktere und Eroeffnungsszene — die KI erledigt den Rest."),
+            ("Wird mein Fortschritt gespeichert?", "Ja. Dein Chatverlauf und Kampagnenfortschritt werden automatisch gespeichert. Du kannst zu jedem Abenteuer zurueckkehren und dort weitermachen, wo du aufgehoert hast."),
+            ("Welche Sprachen werden unterstuetzt?", "Die Oberflaeche unterstuetzt Englisch, Spanisch, Russisch, Franzoesisch, Deutsch, Portugiesisch und Italienisch. Der Spielleiter antwortet in der Sprache, in der du schreibst."),
+            ("Wie funktioniert der KI-Spielleiter?", "Der GM nutzt fortschrittliche Sprachmodelle, um Erzaehlungen zu generieren, Spielmechaniken zu verwalten und sich an deinen Spielstil anzupassen. Er folgt den D&D-5e-Regeln und haelt die Geschichte spannend."),
+            ("Kann ich mit Freunden spielen?", "Derzeit ist GrimQuill fuer Einzelspieler konzipiert — ein Spieler mit dem KI-Spielleiter. Mehrspieler-Kampagnen sind fuer zukuenftige Updates geplant."),
+            ("Welche D&D-Regeln werden unterstuetzt?", "GrimQuill folgt den D&D-5e-Grundregeln: Faehigkeitsproben, Rettungswuerfe, Angriffe, Zauberplaetze, Zustaende und mehr. Der GM uebernimmt die Mechanik, damit du dich auf das Abenteuer konzentrieren kannst."),
+            ("Sind meine Daten privat?", "Ja. Deine Gespraeche und Kampagnendaten sind privat und nur fuer dich sichtbar. Wir geben deine Daten an niemanden weiter."),
+        ],
+        "pt": [
+            ("O GrimQuill e gratuito?", "Sim! Todas as aventuras e o Mestre de Jogo com IA sao completamente gratuitos. Usamos multiplos provedores de IA com troca automatica para garantir a melhor experiencia sem custo."),
+            ("Como funciona a ficcao interativa?", "Escolha uma historia, leia a cena de abertura e faca escolhas que moldam a narrativa. A IA gera respostas unicas baseadas nas suas decisoes — nenhuma partida e igual."),
+            ("Como funciona o modo D&D?", "A IA atua como seu Mestre de Jogo seguindo as regras de D&D 5e. Crie um personagem, explore masmorras, lute contra monstros e tome decisoes. O GM rastreia suas estatisticas e adapta a historia."),
+            ("Como funcionam as rolagens de dados?", "O Mestre de Jogo rola dados automaticamente usando notacao padrao de D&D (d20, 2d6+3, etc.). Rolagens de ataque, salvamento, habilidade — todas resolvidas com resultados visiveis."),
+            ("O que e o rastreador de combate?", "Durante encontros, o GM rastreia pontos de vida, classe de armadura, condicoes e ordem de turno. Voce ve o status do seu personagem e pode tomar decisoes taticas a cada rodada."),
+            ("Posso criar minhas proprias aventuras?", "Sim! Clique em 'Criar' para construir sua propria ficcao interativa ou campanha de D&D. Defina o cenario, personagens e cena de abertura — a IA cuida do resto."),
+            ("Meu progresso e salvo?", "Sim. Seu historico de chat e progresso de campanha sao salvos automaticamente. Voce pode voltar a qualquer aventura e continuar de onde parou."),
+            ("Quais idiomas sao suportados?", "A interface suporta ingles, espanhol, russo, frances, alemao, portugues e italiano. O Mestre de Jogo responde no idioma em que voce escreve."),
+            ("Como funciona o Mestre de Jogo com IA?", "O GM usa modelos de linguagem avancados para gerar respostas narrativas, gerenciar mecanicas de jogo e se adaptar ao seu estilo. Segue as regras de D&D 5e mantendo uma historia envolvente."),
+            ("Posso jogar com amigos?", "Atualmente o GrimQuill e projetado para jogo solo — um jogador com o Mestre de Jogo IA. Campanhas multiplayer estao no nosso roteiro para futuras atualizacoes."),
+            ("Quais regras de D&D sao suportadas?", "GrimQuill segue as regras basicas de D&D 5e: testes de habilidade, salvamentos, ataques, espacos de magia, condicoes e mais. O GM gerencia as mecanicas para que voce foque na aventura."),
+            ("Meus dados sao privados?", "Sim. Suas conversas e dados de campanha sao privados e visiveis apenas para voce. Nao compartilhamos seus dados com ninguem."),
+        ],
+        "it": [
+            ("GrimQuill e gratuito?", "Si! Tutte le avventure e il Game Master IA sono completamente gratuiti. Utilizziamo piu fornitori di IA con cambio automatico per garantire la migliore esperienza senza costi."),
+            ("Come funziona la narrativa interattiva?", "Scegli una storia, leggi la scena di apertura e fai scelte che plasmano la trama. L'IA genera risposte uniche basate sulle tue decisioni — ogni partita e diversa."),
+            ("Come funziona la modalita D&D?", "L'IA agisce come il tuo Game Master seguendo le regole di D&D 5e. Crea un personaggio, esplora dungeon, combatti mostri e prendi decisioni. Il GM tiene traccia delle tue statistiche e adatta la storia."),
+            ("Come funzionano i tiri di dado?", "Il Game Master tira i dadi automaticamente usando la notazione D&D standard (d20, 2d6+3, ecc.). Tiri di attacco, tiri salvezza, prove di abilita — tutti risolti con risultati visibili."),
+            ("Cos'e il tracker di combattimento?", "Durante gli scontri, il GM tiene traccia di punti ferita, classe armatura, condizioni e ordine di turno. Vedi lo stato del tuo personaggio e prendi decisioni tattiche ogni turno."),
+            ("Posso creare le mie avventure?", "Si! Clicca 'Crea' per costruire la tua narrativa interattiva o campagna D&D. Definisci l'ambientazione, i personaggi e la scena di apertura — l'IA fa il resto."),
+            ("I miei progressi vengono salvati?", "Si. La cronologia delle chat e i progressi della campagna vengono salvati automaticamente. Puoi tornare a qualsiasi avventura e continuare da dove avevi lasciato."),
+            ("Quali lingue sono supportate?", "L'interfaccia supporta inglese, spagnolo, russo, francese, tedesco, portoghese e italiano. Il Game Master risponde nella lingua in cui scrivi."),
+            ("Come funziona il Game Master IA?", "Il GM utilizza modelli linguistici avanzati per generare risposte narrative, gestire le meccaniche di gioco e adattarsi al tuo stile. Segue le regole di D&D 5e mantenendo una storia avvincente."),
+            ("Posso giocare con gli amici?", "Attualmente GrimQuill e progettato per il gioco in solitario — un giocatore con il Game Master IA. Le campagne multiplayer sono nella nostra roadmap per futuri aggiornamenti."),
+            ("Quali regole di D&D sono supportate?", "GrimQuill segue le regole base di D&D 5e: prove di abilita, tiri salvezza, attacchi, slot incantesimo, condizioni e altro. Il GM gestisce le meccaniche per farti concentrare sull'avventura."),
+            ("I miei dati sono privati?", "Si. Le tue conversazioni e i dati delle campagne sono privati e visibili solo a te. Non condividiamo i tuoi dati con nessuno."),
+        ],
+    }
+
     # FAQ Q&A pairs per language — synced with frontend locales (12 questions)
     _faq = {
         "en": [
@@ -484,10 +586,21 @@ async def prerender_faq(lang: str = Query("en")):
         "pt": "Perguntas frequentes sobre SweetSin — chat com personagens IA, roleplay, modelos, personas, chats em grupo e mais.",
         "it": "Domande frequenti su SweetSin — chat con personaggi IA, gioco di ruolo, modelli, persona, chat di gruppo e altro.",
     }
+    _faq_descriptions_fiction = {
+        "en": "Frequently asked questions about GrimQuill — AI interactive fiction, D&D Game Master, dice rolling, combat, and adventures.",
+        "es": "Preguntas frecuentes sobre GrimQuill — ficcion interactiva con IA, Game Master de D&D, dados, combate y aventuras.",
+        "ru": "Часто задаваемые вопросы о GrimQuill — интерактивная фантастика с ИИ, D&D Game Master, кубики, бой и приключения.",
+        "fr": "Questions frequentes sur GrimQuill — fiction interactive IA, Game Master D&D, des, combat et aventures.",
+        "de": "Haeufig gestellte Fragen zu GrimQuill — KI-interaktive Fiktion, D&D-Spielleiter, Wuerfel, Kampf und Abenteuer.",
+        "pt": "Perguntas frequentes sobre GrimQuill — ficcao interativa com IA, Mestre de Jogo D&D, dados, combate e aventuras.",
+        "it": "Domande frequenti su GrimQuill — narrativa interattiva IA, Game Master D&D, dadi, combattimento e avventure.",
+    }
 
-    pairs = [(_brand(q), _brand(a)) for q, a in _faq.get(lang, _faq["en"])]
+    faq_source = _faq_fiction if settings.is_fiction_mode else _faq
+    desc_source = _faq_descriptions_fiction if settings.is_fiction_mode else _faq_descriptions
+    pairs = [(_brand(q), _brand(a)) for q, a in faq_source.get(lang, faq_source["en"])]
     faq_title = _faq_titles.get(lang, _faq_titles["en"])
-    faq_desc = _brand(_faq_descriptions.get(lang, _faq_descriptions["en"]))
+    faq_desc = _brand(desc_source.get(lang, desc_source["en"]))
     canonical = f"{SITE_URL}/{lang}/faq"
 
     qa_html = "\n".join(
@@ -531,6 +644,7 @@ async def prerender_faq(lang: str = Query("en")):
 @router.get("/about", response_class=HTMLResponse)
 async def prerender_about(lang: str = Query("en")):
     _titles = {"en": "About SweetSin", "es": "Acerca de SweetSin", "ru": "О SweetSin", "fr": "À propos de SweetSin", "de": "Über SweetSin", "pt": "Sobre o SweetSin", "it": "Informazioni su SweetSin"}
+    _titles_fiction = {"en": "About GrimQuill", "es": "Acerca de GrimQuill", "ru": "О GrimQuill", "fr": "À propos de GrimQuill", "de": "Über GrimQuill", "pt": "Sobre o GrimQuill", "it": "Informazioni su GrimQuill"}
     _descriptions = {
         "en": "SweetSin is a platform for creative roleplay and character-driven conversations. Richly detailed character profiles meet multiple language models to create immersive, literary-quality chat experiences.",
         "es": "SweetSin es una plataforma de roleplay creativo y conversaciones con personajes. Perfiles detallados combinados con m\u00faltiples modelos de lenguaje para crear experiencias de chat inmersivas con calidad literaria.",
@@ -540,8 +654,19 @@ async def prerender_about(lang: str = Query("en")):
         "pt": "SweetSin \u00e9 uma plataforma para roleplay criativo e conversas focadas em personagens. Perfis ricamente detalhados combinados com m\u00faltiplos modelos de linguagem para experi\u00eancias de chat imersivas e com qualidade liter\u00e1ria.",
         "it": "SweetSin \u00e8 una piattaforma per roleplay creativo e conversazioni guidate dai personaggi. Profili ricchi di dettagli combinati con molteplici modelli linguistici per esperienze di chat immersive e di qualit\u00e0 letteraria.",
     }
-    title = _brand(_titles.get(lang, _titles["en"]))
-    desc = _brand(_descriptions.get(lang, _descriptions["en"]))
+    _descriptions_fiction = {
+        "en": "GrimQuill is an AI-powered interactive fiction and D&D Game Master platform. Choose your path through branching stories, roll dice in tabletop adventures, and shape narratives with every decision.",
+        "es": "GrimQuill es una plataforma de ficcion interactiva y Game Master de D&D impulsada por IA. Elige tu camino en historias ramificadas, tira dados en aventuras de mesa y da forma a las narrativas con cada decision.",
+        "ru": "GrimQuill -- платформа интерактивной фантастики и D&D Game Master на основе ИИ. Выбирайте путь в ветвящихся историях, бросайте кубики в настольных приключениях и формируйте сюжет каждым решением.",
+        "fr": "GrimQuill est une plateforme de fiction interactive et de Game Master D&D alimentee par l'IA. Choisissez votre voie dans des histoires a embranchements, lancez les des et faconnez le recit a chaque decision.",
+        "de": "GrimQuill ist eine KI-gesteuerte Plattform fuer interaktive Fiktion und D&D-Spielleitung. Waehle deinen Weg durch verzweigte Geschichten, wuerfle in Tabletop-Abenteuern und forme die Handlung mit jeder Entscheidung.",
+        "pt": "GrimQuill e uma plataforma de ficcao interativa e Mestre de Jogo D&D com IA. Escolha seu caminho em historias ramificadas, role dados em aventuras de mesa e molde narrativas com cada decisao.",
+        "it": "GrimQuill e una piattaforma di narrativa interattiva e Game Master D&D alimentata dall'IA. Scegli il tuo percorso in storie ramificate, tira i dadi in avventure da tavolo e plasma la trama con ogni decisione.",
+    }
+    t_src = _titles_fiction if settings.is_fiction_mode else _titles
+    d_src = _descriptions_fiction if settings.is_fiction_mode else _descriptions
+    title = _brand(t_src.get(lang, t_src["en"]))
+    desc = _brand(d_src.get(lang, d_src["en"]))
     canonical = f"{SITE_URL}/{lang}/about"
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([(SITE_NAME, SITE_URL), (title, None)]), ensure_ascii=False)
 
@@ -584,8 +709,18 @@ async def prerender_terms(lang: str = Query("en")):
         "pt": "Termos de Uso do SweetSin — plataforma de chat com personagens IA. Elegibilidade, regras de conteúdo, uso aceitável e isenções.",
         "it": "Termini di servizio di SweetSin — piattaforma di chat con personaggi IA. Idoneità, regole sui contenuti, uso accettabile e dichiarazioni di non responsabilità.",
     }
+    _descriptions_fiction = {
+        "en": "Terms of Service for GrimQuill — AI interactive fiction and D&D Game Master platform. Eligibility, user content rules, acceptable use, and disclaimers.",
+        "es": "Terminos de servicio de GrimQuill — plataforma de ficcion interactiva y Game Master D&D con IA. Elegibilidad, reglas de contenido, uso aceptable y descargos.",
+        "ru": "Условия использования GrimQuill -- платформы интерактивной фантастики и D&D Game Master с ИИ. Требования, правила контента, допустимое использование и отказ от ответственности.",
+        "fr": "Conditions d'utilisation de GrimQuill -- plateforme de fiction interactive et Game Master D&D avec IA. Eligibilite, regles de contenu, utilisation acceptable et avertissements.",
+        "de": "Nutzungsbedingungen von GrimQuill -- KI-Plattform fuer interaktive Fiktion und D&D-Spielleitung. Berechtigung, Inhaltsregeln, akzeptable Nutzung und Haftungsausschluesse.",
+        "pt": "Termos de Uso do GrimQuill -- plataforma de ficcao interativa e Mestre de Jogo D&D com IA. Elegibilidade, regras de conteudo, uso aceitavel e isencoes.",
+        "it": "Termini di servizio di GrimQuill -- piattaforma di narrativa interattiva e Game Master D&D con IA. Idoneita, regole sui contenuti, uso accettabile e dichiarazioni di non responsabilita.",
+    }
+    d_src = _descriptions_fiction if settings.is_fiction_mode else _descriptions
     title = _brand(_titles.get(lang, _titles["en"]))
-    desc = _brand(_descriptions.get(lang, _descriptions["en"]))
+    desc = _brand(d_src.get(lang, d_src["en"]))
     canonical = f"{SITE_URL}/{lang}/terms"
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([(SITE_NAME, SITE_URL), (title, None)]), ensure_ascii=False)
 
@@ -624,8 +759,18 @@ async def prerender_privacy(lang: str = Query("en")):
         "pt": "Política de Privacidade do SweetSin — como coletamos, usamos e protegemos seus dados. Suas conversas são privadas.",
         "it": "Informativa sulla privacy di SweetSin — come raccogliamo, utilizziamo e proteggiamo i tuoi dati. Le tue conversazioni sono private.",
     }
+    _descriptions_fiction = {
+        "en": "Privacy Policy for GrimQuill — how we collect, use, and protect your data. Your adventures and conversations are private.",
+        "es": "Politica de privacidad de GrimQuill -- como recopilamos, usamos y protegemos tus datos. Tus aventuras y conversaciones son privadas.",
+        "ru": "Политика конфиденциальности GrimQuill -- как мы собираем, используем и защищаем ваши данные. Ваши приключения и разговоры приватны.",
+        "fr": "Politique de confidentialite de GrimQuill -- comment nous collectons, utilisons et protegeons vos donnees. Vos aventures et conversations sont privees.",
+        "de": "Datenschutzrichtlinie von GrimQuill -- wie wir Ihre Daten erheben, verwenden und schuetzen. Ihre Abenteuer und Gespraeche sind privat.",
+        "pt": "Politica de Privacidade do GrimQuill -- como coletamos, usamos e protegemos seus dados. Suas aventuras e conversas sao privadas.",
+        "it": "Informativa sulla privacy di GrimQuill -- come raccogliamo, utilizziamo e proteggiamo i tuoi dati. Le tue avventure e conversazioni sono private.",
+    }
+    d_src = _descriptions_fiction if settings.is_fiction_mode else _descriptions
     title = _brand(_titles.get(lang, _titles["en"]))
-    desc = _brand(_descriptions.get(lang, _descriptions["en"]))
+    desc = _brand(d_src.get(lang, d_src["en"]))
     canonical = f"{SITE_URL}/{lang}/privacy"
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([(SITE_NAME, SITE_URL), (title, None)]), ensure_ascii=False)
 

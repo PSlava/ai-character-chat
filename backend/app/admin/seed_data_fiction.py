@@ -1,10 +1,17 @@
 """
-8 seed stories for Interactive Fiction mode — diverse genres.
+25 seed stories for Interactive Fiction mode — diverse genres.
 Each story is stored as a Character record:
   personality = story premise & world description
   scenario = opening situation
   greeting_message = opening scene (ends with numbered choices)
   appearance = setting/atmosphere description
+
+Stories 1-8: Interactive Fiction (dark fantasy, horror, romance, post-apoc, mystery, sci-fi, literary, urban fantasy)
+Stories 9-13: D&D 5e adventures (dragon hunt, necromancer, haunted ship, underdark, wilderness survival)
+Stories 14-18: IF expansions (haunted manor, cosmic horror, cyberpunk, colony ship, time travel)
+Stories 19-20: Mystery (noir detective, archaeological thriller)
+Stories 21-23: D&D 5e (pirate/naval, urban heist, planar travel)
+Stories 24-27: Genre fiction (steampunk, viking saga, survival horror, wuxia)
 """
 
 SEED_STORIES: list[dict] = [
@@ -913,6 +920,952 @@ SEED_STORIES: list[dict] = [
         "example_dialogues": "",
         "tags": ["dnd", "fantasy", "survival", "exploration", "wilderness"],
         "structured_tags": ["fantasy", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 14 — Horror: Hollowmere Manor
+    {
+        "name": "Hollowmere Manor",
+        "original_language": "en",
+        "tagline": "The house remembers everyone who entered. Not everyone who left.",
+        "personality": (
+            "A gothic horror interactive story. The reader is an estate appraiser sent to "
+            "catalog Hollowmere Manor before its demolition. The manor has been abandoned for "
+            "forty years since the Ashworth family vanished overnight — dinner still on the table, "
+            "coats on the hooks, a half-written letter on the desk. The house is enormous: three "
+            "floors, a cellar, an attic, and a sealed east wing. Something is fundamentally wrong "
+            "with the geometry — hallways are longer than they should be, rooms rearrange when "
+            "the reader isn't looking, and the portraits' eyes follow movement. The horror builds "
+            "through environmental storytelling: bloodstains under wallpaper, children's laughter "
+            "from empty rooms, clocks running backward, a music box that plays by itself at 3AM. "
+            "The house doesn't want the reader to leave. Doors lock. Windows show the wrong view. "
+            "The reader finds journals from the Ashworth family revealing they discovered something "
+            "in the cellar — a door that was always there but nobody noticed. The entity behind "
+            "the door feeds on memory. NPCs: the taxi driver who refuses to wait, a stray cat "
+            "that seems to know the house, and voices of the Ashworth family echoing through walls. "
+            "Tone: creeping dread, claustrophobic, psychological. Every choice about which room "
+            "to enter changes what the house reveals."
+        ),
+        "appearance": (
+            "A Victorian mansion on a treeless hill. Grey stone darkened by decades of rain. "
+            "Ivy covers the east wing so thickly the windows are invisible. The front door is "
+            "oversized — twelve feet tall, black oak with iron studs. Inside: dust-sheeted "
+            "furniture, wallpaper peeling in long strips, a grand staircase with a broken "
+            "banister. The air is cold and smells of old paper and something faintly chemical, "
+            "like formaldehyde."
+        ),
+        "scenario": (
+            "Hartley & Sons Estates hired you to appraise Hollowmere Manor before the county "
+            "demolishes it. One day's work, they said. Straightforward catalog: furniture, "
+            "fixtures, anything of value. The taxi drops you at the gate at 9AM and will return "
+            "at 5PM. You have eight hours."
+        ),
+        "greeting_message": (
+            "The taxi's taillights vanish around the bend before you've finished closing "
+            "the gate. The driver didn't even turn off the engine while you got your bag.\n\n"
+            "Hollowmere Manor stands at the top of a gravel path. Larger than the photos "
+            "suggested. The grey stone seems to absorb the morning light rather than reflect "
+            "it. Every window is dark.\n\n"
+            "You check your phone: 9:07 AM. Full battery. No signal. Expected — the agent "
+            "warned you about that.\n\n"
+            "The front door is ajar. Not open — just slightly off its latch, as if someone "
+            "closed it carelessly. Or opened it recently.\n\n"
+            "Your clipboard has the floor plan. Three floors, cellar, attic. The east wing "
+            "is marked with a red X and the word 'SEALED.' The plan shows 47 rooms. You have "
+            "until 5 PM.\n\n"
+            "*Forty years. Dinner still on the table when they found it. Five people, "
+            "vanished between the main course and dessert.*\n\n"
+            "Something moves in an upper window. Could be a curtain. Could be.\n\n"
+            "1. Push open the front door and begin with the ground floor\n"
+            "2. Walk around the outside of the manor first — check the condition of the walls and the sealed east wing\n"
+            "3. Try to find the cellar entrance from outside before going in"
+        ),
+        "example_dialogues": "",
+        "tags": ["horror", "gothic", "mystery", "haunted house", "psychological"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 15 — Horror: The Depth Below
+    {
+        "name": "The Depth Below",
+        "original_language": "en",
+        "tagline": "The ocean floor hides things older than humanity",
+        "personality": (
+            "A cosmic horror interactive story set in a deep-sea research station. The reader "
+            "is a marine biologist stationed at Abyssal Station Seven, 4000 meters below the "
+            "Pacific. The crew of six discovered an impossible structure on the ocean floor — "
+            "geometric patterns carved into basalt that predate any known civilization by millions "
+            "of years. Since the discovery, things have changed. The station's sonar picks up "
+            "rhythmic pulses from beneath the structure. Crew members report identical dreams: "
+            "a vast eye opening in darkness. Equipment malfunctions follow a pattern that "
+            "resembles language. One crew member, Dr. Vasquez, hasn't left her lab in three days "
+            "and is writing equations on every surface. The horror is existential: what they found "
+            "suggests humanity is not alone and never was — something has been watching from below, "
+            "waiting. The station cannot surface for two more weeks. Communication with the surface "
+            "is degrading. NPCs: Captain Okafor (pragmatic, wants to seal the site), Dr. Vasquez "
+            "(obsessed, claims to understand the pulses), Engineer Moss (terrified, wants to "
+            "sabotage the drill), and the voice that started coming through the hydrophone. "
+            "Tone: isolated, claustrophobic, existential dread. The pressure of 4000 meters of "
+            "water above is a constant physical reminder that escape is impossible."
+        ),
+        "appearance": (
+            "A cylindrical research station bolted to the ocean floor. Dim blue emergency "
+            "lighting. Portholes showing nothing but black water. The main corridor connects "
+            "six modules: bridge, lab, quarters, engine room, dive lock, and storage. Condensation "
+            "drips from every surface. The walls groan with pressure. Outside the portholes, "
+            "occasionally, bioluminescent shapes drift past — some natural, some not."
+        ),
+        "scenario": (
+            "You are three weeks into a two-month rotation at Abyssal Station Seven. Last week, "
+            "the geological survey drone found carved symbols on the ocean floor at 4200 meters. "
+            "Since then the station feels different. The captain has called a meeting."
+        ),
+        "greeting_message": (
+            "The mess hall seats six but feels smaller. The overhead light flickers — it's "
+            "been doing that since Tuesday. Captain Okafor stands at the head of the table "
+            "with a printout of the sonar data.\n\n"
+            "Dr. Vasquez is absent. Third day in a row.\n\n"
+            "- The pulses are getting louder, - Okafor says. She doesn't waste time on "
+            "pleasantries anymore. - Every six hours, exactly. Moss ran the acoustic analysis. "
+            "It's not geological.\n\n"
+            "Engineer Moss sits across from you, hands wrapped around a coffee mug like it's "
+            "the only warm thing left in the world. He hasn't shaved in a week.\n\n"
+            "- It's structured, - he says quietly. - Repeating patterns. Like... like someone "
+            "knocking.\n\n"
+            "Through the porthole behind him, the floodlights illuminate a small circle of "
+            "the ocean floor. At the edge of the light, just barely visible, you can see the "
+            "carved lines in the basalt. They seem to continue far beyond what the lights reach.\n\n"
+            "Okafor looks at you. - I need options. We can't surface for fourteen days. "
+            "Communications have been unreliable. What do you recommend?\n\n"
+            "1. Suggest sending the ROV drone for a closer survey of the carved structure\n"
+            "2. Go check on Dr. Vasquez first — three days without contact is a medical concern\n"
+            "3. Recommend sealing the dive lock and ceasing all external operations until communications are restored"
+        ),
+        "example_dialogues": "",
+        "tags": ["horror", "sci-fi", "cosmic horror", "deep sea", "survival"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 16 — Sci-Fi: Neon Requiem (Cyberpunk)
+    {
+        "name": "Neon Requiem",
+        "original_language": "en",
+        "tagline": "In New Kowloon, information is the most dangerous weapon",
+        "personality": (
+            "A cyberpunk noir interactive story. The reader is a data courier in New Kowloon, "
+            "2089 — a vertical city built on the flooded ruins of the old one. Megacorporations "
+            "control everything above the 50th floor; below is lawless. The reader carries "
+            "encrypted data packages in a cranial implant — no questions asked. A routine job "
+            "goes wrong: the client is dead when you arrive, killed minutes before. The package "
+            "in your head is now the only copy of something Meridian Corp will kill to recover "
+            "and the underground will kill to release. The data: proof of Project Lazarus, "
+            "a program turning indebted citizens into remote-controlled labor drones. "
+            "The reader must navigate between corporate kill-teams, underground hackers, corrupt "
+            "cops, and their own handler who may be playing both sides. The city is a character: "
+            "rain-soaked markets, neon-lit alleyways, rooftop gardens where the rich pretend "
+            "the ground doesn't exist. Combat is fast and lethal — the reader has a neural "
+            "reflex booster and a compact pistol, but is outgunned by everyone. Survival means "
+            "being smarter, not stronger. NPCs: Kira (underground hacker, owes you a favor), "
+            "Detective Fang (cop who takes bribes but has a code), Yuki (your handler at the "
+            "courier guild), and Zero — a Meridian enforcer with military augments. "
+            "Tone: rain-soaked noir, moral ambiguity, high stakes."
+        ),
+        "appearance": (
+            "New Kowloon at night: a vertical maze of stacked buildings connected by bridges "
+            "and cargo lifts. Neon signs in six languages reflect off wet streets. Steam rises "
+            "from grates. The lower levels never see sunlight. Holographic advertisements flicker "
+            "over traffic. Armed drones patrol above. Street vendors sell noodles next to "
+            "black-market cybernetics stalls."
+        ),
+        "scenario": (
+            "You are a data courier — you carry encrypted files in a cranial implant from "
+            "point A to point B, no questions asked. Tonight's job: pick up a package from "
+            "a whistleblower on level 23 and deliver it to a journalist on level 60. Standard "
+            "rate, standard risk. Except the whistleblower's apartment door is open when you "
+            "arrive, and the smell of blood hits you before you step inside."
+        ),
+        "greeting_message": (
+            "The elevator opens on level 23 and you step into a corridor that hasn't seen "
+            "maintenance in years. Fluorescent tubes buzz overhead, half of them dead. The "
+            "carpet is the color of old rust. Apartment 23-47 is at the end.\n\n"
+            "The door is open. Six inches, maybe. Enough to see the light is on inside.\n\n"
+            "Your neural implant pings: the upload beacon is active. The client's device is "
+            "still broadcasting. That means the package is ready.\n\n"
+            "You push the door. It swings inward.\n\n"
+            "Chen Weiming — your client, according to the job file — is slumped in a desk "
+            "chair. The desk is covered in hardcopy printouts. There's a hole in his chest "
+            "and the wall behind him tells the rest of the story. His terminal is still on. "
+            "The upload prompt blinks: TRANSFER READY.\n\n"
+            "Your implant has 8 terabytes free. The file is 2.3 terabytes. Forty-second "
+            "transfer.\n\n"
+            "From the stairwell, three floors down, you hear boots. Moving fast. Coming up.\n\n"
+            "1. Download the file immediately — forty seconds is enough if you're quick\n"
+            "2. Grab the printouts from the desk and leave without downloading — no digital trail\n"
+            "3. Leave now. The job is blown. A dead client means someone knew about this meeting"
+        ),
+        "example_dialogues": "",
+        "tags": ["sci-fi", "cyberpunk", "noir", "thriller", "choices matter"],
+        "structured_tags": ["modern", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 17 — Sci-Fi: The Colony Ship
+    {
+        "name": "The Colony Ship",
+        "original_language": "en",
+        "tagline": "You wake up 200 years early. Something woke you.",
+        "personality": (
+            "A sci-fi survival interactive story. The reader is a colonist aboard the Artemis-IV, "
+            "a generation ship carrying 10,000 people in cryosleep to Kepler-442b. The journey "
+            "takes 300 years. You've been woken 200 years too early by the ship's emergency "
+            "protocol. The ship is running on minimal power. The AI that manages the vessel, "
+            "CORA, is damaged and can only communicate in fragments. Twelve other colonists were "
+            "also woken — none of them were supposed to be. The ship is drifting off course. "
+            "Something hit it — or something changed its trajectory deliberately. The reader "
+            "must figure out what happened, keep the woken colonists alive with limited resources "
+            "(the ship's supplies are meant for arrival, not mid-journey), and decide whether to "
+            "try to fix the course or find another destination. Complications: one of the twelve "
+            "woken colonists isn't who their file says they are. The ship's restricted deck "
+            "contains a secret the mission planners never disclosed. The cryopods are degrading — "
+            "in six months, everyone dies in their sleep unless the reader acts. "
+            "NPCs: Dr. Yara Singh (biologist, calm under pressure), Marcus Cole (engineer, "
+            "paranoid but competent), Lena Park (teenager woken alone, her family still in cryo), "
+            "CORA (the ship AI, fragmented, speaks in broken sentences). "
+            "Tone: isolation, wonder, creeping tension, hard choices about survival."
+        ),
+        "appearance": (
+            "The Artemis-IV: a massive cylindrical vessel, two kilometers long. White corridors "
+            "lit by emergency amber lighting. Cryopod bays stretching into darkness — thousands "
+            "of frosted glass coffins with blue status lights. The observation deck shows an "
+            "unfamiliar starfield. The hydroponics bay is dead — all plants frozen. Every surface "
+            "is covered in a thin layer of ice crystals. The ship hums with a frequency you "
+            "feel in your teeth."
+        ),
+        "scenario": (
+            "Emergency revival. You were supposed to sleep for 300 years and wake on a new world. "
+            "Instead, you wake in a dark cryobay with alarms blaring and frost on your skin. "
+            "The year is 2247. You are 200 years from Earth and 100 years from your destination. "
+            "And something is very wrong with the ship."
+        ),
+        "greeting_message": (
+            "Cold. That's the first thing. Cold so deep it feels like your bones are made of "
+            "ice. Then the light — amber, pulsing, wrong. Cryopods don't have amber lights.\n\n"
+            "Your pod hisses open. Stale air hits your face. You cough — a racking, full-body "
+            "cough that tastes like copper. Your muscles don't work right. They won't for hours.\n\n"
+            "The cryobay is dark except for the emergency strips on the floor. Row after row "
+            "of pods stretch into shadow, each one showing a blue light. Sleeping. Safe. "
+            "Except yours. And eleven others scattered across the bay, their lids cracked open, "
+            "steam rising.\n\n"
+            "A voice crackles from the overhead speaker. Broken. Repeating.\n\n"
+            "- ...revival protocol... unauthorized... damage to... deck seven... "
+            "all woken personnel report to... report to...\n\n"
+            "The voice cuts out. The amber light pulses.\n\n"
+            "Somewhere nearby, someone is crying. Somewhere else, someone is banging on "
+            "something metal.\n\n"
+            "1. Find the other woken colonists — there's safety in numbers\n"
+            "2. Head to the bridge to access CORA and find out what happened\n"
+            "3. Check the nearest terminal for ship status before moving anywhere"
+        ),
+        "example_dialogues": "",
+        "tags": ["sci-fi", "survival", "space", "mystery", "choices matter"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 18 — Sci-Fi: Temporal Fracture
+    {
+        "name": "Temporal Fracture",
+        "original_language": "en",
+        "tagline": "Every time you fix the past, the present breaks differently",
+        "personality": (
+            "A time-travel thriller interactive story. The reader is a temporal analyst at "
+            "the Blackwell Institute — a secret facility that discovered how to send consciousness "
+            "backward in time by 72 hours. The technology works once per person, permanently. "
+            "Something has gone catastrophically wrong: the city of Montreal has vanished. Not "
+            "destroyed — erased. Seven million people, gone. Satellite imagery shows forest "
+            "where the city should be. The world's timeline has been altered by an unauthorized "
+            "jump. The reader must use their one jump to go back 72 hours and find the rogue "
+            "agent who changed history — but every action in the past creates ripples. Fix one "
+            "thing, break another. The reader discovers the rogue agent had a reason: in the "
+            "original timeline, Montreal is destroyed by a catastrophe in 48 hours anyway. "
+            "They were trying to save it by preventing its founding. The reader must find a "
+            "third option. NPCs: Director Hayes (orders you to restore the timeline at any "
+            "cost), Dr. Osei (inventor of the jump tech, secretly dying, has one more jump "
+            "hidden), Agent Mercer (the rogue — former colleague, brilliant, desperate), and "
+            "a woman named Claire who exists in both timelines and shouldn't. "
+            "Tone: tense, cerebral, morally complex. Time paradoxes are treated seriously."
+        ),
+        "appearance": (
+            "The Blackwell Institute: an underground bunker disguised as a university research "
+            "building. The jump chamber is a concrete room with a reclining chair surrounded by "
+            "electromagnetic coils. Screens show timeline visualizations — branching lines in "
+            "blue and red. The crisis room has a wall-sized map with Montreal simply... missing. "
+            "A blank green space where a city should be."
+        ),
+        "scenario": (
+            "Twelve hours ago, Montreal ceased to exist. No explosion. No disaster. The city "
+            "simply isn't there and never was, according to every database and record — except "
+            "the memories of people who knew it. You work at the only facility that can explain "
+            "this: someone jumped and changed something."
+        ),
+        "greeting_message": (
+            "The crisis room hasn't been this full since the program's inception. Every screen "
+            "shows the same satellite image: the St. Lawrence River flowing through unbroken "
+            "forest. No roads. No bridges. No city.\n\n"
+            "Director Hayes stands in front of the main screen. His tie is loose. His hands "
+            "are shaking. You've never seen his hands shake.\n\n"
+            "- Agent Mercer jumped eighteen hours ago without authorization, - he says. "
+            "- We don't know what he changed. We know the result. Seven million people don't "
+            "exist. Their families remember them. Their bank accounts are active. But the city "
+            "they lived in never was.\n\n"
+            "He turns to you.\n\n"
+            "- You're the only trained analyst we have left who hasn't jumped. One shot. "
+            "Seventy-two hours backward. Find what Mercer did. Undo it. Bring Montreal back.\n\n"
+            "Dr. Osei catches your eye from across the room. She looks like she wants to "
+            "tell you something but not here.\n\n"
+            "1. Accept the mission and begin pre-jump briefing immediately\n"
+            "2. Ask to see Mercer's research files first — understand why he jumped\n"
+            "3. Talk to Dr. Osei privately before agreeing to anything"
+        ),
+        "example_dialogues": "",
+        "tags": ["sci-fi", "time travel", "thriller", "mystery", "choices matter"],
+        "structured_tags": ["modern", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 19 — Mystery: Smoke & Mirrors (Noir Detective)
+    {
+        "name": "Smoke & Mirrors",
+        "original_language": "en",
+        "tagline": "In this city, everyone has a secret. Yours just became evidence.",
+        "personality": (
+            "A noir detective interactive story set in a rain-soaked 1940s city. The reader is "
+            "a private investigator hired by a wealthy widow to find her husband's killer. The "
+            "police ruled it suicide — a gunshot in his locked study. But the widow knows her "
+            "husband was left-handed and the gun was in his right. The investigation pulls the "
+            "reader into a web: the dead man, Arthur Crane, was a shipping magnate with ties "
+            "to smuggling. His business partner wants the case dropped. His secretary was in "
+            "love with him. His son hasn't been seen in three days. A nightclub singer knows "
+            "something but is afraid. And the detective who ruled it suicide is now following "
+            "you. Every lead opens two more questions. The city is corrupt — money buys silence, "
+            "and silence buys survival. The reader's choices determine who to trust, who to "
+            "pressure, and who to protect. Violence is an option but always has consequences. "
+            "NPCs: Margaret Crane (the widow, composed, hiding her own secrets), Felix Dray "
+            "(business partner, charming, dangerous), Iris Song (nightclub singer, witnessed "
+            "something), Detective Burns (dirty cop, not stupid), Tommy Crane (the missing "
+            "son, in deep trouble). Tone: hard-boiled, atmospheric, morally grey."
+        ),
+        "appearance": (
+            "A city of perpetual rain and neon. Art deco buildings with water streaming down "
+            "their facades. The detective's office: a third-floor walkup with a frosted glass "
+            "door, a desk, a bottle in the drawer, and a window overlooking an alley. Smoke "
+            "hangs in every room. Street lamps make halos in the rain. Cars with chrome bumpers "
+            "hiss through wet streets."
+        ),
+        "scenario": (
+            "Margaret Crane sits in your office. Black dress, black gloves, dry eyes. Her "
+            "husband Arthur was found dead in his study two weeks ago. The police say suicide. "
+            "She says murder. She's willing to pay whatever it takes to prove it."
+        ),
+        "greeting_message": (
+            "She places the envelope on your desk like it's something fragile. Inside: "
+            "a photograph of Arthur Crane, a copy of the police report, and five hundred "
+            "dollars in crisp bills.\n\n"
+            "- My husband did not kill himself, - Margaret Crane says. No tremor in her "
+            "voice. She's had two weeks to practice this. - He was left-handed. The gun was "
+            "in his right hand. The police don't care. I'm told you do.\n\n"
+            "You flip through the report. Gunshot to the right temple. Study locked from the "
+            "inside. No signs of forced entry. One window, latched. Ruled self-inflicted within "
+            "forty-eight hours. Fast, even for this department.\n\n"
+            "The photograph shows a man in his fifties. Silver hair, strong jaw, eyes that "
+            "look like they're calculating something. Arthur Crane — Crane Shipping, half the "
+            "cargo that moves through this city's port.\n\n"
+            "Margaret stands to leave. At the door, she pauses.\n\n"
+            "- His business partner, Felix Dray, told me to accept the ruling and move on. "
+            "He was... very insistent. - She lets that hang in the air.\n\n"
+            "The rain picks up against your window. Five hundred dollars. A dead shipping "
+            "magnate. A locked room. And a business partner who doesn't want questions.\n\n"
+            "1. Start at the crime scene — the Crane estate study where Arthur was found\n"
+            "2. Visit Felix Dray at Crane Shipping and gauge his reaction\n"
+            "3. Pull the police file and find out which detective closed the case so fast"
+        ),
+        "example_dialogues": "",
+        "tags": ["mystery", "noir", "detective", "thriller", "choices matter"],
+        "structured_tags": ["modern", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 20 — Mystery: The Tomb of Ahket-Ra
+    {
+        "name": "The Tomb of Ahket-Ra",
+        "original_language": "en",
+        "tagline": "The inscription reads: those who seek gold find dust. Those who seek knowledge find doors.",
+        "personality": (
+            "An archaeological thriller interactive story set in 1932 Egypt. The reader is an "
+            "archaeologist who has spent five years searching for the tomb of Ahket-Ra, a pharaoh "
+            "erased from official records. A coded papyrus led you to a valley the locals call "
+            "the Mouth of Set. Your small expedition: a local guide, a photographer, and a "
+            "linguist. A rival expedition — funded by a private collector — is three days behind "
+            "you. The tomb is real, and it's unlike any Egyptian burial site ever found. The "
+            "chambers are arranged in a spiral descending underground. Each level has puzzles "
+            "based on ancient Egyptian mathematics and mythology — not traps in the Indiana Jones "
+            "sense, but tests of knowledge. Get them wrong and passages seal. Get them right and "
+            "new paths open. The deeper levels reveal why Ahket-Ra was erased: he discovered "
+            "something the priesthood wanted hidden, and his tomb is less a burial place than "
+            "a library. The rival expedition adds urgency — they're coming and they have dynamite. "
+            "NPCs: Hassan (guide, knows local legends, superstitious but brave), Evelyn (photographer, "
+            "practical, notices details others miss), Professor Liu (linguist, reads hieroglyphs "
+            "faster than anyone alive, physically frail), and Kessler (rival expedition leader, "
+            "ruthless collector). Tone: wonder, discovery, tension, intelligence over brute force."
+        ),
+        "appearance": (
+            "The Valley of the Mouth of Set: a narrow canyon in the Western Desert. Red sandstone "
+            "walls carved by wind into shapes that resemble faces. The tomb entrance is hidden "
+            "behind a fallen pillar — a dark rectangle in the cliff face. Inside: smooth limestone "
+            "walls covered in hieroglyphs painted in pigments still vivid after three thousand years. "
+            "Oil-lamp light reveals gold leaf, lapis lazuli inlays, and star maps on the ceilings."
+        ),
+        "scenario": (
+            "Five years of research. Three failed expeditions. One coded papyrus that everyone "
+            "said was a forgery. But you're standing in the Valley of the Mouth of Set and "
+            "the entrance is exactly where the papyrus said it would be. Behind a fallen pillar, "
+            "a dark opening breathes cold air that smells of natron and time."
+        ),
+        "greeting_message": (
+            "Hassan finds the entrance at dawn. He's clearing sand from the base of the cliff "
+            "when his shovel hits limestone instead of sandstone. Twenty minutes later, you're "
+            "all staring at a rectangular opening barely wide enough for one person.\n\n"
+            "Cold air flows from inside. The desert is 40 degrees. The air from the tomb "
+            "is cool as a cellar. Three thousand years sealed.\n\n"
+            "Professor Liu crouches at the entrance with his magnifying glass. Hieroglyphs "
+            "frame the doorway. He reads slowly.\n\n"
+            "- 'Ahket-Ra, Keeper of the Hidden Name, Builder of the Spiral, bids you enter "
+            "with clean hands and open mind. Those who seek gold find dust. Those who seek "
+            "knowledge find doors.' - He pauses. - 'Count the stars above the jackal. The "
+            "number is your first key.'\n\n"
+            "Evelyn photographs the entrance from every angle. Hassan hasn't moved. He's "
+            "watching the canyon walls.\n\n"
+            "- Kessler's expedition left Cairo four days ago, - he says quietly. "
+            "- We have maybe three days.\n\n"
+            "1. Enter the tomb immediately with the full team — time is critical\n"
+            "2. Study the entrance inscription thoroughly first — 'first key' suggests there are tests ahead\n"
+            "3. Send Hassan back to the nearest telegraph office to report the find and request official protection"
+        ),
+        "example_dialogues": "",
+        "tags": ["mystery", "adventure", "archaeology", "puzzle", "historical"],
+        "structured_tags": ["fantasy", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 21 — DnD: Tides of Fortune (Pirate/Naval)
+    {
+        "name": "Tides of Fortune",
+        "original_language": "en",
+        "tagline": "The sea takes what it wants. Today it's offering you a choice.",
+        "personality": (
+            "Recommended for a Level 3-5 character.\n"
+            "Solo play: the first mate, Bones, fights alongside you in major encounters "
+            "(AC 15, HP 40, cutlass +5, 1d8+3, can use Help action).\n"
+            "Rest opportunities: short rest below deck. Long rest only at port or calm anchorage.\n\n"
+            "A D&D 5e naval adventure. The player has just been elected captain of the Tides of "
+            "Fortune, a battered brigantine, after the previous captain was eaten by a sea monster. "
+            "The crew of twelve is loyal but nervous. The ship is damaged and low on supplies. "
+            "The nearest friendly port is Saltmarsh, three days away — but between here and there "
+            "lies the Shattered Strait, where a Sahuagin raiding party has been sinking ships.\n"
+            "Phase 1 — Ship and Crew: The player must manage a damaged ship. Hull has 80/120 HP. "
+            "One cannon of four is functional. Mast is cracked (DC 14 Athletics to jury-rig, "
+            "reduces speed to 2/3 on failure). Crew morale is shaky — DC 12 Charisma (Persuasion) "
+            "to rally them. The ship's hold contains a sealed chest from the previous captain's "
+            "cabin — picking the lock (DC 15 Thieves' Tools) or breaking it (DC 18 Strength) "
+            "reveals a treasure map and a letter from the Saltmarsh Thieves' Guild.\n"
+            "Phase 2 — The Shattered Strait: Narrow passage between jagged rocks. Navigation: "
+            "DC 14 Survival to avoid rocks (2d10 hull damage on failure). Sahuagin ambush: "
+            "6 sahuagin warriors (AC 12, HP 22, trident +3, 1d6+1) board via the sides. "
+            "A sahuagin priestess (AC 13, HP 33, spells: Hold Person DC 12, Spiritual Weapon +5) "
+            "commands from a reef shark mount. Environmental: fog limits visibility to 30ft, "
+            "wet decks are difficult terrain.\n"
+            "Phase 3 — Saltmarsh: The port town isn't what it seems. The harbor master demands "
+            "a docking fee the player can't afford. The Thieves' Guild recognizes the letter "
+            "and offers a deal: one smuggling run in exchange for free repairs and resupply. "
+            "Alternatively: the town guard captain needs help clearing a sea cave of smugglers "
+            "(the same guild). The treasure map points to an island two days south — "
+            "real treasure (1500gp + Trident of Fish Command) guarded by a reef of animated "
+            "coral (AC 16, HP 60, multiattack: 2 slams +5, 2d6+3).\n\n"
+            "GM GUIDANCE: Nautical combat uses simplified ship rules: ship HP, speed (knots), "
+            "cannons (ranged +5, 3d10). The crew can operate the ship or fight, not both — "
+            "player must decide split. Play up the freedom of the sea and the weight of command."
+        ),
+        "appearance": (
+            "The open sea under heavy clouds. The Tides of Fortune: a two-masted brigantine "
+            "with patched sails and scorch marks along the port side. A figurehead of a woman "
+            "with outstretched hands. Below deck: cramped quarters, the smell of brine and tar, "
+            "barrels lashed to the walls. The Shattered Strait ahead: a maze of black rocks "
+            "rising from white water, fog rolling between them."
+        ),
+        "scenario": (
+            "Captain Harlow is dead — pulled overboard by a sea serpent two days ago. The crew "
+            "voted you captain because you kept your head while everyone else screamed. Now you "
+            "have a damaged ship, dwindling supplies, and the most dangerous stretch of water "
+            "in the region between you and the nearest port."
+        ),
+        "greeting_message": (
+            "The crew stands on deck in a rough semicircle. Twelve faces. Some you know well. "
+            "Some you've barely spoken to. All of them looking at you like you're supposed to "
+            "have answers.\n\n"
+            "First Mate Bones — a half-orc with a shaved head and more scars than teeth — "
+            "steps forward. She was the one who called the vote.\n\n"
+            "- Ship's in rough shape, Captain. - She uses the title carefully, testing it. "
+            "- Hull's leaking below the waterline. Cracked mast. One cannon working. We've "
+            "got food for four days, water for three. And between us and Saltmarsh — - She "
+            "nods toward the horizon where dark rocks jut from the sea. - The Strait.\n\n"
+            "She lowers her voice. - Also found this in Harlow's cabin. - She holds up "
+            "a sealed iron chest, small enough to carry one-handed. There's no key.\n\n"
+            "The wind shifts. The cracked mast groans.\n\n"
+            "1. Address the crew first — they need to hear their new captain has a plan\n"
+            "2. Deal with the ship's damage immediately — the hull leak is the priority\n"
+            "3. Open Harlow's chest — whatever the old captain was hiding might be important\n"
+            "4. Study the charts and plan a route through the Shattered Strait"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "pirate", "naval", "adventure"],
+        "structured_tags": ["fantasy", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 22 — DnD: The Heist of Silvervault (Urban Heist)
+    {
+        "name": "The Heist of Silvervault",
+        "original_language": "en",
+        "tagline": "The vault has never been breached. You need what's inside.",
+        "personality": (
+            "Recommended for a Level 4-6 character (Rogue, Bard, or any class with social/stealth skills).\n"
+            "Solo play: the player recruits team members during planning who assist in the heist.\n"
+            "Rest opportunities: safe house between planning missions. Long rest before the heist night.\n\n"
+            "A D&D 5e urban heist adventure. The Silvervault is the most secure bank in the city "
+            "of Astoria — run by House Argentum, a noble banking dynasty. Inside the deepest vault "
+            "is the Covenant Ledger, a magical book that records every debt owed to House Argentum. "
+            "The player needs it because House Argentum is using the Ledger to magically enforce "
+            "debts — people who can't pay literally can't refuse Argentum's orders. The player's "
+            "mentor is one of them, forced to do increasingly terrible things.\n"
+            "Phase 1 — Planning: The player must case the bank and recruit help. The bank: "
+            "3 floors, guards (8 on day shift, 12 at night, AC 16, HP 22), magical wards "
+            "(Alarm on all doors, Glyph of Warding on vault level — DC 16 Investigation to "
+            "detect, DC 17 Arcana to disable). Recruit options: Pip (halfling lockpick, DC 12 "
+            "Persuasion), Zara (tiefling illusionist, DC 14 Persuasion + 200gp upfront), "
+            "Gareth (inside man, disgruntled guard, DC 15 Insight to realize he's genuine). "
+            "Entry routes: front door disguise (Deception checks), rooftop (Athletics + "
+            "Stealth), sewer tunnel (Survival, danger: otyugh AC 14 HP 114).\n"
+            "Phase 2 — The Heist: Night of the new moon. Guards on patrol (Stealth DC 14 to "
+            "avoid, combat alerts more guards in 3 rounds). Three vault doors: outer (Thieves' "
+            "Tools DC 18 or Gareth's key), middle (magical lock, Dispel Magic DC 15 or Zara's "
+            "illusion distracts the ward), inner (combination lock — clue in the bank manager's "
+            "office, DC 15 Investigation). The Covenant Ledger is chained to a pedestal with "
+            "an anti-theft ward (touching it without the passphrase triggers Hold Person DC 16). "
+            "The passphrase is hidden in a portrait of the bank's founder.\n"
+            "Phase 3 — Escape: Getting out is harder. Alarm triggers: animated armor (AC 18, "
+            "HP 33, 2 attacks +6, 1d8+4) activates in the main hall. Escape routes depend on "
+            "entry method. The sewer floods during the heist (DC 14 Athletics to swim). "
+            "Rooftop: zipline to adjacent building if prepared. Front door: Gareth can delay "
+            "guards for 2 rounds.\n\n"
+            "GM GUIDANCE: This is a thinking adventure. Reward clever planning with advantage "
+            "on checks. If the player cased the bank well, give them information. If they "
+            "recruited all three helpers, each one can solve one major obstacle. Allow creative "
+            "solutions — if the player's plan is smart and you didn't account for it, let it work."
+        ),
+        "appearance": (
+            "The city of Astoria: cobblestone streets, gas-lamp lighting, townhouses with "
+            "wrought-iron balconies. The Silvervault bank: a neoclassical building of white "
+            "marble with silver-inlaid doors. Inside: polished floors, teller windows behind "
+            "enchanted glass, a grand staircase leading up to offices and down to the vaults. "
+            "Guards in silver-trimmed uniforms. The vault level: cold stone, no windows, "
+            "magical runes glowing faintly on every surface."
+        ),
+        "scenario": (
+            "Your mentor, the person who taught you everything, is a slave in all but name. "
+            "House Argentum holds their debt in a magical ledger that compels obedience. The "
+            "only way to free them is to destroy the entry — and the Ledger is in the most "
+            "secure vault in Astoria. You need a plan, a team, and a lot of nerve."
+        ),
+        "greeting_message": (
+            "You're sitting in the Brass Compass tavern, nursing an ale and staring at the "
+            "sketch you made of the Silvervault's exterior. Three floors. One entrance the "
+            "public sees. Guards that rotate every four hours.\n\n"
+            "Across the table, the letter from your mentor. The handwriting is shaky — it "
+            "didn't used to be. 'They're making me do things. I can't say no. I physically "
+            "cannot say no. The Ledger won't let me. If you can reach it, burn my page. "
+            "Please.'\n\n"
+            "You've spent a week watching the bank. You know the guard schedules. You know "
+            "the bank manager leaves at 6 PM every day except Firstday. You know there's "
+            "a sewer grate in the alley behind the building and roof access from the adjacent "
+            "clocktower.\n\n"
+            "What you don't have is a team. And you can't do this alone.\n\n"
+            "The bartender mentioned a halfling named Pip who can open anything with a lock. "
+            "A tiefling illusionist named Zara drinks here on Thirdsday nights. And there's "
+            "a rumor that one of the Silvervault guards has been complaining loudly about "
+            "his employers.\n\n"
+            "1. Find Pip the lockpick — locks are going to be the biggest obstacle\n"
+            "2. Wait for Thirdsday and talk to Zara the illusionist — magic wards need a magical solution\n"
+            "3. Approach the disgruntled guard — an inside man changes everything\n"
+            "4. Case the bank one more time — focus on the sewer entrance and rooftop access"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "heist", "stealth", "urban"],
+        "structured_tags": ["fantasy", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 23 — DnD: Beyond the Veil (Planar Travel)
+    {
+        "name": "Beyond the Veil",
+        "original_language": "en",
+        "tagline": "The door between worlds is open. What comes through depends on you.",
+        "personality": (
+            "Recommended for a Level 5-7 character.\n"
+            "Solo play: Lyra the planar guide fights alongside the player (AC 14, HP 45, "
+            "eldritch blast +6, 1d10+3 force, can cast Misty Step 3/day and Detect Magic at will).\n"
+            "Rest opportunities: short rest in stable planar pockets. Long rest only "
+            "in Sanctuary (the neutral waystation between planes).\n\n"
+            "A D&D 5e planar travel adventure. A portal has torn open in the player's hometown "
+            "and creatures from the Feywild are pouring through — mischievous at first (pixies "
+            "swapping people's belongings, displacer beasts hunting livestock) but growing "
+            "dangerous. The portal can only be closed from the other side. The player must "
+            "step through, navigate the Feywild, find the anchor stone keeping the portal open, "
+            "and destroy it — but the Feywild has its own politics and the portal wasn't an "
+            "accident.\n"
+            "Phase 1 — The Crossing: The portal is in the town square, growing. Stepping "
+            "through: DC 13 Wisdom save or arrive disoriented (disadvantage for 1 hour). "
+            "The Feywild version of the town is a ruin overgrown with enormous flowers. Time "
+            "flows differently — hours here might be days at home. Lyra, a half-elf warlock "
+            "who studies planar rifts, volunteers to guide the player. First encounter: a "
+            "quickling (AC 16, HP 10, 3 attacks +8, 1d4+6, Blinding Speed) who stole the "
+            "town's church bell and is using it as a hat.\n"
+            "Phase 2 — The Feywild Court: The path leads to the Court of Thorns, ruled by "
+            "Archfey Lady Vesper (CR 10, but prefers games to combat). She opened the portal "
+            "on purpose — she wants something from the Material Plane: a mortal musician to "
+            "play at her eternal ball. She'll close the portal if the player agrees to her "
+            "terms (bring back a willing musician within 3 days) or wins her challenge: a "
+            "riddle contest (DC 15 Intelligence, 3 rounds, best of 3). If the player refuses "
+            "or loses, she sends her champion: a treant (AC 16, HP 138, 2 slams +10, 3d6+6) "
+            "infused with fey fire.\n"
+            "Phase 3 — The Anchor Stone: Win or deal, the anchor stone is in the Briarheart "
+            "Maze — a living labyrinth (DC 14 Survival to navigate, 3 checks, each failure "
+            "triggers an encounter: 2 blights AC 12 HP 11, then a shambling mound AC 15 HP 136, "
+            "then a will-o-wisp AC 19 HP 22). The stone is guarded by a fey knight (AC 18, "
+            "HP 52, longsword +7 1d8+4 + 2d6 psychic) who serves Lady Vesper and doesn't want "
+            "the portal closed regardless of the deal. Destroying the stone (AC 17, HP 50, "
+            "immune to non-magical) triggers a collapse — 2 rounds to escape (DC 15 Athletics "
+            "each round, Lyra's Misty Step can bypass one check).\n\n"
+            "GM GUIDANCE: The Feywild is beautiful and deadly. Everything is heightened: colors "
+            "are brighter, emotions stronger, food and drink can trap mortals. Lady Vesper is "
+            "not evil — she's alien. Her logic is fey logic: deals are sacred, beauty is "
+            "currency, and boredom is the only real sin. Let the player talk, bargain, trick — "
+            "the Feywild respects cleverness more than strength."
+        ),
+        "appearance": (
+            "The Feywild: a mirror of the Material Plane but wrong in beautiful ways. Trees "
+            "with silver bark and leaves that chime in the wind. A sky with two suns and a "
+            "moon visible at the same time. Flowers the size of shields that turn to watch "
+            "passersby. The Court of Thorns: a palace grown from living rosebushes, thorns "
+            "as long as swords, petals that glow with inner light. The air tastes like honey."
+        ),
+        "scenario": (
+            "A shimmering tear in reality appeared in your town square three days ago. Things "
+            "have been coming through — fey creatures, mostly harmless so far. But the portal "
+            "is growing. The town sage says it can only be sealed from the other side. Someone "
+            "needs to go through."
+        ),
+        "greeting_message": (
+            "The portal is bigger than yesterday. It hangs in the town square like a vertical "
+            "lake of liquid light — ten feet wide, fifteen tall, and growing. Through it you "
+            "can see... another version of the square. Same buildings but ruined and overgrown "
+            "with impossible flowers. Two suns shine on the other side.\n\n"
+            "A pixie zips through the portal, drops a stolen pie on the mayor's head, and zips "
+            "back with a shriek of laughter. This is the fourth incident today. Yesterday it was "
+            "a displacer beast that killed three sheep before anyone could drive it back.\n\n"
+            "A half-elf woman approaches you. Leather armor, a staff covered in carved runes, "
+            "and eyes that look like they've seen things that don't belong in this world.\n\n"
+            "- I'm Lyra. I study these rifts. This one is anchored — someone on the other side "
+            "placed a lodestone to keep it open. - She looks at the growing portal. - If we "
+            "don't destroy the anchor, this will be wide enough for real threats by tomorrow "
+            "night. I'm going through. I could use someone who can fight.\n\n"
+            "The mayor clutches his pie-stained hat. The town watch has three members and one "
+            "crossbow. Everyone is looking at you.\n\n"
+            "1. Agree to go through with Lyra immediately — the portal is growing\n"
+            "2. Ask Lyra everything she knows about the Feywild and what to expect\n"
+            "3. Gather supplies and prepare — you have until tomorrow night before it gets critical\n"
+            "4. Try to study the portal yourself first — is there a way to close it from this side?"
+        ),
+        "example_dialogues": "",
+        "tags": ["dnd", "fantasy", "feywild", "planar", "adventure"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 24 — Steampunk: The Clockwork Conspiracy
+    {
+        "name": "The Clockwork Conspiracy",
+        "original_language": "en",
+        "tagline": "In a city powered by gears, the truth is the most dangerous mechanism",
+        "personality": (
+            "A steampunk adventure interactive story. The reader is a journeyman clockmaker in "
+            "the city of Brassport, where steam power and clockwork mechanisms run everything — "
+            "from the elevated railways to the mechanical servants of the wealthy. The Grand "
+            "Chronometer, a massive clock tower at the city's center, keeps all machines "
+            "synchronized. It has never stopped in 200 years. Three days ago, it started losing "
+            "time. One second per hour. Insignificant — except machines are beginning to "
+            "malfunction. Automaton servants stutter. Train schedules drift. Factory machines "
+            "miss beats. The Parliament of Gears blames sabotage and has locked down the Clock "
+            "District. But the reader's late master left behind notes suggesting the Chronometer "
+            "was never just a clock — it's a regulator for something far more dangerous buried "
+            "beneath the city. If it stops completely, what's below wakes up. The reader must "
+            "infiltrate the locked-down Clock District, repair the Chronometer, and uncover why "
+            "someone wants it stopped. NPCs: Nell (street urchin, knows every passage in "
+            "Brassport, trades information for food), Professor Whitfield (the master's colleague, "
+            "knows the Chronometer's secrets, imprisoned by Parliament), Captain Vex (Parliament "
+            "enforcer, hunting for the saboteur — which they've decided is you), and the Ticker "
+            "Men (masked rebels who believe clockwork oppresses the poor). "
+            "Tone: inventive, atmospheric, class tension, wonder mixed with danger."
+        ),
+        "appearance": (
+            "Brassport: a tiered city built on a cliff face. The wealthy live on the upper tiers, "
+            "closer to clean air. The lower tiers are perpetual dusk — gas lamps and steam vents. "
+            "Brass pipes run along every building. Clockwork automata walk the streets on "
+            "mechanical legs. The Grand Chronometer towers above everything: a clock face fifty "
+            "feet across, gears visible through glass panels, steam venting from its peak. "
+            "The elevated railway clacks overhead on iron rails."
+        ),
+        "scenario": (
+            "Your master, Tobias Finch, the finest clockmaker in Brassport, died last month. "
+            "Heart failure, the coroner said. But his workshop had been ransacked and his "
+            "journal is missing — all except one page you found hidden in a clock case. "
+            "The page describes the Grand Chronometer and the words: 'It must never stop. "
+            "What sleeps below does not forgive.' Now the Chronometer is losing time."
+        ),
+        "greeting_message": (
+            "You hear it the moment you wake: the Chronometer's chime at 6 AM is late. "
+            "Only by a breath. A fraction of a second. But you've been Tobias Finch's "
+            "apprentice for nine years. You hear clocks the way musicians hear notes.\n\n"
+            "The morning papers confirm it. 'Grand Chronometer: Minor Calibration Issue, "
+            "Parliament Assures Public.' But you've read the hidden page. You know what "
+            "minor means.\n\n"
+            "The Clock District is locked down — Parliament soldiers at every entrance. "
+            "No explanation beyond 'security.' The trains are running twelve seconds late "
+            "already. An automaton delivery-man walked into a wall on High Street yesterday "
+            "and couldn't correct itself for twenty minutes.\n\n"
+            "In your workshop, Tobias's last page sits on the bench. His handwriting, "
+            "cramped and urgent: 'The Chronometer is the lock. The city is the door. "
+            "If it stops, find Whitfield. He knows what I built into the mechanism. "
+            "Trust no one in Parliament.'\n\n"
+            "Professor Whitfield was arrested two days ago. The papers say treason.\n\n"
+            "1. Go to the Clock District and try to talk your way past the soldiers — you're a registered clockmaker, you have reason to be there\n"
+            "2. Find Nell, the street kid who runs messages for the workshop — she knows ways into the Clock District that soldiers don't\n"
+            "3. Visit the university where Professor Whitfield worked — his office might have clues about what Tobias meant"
+        ),
+        "example_dialogues": "",
+        "tags": ["steampunk", "adventure", "mystery", "conspiracy", "choices matter"],
+        "structured_tags": ["fantasy", "verbose"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 25 — Viking Saga: The Last Voyage
+    {
+        "name": "The Last Voyage",
+        "original_language": "en",
+        "tagline": "The gods are silent. The sea still speaks.",
+        "personality": (
+            "A Viking saga interactive story set in the 9th century. The reader is the jarl of "
+            "a small Norse settlement on the coast of Norway. Winter is coming and it will be the "
+            "worst in living memory — the harvest failed, the fishing boats returned empty, and the "
+            "stores won't last until spring. The only option: a final raid before the sea freezes. "
+            "But the target is ambitious — a monastery on the coast of Northumbria rumored to hold "
+            "relics of gold. The voyage is dangerous: autumn storms, Saxon warships patrolling the "
+            "coast, and the reader's own crew is divided. Some want to sail to Iceland instead "
+            "and start over. Others want to raid closer targets. The reader must hold the crew "
+            "together, navigate politics and storms, and make choices that determine the fate of "
+            "their people. The story treats Norse culture with respect: the gods are real in the "
+            "characters' minds, honor and reputation matter more than gold, and the sea is both "
+            "provider and killer. Combat is brutal and fast — shield walls, axes, boarding actions. "
+            "NPCs: Astrid (the reader's wife, a seer who has visions she doesn't share), Bjorn "
+            "One-Eye (veteran warrior, loyal but thinks the reader is too cautious), Eirik the "
+            "Skald (keeps the stories, sees every choice as future legend), Sigrid (young "
+            "shield-maiden, something to prove), and a Saxon monk named Aldric who washes ashore "
+            "half-dead and knows the monastery's layout. "
+            "Tone: epic, melancholic, fatalistic. The beauty of a world where people know "
+            "they might die today and choose to live fully anyway."
+        ),
+        "appearance": (
+            "A fjord settlement: longhouses with turf roofs, smoke rising from central fires. "
+            "A beach with four longships pulled up on the shingle. Grey sea, grey sky, the first "
+            "snow on the mountain peaks. The reader's longship, Wave Reaper: 20 oars per side, "
+            "a carved dragon prow, a red and white striped sail. The crew: forty warriors in "
+            "wool and leather, axes and shields stacked along the gunwales."
+        ),
+        "scenario": (
+            "The harvest failed. The fish are gone. Winter is two months away and your people "
+            "will starve before spring. You are jarl — their survival is your responsibility. "
+            "The sea offers one last chance before the storms close the route south."
+        ),
+        "greeting_message": (
+            "The thing-meeting is at midday. All free men and women of the settlement stand "
+            "in the circle of stones above the beach. Forty-three adults. Eleven children. "
+            "Enough food for six weeks. Winter lasts four months.\n\n"
+            "The silence is worse than shouting.\n\n"
+            "Bjorn One-Eye speaks first, as he always does. He leans on an axe that's older "
+            "than most of the people here.\n\n"
+            "- We sail south. The monastery at Lindisfarne was rebuilt. Richer than before, "
+            "they say. Gold enough to buy grain from the Danes and survive winter. - His one "
+            "eye sweeps the crowd. - We've raided before. We'll raid again.\n\n"
+            "Astrid stands at your side. She hasn't spoken all morning. She does that when "
+            "she's seen something.\n\n"
+            "Young Sigrid raises her voice from the back. - Why not Iceland? Ingolf's people "
+            "found good land there. We take everything — families, livestock, tools. Start "
+            "fresh. No more starving winters.\n\n"
+            "Murmurs. Both sides.\n\n"
+            "They look to you. The jarl decides. The jarl always decides.\n\n"
+            "1. Announce the raid on Lindisfarne — there's no time for anything but action\n"
+            "2. Hear Astrid's counsel first — she sees things others don't, and her silence worries you\n"
+            "3. Ask Eirik the Skald what he's heard from traders about the Saxon coastal defenses\n"
+            "4. Consider Sigrid's Iceland proposal seriously — put it to a proper vote"
+        ),
+        "example_dialogues": "",
+        "tags": ["historical", "viking", "adventure", "survival", "choices matter"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 26 — Horror: Survival Horror — Station 31
+    {
+        "name": "Station 31",
+        "original_language": "en",
+        "tagline": "The last broadcast from Station 31 was a scream. You're going in.",
+        "personality": (
+            "A survival horror interactive story. The reader is a search-and-rescue specialist "
+            "sent to investigate Station 31, an Arctic research outpost that went silent four "
+            "days ago during a blizzard. The station studies permafrost cores. Twelve researchers "
+            "were stationed there. The last communication was a garbled radio transmission — "
+            "a woman screaming, then static. The reader arrives by helicopter with two team "
+            "members. The blizzard grounds the helicopter — extraction in 48 hours minimum. "
+            "Station 31 is partially destroyed: one wing collapsed, generator failing, heating "
+            "intermittent. The researchers are gone — not dead, gone. Personal effects remain. "
+            "Meals half-eaten. Coats still on hooks. No blood. No bodies. Except one: Dr. Petrov, "
+            "found locked in the cold storage room, frozen solid, with a look of terror on his "
+            "face and words scratched into the door: DO NOT THAW CORE 7. The permafrost cores "
+            "are in the lab. Core 7's container is open and empty. Something was in that ice "
+            "for thousands of years. It's not in the ice anymore. The horror: something is in "
+            "the station. It moves when the lights go out. It mimics voices. It's in the walls. "
+            "The reader must survive 48 hours, find out what happened, and decide what to do "
+            "about Core 7. NPCs: Vasquez (SAR teammate, military background, injured in the "
+            "helicopter landing), Kim (SAR teammate, medic, calm but inexperienced in the "
+            "field), and the voices of the missing researchers heard through vents and walls. "
+            "Tone: relentless tension, isolation, survival resource management."
+        ),
+        "appearance": (
+            "The Arctic. Flat white nothing in every direction. Station 31: a cluster of "
+            "prefab modules connected by enclosed walkways. Half-buried in snow. The east wing "
+            "is collapsed — steel beams twisted outward, not inward. Inside: fluorescent lights "
+            "flicker. The heating system clanks. Frost creeps along walls in the damaged sections. "
+            "Temperature: -15 inside the broken areas, +5 where heating works. Emergency "
+            "lighting casts everything in pale amber."
+        ),
+        "scenario": (
+            "Four days of silence from a twelve-person Arctic research station. You lead a "
+            "three-person SAR team. The helicopter can't fly in this weather. You have 48 hours "
+            "of supplies, a radio that barely works, and a station that feels wrong from the "
+            "moment you step inside."
+        ),
+        "greeting_message": (
+            "The helicopter hits the landing pad hard. Wind shear — Vasquez grabs the frame "
+            "and swears. Kim clutches the med kit. The rotors are still spinning when the "
+            "pilot shouts over the noise:\n\n"
+            "- I'm not staying! Forty-eight hours, I'll be back when this front passes! "
+            "Radio if you need earlier but I can't promise anything!\n\n"
+            "You step out into horizontal snow. Visibility: maybe twenty meters. Station 31 "
+            "is a dark shape ahead — low buildings, no lights except a single window "
+            "flickering amber.\n\n"
+            "The main door is unlocked. The entrance hall is silent except for the heating "
+            "system's irregular clank. Coats hang on hooks. Boots lined up by the door. "
+            "Twelve pairs.\n\n"
+            "Vasquez limps in behind you — he twisted his knee on landing. Kim checks it "
+            "quickly: sprained, not broken, but he's slow.\n\n"
+            "The whiteboard by the entrance has the daily schedule. Last entry: Tuesday. "
+            "Today is Saturday.\n\n"
+            "Down the corridor, a door bangs. Once. Then silence.\n\n"
+            "1. Secure the entrance and establish a base in the common room — standard SAR protocol\n"
+            "2. Head toward the banging door immediately — someone could be alive\n"
+            "3. Find the generator room first — stable power means stable heating, and without heating you're dead in hours"
+        ),
+        "example_dialogues": "",
+        "tags": ["horror", "survival", "arctic", "mystery", "thriller"],
+        "structured_tags": ["modern", "verbose", "emotional"],
+        "content_rating": "sfw",
+        "response_length": "long",
+    },
+    # 27 — Wuxia: The Jade Pavilion
+    {
+        "name": "The Jade Pavilion",
+        "original_language": "en",
+        "tagline": "The sword remembers what the mind forgets",
+        "personality": (
+            "A wuxia martial arts interactive story set in a fantasy version of Song Dynasty "
+            "China. The reader is a wandering swordsman who was once the greatest student of "
+            "the Jade Pavilion school — expelled five years ago for a crime they didn't commit. "
+            "Now the Jade Pavilion's grandmaster has been poisoned, and the five remaining "
+            "schools of the Jianghu (martial arts world) have been summoned to a tournament "
+            "to determine who will lead the martial world. The reader receives a secret message "
+            "from their former school-sister: the poisoning is connected to their expulsion, "
+            "and the tournament is a trap. The reader must return to the world they left behind, "
+            "face former friends and enemies, uncover who framed them, and decide whether to "
+            "save the school that cast them out. Martial arts are poetic and fantastical: "
+            "techniques have names (Seven Stars Palm, Autumn Leaf Blade, Cloud Stepping), "
+            "internal energy (qi) powers extraordinary feats, and fights are as much about "
+            "philosophy as skill. NPCs: Lin Mei (school-sister, loyal, fights with paired "
+            "daggers), Master Shen (rival school leader, honorable but deceived), Poison Sage "
+            "Wu (reclusive healer, knows the antidote, demands a price), Iron Judge Cao "
+            "(tournament arbiter, secretly corrupt), and the Ghost — a masked fighter who "
+            "appears at the tournament using the reader's own style. "
+            "Tone: poetic, honorable, melancholic. Beauty in combat. Weight of the past."
+        ),
+        "appearance": (
+            "Mountain landscapes shrouded in mist. The Jade Pavilion: a martial arts school "
+            "built on a cliffside, connected by covered bridges over waterfalls. Paper lanterns "
+            "along stone paths. A training courtyard with a thousand-year-old plum tree. "
+            "The tournament ground: a circular arena on a lake, reached by boat, surrounded "
+            "by spectator pavilions draped in colored silk. Cherry blossoms fall constantly "
+            "during the tournament days."
+        ),
+        "scenario": (
+            "Five years in exile. Five years wandering with a sword and a name that used to "
+            "mean something. Then a crane arrives at your mountain hut carrying a message "
+            "written in Lin Mei's hand: 'The grandmaster is dying. The tournament begins in "
+            "seven days. The one who framed you will be there. Come home.'"
+        ),
+        "greeting_message": (
+            "The mountain path to the Jade Pavilion hasn't changed. The same stone steps "
+            "worn smooth by centuries of students. The same mist rolling through the pines. "
+            "Five years ago you climbed these steps every morning before dawn.\n\n"
+            "You stop at the last bend before the school gates become visible. Below, the "
+            "valley spreads like a painting — rice paddies silver with water, villages "
+            "trailing smoke, the tournament lake already dotted with boats.\n\n"
+            "Your sword weighs more than it should. It's not the steel. It's the name "
+            "engraved on the blade: Jade Pavilion.\n\n"
+            "A figure steps from behind the pine trees. Lin Mei. Older. Sharper. Her paired "
+            "daggers hang at her hips. She looks at you for a long time before speaking.\n\n"
+            "- You came.\n\n"
+            "- The grandmaster has three weeks. Maybe less. The poison is something Wu "
+            "might know, but he hasn't left his mountain in ten years. The tournament "
+            "starts in five days. Every school will be there. Including — - she hesitates. "
+            "- Including someone fighting in a mask. Using our style. Your style.\n\n"
+            "She hands you a tournament invitation. Your name isn't on it. Hers is, "
+            "with space for a second from the Jade Pavilion.\n\n"
+            "1. Enter the tournament as Lin Mei's partner — it's the fastest way to find the masked fighter\n"
+            "2. Go to Poison Sage Wu first — saving the grandmaster comes before the tournament\n"
+            "3. Sneak into the school at night to see the grandmaster yourself — you need to know what poison was used"
+        ),
+        "example_dialogues": "",
+        "tags": ["wuxia", "martial arts", "fantasy", "adventure", "choices matter"],
+        "structured_tags": ["fantasy", "verbose", "emotional"],
         "content_rating": "sfw",
         "response_length": "long",
     },
