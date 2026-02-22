@@ -50,6 +50,14 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
 
     if settings.is_fiction_mode:
         result["online_now"] = 0
-        result["stories"] = characters
+        # Stories = non-DnD public characters, campaigns = DnD tagged
+        campaigns = (await db.execute(
+            select(func.count()).select_from(Character).where(
+                Character.is_public == True,
+                Character.tags.contains("dnd"),
+            )
+        )).scalar_one()
+        result["stories"] = characters - campaigns
+        result["campaigns"] = campaigns
 
     return result

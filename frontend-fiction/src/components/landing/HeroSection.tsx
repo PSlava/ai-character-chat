@@ -62,6 +62,13 @@ export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
               <span className="text-neutral-600 mx-1">&middot;</span>
               <span className="font-semibold text-white">{stats.stories ?? stats.characters}</span>
               <span>{t('stats.adventures')}</span>
+              {(stats.campaigns ?? 0) > 0 && (
+                <>
+                  <span className="text-neutral-600 mx-1">&middot;</span>
+                  <span className="font-semibold text-white">{stats.campaigns}</span>
+                  <span>{t('stats.campaigns')}</span>
+                </>
+              )}
             </div>
           )}
 
