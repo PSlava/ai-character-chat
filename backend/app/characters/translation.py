@@ -335,6 +335,63 @@ async def ensure_translations(
         asyncio.create_task(_save_translations(all_to_save, target_language))
 
 
+async def ensure_translations_nonblocking(
+    characters,
+    target_language: str,
+):
+    """Fast path: use cached translations, fire background task for uncached.
+
+    Card fields (name, tagline, tags) are translated inline (fast batch call).
+    Description fields are NEVER awaited — translated in background and cached
+    for the next request. This reduces worst-case latency from ~17s to ~3s.
+    """
+    need_card_translation = []
+    need_desc_translation = []
+
+    for c in characters:
+        orig = getattr(c, 'original_language', None) or 'ru'
+        if orig == target_language:
+            continue
+        cached = (getattr(c, 'translations', None) or {}).get(target_language)
+        if cached:
+            c._active_translations = cached
+            if not cached.get("personality") and getattr(c, "personality", None):
+                need_desc_translation.append(c)
+        else:
+            need_card_translation.append(c)
+            need_desc_translation.append(c)
+
+    # 1) Card fields inline (single batch LLM call, ~2-3s)
+    if need_card_translation:
+        batch = [
+            {
+                "id": c.id,
+                "name": c.name,
+                "tagline": c.tagline or "",
+                "tags": [t for t in (c.tags or "").split(",") if t],
+            }
+            for c in need_card_translation
+        ]
+        results = await translate_batch(batch, target_language)
+        if results:
+            for c in need_card_translation:
+                tr = results.get(c.id)
+                if tr:
+                    c._active_translations = tr
+            asyncio.create_task(_save_translations(results, target_language))
+
+    # 2) Description fields in background (don't block response)
+    if need_desc_translation:
+        char_ids_and_data = [
+            (c.id, {f: getattr(c, f, None) for f in _DESCRIPTION_FIELDS if getattr(c, f, None)},
+             getattr(c, '_active_translations', None) or {})
+            for c in need_desc_translation
+        ]
+        asyncio.create_task(_background_translate_descriptions(
+            char_ids_and_data, target_language
+        ))
+
+
 async def _background_translate_cards(batch: list[dict], target_language: str):
     """Background task: translate a batch of cards and save to DB."""
     try:
@@ -343,3 +400,32 @@ async def _background_translate_cards(batch: list[dict], target_language: str):
             await _save_translations(results, target_language)
     except Exception as e:
         logger.warning("Background translation failed: %s", str(e)[:100])
+
+
+async def _background_translate_descriptions(
+    char_data: list[tuple[str, dict, dict]],
+    target_language: str,
+):
+    """Background task: translate description fields and merge into cached translations."""
+    lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",
+                  "de": "German", "pt": "Brazilian Portuguese", "it": "Italian"}
+    lang_name = lang_names.get(target_language, target_language)
+
+    to_save = {}
+    for char_id, fields, existing_card_tr in char_data:
+        try:
+            desc_result = {}
+            for field_name, field_text in fields.items():
+                if not _check_translation_rate():
+                    break
+                translated = await _translate_single_field(field_text, target_language, lang_name)
+                if translated:
+                    desc_result[field_name] = translated
+            if desc_result:
+                merged = {**existing_card_tr, **desc_result}
+                to_save[char_id] = merged
+        except Exception as e:
+            logger.warning("Background desc translation for %s failed: %s", char_id[:8], str(e)[:100])
+
+    if to_save:
+        await _save_translations(to_save, target_language)

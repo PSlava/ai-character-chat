@@ -285,8 +285,8 @@ async def get_character_by_slug(
         if character.creator_id != user_id and user_role != "admin":
             raise HTTPException(status_code=404, detail="Character not found")
     if language:
-        from app.characters.translation import ensure_translations
-        await ensure_translations([character], language, include_descriptions=True)
+        from app.characters.translation import ensure_translations_nonblocking
+        await ensure_translations_nonblocking([character], language)
     is_admin = user.get("role") == "admin" if user else False
     return character_to_dict(character, language=language, is_admin=is_admin)
 
@@ -478,10 +478,10 @@ async def get_character(
         user_role = user.get("role") if user else None
         if character.creator_id != user_id and user_role != "admin":
             raise HTTPException(status_code=404, detail="Character not found")
-    # Translate card + description fields
+    # Translate card + description fields (nonblocking: descriptions in background)
     if language:
-        from app.characters.translation import ensure_translations
-        await ensure_translations([character], language, include_descriptions=True)
+        from app.characters.translation import ensure_translations_nonblocking
+        await ensure_translations_nonblocking([character], language)
     is_admin = user.get("role") == "admin" if user else False
     return character_to_dict(character, language=language, is_admin=is_admin)
 
