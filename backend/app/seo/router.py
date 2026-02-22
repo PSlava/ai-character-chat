@@ -7,10 +7,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.db.models import Character, Vote
+from app.config import settings
 from app.seo.jsonld import (
     character_jsonld, website_jsonld, software_application_jsonld,
-    faq_jsonld, breadcrumb_jsonld, collection_jsonld, SITE_URL,
+    faq_jsonld, breadcrumb_jsonld, collection_jsonld, SITE_URL, SITE_NAME,
 )
+
+
+def _brand(text: str) -> str:
+    """Replace hardcoded 'SweetSin' with actual site name for multi-site support."""
+    return text.replace("SweetSin", SITE_NAME)
 
 router = APIRouter(prefix="/api/seo", tags=["seo"])
 
@@ -149,7 +155,7 @@ async def prerender_character(
         avatar = f"{SITE_URL}{avatar}"
 
     title = f"{name} — {tagline}" if tagline else name
-    title_full = f"{title} | SweetSin"
+    title_full = f"{title} | {SITE_NAME}"
 
     # Check if NSFW — truncate content for bots
     _rating = getattr(character.content_rating, 'value', character.content_rating) or "sfw"
@@ -180,7 +186,7 @@ async def prerender_character(
 
     ld_json = json.dumps(character_jsonld(character, lang, vote_count=vote_count), ensure_ascii=False)
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([
-        ("SweetSin", SITE_URL),
+        (SITE_NAME, SITE_URL),
         (name, None),
     ]), ensure_ascii=False)
 
@@ -191,11 +197,11 @@ async def prerender_character(
     _h2_appearance = ["Appearance", "Looks", "Description", "Physical", "Visual", "Features"][slug_hash]
     _h2_greeting = ["Greeting", "Introduction", "First Words", "Welcome", "Opening", "Hello"][slug_hash]
     _cta_texts = [
-        f"Chat with {_escape(name)} on SweetSin",
+        f"Chat with {_escape(name)} on {SITE_NAME}",
         f"Start a conversation with {_escape(name)}",
         f"Talk to {_escape(name)} now",
         f"Begin your story with {_escape(name)}",
-        f"Meet {_escape(name)} on SweetSin",
+        f"Meet {_escape(name)} on {SITE_NAME}",
         f"Explore {_escape(name)}'s world",
     ]
     cta = _cta_texts[slug_hash]
@@ -253,7 +259,7 @@ async def prerender_character(
 <meta property="og:image" content="{_escape(avatar)}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="SweetSin">
+<meta property="og:site_name" content="{SITE_NAME}">
 <meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{_escape(title)}">
@@ -298,7 +304,7 @@ async def prerender_tag(
     characters = result.scalars().all()
 
     canonical = f"{SITE_URL}/{lang}/tags/{slug}"
-    title = f"{label} — AI Characters | SweetSin"
+    title = f"{label} — AI Characters | {SITE_NAME}"
 
     char_links = []
     for c in characters:
@@ -317,7 +323,7 @@ async def prerender_tag(
         collection_jsonld(label, slug, lang, len(characters)), ensure_ascii=False
     )
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([
-        ("SweetSin", SITE_URL),
+        (SITE_NAME, SITE_URL),
         (label, None),
     ]), ensure_ascii=False)
 
@@ -332,7 +338,7 @@ async def prerender_tag(
 <meta property="og:description" content="{_escape(description)}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="SweetSin">
+<meta property="og:site_name" content="{SITE_NAME}">
 <meta property="og:image" content="{SITE_URL}/og-image.png">
 <meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary">
@@ -350,7 +356,7 @@ async def prerender_tag(
 <ul>
 {"".join(char_links)}
 </ul>
-<a href="{SITE_URL}/{lang}">Back to SweetSin</a>
+<a href="{SITE_URL}/{lang}">Back to {SITE_NAME}</a>
 </body>
 </html>"""
     return HTMLResponse(html)
@@ -479,9 +485,9 @@ async def prerender_faq(lang: str = Query("en")):
         "it": "Domande frequenti su SweetSin — chat con personaggi IA, gioco di ruolo, modelli, persona, chat di gruppo e altro.",
     }
 
-    pairs = _faq.get(lang, _faq["en"])
+    pairs = [(_brand(q), _brand(a)) for q, a in _faq.get(lang, _faq["en"])]
     faq_title = _faq_titles.get(lang, _faq_titles["en"])
-    faq_desc = _faq_descriptions.get(lang, _faq_descriptions["en"])
+    faq_desc = _brand(_faq_descriptions.get(lang, _faq_descriptions["en"]))
     canonical = f"{SITE_URL}/{lang}/faq"
 
     qa_html = "\n".join(
@@ -489,7 +495,7 @@ async def prerender_faq(lang: str = Query("en")):
     )
     ld_faq = json.dumps(faq_jsonld(pairs), ensure_ascii=False)
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([
-        ("SweetSin", SITE_URL),
+        (SITE_NAME, SITE_URL),
         ("FAQ", None),
     ]), ensure_ascii=False)
 
@@ -497,17 +503,17 @@ async def prerender_faq(lang: str = Query("en")):
 <html lang="{_escape(lang)}">
 <head>
 <meta charset="UTF-8">
-<title>{_escape(faq_title)} | SweetSin</title>
+<title>{_escape(faq_title)} | {SITE_NAME}</title>
 <meta name="description" content="{_escape(faq_desc)}">
 <link rel="canonical" href="{canonical}">
-<meta property="og:title" content="{_escape(faq_title)} — SweetSin">
+<meta property="og:title" content="{_escape(faq_title)} — {SITE_NAME}">
 <meta property="og:description" content="{_escape(faq_desc)}">
 <meta property="og:image" content="{SITE_URL}/og-image.png">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="SweetSin">
+<meta property="og:site_name" content="{SITE_NAME}">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="{_escape(faq_title)} — SweetSin">
+<meta name="twitter:title" content="{_escape(faq_title)} — {SITE_NAME}">
 <meta name="twitter:description" content="{_escape(faq_desc)}">
 <meta name="twitter:image" content="{SITE_URL}/og-image.png">
 {_hreflang_tags("/faq")}
@@ -534,16 +540,16 @@ async def prerender_about(lang: str = Query("en")):
         "pt": "SweetSin \u00e9 uma plataforma para roleplay criativo e conversas focadas em personagens. Perfis ricamente detalhados combinados com m\u00faltiplos modelos de linguagem para experi\u00eancias de chat imersivas e com qualidade liter\u00e1ria.",
         "it": "SweetSin \u00e8 una piattaforma per roleplay creativo e conversazioni guidate dai personaggi. Profili ricchi di dettagli combinati con molteplici modelli linguistici per esperienze di chat immersive e di qualit\u00e0 letteraria.",
     }
-    title = _titles.get(lang, _titles["en"])
-    desc = _descriptions.get(lang, _descriptions["en"])
+    title = _brand(_titles.get(lang, _titles["en"]))
+    desc = _brand(_descriptions.get(lang, _descriptions["en"]))
     canonical = f"{SITE_URL}/{lang}/about"
-    ld_breadcrumb = json.dumps(breadcrumb_jsonld([("SweetSin", SITE_URL), (title, None)]), ensure_ascii=False)
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([(SITE_NAME, SITE_URL), (title, None)]), ensure_ascii=False)
 
     html = f"""<!DOCTYPE html>
 <html lang="{_escape(lang)}">
 <head>
 <meta charset="UTF-8">
-<title>{_escape(title)} | SweetSin</title>
+<title>{_escape(title)} | {SITE_NAME}</title>
 <meta name="description" content="{_escape(_truncate(desc, 160))}">
 <link rel="canonical" href="{canonical}">
 <meta property="og:title" content="{_escape(title)}">
@@ -551,7 +557,7 @@ async def prerender_about(lang: str = Query("en")):
 <meta property="og:image" content="{SITE_URL}/og-image.png">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="SweetSin">
+<meta property="og:site_name" content="{SITE_NAME}">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{_escape(title)}">
 <meta name="twitter:description" content="{_escape(_truncate(desc, 160))}">
@@ -578,23 +584,23 @@ async def prerender_terms(lang: str = Query("en")):
         "pt": "Termos de Uso do SweetSin — plataforma de chat com personagens IA. Elegibilidade, regras de conteúdo, uso aceitável e isenções.",
         "it": "Termini di servizio di SweetSin — piattaforma di chat con personaggi IA. Idoneità, regole sui contenuti, uso accettabile e dichiarazioni di non responsabilità.",
     }
-    title = _titles.get(lang, _titles["en"])
-    desc = _descriptions.get(lang, _descriptions["en"])
+    title = _brand(_titles.get(lang, _titles["en"]))
+    desc = _brand(_descriptions.get(lang, _descriptions["en"]))
     canonical = f"{SITE_URL}/{lang}/terms"
-    ld_breadcrumb = json.dumps(breadcrumb_jsonld([("SweetSin", SITE_URL), (title, None)]), ensure_ascii=False)
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([(SITE_NAME, SITE_URL), (title, None)]), ensure_ascii=False)
 
     html = f"""<!DOCTYPE html>
 <html lang="{_escape(lang)}">
 <head>
 <meta charset="UTF-8">
-<title>{_escape(title)} | SweetSin</title>
+<title>{_escape(title)} | {SITE_NAME}</title>
 <meta name="description" content="{_escape(desc)}">
 <link rel="canonical" href="{canonical}">
 <meta property="og:title" content="{_escape(title)}">
 <meta property="og:description" content="{_escape(desc)}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="SweetSin">
+<meta property="og:site_name" content="{SITE_NAME}">
 {_hreflang_tags("/terms")}
 <script type="application/ld+json">{ld_breadcrumb}</script>
 </head>
@@ -618,23 +624,23 @@ async def prerender_privacy(lang: str = Query("en")):
         "pt": "Política de Privacidade do SweetSin — como coletamos, usamos e protegemos seus dados. Suas conversas são privadas.",
         "it": "Informativa sulla privacy di SweetSin — come raccogliamo, utilizziamo e proteggiamo i tuoi dati. Le tue conversazioni sono private.",
     }
-    title = _titles.get(lang, _titles["en"])
-    desc = _descriptions.get(lang, _descriptions["en"])
+    title = _brand(_titles.get(lang, _titles["en"]))
+    desc = _brand(_descriptions.get(lang, _descriptions["en"]))
     canonical = f"{SITE_URL}/{lang}/privacy"
-    ld_breadcrumb = json.dumps(breadcrumb_jsonld([("SweetSin", SITE_URL), (title, None)]), ensure_ascii=False)
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([(SITE_NAME, SITE_URL), (title, None)]), ensure_ascii=False)
 
     html = f"""<!DOCTYPE html>
 <html lang="{_escape(lang)}">
 <head>
 <meta charset="UTF-8">
-<title>{_escape(title)} | SweetSin</title>
+<title>{_escape(title)} | {SITE_NAME}</title>
 <meta name="description" content="{_escape(desc)}">
 <link rel="canonical" href="{canonical}">
 <meta property="og:title" content="{_escape(title)}">
 <meta property="og:description" content="{_escape(desc)}">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="SweetSin">
+<meta property="og:site_name" content="{SITE_NAME}">
 {_hreflang_tags("/privacy")}
 <script type="application/ld+json">{ld_breadcrumb}</script>
 </head>
@@ -665,9 +671,9 @@ async def prerender_home(
             website_jsonld(),
             {
                 "@type": "Organization",
-                "name": "SweetSin",
+                "name": SITE_NAME,
                 "url": SITE_URL,
-                "description": "AI Character Chat Platform",
+                "description": "AI Interactive Fiction & D&D Game Master" if settings.is_fiction_mode else "AI Character Chat Platform",
             },
             software_application_jsonld(),
         ],
@@ -689,34 +695,120 @@ async def prerender_home(
 
     canonical = f"{SITE_URL}/{lang}"
 
+    if settings.is_fiction_mode:
+        _home_title = f"{SITE_NAME} — AI Interactive Fiction &amp; D&amp;D Game Master"
+        _home_desc = "AI-powered interactive fiction and D&D Game Master. Choose your path, roll dice, shape the story."
+        _home_og_title = f"{SITE_NAME} — Write Your Fate"
+        _home_og_desc = "AI Interactive Fiction & D&D Game Master. Choose your path, roll dice, shape the story."
+        _home_h1 = f"{SITE_NAME} — AI Interactive Fiction & D&D"
+        _home_p = "AI-powered interactive fiction and D&D Game Master. Choose your path, roll dice, shape the story."
+    else:
+        _home_title = f"{SITE_NAME} — AI Character Chat | Roleplay &amp; Fantasy"
+        _home_desc = "Chat with unique AI characters. Immersive roleplay, creative storytelling, and endless fantasy."
+        _home_og_title = f"{SITE_NAME} — Where Fantasy Comes Alive"
+        _home_og_desc = "AI Character Chat Platform. Immersive roleplay, creative storytelling, endless possibilities."
+        _home_h1 = f"{SITE_NAME} — AI Character Chat"
+        _home_p = "Chat with unique AI characters. Immersive roleplay, creative storytelling, and endless fantasy."
+
     html = f"""<!DOCTYPE html>
 <html lang="{_escape(lang)}">
 <head>
 <meta charset="UTF-8">
-<title>SweetSin — AI Character Chat | Roleplay &amp; Fantasy</title>
-<meta name="description" content="Chat with unique AI characters. Immersive roleplay, creative storytelling, and endless fantasy.">
+<title>{_home_title}</title>
+<meta name="description" content="{_home_desc}">
 <link rel="canonical" href="{canonical}">
-<meta property="og:title" content="SweetSin — Where Fantasy Comes Alive">
-<meta property="og:description" content="AI Character Chat Platform. Immersive roleplay, creative storytelling, endless possibilities.">
+<meta property="og:title" content="{_home_og_title}">
+<meta property="og:description" content="{_home_og_desc}">
 <meta property="og:image" content="{SITE_URL}/og-image.png">
 <meta property="og:url" content="{canonical}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="SweetSin">
+<meta property="og:site_name" content="{SITE_NAME}">
 <meta property="og:locale" content="{lang}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SweetSin — Where Fantasy Comes Alive">
-<meta name="twitter:description" content="AI Character Chat Platform. Immersive roleplay, creative storytelling, endless possibilities.">
+<meta name="twitter:title" content="{_home_og_title}">
+<meta name="twitter:description" content="{_home_og_desc}">
 <meta name="twitter:image" content="{SITE_URL}/og-image.png">
 {_hreflang_tags("")}
 <script type="application/ld+json">{ld_graph}</script>
 </head>
 <body>
-<h1>SweetSin — AI Character Chat</h1>
-<p>Chat with unique AI characters. Immersive roleplay, creative storytelling, and endless fantasy.</p>
+<h1>{_home_h1}</h1>
+<p>{_home_p}</p>
 <h2>Characters</h2>
 <ul>
 {"".join(char_links)}
 </ul>
+</body>
+</html>"""
+    return HTMLResponse(html)
+
+
+@router.get("/campaigns", response_class=HTMLResponse)
+async def prerender_campaigns(
+    lang: str = Query("en"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Prerender campaigns/adventures page for bots (fiction mode)."""
+    # Query DnD-tagged characters (adventures)
+    result = await db.execute(
+        select(Character)
+        .where(
+            Character.is_public == True,
+            Character.slug.isnot(None),
+            Character.tags.contains("dnd"),
+        )
+        .order_by(Character.chat_count.desc())
+        .limit(50)
+    )
+    adventures = result.scalars().all()
+
+    canonical = f"{SITE_URL}/{lang}/campaigns"
+    title = f"D&D Campaigns — AI Game Master | {SITE_NAME}"
+    desc = f"Play D&D 5e with an AI Game Master on {SITE_NAME}. Roll dice, track combat, explore open worlds. {len(adventures)} adventures available."
+
+    adv_links = []
+    for c in adventures:
+        tr = (c.translations or {}).get(lang)
+        name = _escape(tr["name"] if tr and "name" in tr else c.name)
+        tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
+        url = f"{SITE_URL}/{lang}/c/{c.slug}"
+        line = f'<li><a href="{url}">{name}</a> — {tagline}</li>' if tagline else f'<li><a href="{url}">{name}</a></li>'
+        adv_links.append(line)
+
+    ld_breadcrumb = json.dumps(breadcrumb_jsonld([
+        (SITE_NAME, SITE_URL),
+        ("D&D Campaigns", None),
+    ]), ensure_ascii=False)
+
+    html = f"""<!DOCTYPE html>
+<html lang="{_escape(lang)}">
+<head>
+<meta charset="UTF-8">
+<title>{_escape(title)}</title>
+<meta name="description" content="{_escape(desc)}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:title" content="D&D Campaigns — AI Game Master">
+<meta property="og:description" content="{_escape(desc)}">
+<meta property="og:image" content="{SITE_URL}/og-image.png">
+<meta property="og:url" content="{canonical}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{SITE_NAME}">
+<meta property="og:locale" content="{lang}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="D&D Campaigns — AI Game Master">
+<meta name="twitter:description" content="{_escape(desc)}">
+<meta name="twitter:image" content="{SITE_URL}/og-image.png">
+{_hreflang_tags("/campaigns")}
+<script type="application/ld+json">{ld_breadcrumb}</script>
+</head>
+<body>
+<h1>D&D Campaigns — AI Game Master</h1>
+<p>{_escape(desc)}</p>
+<h2>Adventures</h2>
+<ul>
+{"".join(adv_links)}
+</ul>
+<a href="{SITE_URL}/{lang}">Back to {SITE_NAME}</a>
 </body>
 </html>"""
     return HTMLResponse(html)
@@ -786,6 +878,9 @@ async def sitemap(db: AsyncSession = Depends(get_db)):
         ("/privacy", "monthly", "0.2", now),
         ("/faq", "monthly", "0.3", now),
     ]
+    # Campaigns page (fiction mode only)
+    if settings.is_fiction_mode:
+        static_pages.append(("/campaigns", "weekly", "0.7", now))
     # Tag landing pages
     for tp in TAG_PAGES:
         static_pages.append((f"/tags/{tp['slug']}", "weekly", "0.7", now))
@@ -871,9 +966,9 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-<title>SweetSin — New AI Characters</title>
+<title>{SITE_NAME} — {"New Adventures" if settings.is_fiction_mode else "New AI Characters"}</title>
 <link>{SITE_URL}</link>
-<description>Latest AI characters for roleplay and creative storytelling on SweetSin</description>
+<description>{"AI interactive fiction and D&D adventures" if settings.is_fiction_mode else f"Latest AI characters for roleplay and creative storytelling"} on {SITE_NAME}</description>
 <language>en</language>
 <lastBuildDate>{now}</lastBuildDate>
 <atom:link href="{SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
@@ -885,6 +980,7 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
 
 @router.api_route("/robots.txt", methods=["GET", "HEAD"])
 async def robots():
+    nsfw_block = "\nDisallow: /*nsfw*\n" if not settings.is_fiction_mode else ""
     content = f"""User-agent: *
 Allow: /
 Disallow: /api/
@@ -894,7 +990,7 @@ Disallow: /admin/
 Disallow: /favorites
 Disallow: /create
 Disallow: /auth
-
+{nsfw_block}
 Sitemap: {SITE_URL}/sitemap.xml
 """
     return Response(content=content, media_type="text/plain")
