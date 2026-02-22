@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { signIn, signUp, forgotPassword } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
@@ -27,7 +27,9 @@ const ERROR_MAP: Record<string, string> = {
 
 export function AuthPage() {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<Mode>('login');
+  const [searchParams] = useSearchParams();
+  const urlMode = searchParams.get('mode');
+  const [mode, setMode] = useState<Mode>(urlMode === 'register' ? 'register' : 'login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -41,6 +43,13 @@ export function AuthPage() {
   const timerRef = useRef<ReturnType<typeof setInterval>>();
   const navigate = useNavigate();
   const { init } = useAuthStore();
+
+  // Sync mode from URL search params (e.g. header "Sign In" click while on /auth?mode=register)
+  useEffect(() => {
+    const m = searchParams.get('mode');
+    if (m === 'register') setMode('register');
+    else if (m === 'login' || m === null) setMode('login');
+  }, [searchParams]);
 
   useEffect(() => {
     api.get('/auth/providers').then(r => setGoogleOAuth(r.data.google)).catch(() => {});

@@ -61,7 +61,7 @@ export function Header({ onToggleSidebar }: Props) {
             </Button>
           </>
         ) : (
-          <Link to="/auth">
+          <Link to="/auth?mode=login">
             <Button size="sm">{t('header.login')}</Button>
           </Link>
         )}
