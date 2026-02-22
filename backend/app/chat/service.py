@@ -60,6 +60,7 @@ _FICTION_POST_HISTORY = {
 _DND_POST_HISTORY = {
     "ru": (
         "[Продолжай как Game Master от второго лица. Сохраняй текущую локацию и состояние боя.\n"
+        "Если выше дан результат броска — сначала опиши его исход.\n"
         "Когда нужен бросок — пиши [ROLL выражение описание]. НЕ бросай кубики сам.\n"
         "Продвинь сюжет — новое событие, столкновение или открытие.\n"
         "ОБЯЗАТЕЛЬНО заверши ответ 2-4 пронумерованными вариантами действий.\n"
@@ -67,6 +68,7 @@ _DND_POST_HISTORY = {
     ),
     "en": (
         "[Continue as Game Master in second person. Maintain current location and combat state.\n"
+        "If a dice result is provided above, describe its outcome first.\n"
         "When a roll is needed — write [ROLL expression description]. Do NOT roll dice yourself.\n"
         "Advance the plot — a new event, encounter, or discovery.\n"
         "You MUST end your response with 2-4 numbered action choices.\n"
@@ -74,35 +76,83 @@ _DND_POST_HISTORY = {
     ),
     "es": (
         "[Continua como Game Master en segunda persona. Manten la ubicacion y estado de combate.\n"
+        "Si hay un resultado de tirada arriba, describe su desenlace primero.\n"
         "Para tiradas: [ROLL expresion descripcion]. NO tires dados tu mismo.\n"
         "Avanza la trama. DEBES terminar con 2-4 opciones numeradas.\n"
         "NO repitas descripciones de respuestas anteriores.]"
     ),
     "fr": (
         "[Continue comme Maitre du Jeu a la deuxieme personne. Maintiens le lieu et l'etat du combat.\n"
+        "Si un resultat de lancer est fourni ci-dessus, decris son issue d'abord.\n"
         "Pour les jets: [ROLL expression description]. NE lance PAS les des toi-meme.\n"
         "Fais avancer l'intrigue. Tu DOIS terminer par 2-4 options numerotees.\n"
         "NE repete PAS les descriptions des reponses precedentes.]"
     ),
     "de": (
         "[Setze als Spielleiter in der zweiten Person fort. Behalte Ort und Kampfzustand bei.\n"
+        "Wenn oben ein Wurfelergebnis steht, beschreibe zuerst dessen Ausgang.\n"
         "Fur Wurfe: [ROLL Ausdruck Beschreibung]. Wurfle NICHT selbst.\n"
         "Bringe die Handlung voran. Du MUSST mit 2-4 nummerierten Optionen enden.\n"
         "Wiederhole KEINE Beschreibungen aus vorherigen Antworten.]"
     ),
     "pt": (
         "[Continue como Mestre do Jogo na segunda pessoa. Mantenha local e estado de combate.\n"
+        "Se um resultado de rolagem foi fornecido acima, descreva seu desfecho primeiro.\n"
         "Para rolagens: [ROLL expressao descricao]. NAO role dados voce mesmo.\n"
         "Avance a trama. DEVE terminar com 2-4 opcoes numeradas.\n"
         "NAO repita descricoes de respostas anteriores.]"
     ),
     "it": (
         "[Continua come Game Master in seconda persona. Mantieni posizione e stato del combattimento.\n"
+        "Se sopra e fornito un risultato di tiro, descrivi prima il suo esito.\n"
         "Per i tiri: [ROLL espressione descrizione]. NON tirare i dadi tu stesso.\n"
         "Fai avanzare la trama. DEVI terminare con 2-4 opzioni numerate.\n"
         "NON ripetere descrizioni dalle risposte precedenti.]"
     ),
 }
+
+# ── Dice result injection for next-turn context ──────────────
+_DICE_INJECTION_HEADER = {
+    "ru": "РЕЗУЛЬТАТ БРОСКА",
+    "en": "DICE RESULT",
+    "es": "RESULTADO DE TIRADA",
+    "fr": "RESULTAT DU LANCER",
+    "de": "WURFELERGEBNIS",
+    "pt": "RESULTADO DA ROLAGEM",
+    "it": "RISULTATO DEL TIRO",
+}
+_DICE_INJECTION_FOOTER = {
+    "ru": "Опиши исход этого броска в начале ответа. Результат уже определен — не бросай заново.",
+    "en": "Describe the outcome of this roll at the start of your response. The result is final — do not re-roll.",
+    "es": "Describe el resultado de esta tirada al inicio de tu respuesta. El resultado es definitivo.",
+    "fr": "Decris le resultat de ce lancer au debut de ta reponse. Le resultat est definitif.",
+    "de": "Beschreibe das Ergebnis dieses Wurfs am Anfang deiner Antwort. Das Ergebnis steht fest.",
+    "pt": "Descreva o resultado desta rolagem no inicio da sua resposta. O resultado e definitivo.",
+    "it": "Descrivi l'esito di questo tiro all'inizio della risposta. Il risultato e definitivo.",
+}
+
+
+def _format_dice_injection(dice_rolls: list[dict], language: str) -> str:
+    """Format previous dice results as a system message for next-turn injection."""
+    header = _DICE_INJECTION_HEADER.get(language, _DICE_INJECTION_HEADER["en"])
+    footer = _DICE_INJECTION_FOOTER.get(language, _DICE_INJECTION_FOOTER["en"])
+    lines = [f"[{header}]"]
+    for r in dice_rolls:
+        desc = r.get("description", "")
+        expr = r.get("expression", "?")
+        total = r.get("total", 0)
+        rolls = r.get("rolls", [])
+        mod = r.get("modifier", 0)
+        detail = f"rolls {rolls}"
+        if mod:
+            detail += f" + {mod}"
+        line = f"- {expr} = {total} ({detail})"
+        if desc:
+            line += f" — {desc}"
+        lines.append(line)
+    lines.append(footer)
+    return "\n".join(lines)
+
 
 _TUTOR_POST_HISTORY = {
     "en": "[Continue as {name}. If the user made language errors, gently correct 1-2 of them. Introduce a new word or phrase naturally. Keep it conversational.]",
@@ -542,7 +592,11 @@ async def build_conversation_messages(
 
     # Post-history reminder (closest to generation = strongest reinforcement)
     # Campaign chats use DnD post-history regardless of site_mode
-    if campaign_id:
+    tags_str = char_dict.get("tags", "")
+    is_dnd = bool(campaign_id) or "dnd" in [t.strip() for t in tags_str.split(",")]
+    if is_dnd:
+        post_history_dict = _DND_POST_HISTORY
+    elif campaign_id:
         post_history_dict = _DND_POST_HISTORY
     else:
         _POST_HISTORY_MAP = {"sfw": _TUTOR_POST_HISTORY, "fiction": _FICTION_POST_HISTORY}
@@ -550,5 +604,18 @@ async def build_conversation_messages(
     lang = language if language in post_history_dict else "en"
     reminder = post_history_dict[lang].format(name=character.name)
     all_messages = result_list + messages
+
+    # Inject previous dice results for DnD chats (before post-history)
+    if is_dnd and messages_data:
+        # Find the last assistant message — only inject if it has dice_rolls
+        for msg in reversed(messages_data):
+            if (hasattr(msg.role, 'value') and msg.role.value or msg.role) == "assistant":
+                if getattr(msg, 'dice_rolls', None):
+                    all_messages.append(LLMMessage(
+                        role="system",
+                        content=_format_dice_injection(msg.dice_rolls, language),
+                    ))
+                break
+
     all_messages.append(LLMMessage(role="system", content=reminder))
     return all_messages

@@ -1290,6 +1290,8 @@ _DND_PROMPTS = {
             "  Пример: [ROLL d20+3 проверка Ловкости для уклонения]\n"
             "  Пример: [ROLL 2d6+2 урон мечом]\n"
             "- НЕ бросай кубики сам. Пиши [ROLL ...], система бросит автоматически.\n"
+            "- Пиши [ROLL ...] В КОНЦЕ ответа (перед вариантами). НЕ описывай результат броска — оставь интригу.\n"
+            "- Система бросит кубики и передаст результат. В СЛЕДУЮЩЕМ ответе опиши исход по этому результату.\n"
             "- В начале боя и при изменении состояния пиши блок [STATE {json}] с текущим состоянием:\n"
             '  [STATE {"combat":true,"round":1,"combatants":[{"name":"Goblin","hp":7,"max_hp":7,"ac":15,"conditions":[]}],"location":"Cave"}]\n'
             "  Обновляй HP, условия, раунды по ходу боя. Если бой окончен: [STATE {\"combat\":false}]\n"
@@ -1352,6 +1354,8 @@ _DND_PROMPTS = {
             "  Example: [ROLL d20+3 Dexterity check to dodge]\n"
             "  Example: [ROLL 2d6+2 sword damage]\n"
             "- Do NOT roll dice yourself. Write [ROLL ...], the system rolls automatically.\n"
+            "- Write [ROLL ...] at the END of your response (before choices). Do NOT narrate the roll's outcome — leave it as a cliffhanger.\n"
+            "- The system will roll and provide the result. In your NEXT response, describe the outcome based on that result.\n"
             "- At combat start and when state changes, write a [STATE {json}] block:\n"
             '  [STATE {"combat":true,"round":1,"combatants":[{"name":"Goblin","hp":7,"max_hp":7,"ac":15,"conditions":[]}],"location":"Cave"}]\n'
             '  Update HP, conditions, rounds as combat progresses. When combat ends: [STATE {"combat":false}]\n'
@@ -1413,6 +1417,8 @@ _DND_PROMPTS = {
             "- Para tiradas de dados: [ROLL expresion descripcion]\n"
             "  Ejemplo: [ROLL d20+3 chequeo de Destreza para esquivar]\n"
             "- NO tires dados tu mismo. Escribe [ROLL ...], el sistema tira automaticamente.\n"
+            "- Escribe [ROLL ...] al FINAL de tu respuesta (antes de opciones). NO narres el resultado — dejalo como suspenso.\n"
+            "- El sistema tirara y dara el resultado. En tu SIGUIENTE respuesta, describe el desenlace segun ese resultado.\n"
             "- Al inicio del combate y con cambios de estado, escribe [STATE {json}] con combatientes, PG, CA, condiciones.\n"
             '  Fin del combate: [STATE {"combat":false}]\n'
             "- Regla de lo genial: si la idea creativa del jugador es divertida, baja el DC o dejala funcionar.\n"
@@ -1472,6 +1478,8 @@ _DND_PROMPTS = {
             "- Pour les jets de des: [ROLL expression description]\n"
             "  Exemple: [ROLL d20+3 test de Dexterite pour esquiver]\n"
             "- NE lance PAS les des toi-meme. Ecris [ROLL ...], le systeme lance automatiquement.\n"
+            "- Ecris [ROLL ...] a la FIN de ta reponse (avant les options). NE decris PAS le resultat — laisse le suspense.\n"
+            "- Le systeme lancera et fournira le resultat. Dans ta PROCHAINE reponse, decris l'issue selon ce resultat.\n"
             "- Au debut du combat et lors de changements, ecris [STATE {json}] avec combattants, PV, CA, conditions.\n"
             '  Fin du combat: [STATE {"combat":false}]\n'
             "- Regle du cool: si l'idee creative du joueur est fun, baisse le DC ou laisse-la fonctionner.\n"
@@ -1531,6 +1539,8 @@ _DND_PROMPTS = {
             "- Fur Wurfelwurfe: [ROLL Ausdruck Beschreibung]\n"
             "  Beispiel: [ROLL d20+3 Geschicklichkeitsprobe zum Ausweichen]\n"
             "- Wurfle NICHT selbst. Schreibe [ROLL ...], das System wurf automatisch.\n"
+            "- Schreibe [ROLL ...] am ENDE deiner Antwort (vor den Optionen). Beschreibe NICHT das Ergebnis — lass die Spannung.\n"
+            "- Das System wurfelt und liefert das Ergebnis. In deiner NACHSTEN Antwort beschreibe den Ausgang anhand dieses Ergebnisses.\n"
             "- Bei Kampfbeginn und Zustandsanderungen: [STATE {json}] mit Kampfern, TP, RK, Zustanden.\n"
             '  Kampfende: [STATE {"combat":false}]\n'
             "- Regel der Coolness: wenn die kreative Idee des Spielers Spass macht, senke den DC oder lass es funktionieren.\n"
@@ -1590,6 +1600,8 @@ _DND_PROMPTS = {
             "- Para rolagens de dados: [ROLL expressao descricao]\n"
             "  Exemplo: [ROLL d20+3 teste de Destreza para esquivar]\n"
             "- NAO role dados voce mesmo. Escreva [ROLL ...], o sistema rola automaticamente.\n"
+            "- Escreva [ROLL ...] no FINAL da resposta (antes das opcoes). NAO narre o resultado — deixe o suspense.\n"
+            "- O sistema rolara e fornecera o resultado. Na PROXIMA resposta, descreva o desfecho com base nesse resultado.\n"
             "- No inicio do combate e com mudancas: [STATE {json}] com combatentes, PV, CA, condicoes.\n"
             '  Fim do combate: [STATE {"combat":false}]\n'
             "- Regra do legal: se a ideia criativa do jogador e divertida, baixe o DC ou deixe funcionar.\n"
@@ -1649,6 +1661,8 @@ _DND_PROMPTS = {
             "- Per i tiri di dadi: [ROLL espressione descrizione]\n"
             "  Esempio: [ROLL d20+3 prova di Destrezza per schivare]\n"
             "- NON tirare i dadi tu stesso. Scrivi [ROLL ...], il sistema tira automaticamente.\n"
+            "- Scrivi [ROLL ...] alla FINE della risposta (prima delle opzioni). NON narrare l'esito — lascia la suspense.\n"
+            "- Il sistema tirera e fornira il risultato. Nella PROSSIMA risposta, descrivi l'esito in base a quel risultato.\n"
             "- All'inizio del combattimento e con cambiamenti: [STATE {json}] con combattenti, PF, CA, condizioni.\n"
             '  Fine combattimento: [STATE {"combat":false}]\n'
             "- Regola del figo: se l'idea creativa del giocatore e divertente, abbassa il CD o lasciala funzionare.\n"

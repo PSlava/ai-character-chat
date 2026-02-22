@@ -113,6 +113,15 @@ async def _update_encounter_state(db, chat_id: str, new_state: dict):
     await db.commit()
 
 
+async def _save_dice_on_message(db: AsyncSession, msg_id: str, dice_rolls: list):
+    """Persist dice roll results on the assistant message for next-turn injection."""
+    result = await db.execute(select(Message).where(Message.id == msg_id))
+    msg = result.scalar_one_or_none()
+    if msg:
+        msg.dice_rolls = dice_rolls
+        await db.commit()
+
+
 # ── Paid mode cache (60s TTL) ─────────────────────────────────
 _paid_mode_cache: tuple[bool, float] = (False, 0.0)
 _PAID_CACHE_TTL = 60
@@ -742,6 +751,7 @@ async def send_message(
                         dice_rolls = _parse_dice_rolls(complete_text)
                         if dice_rolls:
                             done_data['dice_rolls'] = dice_rolls
+                            await _save_dice_on_message(db, saved_msg_id, dice_rolls)
                         enc_state = _parse_encounter_state(complete_text)
                         if enc_state:
                             await _update_encounter_state(db, chat_id, enc_state)
@@ -828,6 +838,7 @@ async def send_message(
                                 fb_dice = _parse_dice_rolls(fb_text)
                                 if fb_dice:
                                     done_data['dice_rolls'] = fb_dice
+                                    await _save_dice_on_message(db, fb_saved_id, fb_dice)
                                 fb_enc = _parse_encounter_state(fb_text)
                                 if fb_enc:
                                     await _update_encounter_state(db, chat_id, fb_enc)
@@ -870,6 +881,7 @@ async def send_message(
                     dice_rolls = _parse_dice_rolls(complete_text)
                     if dice_rolls:
                         done_data['dice_rolls'] = dice_rolls
+                        await _save_dice_on_message(db, saved_msg_id, dice_rolls)
                     enc_state = _parse_encounter_state(complete_text)
                     if enc_state:
                         await _update_encounter_state(db, chat_id, enc_state)
