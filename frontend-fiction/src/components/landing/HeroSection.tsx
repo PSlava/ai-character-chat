@@ -60,11 +60,8 @@ export function HeroSection({ popularCharacters, onBrowseClick }: Props) {
               <span className="font-semibold text-white">{stats.messages.toLocaleString()}+</span>
               <span>{t('stats.messages')}</span>
               <span className="text-neutral-600 mx-1">&middot;</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="font-semibold text-green-400">{stats.online_now}</span>
-              </span>
-              <span>{t('stats.onlineNow')}</span>
+              <span className="font-semibold text-white">{stats.stories ?? stats.characters}</span>
+              <span>{t('stats.adventures')}</span>
             </div>
           )}
 

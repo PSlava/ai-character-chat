@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -235,7 +236,74 @@ async def import_seed_characters(
         c.slug = generate_slug(c.name, c.id)
 
     await db.commit()
+
+    # Fire-and-forget: warmup translations for all imported characters
+    asyncio.create_task(_warmup_seed_translations())
+
     return {"imported": len(SEED_CHARACTERS)}
+
+
+async def _warmup_seed_translations():
+    """Background task: translate all seed characters into all target languages."""
+    import logging
+    _log = logging.getLogger(__name__)
+    target_languages = ["en", "es", "ru", "fr", "de", "pt", "it"]
+
+    try:
+        from app.db.session import async_session
+        from app.characters.translation import ensure_translations
+        from sqlalchemy.orm import selectinload
+
+        _log.info("Warmup translations: starting...")
+
+        async with async_session() as db:
+            result = await db.execute(
+                select(Character)
+                .options(selectinload(Character.creator))
+                .where(Character.is_public == True)
+            )
+            characters = list(result.scalars().all())
+
+            # Pass 1: card fields (name, tagline, tags) — batched
+            for lang in target_languages:
+                need = [c for c in characters if (c.original_language or "ru") != lang]
+                uncached = [c for c in need if not (c.translations or {}).get(lang)]
+                if not uncached:
+                    continue
+                BATCH = 15
+                for i in range(0, len(uncached), BATCH):
+                    batch = uncached[i:i + BATCH]
+                    try:
+                        await ensure_translations(batch, lang, include_descriptions=False, cached_only=False)
+                    except Exception as e:
+                        _log.warning(f"Card translation [{lang}] batch failed: {e}")
+                    await asyncio.sleep(2)
+
+            # Pass 2: descriptions — one character at a time
+            for lang in target_languages:
+                # Re-read fresh translations
+                result2 = await db.execute(
+                    select(Character)
+                    .options(selectinload(Character.creator))
+                    .where(Character.is_public == True)
+                )
+                fresh = list(result2.scalars().all())
+                need = [c for c in fresh if (c.original_language or "ru") != lang]
+                need_desc = [
+                    c for c in need
+                    if not (c.translations or {}).get(lang, {}).get("personality")
+                    and getattr(c, "personality", None)
+                ]
+                for c in need_desc:
+                    try:
+                        await ensure_translations([c], lang, include_descriptions=True, cached_only=False)
+                    except Exception as e:
+                        _log.warning(f"Desc translation [{lang}] {c.name} failed: {e}")
+                    await asyncio.sleep(3)
+
+        _log.info("Warmup translations: done!")
+    except Exception as e:
+        _log.error(f"Warmup translations failed: {e}")
 
 
 @router.post("/generate-slugs")

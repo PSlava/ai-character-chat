@@ -41,9 +41,15 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
         select(func.count()).select_from(Character).where(Character.is_public == True)
     )).scalar_one()
 
-    return {
+    result = {
         "users": users + BASE_USERS,
         "messages": messages + BASE_MESSAGES,
         "characters": characters,
         "online_now": characters,
     }
+
+    if settings.is_fiction_mode:
+        result["online_now"] = 0
+        result["stories"] = characters
+
+    return result

@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { SEO } from '@/components/seo/SEO';
 import { localePath } from '@/lib/lang';
-import { isCharacterOnline } from '@/lib/utils';
 import toast from 'react-hot-toast';
 import { MessageCircle, Heart, User, Pencil, Trash2, Star, ThumbsUp, ThumbsDown, GitFork } from 'lucide-react';
 import { ShareButtons } from '@/components/characters/ShareButtons';
@@ -244,9 +243,6 @@ export function CharacterPage() {
           >
             <Avatar src={character.avatar_url} name={character.name} size="lg" />
           </button>
-          {isCharacterOnline(character.id) && (
-            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-neutral-800" />
-          )}
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{character.name}</h1>

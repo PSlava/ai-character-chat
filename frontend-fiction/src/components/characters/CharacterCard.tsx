@@ -5,7 +5,6 @@ import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { useVotesStore } from '@/store/votesStore';
-import { isCharacterOnline } from '@/lib/utils';
 import { localePath } from '@/lib/lang';
 import { MessageCircle, Heart, ThumbsUp, ThumbsDown, GitFork } from 'lucide-react';
 
@@ -58,9 +57,6 @@ export const CharacterCard = memo(function CharacterCard({ character }: Props) {
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
           <Avatar src={character.avatar_url} name={character.name} size="lg" />
-          {isCharacterOnline(character.id) && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-neutral-800" />
-          )}
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-white truncate">{character.name}</h3>

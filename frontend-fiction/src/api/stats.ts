@@ -5,6 +5,7 @@ export interface SiteStats {
   messages: number;
   characters: number;
   online_now: number;
+  stories?: number;
 }
 
 export async function getStats(): Promise<SiteStats> {
