@@ -152,6 +152,33 @@ if settings.is_fiction_mode:
     from app.game.router import router as game_router
     app.include_router(game_router)
 
+# Auto-generate missing thumbnails on demand
+from fastapi.responses import Response as _Response
+
+@app.get("/api/uploads/avatars/{filename}")
+async def _avatar_thumb_fallback(filename: str):
+    """If a _thumb.webp is requested but missing, generate it from the full-size avatar."""
+    avatars_dir = Path(settings.upload_dir) / "avatars"
+    file_path = avatars_dir / filename
+    if file_path.exists():
+        return _Response(content=file_path.read_bytes(), media_type="image/webp")
+    # Auto-generate thumb from full-size if missing
+    if filename.endswith("_thumb.webp"):
+        full_name = filename.replace("_thumb.webp", ".webp")
+        full_path = avatars_dir / full_name
+        if full_path.exists():
+            from PIL import Image as _Img
+            from io import BytesIO as _BIO
+            img = _Img.open(full_path)
+            img.thumbnail((160, 160), _Img.LANCZOS)
+            buf = _BIO()
+            img.save(buf, "WEBP", quality=80)
+            data = buf.getvalue()
+            file_path.write_bytes(data)
+            return _Response(content=data, media_type="image/webp")
+    from fastapi import HTTPException as _Exc
+    raise _Exc(status_code=404, detail="Not found")
+
 # Serve uploaded files (avatars etc.) — must be after routers
 # Create directory before mounting (StaticFiles checks at import time)
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
