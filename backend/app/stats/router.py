@@ -1,6 +1,3 @@
-import hashlib
-from datetime import datetime, timezone
-
 from fastapi import APIRouter, Depends
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,18 +41,9 @@ async def get_stats(db: AsyncSession = Depends(get_db)):
         select(func.count()).select_from(Character).where(Character.is_public == True)
     )).scalar_one()
 
-    # Pseudo-random "online now" stable per 5-minute window
-    now = datetime.now(timezone.utc)
-    window = f"{now.year}-{now.month}-{now.day}-{now.hour}-{now.minute // 5}"
-    seed = int(hashlib.md5(window.encode()).hexdigest()[:8], 16)
-    if settings.is_nsfw_mode:
-        online_now = 15 + (seed % 31)  # 15-45
-    else:
-        online_now = 2 + (seed % 6)  # 2-7
-
     return {
         "users": users + BASE_USERS,
         "messages": messages + BASE_MESSAGES,
         "characters": characters,
-        "online_now": online_now,
+        "online_now": characters,
     }
