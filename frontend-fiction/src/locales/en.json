@@ -14,6 +14,8 @@
   "auth.username": "Username",
   "auth.email": "Email",
   "auth.password": "Password",
+  "auth.confirmPassword": "Confirm password",
+  "auth.passwordsMismatch": "Passwords do not match",
   "auth.loginButton": "Sign In",
   "auth.registerButton": "Sign Up",
   "auth.noAccount": "Don't have an account?",

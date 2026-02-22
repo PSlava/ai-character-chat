@@ -14,6 +14,8 @@
   "auth.username": "Имя пользователя",
   "auth.email": "Email",
   "auth.password": "Пароль",
+  "auth.confirmPassword": "Подтвердите пароль",
+  "auth.passwordsMismatch": "Пароли не совпадают",
   "auth.loginButton": "Войти",
   "auth.registerButton": "Зарегистрироваться",
   "auth.noAccount": "Нет аккаунта?",

@@ -30,6 +30,7 @@ export function AuthPage() {
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
   const [honeypot, setHoneypot] = useState('');
   const [error, setError] = useState('');
@@ -64,12 +65,17 @@ export function AuthPage() {
   const switchMode = (m: Mode) => {
     setMode(m);
     setError('');
+    setConfirmPassword('');
     setResetSent(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (mode === 'register' && password !== confirmPassword) {
+      setError(t('auth.passwordsMismatch'));
+      return;
+    }
     setLoading(true);
     try {
       if (mode === 'forgot') {
@@ -173,15 +179,28 @@ export function AuthPage() {
                 required
               />
               {mode !== 'forgot' && (
-                <Input
-                  label={t('auth.password')}
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  minLength={6}
-                />
+                <>
+                  <Input
+                    label={t('auth.password')}
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                  />
+                  {mode === 'register' && (
+                    <Input
+                      label={t('auth.confirmPassword')}
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      minLength={6}
+                    />
+                  )}
+                </>
               )}
 
               {mode === 'login' && (

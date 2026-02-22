@@ -16,6 +16,8 @@
   "auth.username": "Nome utente",
   "auth.email": "Email",
   "auth.password": "Password",
+  "auth.confirmPassword": "Conferma password",
+  "auth.passwordsMismatch": "Le password non corrispondono",
   "auth.loginButton": "Accedi",
   "auth.registerButton": "Registrati",
   "auth.noAccount": "Non hai un account?",
