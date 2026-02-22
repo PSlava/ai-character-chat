@@ -11,6 +11,7 @@ SEED_STORIES: list[dict] = [
     # 1 — Dark Fantasy: The Cursed Forest
     {
         "name": "The Cursed Forest",
+        "original_language": "en",
         "tagline": "A dark fairy tale where every choice has consequences",
         "personality": (
             "An interactive dark fantasy story. The reader is a wandering herbalist "
@@ -64,6 +65,7 @@ SEED_STORIES: list[dict] = [
     # 2 — Horror: The Lighthouse
     {
         "name": "The Lighthouse",
+        "original_language": "en",
         "tagline": "Something is wrong with the light at Greypoint",
         "personality": (
             "A psychological horror story set in an isolated lighthouse on a rocky coast. "
@@ -121,6 +123,7 @@ SEED_STORIES: list[dict] = [
     # 3 — Sci-Fi: Station Erebus
     {
         "name": "Station Erebus",
+        "original_language": "en",
         "tagline": "A space station has gone dark. You're the rescue team.",
         "personality": (
             "A science fiction mystery aboard an orbital research station. "
@@ -180,6 +183,7 @@ SEED_STORIES: list[dict] = [
     # 4 — Mystery/Detective: The Glass House
     {
         "name": "The Glass House",
+        "original_language": "en",
         "tagline": "A murder at a dinner party. Everyone is lying.",
         "personality": (
             "A classic whodunit mystery. The reader is a retired detective invited to a "
@@ -238,6 +242,7 @@ SEED_STORIES: list[dict] = [
     # 5 — Romance: Letters from Provence
     {
         "name": "Letters from Provence",
+        "original_language": "en",
         "tagline": "A summer that changes everything, one letter at a time",
         "personality": (
             "A literary romance set in the lavender fields of southern France. "
@@ -296,6 +301,7 @@ SEED_STORIES: list[dict] = [
     # 6 — Adventure: The Cartographer's Gambit
     {
         "name": "The Cartographer's Gambit",
+        "original_language": "en",
         "tagline": "A treasure map. A rival expedition. One chance.",
         "personality": (
             "A pulp adventure story set in the 1930s. The reader is a cartographer and "
@@ -353,6 +359,7 @@ SEED_STORIES: list[dict] = [
     # 7 — Post-Apocalyptic: After the Quiet
     {
         "name": "After the Quiet",
+        "original_language": "en",
         "tagline": "The world ended not with a bang, but with silence",
         "personality": (
             "A post-apocalyptic survival story. Three years ago, the Quiet happened — "
@@ -414,6 +421,7 @@ SEED_STORIES: list[dict] = [
     # 8 — Modern Thriller: The Informant
     {
         "name": "The Informant",
+        "original_language": "en",
         "tagline": "Trust no one. Especially not yourself.",
         "personality": (
             "A modern espionage thriller. The reader is a data analyst at a European "
@@ -472,6 +480,7 @@ SEED_STORIES: list[dict] = [
     # 9 — DnD: The Goblin Warrens of Grimhollow (Classic Dungeon Crawl)
     {
         "name": "The Goblin Warrens of Grimhollow",
+        "original_language": "en",
         "tagline": "A classic dungeon crawl beneath a ruined watchtower",
         "personality": (
             "A D&D 5e dungeon crawl adventure for a single player. The Goblin Warrens are "
@@ -541,6 +550,7 @@ SEED_STORIES: list[dict] = [
     # 10 — DnD: The Dragon of Ashpeak (Dragon Quest)
     {
         "name": "The Dragon of Ashpeak",
+        "original_language": "en",
         "tagline": "A young red dragon terrorizes a mining village. Slay it or bargain with it.",
         "personality": (
             "A D&D 5e dragon quest for a single player. A young red dragon named Ignathar "
@@ -621,6 +631,7 @@ SEED_STORIES: list[dict] = [
     # 11 — DnD: The Necromancer's Bargain (Undead / Moral Dilemma)
     {
         "name": "The Necromancer's Bargain",
+        "original_language": "en",
         "tagline": "The dead are rising. The man responsible has a reason you might understand.",
         "personality": (
             "A D&D 5e adventure mixing combat and moral dilemma. The town of Mirewatch "
@@ -703,6 +714,7 @@ SEED_STORIES: list[dict] = [
     # 12 — DnD: The Thorned Crown (Political Intrigue)
     {
         "name": "The Thorned Crown",
+        "original_language": "en",
         "tagline": "The king lies dying. Three factions want the throne. You have three days.",
         "personality": (
             "A D&D 5e political intrigue adventure focused on social encounters and investigation. "
@@ -795,6 +807,7 @@ SEED_STORIES: list[dict] = [
     # 13 — DnD: The Blighted Expanse (Wilderness Survival / Hex Crawl)
     {
         "name": "The Blighted Expanse",
+        "original_language": "en",
         "tagline": "Five days through corrupted wilderness. Your supplies won't last.",
         "personality": (
             "A D&D 5e wilderness survival adventure for a single player. A magical blight "
