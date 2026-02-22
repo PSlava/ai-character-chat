@@ -178,11 +178,12 @@ async def import_seed_characters(
         delete(Character).where(Character.creator_id == sweetsin.id)
     )
 
-    # Copy seed avatars to uploads dir if available
-    import shutil
+    # Copy seed avatars to uploads dir if available (with thumbnails)
     import uuid as uuid_mod
     from pathlib import Path
+    from PIL import Image
     from app.config import settings
+    from app.uploads.router import _save_with_thumb
 
     seed_avatars_dir = Path(__file__).parent / "seed_avatars"
     avatars_dest = Path(settings.upload_dir) / "avatars"
@@ -197,8 +198,8 @@ async def import_seed_characters(
         src = seed_avatars_dir / f"{i:02d}.webp"
         if src.exists():
             filename = f"{uuid_mod.uuid4().hex}.webp"
-            dest = avatars_dest / filename
-            shutil.copy2(src, dest)
+            img = Image.open(src)
+            _save_with_thumb(img, avatars_dest, filename)
             avatar_url = f"/api/uploads/avatars/{filename}"
 
         char = Character(
@@ -305,9 +306,14 @@ async def cleanup_orphan_avatars(
     referenced = set()
     for (url,) in char_result.all():
         # "/api/uploads/avatars/abc.webp" → "abc.webp"
-        referenced.add(url.split("/")[-1])
+        name = url.split("/")[-1]
+        referenced.add(name)
+        # Also keep thumbnail variant
+        referenced.add(name.replace(".webp", "_thumb.webp"))
     for (url,) in user_result.all():
-        referenced.add(url.split("/")[-1])
+        name = url.split("/")[-1]
+        referenced.add(name)
+        referenced.add(name.replace(".webp", "_thumb.webp"))
 
     deleted = 0
     kept = 0

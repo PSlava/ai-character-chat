@@ -38,7 +38,7 @@ async def _cleanup_orphan_avatars():
         if not avatars_dir.exists():
             return
 
-        # Get all referenced avatar filenames from DB
+        # Get all referenced avatar filenames from DB (+ their thumbnails)
         referenced = set()
         async with db_engine.connect() as conn:
             # Character avatars
@@ -52,6 +52,8 @@ async def _cleanup_orphan_avatars():
                     parts = url.rsplit("/", 1)
                     if len(parts) == 2:
                         referenced.add(parts[1])
+                        # Also keep thumbnail variant
+                        referenced.add(parts[1].replace(".webp", "_thumb.webp"))
 
             # User avatars
             result = await conn.execute(
@@ -63,6 +65,7 @@ async def _cleanup_orphan_avatars():
                     parts = url.rsplit("/", 1)
                     if len(parts) == 2:
                         referenced.add(parts[1])
+                        referenced.add(parts[1].replace(".webp", "_thumb.webp"))
 
         # Find and delete orphans
         deleted = 0
