@@ -224,6 +224,6 @@ Admin: `GET /api/admin/prompts`, `PUT /api/admin/prompts/{key}`, `DELETE /api/ad
 Models: `GET /api/models/openrouter`, `GET /api/models/groq`, `GET /api/models/cerebras`, `GET /api/models/together`
 Analytics: `POST /api/analytics/pageview` (public, rate-limited), `GET /api/admin/analytics/overview?days=7` (admin — traffic, countries, devices, models, traffic_sources, os, bot_views, anon_stats), `GET /api/admin/analytics/costs?days=7` (admin — daily token usage, by provider, top users, totals)
 SEO: `GET /api/seo/sitemap.xml`, `GET /api/seo/robots.txt`, `GET /api/seo/feed.xml` (RSS 2.0), `GET /api/seo/c/{slug}` (prerender), `GET /api/seo/tags/{slug}` (prerender), `GET /api/seo/faq` (prerender), `GET /api/seo/home` (prerender), `GET /api/seo/about` (prerender), `GET /api/seo/terms` (prerender), `GET /api/seo/privacy` (prerender)
-Uploads: `POST /api/upload/avatar` (multipart, auth required), `POST /api/upload/generate-avatar` (admin-only, DALL-E 3 generation from prompt, 512x512 WebP)
+Uploads: `POST /api/upload/avatar` (multipart, auth required), `POST /api/upload/generate-avatar` (admin-only, DALL-E 3 generation from prompt, 512x512 WebP). Avatars saved as full-size (512px) + thumbnail (160px `_thumb.webp`) via `_save_with_thumb()`. Auto-fallback in `main.py`: if `_thumb.webp` 404, generates from full-size on demand and caches to disk.
 Stats: `GET /api/stats` — public, returns inflated counters + online_now (excludes admins/system users)
 Health: `GET /api/health`
