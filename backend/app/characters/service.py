@@ -26,6 +26,7 @@ async def list_public_characters(
     gender: str | None = None,
     user_id: str | None = None,
     language: str | None = None,
+    exclude_tag: str | None = None,
 ):
     from sqlalchemy import or_
 
@@ -62,6 +63,8 @@ async def list_public_characters(
         )
     if tag:
         query = query.where(Character.tags.contains(tag))
+    if exclude_tag:
+        query = query.where(~Character.tags.contains(exclude_tag))
     if gender and gender in ("male", "female"):
         # Exact tag match within comma-separated list (avoid "male" matching "female")
         query = query.where(text(f"(',' || structured_tags || ',') LIKE '%,{gender},%'"))
@@ -86,6 +89,7 @@ async def count_public_characters(
     tag: str | None = None,
     gender: str | None = None,
     user_id: str | None = None,
+    exclude_tag: str | None = None,
 ) -> int:
     from sqlalchemy import or_
 
@@ -107,6 +111,8 @@ async def count_public_characters(
         )
     if tag:
         query = query.where(Character.tags.contains(tag))
+    if exclude_tag:
+        query = query.where(~Character.tags.contains(exclude_tag))
     if gender and gender in ("male", "female"):
         # Exact tag match within comma-separated list (avoid "male" matching "female")
         query = query.where(text(f"(',' || structured_tags || ',') LIKE '%,{gender},%'"))

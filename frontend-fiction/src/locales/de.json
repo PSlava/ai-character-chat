@@ -638,5 +638,7 @@
   "onboarding.tagQuestion": "Welches Genre bevorzugst du?",
   "onboarding.next": "Weiter",
   "onboarding.finish": "Los geht's!",
-  "onboarding.skip": "Erstmal überspringen"
+  "onboarding.skip": "Erstmal überspringen",
+  "home.dndBanner.title": "D&D Spielleiter",
+  "home.dndBanner.subtitle": "Würfle, kämpfe gegen Monster und schmieде dein eigenes Abenteuer"
 }

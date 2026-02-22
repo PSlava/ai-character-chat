@@ -13,6 +13,7 @@ import { ChatWindow } from '@/components/chat/ChatWindow';
 import { ChatInput } from '@/components/chat/ChatInput';
 import ChoiceButtons from '@/components/chat/ChoiceButtons';
 import { DiceResultDisplay } from '@/components/game/DiceRoller';
+import { EncounterPanel } from '@/components/game/EncounterPanel';
 import { GenerationSettingsModal, loadModelSettings } from '@/components/chat/GenerationSettingsModal';
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -60,7 +61,7 @@ export function ChatPage() {
   const removeChat = useChatStore((s) => s.removeChat);
   const isAdmin = authUser?.role === 'admin';
 
-  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
+  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, encounterState, setEncounterState, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
     chatId || ''
   );
   const [showAnonLimit, setShowAnonLimit] = useState(false);
@@ -86,6 +87,11 @@ export function ChatPage() {
         // Track anon messages left
         if (data.anon_messages_left !== undefined) {
           setAnonMessagesLeft(data.anon_messages_left);
+        }
+
+        // Load encounter state for campaign chats
+        if (data.chat?.encounter_state) {
+          setEncounterState(data.chat.encounter_state);
         }
 
         // Migrate old format: chat-settings:{chatId} → chat-model:{chatId}
@@ -416,6 +422,12 @@ export function ChatPage() {
           {diceRolls.map((roll, i) => (
             <DiceResultDisplay key={i} result={roll} />
           ))}
+        </div>
+      )}
+
+      {encounterState && (
+        <div className="px-4 py-2">
+          <EncounterPanel state={encounterState as any} />
         </div>
       )}
 

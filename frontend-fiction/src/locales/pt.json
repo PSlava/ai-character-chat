@@ -638,5 +638,7 @@
   "onboarding.tagQuestion": "Qual gênero você prefere?",
   "onboarding.next": "Próximo",
   "onboarding.finish": "Vamos lá!",
-  "onboarding.skip": "Pular por enquanto"
+  "onboarding.skip": "Pular por enquanto",
+  "home.dndBanner.title": "D&D Mestre do Jogo",
+  "home.dndBanner.subtitle": "Lance dados, lute contra monstros e forje sua própria aventura"
 }

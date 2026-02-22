@@ -7,6 +7,9 @@ import { Trash2, RefreshCw, EllipsisVertical, Copy } from 'lucide-react';
 import type { Message } from '@/types';
 import { Avatar } from '@/components/ui/Avatar';
 
+const STATE_RE = /\[STATE\s*\{.*?\}\s*\]/gs;
+const stripStateBlocks = (text: string) => text.replace(STATE_RE, '').trim();
+
 interface Props {
   message: Message;
   characterName?: string;
@@ -147,7 +150,7 @@ export const MessageBubble = memo(function MessageBubble({ message, characterNam
               blockquote: ({ children }) => <blockquote className="border-l-2 border-purple-500 pl-3 my-2 text-neutral-300 italic">{children}</blockquote>,
             }}
           >
-            {message.content || '...'}
+            {stripStateBlocks(message.content) || '...'}
           </ReactMarkdown>
         )}
       </div>

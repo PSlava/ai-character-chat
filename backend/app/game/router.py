@@ -231,3 +231,21 @@ async def roll_dice(
         raise HTTPException(status_code=400, detail=str(e))
 
     return result.to_dict()
+
+
+# ── Encounter State ──────────────────────────────────────
+
+@router.get("/chats/{chat_id}/encounter-state")
+async def get_encounter_state(
+    chat_id: str,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get encounter state for a campaign chat."""
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat_id, Chat.user_id == user["id"])
+    )
+    chat = result.scalar_one_or_none()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    return {"encounter_state": chat.encounter_state}

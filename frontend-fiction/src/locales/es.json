@@ -638,5 +638,7 @@
   "onboarding.tagQuestion": "¿Qué género prefieres?",
   "onboarding.next": "Siguiente",
   "onboarding.finish": "¡Vamos!",
-  "onboarding.skip": "Omitir por ahora"
+  "onboarding.skip": "Omitir por ahora",
+  "home.dndBanner.title": "D&D Director de Juego",
+  "home.dndBanner.subtitle": "Lanza dados, lucha contra monstruos y forja tu propia aventura"
 }

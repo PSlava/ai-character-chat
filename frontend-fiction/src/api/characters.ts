@@ -17,6 +17,7 @@ export interface PaginatedCharacters {
 export async function getCharacters(params?: {
   search?: string;
   tag?: string;
+  exclude_tag?: string;
   gender?: string;
   limit?: number;
   offset?: number;

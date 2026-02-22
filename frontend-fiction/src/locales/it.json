@@ -638,5 +638,7 @@
   "onboarding.tagQuestion": "Quale genere preferisci?",
   "onboarding.next": "Avanti",
   "onboarding.finish": "Andiamo!",
-  "onboarding.skip": "Salta per ora"
+  "onboarding.skip": "Salta per ora",
+  "home.dndBanner.title": "D&D Game Master",
+  "home.dndBanner.subtitle": "Lancia i dadi, combatti mostri e forgia la tua avventura"
 }

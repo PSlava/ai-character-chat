@@ -8,7 +8,7 @@ import { SEO } from '@/components/seo/SEO';
 import { localePath } from '@/lib/lang';
 import { useAuth } from '@/hooks/useAuth';
 import { getOnboardingPrefs } from '@/components/ui/OnboardingModal';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Swords, Dice5 } from 'lucide-react';
 import type { Character } from '@/types';
 
 const TAG_PILLS = [
@@ -76,6 +76,7 @@ export function HomePage() {
       getCharacters({
         search: search || undefined,
         tag: activeTag || undefined,
+        exclude_tag: 'dnd',
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
         language: i18n.language,
@@ -274,6 +275,27 @@ export function HomePage() {
                 )}
               </div>
             </div>
+          </Link>
+        )}
+
+        {/* D&D Adventures banner */}
+        {!search && !activeTag && !loading && (
+          <Link
+            to="/campaigns"
+            className="flex items-center gap-4 mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-950/40 to-neutral-800/50 border border-amber-500/20 hover:border-amber-500/40 transition-colors group"
+          >
+            <div className="shrink-0 w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
+              <Swords className="w-6 h-6 text-amber-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-amber-200 group-hover:text-amber-100 transition-colors">
+                {t('home.dndBanner.title', 'D&D Game Master')}
+              </h3>
+              <p className="text-sm text-neutral-400">
+                {t('home.dndBanner.subtitle', 'Roll dice, fight monsters, and forge your own adventure')}
+              </p>
+            </div>
+            <Dice5 className="w-5 h-5 text-amber-500/50 group-hover:text-amber-400 transition-colors shrink-0" />
           </Link>
         )}
 

@@ -28,6 +28,9 @@ _CHOICE_PATTERN = _re.compile(r'^(\d+)\.\s+(.+)$', _re.MULTILINE)
 # Pattern for dice roll requests from GM: [ROLL expression description]
 _ROLL_PATTERN = _re.compile(r'\[ROLL\s+(\S+)\s*(.*?)\]')
 
+# Pattern for encounter state updates from GM: [STATE {...json...}]
+_STATE_PATTERN = _re.compile(r'\[STATE\s*(\{.*?\})\s*\]', _re.DOTALL)
+
 
 def _parse_choices(text: str) -> list[dict] | None:
     """Extract numbered choices from the end of the AI response text.
@@ -77,6 +80,36 @@ def _parse_dice_rolls(text: str) -> list[dict] | None:
         except ValueError:
             continue
     return results if results else None
+
+
+def _parse_encounter_state(text: str) -> dict | None:
+    """Find [STATE {...json...}] pattern in AI response and parse encounter state."""
+    match = _STATE_PATTERN.search(text)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group(1))
+    except (json.JSONDecodeError, ValueError):
+        return None
+
+
+def _strip_state_blocks(text: str) -> str:
+    """Remove [STATE {...}] blocks from text so they don't show in chat."""
+    return _STATE_PATTERN.sub('', text).strip()
+
+
+async def _update_encounter_state(db, chat_id: str, new_state: dict):
+    """Merge new encounter state into chat's encounter_state JSONB."""
+    from app.db.models import Chat
+    from sqlalchemy import select
+    result = await db.execute(select(Chat).where(Chat.id == chat_id))
+    chat = result.scalar_one_or_none()
+    if not chat:
+        return
+    current = chat.encounter_state or {}
+    current.update(new_state)
+    chat.encounter_state = current
+    await db.commit()
 
 
 # ── Paid mode cache (60s TTL) ─────────────────────────────────
@@ -153,6 +186,8 @@ def chat_to_dict(c):
         "id": c.id,
         "user_id": c.user_id,
         "character_id": c.character_id,
+        "campaign_id": getattr(c, 'campaign_id', None),
+        "encounter_state": getattr(c, 'encounter_state', None),
         "persona_id": getattr(c, 'persona_id', None),
         "persona_name": getattr(c, 'persona_name', None),
         "persona_slug": persona.slug if persona else None,
@@ -698,11 +733,15 @@ async def send_message(
                         choices = _parse_choices(complete_text)
                         if choices:
                             done_data['choices'] = choices
-                    # Parse dice rolls for campaign chats
+                    # Parse dice rolls and encounter state for campaign chats
                     if getattr(chat, 'campaign_id', None):
                         dice_rolls = _parse_dice_rolls(complete_text)
                         if dice_rolls:
                             done_data['dice_rolls'] = dice_rolls
+                        enc_state = _parse_encounter_state(complete_text)
+                        if enc_state:
+                            await _update_encounter_state(db, chat_id, enc_state)
+                            done_data['encounter_state'] = enc_state
                     if anon_session_id and anon_remaining is not None:
                         done_data['anon_messages_left'] = anon_remaining - 1
                     yield f"data: {json.dumps(done_data)}\n\n"
@@ -785,6 +824,10 @@ async def send_message(
                                 fb_dice = _parse_dice_rolls(fb_text)
                                 if fb_dice:
                                     done_data['dice_rolls'] = fb_dice
+                                fb_enc = _parse_encounter_state(fb_text)
+                                if fb_enc:
+                                    await _update_encounter_state(db, chat_id, fb_enc)
+                                    done_data['encounter_state'] = fb_enc
                             if anon_session_id and anon_remaining is not None:
                                 done_data['anon_messages_left'] = anon_remaining - 1
                             yield f"data: {json.dumps(done_data)}\n\n"
@@ -823,6 +866,10 @@ async def send_message(
                     dice_rolls = _parse_dice_rolls(complete_text)
                     if dice_rolls:
                         done_data['dice_rolls'] = dice_rolls
+                    enc_state = _parse_encounter_state(complete_text)
+                    if enc_state:
+                        await _update_encounter_state(db, chat_id, enc_state)
+                        done_data['encounter_state'] = enc_state
                 if anon_session_id and anon_remaining is not None:
                     done_data['anon_messages_left'] = anon_remaining - 1
                 yield f"data: {json.dumps(done_data)}\n\n"

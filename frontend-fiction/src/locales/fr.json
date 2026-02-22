@@ -638,5 +638,7 @@
   "onboarding.tagQuestion": "Quel genre préférez-vous ?",
   "onboarding.next": "Suivant",
   "onboarding.finish": "C'est parti !",
-  "onboarding.skip": "Passer pour l'instant"
+  "onboarding.skip": "Passer pour l'instant",
+  "home.dndBanner.title": "D&D Maître du Donjon",
+  "home.dndBanner.subtitle": "Lancez les dés, combattez des monstres et forgez votre propre aventure"
 }

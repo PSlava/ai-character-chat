@@ -22,6 +22,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
   const [truncated, setTruncated] = useState(false);
   const [choices, setChoices] = useState<{number: number; text: string}[] | null>(null);
   const [diceRolls, setDiceRolls] = useState<DiceRollResult[] | null>(null);
+  const [encounterState, setEncounterState] = useState<Record<string, unknown> | null>(null);
   const [anonLimitReached, setAnonLimitReached] = useState(false);
   const [anonMessagesLeft, setAnonMessagesLeft] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -130,6 +131,10 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
             // Set dice rolls from DnD campaign mode
             if (data.dice_rolls) {
               setDiceRolls(data.dice_rolls);
+            }
+            // Update encounter state from GM
+            if (data.encounter_state) {
+              setEncounterState((prev) => ({ ...(prev || {}), ...data.encounter_state }));
             }
             // Track anonymous messages remaining
             if (data.anon_messages_left !== undefined) {
@@ -386,5 +391,5 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, encounterState, setEncounterState, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
 }
