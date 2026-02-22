@@ -58,6 +58,13 @@ export function Sidebar({ isOpen, onClose }: Props) {
           <Home className="w-4 h-4" />
           {t('sidebar.home')}
         </Link>
+        <Link
+          to="/campaigns"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+        >
+          <Swords className="w-4 h-4" />
+          {t('game.campaigns', 'Campaigns')}
+        </Link>
         {isAuthenticated && (
           <Link
             to="/favorites"
@@ -74,15 +81,6 @@ export function Sidebar({ isOpen, onClose }: Props) {
           >
             <Sparkles className="w-4 h-4" />
             {t('sidebar.myCharacters')}
-          </Link>
-        )}
-        {isAuthenticated && (
-          <Link
-            to="/campaigns"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
-          >
-            <Swords className="w-4 h-4" />
-            {t('game.campaigns', 'Campaigns')}
           </Link>
         )}
         {isAdmin && (
@@ -159,9 +157,22 @@ export function Sidebar({ isOpen, onClose }: Props) {
       )}
 
       {!isAuthenticated && (
-        <div className="p-4 text-sm text-neutral-500">
-          <Logo className="w-8 h-8 mb-2 text-neutral-600" />
-          <p>{t('sidebar.loginPrompt')}</p>
+        <div className="mt-auto p-4 border-t border-neutral-800">
+          <p className="text-sm text-neutral-500 mb-3">{t('sidebar.loginPrompt')}</p>
+          <div className="flex flex-col gap-2">
+            <Link
+              to="/auth?mode=login"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              {t('header.login')}
+            </Link>
+            <Link
+              to="/auth?mode=register"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm rounded-lg transition-colors"
+            >
+              {t('auth.register')}
+            </Link>
+          </div>
         </div>
       )}
     </>
