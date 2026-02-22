@@ -29,7 +29,8 @@ _CHOICE_PATTERN = _re.compile(r'^(\d+)\.\s+(.+)$', _re.MULTILINE)
 _ROLL_PATTERN = _re.compile(r'\[ROLL\s+(\S+)\s*(.*?)\]')
 
 # Pattern for encounter state updates from GM: [STATE {...json...}]
-_STATE_PATTERN = _re.compile(r'\[STATE\s*(\{.*?\})\s*\]', _re.DOTALL)
+# Greedy to capture nested braces in JSON with arrays of objects
+_STATE_PATTERN = _re.compile(r'\[STATE\s*(\{.*\})\s*\]', _re.DOTALL)
 
 
 def _parse_choices(text: str) -> list[dict] | None:
