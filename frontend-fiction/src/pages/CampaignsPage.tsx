@@ -166,7 +166,10 @@ export function CampaignsPage() {
               <div
                 key={adv.id}
                 onClick={() => {
-                  if (!isAuthenticated) { navigate('/auth?mode=register'); return; }
+                  if (!isAuthenticated) {
+                    navigate(adv.slug ? `/c/${adv.slug}` : `/c/${adv.id}`);
+                    return;
+                  }
                   setShowCreate(true);
                 }}
                 className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-5 hover:border-amber-500/40 transition-colors cursor-pointer group"
