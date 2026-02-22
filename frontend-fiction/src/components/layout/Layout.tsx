@@ -6,7 +6,6 @@ import { Sidebar } from './Sidebar';
 import { Footer } from './Footer';
 import { CookieConsent } from '@/components/ui/CookieConsent';
 import { InstallPrompt } from '@/components/ui/InstallPrompt';
-import { OnboardingModal } from '@/components/ui/OnboardingModal';
 import { trackPageView } from '@/api/analytics';
 
 export function Layout() {
@@ -41,7 +40,6 @@ export function Layout() {
       </div>
       <CookieConsent />
       <InstallPrompt />
-      <OnboardingModal />
       <Toaster
         position="bottom-center"
         toastOptions={{

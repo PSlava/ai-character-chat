@@ -7,7 +7,6 @@ import { Footer } from './Footer';
 import { AgeGate } from '@/components/ui/AgeGate';
 import { CookieConsent } from '@/components/ui/CookieConsent';
 import { InstallPrompt } from '@/components/ui/InstallPrompt';
-import { OnboardingModal } from '@/components/ui/OnboardingModal';
 import { trackPageView } from '@/api/analytics';
 
 export function Layout() {
@@ -43,7 +42,6 @@ export function Layout() {
       <AgeGate />
       <CookieConsent />
       <InstallPrompt />
-      <OnboardingModal />
       <Toaster
         position="bottom-center"
         toastOptions={{
