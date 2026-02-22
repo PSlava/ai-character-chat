@@ -473,6 +473,7 @@ async def build_conversation_messages(
         "response_length": getattr(character, 'response_length', None) or "long",
         "appearance": getattr(character, 'appearance', None),
         "structured_tags": [t for t in (getattr(character, 'structured_tags', '') or '').split(",") if t],
+        "tags": getattr(character, 'tags', '') or '',
     }
     messages_data, _ = await get_chat_messages(db, chat_id)  # all messages, no limit
 

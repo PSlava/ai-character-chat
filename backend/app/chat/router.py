@@ -534,6 +534,9 @@ async def send_message(
 
     model_name = chat.model_used or settings.default_model
     content_rating = character.content_rating.value if character.content_rating else "sfw"
+    # DnD mode: campaign chat or character with 'dnd' tag
+    _char_tags = [t.strip() for t in (getattr(character, 'tags', '') or '').split(",")]
+    is_dnd = bool(getattr(chat, 'campaign_id', None)) or "dnd" in _char_tags
 
     # Handle "continue" — append to last assistant message
     continue_msg_id = None
@@ -733,8 +736,8 @@ async def send_message(
                         choices = _parse_choices(complete_text)
                         if choices:
                             done_data['choices'] = choices
-                    # Parse dice rolls and encounter state for campaign chats
-                    if getattr(chat, 'campaign_id', None):
+                    # Parse dice rolls and encounter state for DnD chats
+                    if is_dnd:
                         dice_rolls = _parse_dice_rolls(complete_text)
                         if dice_rolls:
                             done_data['dice_rolls'] = dice_rolls
@@ -820,7 +823,7 @@ async def send_message(
                                 fb_choices = _parse_choices(fb_text)
                                 if fb_choices:
                                     done_data['choices'] = fb_choices
-                            if getattr(chat, 'campaign_id', None):
+                            if is_dnd:
                                 fb_dice = _parse_dice_rolls(fb_text)
                                 if fb_dice:
                                     done_data['dice_rolls'] = fb_dice
@@ -862,7 +865,7 @@ async def send_message(
                     choices = _parse_choices(complete_text)
                     if choices:
                         done_data['choices'] = choices
-                if getattr(chat, 'campaign_id', None):
+                if is_dnd:
                     dice_rolls = _parse_dice_rolls(complete_text)
                     if dice_rolls:
                         done_data['dice_rolls'] = dice_rolls

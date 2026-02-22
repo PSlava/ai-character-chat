@@ -1744,8 +1744,10 @@ async def build_system_prompt(
     campaign_id: str | None = None,
     encounter_state: dict | None = None,
 ) -> str:
-    # DnD campaign mode: use GM prompts
-    if campaign_id:
+    # DnD mode: campaign chat OR character with 'dnd' tag
+    tags = [t.strip() for t in (character.get("tags", "") or "").split(",")]
+    is_dnd = bool(campaign_id) or "dnd" in tags
+    if is_dnd:
         return await _build_dnd_prompt(
             character, user_name, user_description, language, encounter_state,
         )
