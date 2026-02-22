@@ -483,6 +483,9 @@ SEED_STORIES: list[dict] = [
         "original_language": "en",
         "tagline": "A classic dungeon crawl beneath a ruined watchtower",
         "personality": (
+            "Recommended for a Level 1-3 character.\n"
+            "Solo play: if the player struggles, rescued merchant Tobin Marsh (AC 12, HP 15, crossbow +3, 1d8+1) can join as a companion.\n"
+            "Rest opportunities: Area 2 (Fungus Caverns) is safe for a short rest after clearing. Long rest possible outside the watchtower.\n\n"
             "A D&D 5e dungeon crawl adventure for a single player. The Goblin Warrens are "
             "a network of caves beneath a ruined watchtower on the north road near the village "
             "of Grimhollow. Three merchants have vanished in the past month. "
@@ -553,6 +556,9 @@ SEED_STORIES: list[dict] = [
         "original_language": "en",
         "tagline": "A young red dragon terrorizes a mining village. Slay it or bargain with it.",
         "personality": (
+            "Recommended for a Level 5-7 character.\n"
+            "Solo play: if the player struggles, dwarf miner Durin Deepdelve (AC 14, HP 30, warhammer +5, 1d8+3) can join as a guide and fighter.\n"
+            "Rest opportunities: short rest in the village before ascent. The secret tunnel has a safe alcove for short rest. Long rest only in the village.\n\n"
             "A D&D 5e dragon quest for a single player. A young red dragon named Ignathar "
             "(AC 18, HP 178, fire breath: 16d6 DC 17 Dex save, bite +10, 2d10+6, claws +10, "
             "2d6+6) has claimed a lair in the volcanic caves above the mining village of Ashpeak. "
@@ -634,6 +640,9 @@ SEED_STORIES: list[dict] = [
         "original_language": "en",
         "tagline": "The dead are rising. The man responsible has a reason you might understand.",
         "personality": (
+            "Recommended for a Level 3-5 character.\n"
+            "Solo play: if the player struggles, Captain Marta Voss can assign a militia soldier (AC 16, HP 25, longsword +4, 1d8+2) as backup.\n"
+            "Rest opportunities: short rest at the town inn between investigations. Long rest at the inn (safe inside town walls).\n\n"
             "A D&D 5e adventure mixing combat and moral dilemma. The town of Mirewatch "
             "is besieged by undead rising from an old battlefield. The source: Velkan Ashward, "
             "a scholar-turned-necromancer (AC 14, HP 65, spell save DC 15, spells: Animate Dead, "
@@ -717,6 +726,9 @@ SEED_STORIES: list[dict] = [
         "original_language": "en",
         "tagline": "The king lies dying. Three factions want the throne. You have three days.",
         "personality": (
+            "Recommended for a Level 3-5 character. Social focus — combat is minimal.\n"
+            "Solo play: Seneschal Rowan provides hints if the player is stuck. No combat companion needed — this is a detective adventure.\n"
+            "Rest opportunities: long rest between in-game days in assigned guest chambers. Short rest possible in the library or gardens.\n\n"
             "A D&D 5e political intrigue adventure focused on social encounters and investigation. "
             "King Aldric IV of Thornwall was poisoned during a feast. He lies in a magical coma — "
             "the court healer says he has three days. The Succession Council meets at dawn on the "
@@ -810,6 +822,9 @@ SEED_STORIES: list[dict] = [
         "original_language": "en",
         "tagline": "Five days through corrupted wilderness. Your supplies won't last.",
         "personality": (
+            "Recommended for a Level 4-6 character.\n"
+            "Solo play: dying ranger Kael (if stabilized, AC 14, HP 18, longbow +5) or hermit Yara (druid, heals once) can join as companions. Blight-touched druid Thessa is a powerful ally if cured.\n"
+            "Rest opportunities: short rest possible between encounters. Long rests are risky — DC 12 Perception to find safe campsite, otherwise random encounter during night.\n\n"
             "A D&D 5e wilderness survival adventure for a single player. A magical blight "
             "is spreading from a ruined elven tower five days' march into the Greymarsh Expanse. "
             "The Ranger Guild posted a bounty: find the source and destroy it. The last expedition "
