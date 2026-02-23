@@ -44,11 +44,17 @@ BENCHMARK_MODELS: dict[str, tuple[str, str]] = {
     # label -> (provider_name, model_id)
     # Free models
     "groq:llama-3.3-70b": ("groq", "llama-3.3-70b-versatile"),
-    "groq:kimi-k2": ("groq", "moonshotai/kimi-k2-0905"),
+    "groq:kimi-k2": ("groq", "moonshotai/kimi-k2-instruct-0905"),
+    "groq:llama-4-maverick": ("groq", "meta-llama/llama-4-maverick-17b-128e-instruct"),
+    # Free: OpenRouter
     "openrouter:hermes-405b": ("openrouter", "nousresearch/hermes-3-llama-3.1-405b:free"),
     "openrouter:llama-3.3-70b": ("openrouter", "meta-llama/llama-3.3-70b-instruct:free"),
+    "openrouter:mistral-small": ("openrouter", "mistralai/mistral-small-3.1-24b-instruct:free"),
+    "openrouter:gpt-oss-120b": ("openrouter", "openai/gpt-oss-120b:free"),
+    "openrouter:qwen3-next-80b": ("openrouter", "qwen/qwen3-next-80b-a3b-instruct:free"),
+    # Free: Cerebras
     "cerebras:qwen-3-235b": ("cerebras", "qwen-3-235b-a22b-instruct-2507"),
-    # Paid models (used only if keys present)
+    # Paid (used only if keys present)
     "openai:gpt-4o": ("openai", "gpt-4o"),
     "anthropic:sonnet": ("claude", ""),  # uses provider default
 }
@@ -93,6 +99,7 @@ BANNED_WORDS_EN = set(_REPLACEMENTS_EN.keys()) | {
     "claimed her lips", "claimed his lips",
     "breath didn't know was holding", "breath he didn't know",
     "breath she didn't know",
+    "a sense of", "hung heavy in the air",
 }
 
 BANNED_WORDS_RU = set(_REPLACEMENTS_RU.keys()) | {
@@ -627,8 +634,9 @@ async def run_benchmark(args):
     else:
         # Default: all free models with available providers
         free_labels = [
-            "groq:llama-3.3-70b", "groq:kimi-k2",
-            "openrouter:hermes-405b", "openrouter:llama-3.3-70b",
+            "groq:llama-3.3-70b", "groq:kimi-k2", "groq:llama-4-maverick",
+            "openrouter:hermes-405b", "openrouter:mistral-small",
+            "openrouter:gpt-oss-120b", "openrouter:qwen3-next-80b",
             "cerebras:qwen-3-235b",
         ]
         models = {}

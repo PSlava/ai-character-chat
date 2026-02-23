@@ -48,6 +48,34 @@ OPENROUTER_FREE_MODELS = [
         "note": "стабильная, быстрая",
     },
     {
+        "id": "openai/gpt-oss-120b:free",
+        "name": "GPT-OSS 120B",
+        "quality": 7,
+        "nsfw": False,  # strict content moderation
+        "note": "стабильная, строгая модерация",
+    },
+    {
+        "id": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "name": "Qwen3 Next 80B",
+        "quality": 7,
+        "nsfw": True,
+        "note": "80B MoE (3B active), новая",
+    },
+    {
+        "id": "stepfun/step-3.5-flash:free",
+        "name": "Step 3.5 Flash",
+        "quality": 6,
+        "nsfw": True,
+        "note": "StepFun, быстрая",
+    },
+    {
+        "id": "z-ai/glm-4.5-air:free",
+        "name": "GLM 4.5 Air",
+        "quality": 6,
+        "nsfw": True,
+        "note": "Zhipu AI",
+    },
+    {
         "id": "deepseek/deepseek-r1-0528:free",
         "name": "DeepSeek R1",
         "quality": 5,

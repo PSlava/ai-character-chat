@@ -47,6 +47,10 @@ _REPLACEMENTS_EN = {
     "fostering": ["building", "creating", "nurturing"],
     "underscores": ["highlights", "emphasizes", "shows"],
     "interplay": ["dynamic", "exchange", "tension"],
+    "enigmatic": ["mysterious", "cryptic", "elusive"],
+    "profound": ["deep", "intense", "powerful"],
+    "palpable": ["thick", "heavy", "unmistakable"],
+    "pivotal": ["key", "crucial", "decisive"],
 }
 
 _ALL_REPLACEMENTS = {**_REPLACEMENTS_RU, **_REPLACEMENTS_EN}
