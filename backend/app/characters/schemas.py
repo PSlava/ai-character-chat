@@ -48,3 +48,4 @@ class CharacterUpdate(BaseModel):
     preferred_model: str | None = Field(default=None, max_length=200)
     max_tokens: int | None = Field(default=None, ge=128, le=8192)
     response_length: str | None = Field(default=None, max_length=20)
+    original_language: str | None = Field(default=None, max_length=10)

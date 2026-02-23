@@ -429,3 +429,55 @@ async def _background_translate_descriptions(
 
     if to_save:
         await _save_translations(to_save, target_language)
+
+
+ALL_LANGUAGES = ("en", "es", "ru", "fr", "de", "pt", "it")
+
+
+async def translate_character_all_languages(character_id: str):
+    """Background: translate a character to all languages after edit.
+
+    Loads the character from DB, translates card + description fields
+    to every language except original_language, saves results.
+    """
+    from sqlalchemy import select
+    from app.db.session import async_session as AsyncSessionLocal
+    from app.db.models import Character
+
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(Character).where(Character.id == character_id))
+            character = result.scalar_one_or_none()
+            if not character:
+                return
+
+            orig = getattr(character, "original_language", None) or "ru"
+            target_langs = [lang for lang in ALL_LANGUAGES if lang != orig]
+
+            # Card fields batch (all languages share same source)
+            card_batch = [{
+                "id": character.id,
+                "name": character.name,
+                "tagline": character.tagline or "",
+                "tags": [t for t in (character.tags or "").split(",") if t],
+            }]
+
+            for target_lang in target_langs:
+                try:
+                    # Translate card fields
+                    card_results = await translate_batch(card_batch, target_lang)
+                    card_tr = card_results.get(character.id, {}) if card_results else {}
+
+                    # Translate description fields
+                    desc_tr = await translate_descriptions(character, target_lang)
+
+                    merged = {**card_tr, **desc_tr}
+                    if merged:
+                        await _save_translations({character.id: merged}, target_lang)
+
+                    logger.info("Translated character %s to %s (%d fields)", character.id[:8], target_lang, len(merged))
+                except Exception as e:
+                    logger.warning("Translation of %s to %s failed: %s", character.id[:8], target_lang, str(e)[:100])
+
+    except Exception as e:
+        logger.warning("translate_character_all_languages failed: %s", str(e)[:100])

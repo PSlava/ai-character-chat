@@ -9,7 +9,7 @@ _CHARACTER_ALLOWED_FIELDS = {
     "name", "tagline", "avatar_url", "personality", "appearance",
     "speech_pattern", "scenario", "greeting_message", "example_dialogues",
     "content_rating", "system_prompt_suffix", "is_public", "preferred_model",
-    "max_tokens", "response_length",
+    "max_tokens", "response_length", "original_language",
 }
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
