@@ -15,7 +15,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { SEO } from '@/components/seo/SEO';
 import { localePath } from '@/lib/lang';
 import toast from 'react-hot-toast';
-import { MessageCircle, Heart, User, Pencil, Trash2, Star, ThumbsUp, ThumbsDown, GitFork } from 'lucide-react';
+import { MessageCircle, Heart, User, Pencil, Trash2, Star, ThumbsUp, ThumbsDown, GitFork, MessageSquarePlus } from 'lucide-react';
 import { ShareButtons } from '@/components/characters/ShareButtons';
 import { CharacterCard } from '@/components/characters/CharacterCard';
 import type { Character, Persona } from '@/types';
@@ -433,9 +433,22 @@ export function CharacterPage() {
         </div>
       </div>
 
-      <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="w-full">
-        {loading ? t('character.creatingChat') : t('character.startChat')}
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="flex-1">
+          {loading ? t('character.creatingChat') : t('character.startChat')}
+        </Button>
+        {isAuthenticated && (
+          <Button
+            onClick={() => handleStartChat(true)}
+            disabled={loading}
+            size="lg"
+            variant="secondary"
+            title={t('chat.newChatTooltip')}
+          >
+            <MessageSquarePlus className="w-5 h-5" />
+          </Button>
+        )}
+      </div>
 
       {relations.length > 0 && (
         <div className="mt-8">
