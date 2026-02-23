@@ -230,7 +230,12 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
 
       // Remove the old user message right before resending so sendMessage adds a fresh one
       setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
-      sendMessage(userContent, { is_regenerate: true });
+      try {
+        await sendMessage(userContent, { is_regenerate: true });
+      } catch {
+        // If sendMessage fails, ensure streaming state is reset
+        setIsStreaming(false);
+      }
     },
     [chatId, sendMessage]
   );
