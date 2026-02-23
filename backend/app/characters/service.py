@@ -273,10 +273,19 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
         from app.characters.slugify import generate_slug
         character.slug = generate_slug(data["name"], character.id)
 
-    # Clear translation cache if translatable fields changed
+    # Selectively clear only changed fields from translation cache (keep unchanged)
     _translatable = ("name", "tagline", "personality", "scenario", "appearance", "greeting_message")
-    if any(key in data and data[key] is not None for key in _translatable) or tags is not None:
-        character.translations = {}
+    changed_translatable = [k for k in _translatable if k in data and data[k] is not None]
+    if tags is not None:
+        changed_translatable.append("tags")
+    if changed_translatable and character.translations:
+        updated = {}
+        for lang, tr in character.translations.items():
+            if isinstance(tr, dict):
+                cleaned = {k: v for k, v in tr.items() if k not in changed_translatable}
+                if cleaned:
+                    updated[lang] = cleaned
+        character.translations = updated if updated else {}
 
     character.updated_at = datetime.utcnow()
 

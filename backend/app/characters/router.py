@@ -524,6 +524,13 @@ async def update_character(
         if existing and not existing.avatar_url:
             raise HTTPException(status_code=400, detail="Public characters require an avatar")
     data = body.model_dump()
+
+    # Identify changed translatable fields BEFORE service mutates data dict (pops tags)
+    _translatable = ("name", "tagline", "personality", "scenario", "appearance", "greeting_message")
+    changed_fields = [k for k in _translatable if data.get(k) is not None]
+    if data.get("tags") is not None:
+        changed_fields.append("tags")
+
     try:
         result = await service.update_character(
             db, character_id, user["id"], data, is_admin=is_admin
@@ -533,12 +540,11 @@ async def update_character(
     if not result:
         raise HTTPException(status_code=404, detail="Character not found or not yours")
 
-    # If translatable fields changed, trigger background translation to all languages
-    _translatable = ("name", "tagline", "personality", "scenario", "appearance", "greeting_message")
-    if any(data.get(k) is not None for k in _translatable) or data.get("tags") is not None:
+    # Trigger background translation for only the changed fields
+    if changed_fields:
         import asyncio
         from app.characters.translation import translate_character_all_languages
-        asyncio.create_task(translate_character_all_languages(character_id))
+        asyncio.create_task(translate_character_all_languages(character_id, changed_fields=changed_fields))
 
     return character_to_dict(result, is_admin=is_admin)
 

@@ -230,13 +230,20 @@ async def _save_translations(
     char_translations: dict[str, dict],
     target_language: str,
 ):
-    """Save translation results to each character's translations JSONB column."""
+    """Save translation results to each character's translations JSONB column.
+
+    Uses field-level merge: new fields are merged into existing language dict,
+    preserving translations for fields not included in the update.
+    """
     try:
         from sqlalchemy import bindparam, String
         stmt = text("""
             UPDATE characters SET translations =
-                COALESCE(translations, CAST('{}' AS jsonb))
-                || jsonb_build_object(:lang, CAST(:data AS jsonb))
+                jsonb_set(
+                    COALESCE(translations, '{}'),
+                    ARRAY[:lang],
+                    COALESCE(translations->:lang, '{}') || CAST(:data AS jsonb)
+                )
             WHERE id = :cid
         """).bindparams(
             bindparam("lang", type_=String),
@@ -434,15 +441,22 @@ async def _background_translate_descriptions(
 ALL_LANGUAGES = ("en", "es", "ru", "fr", "de", "pt", "it")
 
 
-async def translate_character_all_languages(character_id: str):
-    """Background: translate a character to all languages after edit.
+async def translate_character_all_languages(
+    character_id: str,
+    changed_fields: list[str] | None = None,
+):
+    """Background: translate changed fields of a character to all languages after edit.
 
-    Loads the character from DB, translates card + description fields
-    to every language except original_language, saves results.
+    If changed_fields is provided, only translates those specific fields.
+    Otherwise, translates all card + description fields.
+    Uses field-level merge so unchanged translations are preserved.
     """
     from sqlalchemy import select
     from app.db.session import async_session as AsyncSessionLocal
     from app.db.models import Character
+
+    _CARD_FIELDS = {"name", "tagline", "tags"}
+    _DESC_FIELDS = {"personality", "scenario", "appearance", "greeting_message"}
 
     try:
         async with AsyncSessionLocal() as db:
@@ -454,28 +468,53 @@ async def translate_character_all_languages(character_id: str):
             orig = getattr(character, "original_language", None) or "ru"
             target_langs = [lang for lang in ALL_LANGUAGES if lang != orig]
 
-            # Card fields batch (all languages share same source)
+            # Determine what to translate
+            if changed_fields:
+                need_card = bool(_CARD_FIELDS & set(changed_fields))
+                need_desc = [f for f in changed_fields if f in _DESC_FIELDS]
+            else:
+                need_card = True
+                need_desc = list(_DESC_FIELDS)
+
             card_batch = [{
                 "id": character.id,
                 "name": character.name,
                 "tagline": character.tagline or "",
                 "tags": [t for t in (character.tags or "").split(",") if t],
-            }]
+            }] if need_card else None
+
+            lang_names = {"en": "English", "ru": "Russian", "es": "Spanish", "fr": "French",
+                          "de": "German", "pt": "Brazilian Portuguese", "it": "Italian",
+                          "ja": "Japanese", "zh": "Chinese", "ko": "Korean"}
 
             for target_lang in target_langs:
                 try:
-                    # Translate card fields
-                    card_results = await translate_batch(card_batch, target_lang)
-                    card_tr = card_results.get(character.id, {}) if card_results else {}
+                    merged = {}
 
-                    # Translate description fields
-                    desc_tr = await translate_descriptions(character, target_lang)
+                    # Translate card fields (name, tagline, tags) if any changed
+                    if card_batch:
+                        card_results = await translate_batch(card_batch, target_lang)
+                        card_tr = card_results.get(character.id, {}) if card_results else {}
+                        merged.update(card_tr)
 
-                    merged = {**card_tr, **desc_tr}
+                    # Translate only changed description fields
+                    if need_desc:
+                        lang_name = lang_names.get(target_lang, target_lang)
+                        for field_name in need_desc:
+                            field_text = getattr(character, field_name, None)
+                            if field_text:
+                                if not _check_translation_rate():
+                                    break
+                                translated = await _translate_single_field(field_text, target_lang, lang_name)
+                                if translated:
+                                    merged[field_name] = translated
+
                     if merged:
                         await _save_translations({character.id: merged}, target_lang)
 
-                    logger.info("Translated character %s to %s (%d fields)", character.id[:8], target_lang, len(merged))
+                    logger.info("Translated character %s to %s (%d fields: %s)",
+                                character.id[:8], target_lang, len(merged),
+                                ",".join(merged.keys()) if merged else "none")
                 except Exception as e:
                     logger.warning("Translation of %s to %s failed: %s", character.id[:8], target_lang, str(e)[:100])
 
