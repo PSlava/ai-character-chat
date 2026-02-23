@@ -796,10 +796,10 @@ async def send_message(
                             done_data['encounter_state'] = enc_state
                     if anon_session_id and anon_remaining is not None:
                         done_data['anon_messages_left'] = anon_remaining - 1
-                    if user_id and not anon_session_id:
+                    if user_id_for_increment and not anon_session_id:
                         try:
                             from app.achievements.checker import check_achievements as _ach_check
-                            _new_ach = await _ach_check(db, user_id, trigger="message")
+                            _new_ach = await _ach_check(db, user_id_for_increment, trigger="message")
                             if _new_ach:
                                 done_data['new_achievements'] = _new_ach
                         except Exception:
@@ -891,10 +891,10 @@ async def send_message(
                                     done_data['encounter_state'] = fb_enc
                             if anon_session_id and anon_remaining is not None:
                                 done_data['anon_messages_left'] = anon_remaining - 1
-                            if user_id and not anon_session_id:
+                            if user_id_for_increment and not anon_session_id:
                                 try:
                                     from app.achievements.checker import check_achievements as _ach_check
-                                    _new_ach = await _ach_check(db, user_id, trigger="message")
+                                    _new_ach = await _ach_check(db, user_id_for_increment, trigger="message")
                                     if _new_ach:
                                         done_data['new_achievements'] = _new_ach
                                 except Exception:
@@ -942,10 +942,10 @@ async def send_message(
                         done_data['encounter_state'] = enc_state
                 if anon_session_id and anon_remaining is not None:
                     done_data['anon_messages_left'] = anon_remaining - 1
-                if user_id and not anon_session_id:
+                if user_id_for_increment and not anon_session_id:
                     try:
                         from app.achievements.checker import check_achievements as _ach_check
-                        _new_ach = await _ach_check(db, user_id, trigger="message")
+                        _new_ach = await _ach_check(db, user_id_for_increment, trigger="message")
                         if _new_ach:
                             done_data['new_achievements'] = _new_ach
                     except Exception:

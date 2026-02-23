@@ -32,10 +32,15 @@ export function RatingPrompt({ chatId, existingRating, onRated }: Props) {
   const handleRate = async (value: number) => {
     setRating(value);
     try {
-      await rateAdventure(chatId, value);
+      const result = await rateAdventure(chatId, value);
       setSubmitted(true);
       onRated?.(value);
       toast.success(t('rating.thanks'));
+      if (result.new_achievements?.length) {
+        for (const achId of result.new_achievements) {
+          toast.success(t('achievement.unlocked', { name: achId }), { duration: 4000, icon: '\u{1F3C6}' });
+        }
+      }
     } catch {
       toast.error('Failed to rate');
     }

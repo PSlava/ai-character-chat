@@ -90,19 +90,6 @@ ACHIEVEMENTS: dict[str, dict] = {
         },
         "target": 20,
     },
-    "fate_rewriter": {
-        "icon": "refresh",
-        "labels": {
-            "en": {"name": "Fate Rewriter", "desc": "Use Rewrite Fate 5 times"},
-            "ru": {"name": "Вершитель судеб", "desc": "Используй Изменить судьбу 5 раз"},
-            "es": {"name": "Reescritor del destino", "desc": "Usa Reescribir destino 5 veces"},
-            "fr": {"name": "Reecriveur du destin", "desc": "Utilise Reecris le destin 5 fois"},
-            "de": {"name": "Schicksalsschreiber", "desc": "Nutze Schicksal umschreiben 5 Mal"},
-            "pt": {"name": "Reescritor do destino", "desc": "Use Reescrever destino 5 vezes"},
-            "it": {"name": "Riscrittore del destino", "desc": "Usa Riscrivi il destino 5 volte"},
-        },
-        "target": 5,
-    },
 }
 
 
