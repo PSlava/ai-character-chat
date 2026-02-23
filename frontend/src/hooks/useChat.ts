@@ -17,13 +17,23 @@ export interface GenerationSettings {
 
 export function useChat(chatId: string, initialMessages: Message[] = []) {
   const { t, i18n } = useTranslation();
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessagesRaw] = useState<Message[]>(initialMessages);
   const [isStreaming, setIsStreaming] = useState(false);
   const [truncated, setTruncated] = useState(false);
   const [anonLimitReached, setAnonLimitReached] = useState(false);
   const [anonMessagesLeft, setAnonMessagesLeft] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const settingsRef = useRef<GenerationSettings>({});
+  const messagesRef = useRef<Message[]>(initialMessages);
+
+  // Wrapper that keeps messagesRef always in sync with state
+  const setMessages = useCallback((updater: Message[] | ((prev: Message[]) => Message[])) => {
+    setMessagesRaw((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      messagesRef.current = next;
+      return next;
+    });
+  }, []);
 
   const setGenerationSettings = useCallback((s: GenerationSettings) => {
     settingsRef.current = s;
@@ -199,36 +209,31 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
   const regenerate = useCallback(
     async (messageId: string) => {
       setTruncated(false);
-      // Extract info from current messages synchronously
-      let userContent: string | null = null;
-      let userMsgId: string | null = null;
 
-      setMessages((prev) => {
-        const idx = prev.findIndex((m) => m.id === messageId);
-        if (idx === -1) return prev;
+      // Read current messages from ref (always up-to-date, no React batching issues)
+      const current = messagesRef.current;
+      const idx = current.findIndex((m) => m.id === messageId);
+      if (idx === -1) return;
 
-        const assistantMsg = prev[idx];
-        if (assistantMsg.role !== 'assistant') return prev;
+      const assistantMsg = current[idx];
+      if (assistantMsg.role !== 'assistant') return;
 
-        // Find the user message right before it
-        let userIdx = idx - 1;
-        while (userIdx >= 0 && prev[userIdx].role !== 'user') userIdx--;
-        if (userIdx < 0) return prev;
+      // Find the user message right before it
+      let userIdx = idx - 1;
+      while (userIdx >= 0 && current[userIdx].role !== 'user') userIdx--;
+      if (userIdx < 0) return;
 
-        userContent = prev[userIdx].content;
-        userMsgId = prev[userIdx].id;
+      const userContent = current[userIdx].content;
+      const userMsgId = current[userIdx].id;
 
-        // Remove only the assistant message; keep user message visible
-        return prev.filter((_, i) => i !== idx);
-      });
+      // Remove assistant message from UI
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
 
-      if (!userContent || !userMsgId) return;
-
-      // Delete both from DB, then resend (sendMessage will replace the user message)
+      // Delete both from DB
       await deleteChatMessage(chatId, messageId).catch(() => {});
       await deleteChatMessage(chatId, userMsgId).catch(() => {});
 
-      // Remove the old user message right before resending so sendMessage adds a fresh one
+      // Remove user message, then resend
       setMessages((prev) => prev.filter((m) => m.id !== userMsgId));
       try {
         await sendMessage(userContent, { is_regenerate: true });
@@ -242,44 +247,44 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
 
   const resendLast = useCallback(
     async (editedContent?: string) => {
-      setMessages((prev) => {
-        const visible = prev.filter((m) => m.role !== 'system');
-        const last = visible[visible.length - 1];
-        if (!last) return prev;
+      // Read current messages from ref (always up-to-date, no React batching issues)
+      const current = messagesRef.current;
+      const visible = current.filter((m) => m.role !== 'system');
+      const last = visible[visible.length - 1];
+      if (!last) return;
 
-        // If last is error assistant — find user message before it
-        let userMsg: Message | null = null;
-        let errorMsg: Message | null = null;
+      // If last is error assistant — find user message before it
+      let userMsg: Message | null = null;
+      let errorMsg: Message | null = null;
 
-        if (last.role === 'user') {
-          userMsg = last;
-        } else if (last.role === 'assistant' && last.isError) {
-          errorMsg = last;
-          // Find the user message before the error
-          for (let i = visible.length - 2; i >= 0; i--) {
-            if (visible[i].role === 'user') {
-              userMsg = visible[i];
-              break;
-            }
+      if (last.role === 'user') {
+        userMsg = last;
+      } else if (last.role === 'assistant' && last.isError) {
+        errorMsg = last;
+        // Find the user message before the error
+        for (let i = visible.length - 2; i >= 0; i--) {
+          if (visible[i].role === 'user') {
+            userMsg = visible[i];
+            break;
           }
         }
+      }
 
-        if (!userMsg) return prev;
+      if (!userMsg) return;
 
-        const content = editedContent ?? userMsg.content;
-        const idsToRemove = new Set([userMsg.id]);
-        if (errorMsg) idsToRemove.add(errorMsg.id);
+      const content = editedContent ?? userMsg.content;
+      const idsToRemove = new Set<string>([userMsg.id]);
+      if (errorMsg) idsToRemove.add(errorMsg.id);
 
-        const updated = prev.filter((m) => !idsToRemove.has(m.id));
+      setMessages((prev) => prev.filter((m) => !idsToRemove.has(m.id)));
 
-        // Delete user message from DB (error message is local-only), then resend
-        (async () => {
-          await deleteChatMessage(chatId, userMsg!.id).catch(() => {});
-          sendMessage(content);
-        })();
-
-        return updated;
-      });
+      // Delete user message from DB (error message is local-only), then resend
+      await deleteChatMessage(chatId, userMsg.id).catch(() => {});
+      try {
+        await sendMessage(content);
+      } catch {
+        setIsStreaming(false);
+      }
     },
     [chatId, sendMessage]
   );
