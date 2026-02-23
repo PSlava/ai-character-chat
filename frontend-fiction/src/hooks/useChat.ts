@@ -71,6 +71,10 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
       }
 
       const s = settingsRef.current;
+      // Boost temperature slightly on regenerate for variety
+      const temp = opts?.is_regenerate && s.temperature !== undefined
+        ? Math.min(s.temperature + 0.15, 1.5)
+        : s.temperature;
       await fetchEventSource(`/api/chats/${chatId}/message`, {
         method: 'POST',
         headers,
@@ -79,7 +83,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
           language: i18n.language,
           ...(opts?.is_regenerate && { is_regenerate: true }),
           ...(s.model && { model: s.model }),
-          ...(s.temperature !== undefined && { temperature: s.temperature }),
+          ...(temp !== undefined && { temperature: temp }),
           ...(s.top_p !== undefined && { top_p: s.top_p }),
           ...(s.top_k !== undefined && { top_k: s.top_k }),
           ...(s.frequency_penalty !== undefined && { frequency_penalty: s.frequency_penalty }),

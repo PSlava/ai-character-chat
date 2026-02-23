@@ -14,6 +14,10 @@ const TAG_CONFIG: Record<string, { searchValues: string[]; labelKey: string; des
   romance: { searchValues: ['романтика', 'romance'], labelKey: 'tags.romance', descKey: 'tagPage.romanceDesc' },
   anime: { searchValues: ['аниме', 'anime'], labelKey: 'tags.anime', descKey: 'tagPage.animeDesc' },
   modern: { searchValues: ['современность', 'modern', 'moderno', 'реалистичный'], labelKey: 'tags.modern', descKey: 'tagPage.modernDesc' },
+  horror: { searchValues: ['horror', 'хоррор', 'ужасы', 'terror'], labelKey: 'tags.horror', descKey: 'tagPage.horrorDesc' },
+  'sci-fi': { searchValues: ['sci-fi', 'sci_fi', 'научная фантастика', 'ciencia ficcion', 'science-fiction'], labelKey: 'tags.sci_fi', descKey: 'tagPage.sci_fiDesc' },
+  mystery: { searchValues: ['mystery', 'детектив', 'тайна', 'misterio', 'detective'], labelKey: 'tags.mystery', descKey: 'tagPage.mysteryDesc' },
+  adventure: { searchValues: ['adventure', 'приключения', 'aventura', 'exploration'], labelKey: 'tags.adventure', descKey: 'tagPage.adventureDesc' },
 };
 
 const PAGE_SIZE = 15;

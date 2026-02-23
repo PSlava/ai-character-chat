@@ -80,6 +80,62 @@ TAG_PAGES = [
             "it": "Personaggi IA moderni — scenari realistici, vita quotidiana, ambientazioni e storie contemporanee.",
         },
     },
+    {
+        "slug": "horror",
+        "search": ["horror", "хоррор", "ужасы", "terror"],
+        "labels": {"en": "Horror", "es": "Terror", "ru": "Хоррор", "fr": "Horreur", "de": "Horror", "pt": "Terror", "it": "Horror"},
+        "descriptions": {
+            "en": "Horror interactive fiction — dark atmosphere, suspense, and terrifying choices. Survive the night.",
+            "es": "Ficcion interactiva de terror — atmosfera oscura, suspenso y decisiones aterradoras. Sobrevive la noche.",
+            "ru": "Хоррор интерактивная литература — темная атмосфера, саспенс и пугающий выбор.",
+            "fr": "Fiction interactive d'horreur — atmosphere sombre, suspense et choix terrifiants. Survivez a la nuit.",
+            "de": "Horror interaktive Fiktion — dunkle Atmosphare, Spannung und erschreckende Entscheidungen. Uberlebe die Nacht.",
+            "pt": "Ficcao interativa de terror — atmosfera sombria, suspense e escolhas aterrorizantes. Sobreviva a noite.",
+            "it": "Narrativa interattiva horror — atmosfera cupa, suspense e scelte terrificanti. Sopravvivi alla notte.",
+        },
+    },
+    {
+        "slug": "sci-fi",
+        "search": ["sci-fi", "sci_fi", "научная фантастика", "ciencia ficcion", "science-fiction"],
+        "labels": {"en": "Sci-Fi", "es": "Ciencia Ficcion", "ru": "Фантастика", "fr": "Science-Fiction", "de": "Sci-Fi", "pt": "Ficcao Cientifica", "it": "Fantascienza"},
+        "descriptions": {
+            "en": "Sci-fi interactive fiction — space exploration, futuristic tech, and cosmic mysteries await.",
+            "es": "Ficcion interactiva de ciencia ficcion — exploracion espacial, tecnologia futurista y misterios cosmicos.",
+            "ru": "Научно-фантастическая литература — космос, технологии будущего и космические тайны.",
+            "fr": "Fiction interactive de science-fiction — exploration spatiale, technologies futuristes et mysteres cosmiques.",
+            "de": "Sci-Fi interaktive Fiktion — Weltraumerkundung, futuristische Technologie und kosmische Geheimnisse.",
+            "pt": "Ficcao interativa de ficcao cientifica — exploracao espacial, tecnologia futurista e misterios cosmicos.",
+            "it": "Narrativa interattiva fantascientifica — esplorazione spaziale, tecnologia futuristica e misteri cosmici.",
+        },
+    },
+    {
+        "slug": "mystery",
+        "search": ["mystery", "детектив", "тайна", "misterio", "detective"],
+        "labels": {"en": "Mystery", "es": "Misterio", "ru": "Детектив", "fr": "Mystere", "de": "Krimi", "pt": "Misterio", "it": "Giallo"},
+        "descriptions": {
+            "en": "Mystery interactive fiction — solve puzzles, uncover clues, and crack the case.",
+            "es": "Ficcion interactiva de misterio — resuelve acertijos, descubre pistas y resuelve el caso.",
+            "ru": "Детективная литература — разгадывайте загадки, находите улики, раскрывайте дела.",
+            "fr": "Fiction interactive de mystere — resolvez des enigmes, decouvrez des indices et elucidez l'affaire.",
+            "de": "Krimi interaktive Fiktion — lose Ratsel, finde Hinweise und klare den Fall.",
+            "pt": "Ficcao interativa de misterio — resolva enigmas, descubra pistas e desvende o caso.",
+            "it": "Narrativa interattiva gialla — risolvi enigmi, scopri indizi e risolvi il caso.",
+        },
+    },
+    {
+        "slug": "adventure",
+        "search": ["adventure", "приключения", "aventura", "exploration"],
+        "labels": {"en": "Adventure", "es": "Aventura", "ru": "Приключения", "fr": "Aventure", "de": "Abenteuer", "pt": "Aventura", "it": "Avventura"},
+        "descriptions": {
+            "en": "Adventure interactive fiction — explore unknown lands, face challenges, and discover treasures.",
+            "es": "Ficcion interactiva de aventura — explora tierras desconocidas, enfrenta desafios y descubre tesoros.",
+            "ru": "Приключенческая литература — исследуйте неизвестные земли, преодолевайте испытания.",
+            "fr": "Fiction interactive d'aventure — explorez des terres inconnues, affrontez des defis et decouvrez des tresors.",
+            "de": "Abenteuer interaktive Fiktion — erkunde unbekannte Lander, stelle dich Herausforderungen und entdecke Schatze.",
+            "pt": "Ficcao interativa de aventura — explore terras desconhecidas, enfrente desafios e descubra tesouros.",
+            "it": "Narrativa interattiva d'avventura — esplora terre sconosciute, affronta sfide e scopri tesori.",
+        },
+    },
 ]
 
 

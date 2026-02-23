@@ -80,8 +80,24 @@ def website_jsonld() -> dict:
 def software_application_jsonld() -> dict:
     if settings.is_fiction_mode:
         desc = "AI-powered interactive fiction and D&D Game Master. Choose your path, roll dice, shape the story."
-    else:
-        desc = "Creative roleplay and character-driven conversations. Immersive storytelling experiences."
+        return {
+            "@type": ["VideoGame", "SoftwareApplication"],
+            "name": SITE_NAME,
+            "url": SITE_URL,
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Web browser",
+            "description": desc,
+            "genre": ["Interactive Fiction", "Role-playing Game", "Text Adventure"],
+            "playMode": "SinglePlayer",
+            "numberOfPlayers": {"@type": "QuantitativeValue", "value": 1},
+            "inLanguage": ["en", "es", "ru", "fr", "de", "pt", "it"],
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD",
+            },
+        }
+    desc = "Creative roleplay and character-driven conversations. Immersive storytelling experiences."
     return {
         "@type": "SoftwareApplication",
         "name": SITE_NAME,
