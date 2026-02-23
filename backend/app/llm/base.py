@@ -18,6 +18,7 @@ class LLMConfig:
     top_k: int = 0  # 0 = disabled
     frequency_penalty: float = 0.3
     presence_penalty: float = 0.3
+    min_p: float = 0.0  # 0 = disabled. When > 0, top_p should be 1.0
     content_rating: str = "sfw"  # "sfw" | "moderate" | "nsfw"
     use_flex: bool = False  # Groq Flex tier (10x rate limits, same price)
 

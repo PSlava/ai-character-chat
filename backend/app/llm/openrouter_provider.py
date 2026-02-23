@@ -50,12 +50,14 @@ class OpenRouterProvider(BaseLLMProvider):
                 extra: dict = {}
                 if config.top_k > 0:
                     extra["top_k"] = config.top_k
+                if config.min_p > 0:
+                    extra["min_p"] = config.min_p
                 stream = await self.client.chat.completions.create(
                     model=model,
                     messages=api_messages,
                     max_tokens=config.max_tokens,
                     temperature=config.temperature,
-                    top_p=config.top_p,
+                    top_p=1.0 if config.min_p > 0 else config.top_p,
                     frequency_penalty=config.frequency_penalty,
                     presence_penalty=config.presence_penalty,
                     stream=True,
@@ -109,13 +111,15 @@ class OpenRouterProvider(BaseLLMProvider):
                 extra: dict = {}
                 if config.top_k > 0:
                     extra["top_k"] = config.top_k
+                if config.min_p > 0:
+                    extra["min_p"] = config.min_p
                 response = await asyncio.wait_for(
                     self.client.chat.completions.create(
                         model=model,
                         messages=api_messages,
                         max_tokens=config.max_tokens,
                         temperature=config.temperature,
-                        top_p=config.top_p,
+                        top_p=1.0 if config.min_p > 0 else config.top_p,
                         frequency_penalty=config.frequency_penalty,
                         presence_penalty=config.presence_penalty,
                         extra_body=extra or None,

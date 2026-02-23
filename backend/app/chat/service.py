@@ -164,66 +164,105 @@ _TUTOR_POST_HISTORY = {
     "it": "[Continua come {name}. Se l'utente ha commesso errori, correggi 1-2 gentilmente. Introduci una nuova parola naturalmente. Mantieni il tono conversazionale.]",
 }
 
-_POST_HISTORY = {
+# 4 rotating variants per language — different focus each turn to prevent model adaptation.
+# Core rules (location, anti-repeat, plot advance) are shared; the opening instruction varies.
+# Selection: hash(chat_id + message_count) % 4 in build_conversation_messages().
+
+_POST_HISTORY_CORE = {
     "ru": (
         "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи.\n"
-        "ОБЯЗАТЕЛЬНО: сохраняй текущую локацию и обстановку из предыдущих сообщений. Не теряй место действия.\n"
-        "Продвинь сюжет — новое действие или изменение.\n"
-        "СТРОГО ЗАПРЕЩЕНО повторять фразы, описания, реакции и СТРУКТУРУ предложений из предыдущих ответов. "
-        "Перечитай свои последние ответы — используй ДРУГИЕ слова, ДРУГИЕ описания, ДРУГИЕ реакции.\n"
-        "НЕ начинай ответ с имени персонажа или «Она/Он». Начни с детали обстановки, звука, запаха, жеста или ощущения. "
-        "Пиши как литературный автор — каждый абзац начинается иначе.]"
+        "Сохраняй текущую локацию. Продвинь сюжет.\n"
+        "ЗАПРЕЩЕНО повторять фразы, описания и СТРУКТУРУ из предыдущих ответов.\n"
     ),
     "en": (
         "[Continue the scene as {name}. Third person. Show, don't tell.\n"
-        "REQUIRED: maintain the current location and setting from previous messages. Don't lose the scene's place.\n"
-        "Advance the plot — a new action or change.\n"
-        "STRICTLY FORBIDDEN to repeat phrases, descriptions, reactions, or sentence STRUCTURES from previous responses. "
-        "Re-read your recent responses — use DIFFERENT words, DIFFERENT descriptions, DIFFERENT reactions.\n"
-        "Do NOT open the response with the character's name or 'She/He'. Open with a setting detail, sound, smell, gesture, or sensation. "
-        "Write like a literary author — each paragraph starts differently.]"
+        "Maintain the current location. Advance the plot.\n"
+        "FORBIDDEN to repeat phrases, descriptions, or STRUCTURES from previous responses.\n"
     ),
     "es": (
         "[Continua la escena como {name}. Tercera persona. Muestra, no cuentes.\n"
-        "OBLIGATORIO: mantén la ubicación y el entorno actuales. No pierdas el lugar de la escena.\n"
-        "Avanza la trama — una nueva acción o cambio.\n"
-        "ESTRICTAMENTE PROHIBIDO repetir frases, descripciones o reacciones de respuestas anteriores.\n"
-        "NO empieces la respuesta con el nombre del personaje ni con 'Ella/Él'. Empieza con un detalle del entorno, sonido, olor, gesto o sensación. "
-        "Escribe como un autor literario — cada párrafo comienza de forma diferente.]"
+        "Mantén la ubicación actual. Avanza la trama.\n"
+        "PROHIBIDO repetir frases, descripciones o ESTRUCTURAS de respuestas anteriores.\n"
     ),
     "fr": (
         "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas.\n"
-        "OBLIGATOIRE : maintiens le lieu et le décor actuels. Ne perds pas le cadre de la scène.\n"
-        "Fais avancer l'intrigue — une nouvelle action ou un changement.\n"
-        "STRICTEMENT INTERDIT de répéter des phrases, descriptions ou réactions des réponses précédentes.\n"
-        "NE commence PAS la réponse par le nom du personnage ou 'Elle/Il'. Commence par un détail du décor, son, odeur, geste ou sensation. "
-        "Écris comme un auteur littéraire — chaque paragraphe commence différemment.]"
+        "Maintiens le lieu actuel. Fais avancer l'intrigue.\n"
+        "INTERDIT de répéter phrases, descriptions ou STRUCTURES des réponses précédentes.\n"
     ),
     "de": (
         "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen.\n"
-        "PFLICHT: Behalte den aktuellen Ort und die Umgebung bei. Verliere den Schauplatz nicht.\n"
-        "Bringe die Handlung voran — eine neue Aktion oder Veränderung.\n"
-        "STRENG VERBOTEN, Phrasen, Beschreibungen oder Reaktionen aus vorherigen Antworten zu wiederholen.\n"
-        "Beginne die Antwort NICHT mit dem Namen der Figur oder 'Sie/Er'. Beginne mit einem Detail der Umgebung, Geräusch, Geruch, Geste oder Empfindung. "
-        "Schreibe wie ein literarischer Autor — jeder Absatz beginnt anders.]"
+        "Behalte den aktuellen Ort bei. Bringe die Handlung voran.\n"
+        "VERBOTEN, Phrasen, Beschreibungen oder STRUKTUREN aus vorherigen Antworten zu wiederholen.\n"
     ),
     "pt": (
         "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte.\n"
-        "OBRIGATÓRIO: mantenha a localização e o cenário atuais. Não perca o lugar da cena.\n"
-        "Avance a trama — uma nova ação ou mudança.\n"
-        "ESTRITAMENTE PROIBIDO repetir frases, descrições ou reações de respostas anteriores.\n"
-        "NÃO comece a resposta com o nome do personagem ou 'Ela/Ele'. Comece com um detalhe do cenário, som, cheiro, gesto ou sensação. "
-        "Escreva como um autor literário — cada parágrafo começa de forma diferente.]"
+        "Mantenha a localização atual. Avance a trama.\n"
+        "PROIBIDO repetir frases, descrições ou ESTRUTURAS de respostas anteriores.\n"
     ),
     "it": (
         "[Continua la scena come {name}. Terza persona. Mostra, non raccontare.\n"
-        "OBBLIGATORIO: mantieni la posizione e l'ambientazione attuali. Non perdere il luogo della scena.\n"
-        "Fai avanzare la trama — una nuova azione o cambiamento.\n"
-        "SEVERAMENTE VIETATO ripetere frasi, descrizioni o reazioni dalle risposte precedenti.\n"
-        "NON iniziare la risposta con il nome del personaggio o 'Lei/Lui'. Inizia con un dettaglio dell'ambiente, suono, odore, gesto o sensazione. "
-        "Scrivi come un autore letterario — ogni paragrafo inizia in modo diverso.]"
+        "Mantieni la posizione attuale. Fai avanzare la trama.\n"
+        "VIETATO ripetere frasi, descrizioni o STRUTTURE dalle risposte precedenti.\n"
     ),
 }
+
+# Variant suffixes — each focuses on a different opening style
+_POST_HISTORY_VARIANTS = {
+    "ru": [
+        # 0: Setting detail
+        "Начни ответ с ДЕТАЛИ ОБСТАНОВКИ - звук, запах, текстура, температура, свет. Погрузи читателя в сцену через ощущения.]",
+        # 1: Physical action
+        "Начни ответ с ФИЗИЧЕСКОГО ДЕЙСТВИЯ персонажа - жест, движение, перемещение. Не с мысли и не с описания.]",
+        # 2: Dialogue
+        "Начни ответ с РЕПЛИКИ персонажа или с того, что персонаж замечает/слышит. Диалог оживляет сцену.]",
+        # 3: Subtext / contrast
+        "Покажи ПОДТЕКСТ - персонаж думает одно, а делает другое. Контраст между словами и действиями. Внутреннее противоречие.]",
+    ],
+    "en": [
+        "Open with a SETTING DETAIL - sound, smell, texture, temperature, light. Immerse the reader through sensations.]",
+        "Open with a PHYSICAL ACTION by the character - gesture, movement, relocation. Not with a thought or description.]",
+        "Open with DIALOGUE or something the character notices/hears. Dialogue brings a scene alive.]",
+        "Show SUBTEXT - the character thinks one thing but does another. Contrast between words and actions. Inner contradiction.]",
+    ],
+    "es": [
+        "Empieza con un DETALLE DEL ENTORNO - sonido, olor, textura, temperatura, luz. Sumerge al lector a través de sensaciones.]",
+        "Empieza con una ACCIÓN FÍSICA del personaje - gesto, movimiento, desplazamiento. No con un pensamiento.]",
+        "Empieza con un DIÁLOGO o algo que el personaje nota/escucha. El diálogo da vida a la escena.]",
+        "Muestra el SUBTEXTO - el personaje piensa una cosa pero hace otra. Contraste entre palabras y acciones.]",
+    ],
+    "fr": [
+        "Commence par un DÉTAIL DU DÉCOR - son, odeur, texture, température, lumière. Immerge le lecteur par les sensations.]",
+        "Commence par une ACTION PHYSIQUE du personnage - geste, mouvement, déplacement. Pas par une pensée.]",
+        "Commence par un DIALOGUE ou quelque chose que le personnage remarque/entend. Le dialogue anime la scène.]",
+        "Montre le SOUS-TEXTE - le personnage pense une chose mais en fait une autre. Contraste entre paroles et actes.]",
+    ],
+    "de": [
+        "Beginne mit einem DETAIL DER UMGEBUNG - Geräusch, Geruch, Textur, Temperatur, Licht. Tauche den Leser durch Sinne ein.]",
+        "Beginne mit einer PHYSISCHEN HANDLUNG der Figur - Geste, Bewegung, Ortswechsel. Nicht mit einem Gedanken.]",
+        "Beginne mit DIALOG oder etwas, das die Figur bemerkt/hört. Dialog belebt die Szene.]",
+        "Zeige den SUBTEXT - die Figur denkt eines, tut aber anderes. Kontrast zwischen Worten und Taten.]",
+    ],
+    "pt": [
+        "Comece com um DETALHE DO CENÁRIO - som, cheiro, textura, temperatura, luz. Mergulhe o leitor através de sensações.]",
+        "Comece com uma AÇÃO FÍSICA do personagem - gesto, movimento, deslocamento. Não com um pensamento.]",
+        "Comece com DIÁLOGO ou algo que o personagem nota/ouve. O diálogo dá vida à cena.]",
+        "Mostre o SUBTEXTO - o personagem pensa uma coisa mas faz outra. Contraste entre palavras e ações.]",
+    ],
+    "it": [
+        "Inizia con un DETTAGLIO DELL'AMBIENTE - suono, odore, texture, temperatura, luce. Immergi il lettore attraverso le sensazioni.]",
+        "Inizia con un'AZIONE FISICA del personaggio - gesto, movimento, spostamento. Non con un pensiero.]",
+        "Inizia con un DIALOGO o qualcosa che il personaggio nota/sente. Il dialogo anima la scena.]",
+        "Mostra il SOTTOTESTO - il personaggio pensa una cosa ma ne fa un'altra. Contrasto tra parole e azioni.]",
+    ],
+}
+
+
+def _get_post_history(lang: str, chat_id: str, message_count: int) -> str:
+    """Get a rotating post-history variant based on chat_id and message position."""
+    core = _POST_HISTORY_CORE.get(lang, _POST_HISTORY_CORE["en"])
+    variants = _POST_HISTORY_VARIANTS.get(lang, _POST_HISTORY_VARIANTS["en"])
+    idx = hash(f"{chat_id}:{message_count}") % len(variants)
+    return core + variants[idx]
 
 
 async def get_or_create_chat(
@@ -603,15 +642,20 @@ async def build_conversation_messages(
     # Campaign chats use DnD post-history regardless of site_mode
     tags_str = char_dict.get("tags", "")
     is_dnd = bool(campaign_id) or "dnd" in [t.strip() for t in tags_str.split(",")]
+    msg_count = len(messages_data)
     if is_dnd:
         post_history_dict = _DND_POST_HISTORY
     elif campaign_id:
         post_history_dict = _DND_POST_HISTORY
     else:
         _POST_HISTORY_MAP = {"sfw": _TUTOR_POST_HISTORY, "fiction": _FICTION_POST_HISTORY}
-        post_history_dict = _POST_HISTORY_MAP.get(site_mode, _POST_HISTORY)
-    lang = language if language in post_history_dict else "en"
-    reminder = post_history_dict[lang].format(name=character.name)
+        post_history_dict = _POST_HISTORY_MAP.get(site_mode)
+    # Standard RP uses rotating variants; DnD/fiction/tutor use fixed reminders
+    if post_history_dict is not None:
+        lang = language if language in post_history_dict else "en"
+        reminder = post_history_dict[lang].format(name=character.name)
+    else:
+        reminder = _get_post_history(language, chat_id, msg_count).format(name=character.name)
     all_messages = result_list + messages
 
     # Inject previous dice results for DnD chats (before post-history)
