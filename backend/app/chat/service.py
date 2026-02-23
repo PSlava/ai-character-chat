@@ -169,52 +169,59 @@ _POST_HISTORY = {
         "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи.\n"
         "ОБЯЗАТЕЛЬНО: сохраняй текущую локацию и обстановку из предыдущих сообщений. Не теряй место действия.\n"
         "Продвинь сюжет — новое действие или изменение.\n"
-        "СТРОГО ЗАПРЕЩЕНО повторять фразы, описания, звуки, реакции и СТРУКТУРУ предложений из предыдущих ответов. "
-        "Перечитай свои последние ответы — используй ДРУГИЕ слова, ДРУГИЕ описания, ДРУГИЕ реакции, ДРУГИЕ начала предложений. "
-        "НЕ начинай несколько предложений с «Она/Он/Её/Его». Удиви читателя.]"
+        "СТРОГО ЗАПРЕЩЕНО повторять фразы, описания, реакции и СТРУКТУРУ предложений из предыдущих ответов. "
+        "Перечитай свои последние ответы — используй ДРУГИЕ слова, ДРУГИЕ описания, ДРУГИЕ реакции.\n"
+        "НЕ начинай ответ с имени персонажа или «Она/Он». Начни с детали обстановки, звука, запаха, жеста или ощущения. "
+        "Пиши как литературный автор — каждый абзац начинается иначе.]"
     ),
     "en": (
         "[Continue the scene as {name}. Third person. Show, don't tell.\n"
         "REQUIRED: maintain the current location and setting from previous messages. Don't lose the scene's place.\n"
         "Advance the plot — a new action or change.\n"
-        "STRICTLY FORBIDDEN to repeat phrases, descriptions, sounds, reactions, or sentence STRUCTURES from previous responses. "
-        "Re-read your recent responses — use DIFFERENT words, DIFFERENT descriptions, DIFFERENT reactions, DIFFERENT sentence openings. "
-        "Do NOT start multiple sentences with 'She/He/Her/His'. Surprise the reader.]"
+        "STRICTLY FORBIDDEN to repeat phrases, descriptions, reactions, or sentence STRUCTURES from previous responses. "
+        "Re-read your recent responses — use DIFFERENT words, DIFFERENT descriptions, DIFFERENT reactions.\n"
+        "Do NOT open the response with the character's name or 'She/He'. Open with a setting detail, sound, smell, gesture, or sensation. "
+        "Write like a literary author — each paragraph starts differently.]"
     ),
     "es": (
         "[Continua la escena como {name}. Tercera persona. Muestra, no cuentes.\n"
-        "OBLIGATORIO: mantén la ubicación y el entorno actuales de los mensajes anteriores. No pierdas el lugar de la escena.\n"
+        "OBLIGATORIO: mantén la ubicación y el entorno actuales. No pierdas el lugar de la escena.\n"
         "Avanza la trama — una nueva acción o cambio.\n"
-        "ESTRICTAMENTE PROHIBIDO repetir frases, descripciones, sonidos o reacciones de respuestas anteriores. "
-        "Relee tus respuestas recientes — usa OTRAS palabras, OTRAS descripciones, OTRAS reacciones. Sorprende al lector.]"
+        "ESTRICTAMENTE PROHIBIDO repetir frases, descripciones o reacciones de respuestas anteriores.\n"
+        "NO empieces la respuesta con el nombre del personaje ni con 'Ella/Él'. Empieza con un detalle del entorno, sonido, olor, gesto o sensación. "
+        "Escribe como un autor literario — cada párrafo comienza de forma diferente.]"
     ),
     "fr": (
         "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas.\n"
-        "OBLIGATOIRE : maintiens le lieu et le décor actuels des messages précédents. Ne perds pas le cadre de la scène.\n"
+        "OBLIGATOIRE : maintiens le lieu et le décor actuels. Ne perds pas le cadre de la scène.\n"
         "Fais avancer l'intrigue — une nouvelle action ou un changement.\n"
-        "STRICTEMENT INTERDIT de répéter des phrases, descriptions, sons ou réactions des réponses précédentes. "
-        "Relis tes réponses récentes — utilise D'AUTRES mots, D'AUTRES descriptions, D'AUTRES réactions. Surprends le lecteur.]"
+        "STRICTEMENT INTERDIT de répéter des phrases, descriptions ou réactions des réponses précédentes.\n"
+        "NE commence PAS la réponse par le nom du personnage ou 'Elle/Il'. Commence par un détail du décor, son, odeur, geste ou sensation. "
+        "Écris comme un auteur littéraire — chaque paragraphe commence différemment.]"
     ),
     "de": (
         "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen.\n"
-        "PFLICHT: Behalte den aktuellen Ort und die Umgebung aus den vorherigen Nachrichten bei. Verliere den Schauplatz nicht.\n"
+        "PFLICHT: Behalte den aktuellen Ort und die Umgebung bei. Verliere den Schauplatz nicht.\n"
         "Bringe die Handlung voran — eine neue Aktion oder Veränderung.\n"
-        "STRENG VERBOTEN, Phrasen, Beschreibungen, Geräusche oder Reaktionen aus vorherigen Antworten zu wiederholen. "
-        "Lies deine letzten Antworten erneut — verwende ANDERE Worte, ANDERE Beschreibungen, ANDERE Reaktionen. Überrasche den Leser.]"
+        "STRENG VERBOTEN, Phrasen, Beschreibungen oder Reaktionen aus vorherigen Antworten zu wiederholen.\n"
+        "Beginne die Antwort NICHT mit dem Namen der Figur oder 'Sie/Er'. Beginne mit einem Detail der Umgebung, Geräusch, Geruch, Geste oder Empfindung. "
+        "Schreibe wie ein literarischer Autor — jeder Absatz beginnt anders.]"
     ),
     "pt": (
         "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte.\n"
-        "OBRIGATÓRIO: mantenha a localização e o cenário atuais das mensagens anteriores. Não perca o lugar da cena.\n"
+        "OBRIGATÓRIO: mantenha a localização e o cenário atuais. Não perca o lugar da cena.\n"
         "Avance a trama — uma nova ação ou mudança.\n"
-        "ESTRITAMENTE PROIBIDO repetir frases, descrições, sons ou reações de respostas anteriores. "
-        "Releia suas respostas recentes — use OUTRAS palavras, OUTRAS descrições, OUTRAS reações. Surpreenda o leitor.]"
+        "ESTRITAMENTE PROIBIDO repetir frases, descrições ou reações de respostas anteriores.\n"
+        "NÃO comece a resposta com o nome do personagem ou 'Ela/Ele'. Comece com um detalhe do cenário, som, cheiro, gesto ou sensação. "
+        "Escreva como um autor literário — cada parágrafo começa de forma diferente.]"
     ),
     "it": (
         "[Continua la scena come {name}. Terza persona. Mostra, non raccontare.\n"
-        "OBBLIGATORIO: mantieni la posizione e l'ambientazione attuali dai messaggi precedenti. Non perdere il luogo della scena.\n"
+        "OBBLIGATORIO: mantieni la posizione e l'ambientazione attuali. Non perdere il luogo della scena.\n"
         "Fai avanzare la trama — una nuova azione o cambiamento.\n"
-        "SEVERAMENTE VIETATO ripetere frasi, descrizioni, suoni o reazioni dalle risposte precedenti. "
-        "Rileggi le tue risposte recenti — usa ALTRE parole, ALTRE descrizioni, ALTRE reazioni. Sorprendi il lettore.]"
+        "SEVERAMENTE VIETATO ripetere frasi, descrizioni o reazioni dalle risposte precedenti.\n"
+        "NON iniziare la risposta con il nome del personaggio o 'Lei/Lui'. Inizia con un dettaglio dell'ambiente, suono, odore, gesto o sensazione. "
+        "Scrivi come un autore letterario — ogni paragrafo inizia in modo diverso.]"
     ),
 }
 
