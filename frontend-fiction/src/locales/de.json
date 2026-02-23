@@ -644,5 +644,15 @@
   "onboarding.finish": "Los geht's!",
   "onboarding.skip": "Erstmal überspringen",
   "home.dndBanner.title": "D&D Spielleiter",
-  "home.dndBanner.subtitle": "Würfle, kämpfe gegen Monster und schmieде dein eigenes Abenteuer"
+  "home.dndBanner.subtitle": "Würfle, kämpfe gegen Monster und schmiede dein eigenes Abenteuer",
+  "profile.tabAchievements": "Erfolge",
+  "achievement.subtitle": "Schalte Abzeichen frei, indem du Abenteuer spielst und die Plattform erkundest",
+  "achievement.unlocked": "Erfolg freigeschaltet: {{name}}!",
+  "sheet.title": "Charakterbogen",
+  "sheet.level": "St.",
+  "sheet.inventory": "Inventar",
+  "rating.prompt": "Wie bewertest du dieses Abenteuer?",
+  "rating.thanks": "Danke fur die Bewertung!",
+  "rating.avg": "{{rating}} Durchschn.",
+  "rating.count": "{{count}} Bewertungen"
 }

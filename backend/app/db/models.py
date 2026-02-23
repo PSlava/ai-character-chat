@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Boolean, Integer, DateTime, ForeignKey, Enum as SAEnum, UniqueConstraint
+from sqlalchemy import String, Text, Boolean, Integer, SmallInteger, DateTime, ForeignKey, Enum as SAEnum, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 import enum
@@ -145,6 +145,8 @@ class Chat(Base):
     anon_session_id: Mapped[str | None] = mapped_column(String, nullable=True)  # anonymous guest session
     campaign_id: Mapped[str | None] = mapped_column(ForeignKey("campaigns.id", ondelete="SET NULL"), nullable=True)
     encounter_state: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    rating: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)  # 1-5 stars
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -315,6 +317,18 @@ class LoreEntry(Base):
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     position: Mapped[int] = mapped_column(Integer, default=0)  # sort order
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class UserAchievement(Base):
+    __tablename__ = "user_achievements"
+    __table_args__ = (
+        UniqueConstraint("user_id", "achievement_id"),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=gen_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    achievement_id: Mapped[str] = mapped_column(String(50), nullable=False)
+    achieved_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class PageView(Base):

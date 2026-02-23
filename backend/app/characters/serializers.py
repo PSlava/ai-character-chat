@@ -1,7 +1,7 @@
 from app.db.models import Character
 
 
-def character_to_dict(c: Character, language: str = None, is_admin: bool = False) -> dict:
+def character_to_dict(c: Character, language: str = None, is_admin: bool = False, rating_data: dict | None = None) -> dict:
     tr = getattr(c, '_active_translations', None)
     lang = language or "ru"
     base_chat = (c.base_chat_count or {}).get(lang, 0)
@@ -42,6 +42,9 @@ def character_to_dict(c: Character, language: str = None, is_admin: bool = False
             "display_name": c.creator.display_name,
             "avatar_url": c.creator.avatar_url,
         }
+    if rating_data:
+        d["avg_rating"] = rating_data.get("avg_rating")
+        d["rating_count"] = rating_data.get("rating_count", 0)
     if is_admin:
         d["real_chat_count"] = c.chat_count or 0
         d["real_like_count"] = c.like_count or 0

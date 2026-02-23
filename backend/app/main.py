@@ -131,6 +131,7 @@ from app.seo.router import router as seo_router  # noqa: E402
 from app.analytics.router import router as analytics_router  # noqa: E402
 from app.characters.lore_router import router as lore_router  # noqa: E402
 from app.group_chat.router import router as group_chat_router  # noqa: E402
+from app.achievements.router import router as achievements_router  # noqa: E402
 
 app.include_router(auth_router)
 app.include_router(characters_router)
@@ -146,6 +147,7 @@ app.include_router(seo_router)
 app.include_router(analytics_router)
 app.include_router(lore_router)
 app.include_router(group_chat_router)
+app.include_router(achievements_router)
 
 # Game/campaign routes (fiction mode only)
 if settings.is_fiction_mode:

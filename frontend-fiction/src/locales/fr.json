@@ -644,5 +644,15 @@
   "onboarding.finish": "C'est parti !",
   "onboarding.skip": "Passer pour l'instant",
   "home.dndBanner.title": "D&D Maître du Donjon",
-  "home.dndBanner.subtitle": "Lancez les dés, combattez des monstres et forgez votre propre aventure"
+  "home.dndBanner.subtitle": "Lancez les dés, combattez des monstres et forgez votre propre aventure",
+  "profile.tabAchievements": "Succes",
+  "achievement.subtitle": "Debloquez des badges en jouant des aventures et en explorant la plateforme",
+  "achievement.unlocked": "Succes debloque : {{name}} !",
+  "sheet.title": "Fiche de personnage",
+  "sheet.level": "Nv.",
+  "sheet.inventory": "Inventaire",
+  "rating.prompt": "Comment notez-vous cette aventure ?",
+  "rating.thanks": "Merci pour votre note !",
+  "rating.avg": "{{rating}} moy.",
+  "rating.count": "{{count}} notes"
 }

@@ -621,5 +621,15 @@
   "game.noSessions": "No sessions yet.",
   "game.backToCampaigns": "Back to Campaigns",
   "game.diceRoller": "Dice Roller",
-  "game.roll": "Roll"
+  "game.roll": "Roll",
+  "profile.tabAchievements": "Achievements",
+  "achievement.subtitle": "Unlock badges by playing adventures and exploring the platform",
+  "achievement.unlocked": "Achievement unlocked: {{name}}!",
+  "sheet.title": "Character Sheet",
+  "sheet.level": "Lv.",
+  "sheet.inventory": "Inventory",
+  "rating.prompt": "How would you rate this adventure?",
+  "rating.thanks": "Thanks for rating!",
+  "rating.avg": "{{rating}} avg",
+  "rating.count": "{{count}} ratings"
 }

@@ -29,6 +29,8 @@ export interface Character {
   real_chat_count?: number;
   real_like_count?: number;
   vote_score: number;
+  avg_rating?: number | null;
+  rating_count?: number;
   fork_count: number;
   forked_from_id?: string | null;
   highlights: { text: string; lang: string }[];
@@ -50,6 +52,7 @@ export interface Chat {
   title: string | null;
   model_used: string | null;
   has_summary?: boolean;
+  rating?: number | null;
   created_at: string;
   updated_at: string;
   characters?: Character;

@@ -5,7 +5,7 @@ SITE_URL = settings.frontend_url.rstrip("/")
 SITE_NAME = settings.site_name
 
 
-def character_jsonld(c: Character, language: str = "en", vote_count: int = 0) -> dict:
+def character_jsonld(c: Character, language: str = "en", vote_count: int = 0, rating_data: dict | None = None) -> dict:
     tr = getattr(c, '_active_translations', None)
     name = tr["name"] if tr and "name" in tr else c.name
     tagline = tr["tagline"] if tr and "tagline" in tr else (c.tagline or "")
@@ -45,21 +45,30 @@ def character_jsonld(c: Character, language: str = "en", vote_count: int = 0) ->
             "@type": "Person",
             "name": c.creator.display_name or c.creator.username,
         }
-    # AggregateRating from votes — only if enough engagement
-    like_count = getattr(c, "like_count", 0) or 0
-    v_score = getattr(c, "vote_score", 0) or 0
-    total_votes = max(vote_count, 1)
-    if like_count >= 3:
-        ratio = max(-1.0, min(1.0, v_score / total_votes))
-        rating_value = round(4.0 + ratio, 1)
-        rating_value = max(3.0, min(5.0, rating_value))
+    # AggregateRating — prefer real user ratings, fall back to vote-derived
+    if rating_data and rating_data.get("rating_count", 0) >= 3:
         data["aggregateRating"] = {
             "@type": "AggregateRating",
-            "ratingValue": rating_value,
+            "ratingValue": rating_data["avg_rating"],
             "bestRating": 5,
             "worstRating": 1,
-            "ratingCount": like_count,
+            "ratingCount": rating_data["rating_count"],
         }
+    else:
+        like_count = getattr(c, "like_count", 0) or 0
+        v_score = getattr(c, "vote_score", 0) or 0
+        total_votes = max(vote_count, 1)
+        if like_count >= 3:
+            ratio = max(-1.0, min(1.0, v_score / total_votes))
+            rating_value = round(4.0 + ratio, 1)
+            rating_value = max(3.0, min(5.0, rating_value))
+            data["aggregateRating"] = {
+                "@type": "AggregateRating",
+                "ratingValue": rating_value,
+                "bestRating": 5,
+                "worstRating": 1,
+                "ratingCount": like_count,
+            }
     return {k: v for k, v in data.items() if v is not None}
 
 

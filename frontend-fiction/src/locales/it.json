@@ -644,5 +644,15 @@
   "onboarding.finish": "Andiamo!",
   "onboarding.skip": "Salta per ora",
   "home.dndBanner.title": "D&D Game Master",
-  "home.dndBanner.subtitle": "Lancia i dadi, combatti mostri e forgia la tua avventura"
+  "home.dndBanner.subtitle": "Lancia i dadi, combatti mostri e forgia la tua avventura",
+  "profile.tabAchievements": "Obiettivi",
+  "achievement.subtitle": "Sblocca badge giocando avventure ed esplorando la piattaforma",
+  "achievement.unlocked": "Obiettivo sbloccato: {{name}}!",
+  "sheet.title": "Scheda personaggio",
+  "sheet.level": "Lv.",
+  "sheet.inventory": "Inventario",
+  "rating.prompt": "Come valuti questa avventura?",
+  "rating.thanks": "Grazie per la valutazione!",
+  "rating.avg": "{{rating}} media",
+  "rating.count": "{{count}} valutazioni"
 }

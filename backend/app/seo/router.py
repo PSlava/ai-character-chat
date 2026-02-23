@@ -240,7 +240,9 @@ async def prerender_character(
     )
     vote_count = vote_result.scalar() or 0
 
-    ld_json = json.dumps(character_jsonld(character, lang, vote_count=vote_count), ensure_ascii=False)
+    from app.characters.service import get_character_rating
+    rating_data = await get_character_rating(db, character.id)
+    ld_json = json.dumps(character_jsonld(character, lang, vote_count=vote_count, rating_data=rating_data), ensure_ascii=False)
     ld_breadcrumb = json.dumps(breadcrumb_jsonld([
         (SITE_NAME, SITE_URL),
         (name, None),

@@ -15,18 +15,19 @@ import { SEO } from '@/components/seo/SEO';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import type { Character, Persona } from '@/types';
-import { Plus, Star, Pencil, Trash2, Check, X, MessageCircle, MessagesSquare, User, Users, Shield } from 'lucide-react';
+import { Plus, Star, Pencil, Trash2, Check, X, MessageCircle, MessagesSquare, User, Users, Shield, Trophy } from 'lucide-react';
+import { getAchievements, type Achievement } from '@/api/achievements';
 
-type ProfileTab = 'profile' | 'characters' | 'personas' | 'account';
+type ProfileTab = 'profile' | 'characters' | 'personas' | 'achievements' | 'account';
 
 export function ProfilePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const logout = useAuthStore((s) => s.logout);
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') as ProfileTab | null;
-  const validTabs: ProfileTab[] = ['profile', 'characters', 'personas', 'account'];
+  const validTabs: ProfileTab[] = ['profile', 'characters', 'personas', 'achievements', 'account'];
   const [activeTab, setActiveTab] = useState<ProfileTab>(
     tabParam && validTabs.includes(tabParam) ? tabParam : 'profile'
   );
@@ -54,6 +55,7 @@ export function ProfilePage() {
   const [personaSaving, setPersonaSaving] = useState(false);
   const [deletePersonaId, setDeletePersonaId] = useState<string | null>(null);
   const [personaLimit, setPersonaLimit] = useState(5);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -67,6 +69,7 @@ export function ProfilePage() {
     });
     getPersonas().then(setPersonas).catch(() => {});
     getPersonaLimit().then((r) => setPersonaLimit(r.limit)).catch(() => {});
+    getAchievements(i18n.language).then(setAchievements).catch(() => {});
   }, [isAuthenticated]);
 
   const handleDeleteAccount = async () => {
@@ -201,6 +204,7 @@ export function ProfilePage() {
     { key: 'profile', label: t('profile.tabProfile'), icon: <User className="w-4 h-4" /> },
     { key: 'characters', label: t('profile.tabCharacters'), icon: <Users className="w-4 h-4" /> },
     { key: 'personas', label: t('profile.tabPersonas'), icon: <Star className="w-4 h-4" /> },
+    { key: 'achievements', label: t('profile.tabAchievements'), icon: <Trophy className="w-4 h-4" /> },
     { key: 'account', label: t('profile.tabAccount'), icon: <Shield className="w-4 h-4" /> },
   ];
 
@@ -432,6 +436,51 @@ export function ProfilePage() {
           {personaLimit > 0 && personas.length >= personaLimit && (
             <p className="text-neutral-500 text-xs mt-2">{t('persona.limit')}</p>
           )}
+        </div>
+      )}
+
+      {/* Achievements tab */}
+      {activeTab === 'achievements' && (
+        <div>
+          <p className="text-neutral-500 text-sm mb-4">{t('achievement.subtitle')}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {achievements.map((ach) => (
+              <div
+                key={ach.id}
+                className={`bg-neutral-800/50 border rounded-xl p-4 transition-colors ${
+                  ach.unlocked
+                    ? 'border-amber-500/30 bg-amber-500/5'
+                    : 'border-neutral-700 opacity-60'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">{ach.unlocked ? '🏆' : '🔒'}</span>
+                  <span className={`font-medium ${ach.unlocked ? 'text-amber-300' : 'text-neutral-400'}`}>
+                    {ach.name}
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-500 mb-2">{ach.description}</p>
+                {ach.target && (
+                  <div>
+                    <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all ${ach.unlocked ? 'bg-amber-500' : 'bg-purple-500'}`}
+                        style={{ width: `${Math.min(100, ((ach.progress || 0) / ach.target) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-neutral-500 mt-0.5 block">
+                      {ach.progress || 0}/{ach.target}
+                    </span>
+                  </div>
+                )}
+                {ach.achieved_at && (
+                  <span className="text-[10px] text-neutral-600 block mt-1">
+                    {new Date(ach.achieved_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

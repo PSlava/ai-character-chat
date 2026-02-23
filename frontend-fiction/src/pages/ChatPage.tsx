@@ -14,12 +14,14 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import ChoiceButtons from '@/components/chat/ChoiceButtons';
 import { DiceResultDisplay } from '@/components/game/DiceRoller';
 import { EncounterPanel } from '@/components/game/EncounterPanel';
+import { CharacterSheet } from '@/components/game/CharacterSheet';
 import { GenerationSettingsModal, loadModelSettings } from '@/components/chat/GenerationSettingsModal';
 import type { ChatSettings } from '@/components/chat/GenerationSettingsModal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AnonLimitModal } from '@/components/chat/AnonLimitModal';
 import { Avatar } from '@/components/ui/Avatar';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
+import { RatingPrompt } from '@/components/chat/RatingPrompt';
 import { SEO } from '@/components/seo/SEO';
 import type { ChatDetail } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
@@ -426,8 +428,24 @@ export function ChatPage() {
       )}
 
       {encounterState && (
+        <div className="px-4 py-2 space-y-2">
+          {(encounterState as any)?.player && (
+            <CharacterSheet state={encounterState as any} />
+          )}
+          {!(encounterState as any)?.player && (
+            <EncounterPanel state={encounterState as any} />
+          )}
+        </div>
+      )}
+
+      {/* Rating prompt — show after 10+ user messages when no rating yet */}
+      {chatId && !isStreaming && !chatDetail?.chat.rating &&
+        messages.filter((m) => m.role === 'user').length >= 10 && (
         <div className="px-4 py-2">
-          <EncounterPanel state={encounterState as any} />
+          <RatingPrompt
+            chatId={chatId}
+            onRated={(r) => setChatDetail((d) => d ? { ...d, chat: { ...d.chat, rating: r } } : d)}
+          />
         </div>
       )}
 

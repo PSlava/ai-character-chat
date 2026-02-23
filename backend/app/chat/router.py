@@ -1,5 +1,6 @@
 import json
 import time as _time
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from starlette.responses import JSONResponse
@@ -204,6 +205,7 @@ def chat_to_dict(c):
         "title": c.title,
         "model_used": c.model_used,
         "has_summary": bool(getattr(c, 'summary', None)),
+        "rating": getattr(c, 'rating', None),
         "created_at": c.created_at.isoformat() if c.created_at else None,
         "updated_at": c.updated_at.isoformat() if c.updated_at else None,
     }
@@ -505,6 +507,42 @@ async def _append_to_message(db: AsyncSession, message_id: str, appended_text: s
     await db.commit()
 
 
+@router.post("/{chat_id}/rate")
+async def rate_adventure(
+    chat_id: str,
+    request: Request,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Rate an adventure 1-5 stars."""
+    body = await request.json()
+    rating = body.get("rating")
+    if not isinstance(rating, int) or rating < 1 or rating > 5:
+        raise HTTPException(400, "Rating must be 1-5")
+
+    result = await db.execute(select(Chat).where(Chat.id == chat_id))
+    chat = result.scalar_one_or_none()
+    if not chat:
+        raise HTTPException(404, "Chat not found")
+    if chat.user_id != user.get("id"):
+        raise HTTPException(403, "Not your chat")
+
+    chat.rating = rating
+    if not chat.completed_at:
+        chat.completed_at = datetime.utcnow()
+    await db.commit()
+
+    # Check achievements
+    new_achievements = []
+    try:
+        from app.achievements.checker import check_achievements
+        new_achievements = await check_achievements(db, user["id"], trigger="rating")
+    except Exception:
+        pass
+
+    return {"ok": True, "rating": rating, "new_achievements": new_achievements}
+
+
 @router.post("/{chat_id}/message")
 async def send_message(
     chat_id: str,
@@ -758,6 +796,14 @@ async def send_message(
                             done_data['encounter_state'] = enc_state
                     if anon_session_id and anon_remaining is not None:
                         done_data['anon_messages_left'] = anon_remaining - 1
+                    if user_id and not anon_session_id:
+                        try:
+                            from app.achievements.checker import check_achievements as _ach_check
+                            _new_ach = await _ach_check(db, user_id, trigger="message")
+                            if _new_ach:
+                                done_data['new_achievements'] = _new_ach
+                        except Exception:
+                            pass
                     yield f"data: {json.dumps(done_data)}\n\n"
                     return
                 except Exception as e:
@@ -845,6 +891,14 @@ async def send_message(
                                     done_data['encounter_state'] = fb_enc
                             if anon_session_id and anon_remaining is not None:
                                 done_data['anon_messages_left'] = anon_remaining - 1
+                            if user_id and not anon_session_id:
+                                try:
+                                    from app.achievements.checker import check_achievements as _ach_check
+                                    _new_ach = await _ach_check(db, user_id, trigger="message")
+                                    if _new_ach:
+                                        done_data['new_achievements'] = _new_ach
+                                except Exception:
+                                    pass
                             yield f"data: {json.dumps(done_data)}\n\n"
                             return
                         except Exception:
@@ -888,6 +942,14 @@ async def send_message(
                         done_data['encounter_state'] = enc_state
                 if anon_session_id and anon_remaining is not None:
                     done_data['anon_messages_left'] = anon_remaining - 1
+                if user_id and not anon_session_id:
+                    try:
+                        from app.achievements.checker import check_achievements as _ach_check
+                        _new_ach = await _ach_check(db, user_id, trigger="message")
+                        if _new_ach:
+                            done_data['new_achievements'] = _new_ach
+                    except Exception:
+                        pass
                 yield f"data: {json.dumps(done_data)}\n\n"
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'content': _user_error(str(e), is_admin), 'user_message_id': user_msg.id})}\n\n"

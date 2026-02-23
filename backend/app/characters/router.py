@@ -288,7 +288,8 @@ async def get_character_by_slug(
         from app.characters.translation import ensure_translations_nonblocking
         await ensure_translations_nonblocking([character], language)
     is_admin = user.get("role") == "admin" if user else False
-    return character_to_dict(character, language=language, is_admin=is_admin)
+    rating_data = await service.get_character_rating(db, character.id)
+    return character_to_dict(character, language=language, is_admin=is_admin, rating_data=rating_data)
 
 
 @router.get("/{character_id}/similar")
@@ -483,7 +484,8 @@ async def get_character(
         from app.characters.translation import ensure_translations_nonblocking
         await ensure_translations_nonblocking([character], language)
     is_admin = user.get("role") == "admin" if user else False
-    return character_to_dict(character, language=language, is_admin=is_admin)
+    rating_data = await service.get_character_rating(db, character.id)
+    return character_to_dict(character, language=language, is_admin=is_admin, rating_data=rating_data)
 
 
 

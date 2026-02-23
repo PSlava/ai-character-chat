@@ -179,6 +179,21 @@ async def get_character(db: AsyncSession, character_id: str):
     return result.scalar_one_or_none()
 
 
+async def get_character_rating(db: AsyncSession, character_id: str) -> dict | None:
+    """Get average rating and count for a character from chat ratings."""
+    from app.db.models import Chat
+    result = await db.execute(
+        select(
+            func.avg(Chat.rating).label("avg"),
+            func.count(Chat.rating).label("cnt"),
+        ).where(Chat.character_id == character_id, Chat.rating.isnot(None))
+    )
+    row = result.one()
+    if not row.cnt:
+        return None
+    return {"avg_rating": round(float(row.avg), 1), "rating_count": row.cnt}
+
+
 async def get_character_by_slug(db: AsyncSession, slug: str):
     result = await db.execute(
         select(Character)

@@ -74,3 +74,7 @@ export async function getAnonLimit(): Promise<AnonLimit> {
   const { data } = await api.get<AnonLimit>('/chats/anon-limit');
   return data;
 }
+
+export async function rateAdventure(chatId: string, rating: number): Promise<void> {
+  await api.post(`/chats/${chatId}/rate`, { rating });
+}

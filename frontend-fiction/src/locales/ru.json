@@ -621,5 +621,15 @@
   "game.noSessions": "Пока нет сессий.",
   "game.backToCampaigns": "Назад к кампаниям",
   "game.diceRoller": "Бросок кубика",
-  "game.roll": "Бросить"
+  "game.roll": "Бросить",
+  "profile.tabAchievements": "Достижения",
+  "achievement.subtitle": "Получай значки за приключения и исследование платформы",
+  "achievement.unlocked": "Достижение разблокировано: {{name}}!",
+  "sheet.title": "Лист персонажа",
+  "sheet.level": "Ур.",
+  "sheet.inventory": "Инвентарь",
+  "rating.prompt": "Как вам это приключение?",
+  "rating.thanks": "Спасибо за оценку!",
+  "rating.avg": "{{rating}} средн.",
+  "rating.count": "{{count}} оценок"
 }

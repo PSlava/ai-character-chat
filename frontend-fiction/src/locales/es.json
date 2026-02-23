@@ -644,5 +644,15 @@
   "onboarding.finish": "¡Vamos!",
   "onboarding.skip": "Omitir por ahora",
   "home.dndBanner.title": "D&D Director de Juego",
-  "home.dndBanner.subtitle": "Lanza dados, lucha contra monstruos y forja tu propia aventura"
+  "home.dndBanner.subtitle": "Lanza dados, lucha contra monstruos y forja tu propia aventura",
+  "profile.tabAchievements": "Logros",
+  "achievement.subtitle": "Desbloquea insignias jugando aventuras y explorando la plataforma",
+  "achievement.unlocked": "Logro desbloqueado: {{name}}!",
+  "sheet.title": "Hoja de personaje",
+  "sheet.level": "Nv.",
+  "sheet.inventory": "Inventario",
+  "rating.prompt": "Como calificas esta aventura?",
+  "rating.thanks": "Gracias por tu valoracion!",
+  "rating.avg": "{{rating}} prom.",
+  "rating.count": "{{count}} valoraciones"
 }

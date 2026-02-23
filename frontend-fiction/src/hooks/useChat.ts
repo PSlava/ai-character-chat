@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getAuthOrAnonToken, deleteChatMessage } from '@/api/chat';
 import type { Message, DiceRollResult } from '@/types';
@@ -145,6 +146,12 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               setAnonMessagesLeft(data.anon_messages_left);
               if (data.anon_messages_left <= 0) {
                 setAnonLimitReached(true);
+              }
+            }
+            // Achievement unlock notifications
+            if (data.new_achievements && Array.isArray(data.new_achievements)) {
+              for (const achId of data.new_achievements) {
+                toast.success(t('achievement.unlocked', { name: achId }), { duration: 4000, icon: '🏆' });
               }
             }
             setIsStreaming(false);

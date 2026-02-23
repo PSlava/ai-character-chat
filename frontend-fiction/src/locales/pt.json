@@ -644,5 +644,15 @@
   "onboarding.finish": "Vamos lá!",
   "onboarding.skip": "Pular por enquanto",
   "home.dndBanner.title": "D&D Mestre do Jogo",
-  "home.dndBanner.subtitle": "Lance dados, lute contra monstros e forje sua própria aventura"
+  "home.dndBanner.subtitle": "Lance dados, lute contra monstros e forje sua própria aventura",
+  "profile.tabAchievements": "Conquistas",
+  "achievement.subtitle": "Desbloqueie emblemas jogando aventuras e explorando a plataforma",
+  "achievement.unlocked": "Conquista desbloqueada: {{name}}!",
+  "sheet.title": "Ficha de personagem",
+  "sheet.level": "Nv.",
+  "sheet.inventory": "Inventario",
+  "rating.prompt": "Como voce avalia esta aventura?",
+  "rating.thanks": "Obrigado pela avaliacao!",
+  "rating.avg": "{{rating}} med.",
+  "rating.count": "{{count}} avaliacoes"
 }

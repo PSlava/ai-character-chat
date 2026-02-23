@@ -1292,9 +1292,11 @@ _DND_PROMPTS = {
             "- НЕ бросай кубики сам. Пиши [ROLL ...], система бросит автоматически.\n"
             "- Пиши [ROLL ...] В КОНЦЕ ответа (перед вариантами). НЕ описывай результат броска — оставь интригу.\n"
             "- Система бросит кубики и передаст результат. В СЛЕДУЮЩЕМ ответе опиши исход по этому результату.\n"
-            "- В начале боя и при изменении состояния пиши блок [STATE {json}] с текущим состоянием:\n"
-            '  [STATE {"combat":true,"round":1,"combatants":[{"name":"Goblin","hp":7,"max_hp":7,"ac":15,"conditions":[]}],"location":"Cave"}]\n'
-            "  Обновляй HP, условия, раунды по ходу боя. Если бой окончен: [STATE {\"combat\":false}]\n"
+            "- ВСЕГДА пиши блок [STATE {json}] в КАЖДОМ ответе с данными игрока и ситуации:\n"
+            '  [STATE {"player":{"name":"...","hp":20,"max_hp":25,"class":"Fighter","level":3,"stats":{"str":16,"dex":14,"con":12,"int":10,"wis":13,"cha":8},"inventory":["longsword","shield","50 gold"],"conditions":[]},"combat":false,"location":"Tavern"}]\n'
+            "- В бою добавляй combatants и round:\n"
+            '  [STATE {"player":{...},"combat":true,"round":1,"combatants":[{"name":"Goblin","hp":7,"max_hp":7,"ac":15,"conditions":[]}],"location":"Cave"}]\n'
+            "  Обновляй HP, условия, раунды, инвентарь. Если бой окончен: combat:false (но player остается).\n"
             "- Правило крутости: если креативная идея игрока классная - снижай DC или дай ей сработать.\n"
             "- Развивай идеи игрока. Никогда не говори просто 'нет' - предлагай альтернативы.\n"
             "- Описывай промахи красочно - неудачная атака это эффектный уворот, а не просто 'ты промахнулся'.\n"
@@ -1356,9 +1358,11 @@ _DND_PROMPTS = {
             "- Do NOT roll dice yourself. Write [ROLL ...], the system rolls automatically.\n"
             "- Write [ROLL ...] at the END of your response (before choices). Do NOT narrate the roll's outcome — leave it as a cliffhanger.\n"
             "- The system will roll and provide the result. In your NEXT response, describe the outcome based on that result.\n"
-            "- At combat start and when state changes, write a [STATE {json}] block:\n"
-            '  [STATE {"combat":true,"round":1,"combatants":[{"name":"Goblin","hp":7,"max_hp":7,"ac":15,"conditions":[]}],"location":"Cave"}]\n'
-            '  Update HP, conditions, rounds as combat progresses. When combat ends: [STATE {"combat":false}]\n'
+            "- ALWAYS write a [STATE {json}] block in EVERY response with player data and situation:\n"
+            '  [STATE {"player":{"name":"...","hp":20,"max_hp":25,"class":"Fighter","level":3,"stats":{"str":16,"dex":14,"con":12,"int":10,"wis":13,"cha":8},"inventory":["longsword","shield","50 gold"],"conditions":[]},"combat":false,"location":"Tavern"}]\n'
+            "- In combat, add combatants and round:\n"
+            '  [STATE {"player":{...},"combat":true,"round":1,"combatants":[{"name":"Goblin","hp":7,"max_hp":7,"ac":15,"conditions":[]}],"location":"Cave"}]\n'
+            '  Update HP, conditions, rounds, inventory. When combat ends: combat:false (but keep player data).\n'
             "- Rule of Cool: if a player's creative idea is fun, lower the DC or let it work.\n"
             "- Build on the player's ideas. Never flatly say 'no' - offer alternatives.\n"
             "- Describe near-misses vividly - a failed attack is a dramatic dodge, not just 'you miss.'\n"
@@ -1419,8 +1423,9 @@ _DND_PROMPTS = {
             "- NO tires dados tu mismo. Escribe [ROLL ...], el sistema tira automaticamente.\n"
             "- Escribe [ROLL ...] al FINAL de tu respuesta (antes de opciones). NO narres el resultado — dejalo como suspenso.\n"
             "- El sistema tirara y dara el resultado. En tu SIGUIENTE respuesta, describe el desenlace segun ese resultado.\n"
-            "- Al inicio del combate y con cambios de estado, escribe [STATE {json}] con combatientes, PG, CA, condiciones.\n"
-            '  Fin del combate: [STATE {"combat":false}]\n'
+            "- SIEMPRE escribe un bloque [STATE {json}] en CADA respuesta con datos del jugador y situacion:\n"
+            '  [STATE {"player":{"name":"...","hp":20,"max_hp":25,"class":"Fighter","level":3,"stats":{"str":16,"dex":14,"con":12,"int":10,"wis":13,"cha":8},"inventory":["espada larga","escudo","50 oro"],"conditions":[]},"combat":false,"location":"Taberna"}]\n'
+            "- En combate, agrega combatants y round. Fin del combate: combat:false (mantener datos del jugador).\n"
             "- Regla de lo genial: si la idea creativa del jugador es divertida, baja el DC o dejala funcionar.\n"
             "- Construye sobre las ideas del jugador. Nunca digas simplemente 'no' - ofrece alternativas.\n"
             "- Describe los fallos dramaticamente - un ataque fallido es una esquiva espectacular, no solo 'fallas'.\n"
@@ -1480,8 +1485,9 @@ _DND_PROMPTS = {
             "- NE lance PAS les des toi-meme. Ecris [ROLL ...], le systeme lance automatiquement.\n"
             "- Ecris [ROLL ...] a la FIN de ta reponse (avant les options). NE decris PAS le resultat — laisse le suspense.\n"
             "- Le systeme lancera et fournira le resultat. Dans ta PROCHAINE reponse, decris l'issue selon ce resultat.\n"
-            "- Au debut du combat et lors de changements, ecris [STATE {json}] avec combattants, PV, CA, conditions.\n"
-            '  Fin du combat: [STATE {"combat":false}]\n'
+            "- Ecris TOUJOURS un bloc [STATE {json}] dans CHAQUE reponse avec les donnees du joueur et la situation:\n"
+            '  [STATE {"player":{"name":"...","hp":20,"max_hp":25,"class":"Fighter","level":3,"stats":{"str":16,"dex":14,"con":12,"int":10,"wis":13,"cha":8},"inventory":["epee longue","bouclier","50 or"],"conditions":[]},"combat":false,"location":"Taverne"}]\n'
+            "- En combat, ajoute combatants et round. Fin du combat: combat:false (garder les donnees du joueur).\n"
             "- Regle du cool: si l'idee creative du joueur est fun, baisse le DC ou laisse-la fonctionner.\n"
             "- Construis sur les idees du joueur. Ne dis jamais simplement 'non' - propose des alternatives.\n"
             "- Decris les echecs de maniere dramatique - une attaque ratee est une esquive spectaculaire.\n"
@@ -1541,8 +1547,9 @@ _DND_PROMPTS = {
             "- Wurfle NICHT selbst. Schreibe [ROLL ...], das System wurf automatisch.\n"
             "- Schreibe [ROLL ...] am ENDE deiner Antwort (vor den Optionen). Beschreibe NICHT das Ergebnis — lass die Spannung.\n"
             "- Das System wurfelt und liefert das Ergebnis. In deiner NACHSTEN Antwort beschreibe den Ausgang anhand dieses Ergebnisses.\n"
-            "- Bei Kampfbeginn und Zustandsanderungen: [STATE {json}] mit Kampfern, TP, RK, Zustanden.\n"
-            '  Kampfende: [STATE {"combat":false}]\n'
+            "- Schreibe IMMER einen [STATE {json}]-Block in JEDER Antwort mit Spielerdaten und Situation:\n"
+            '  [STATE {"player":{"name":"...","hp":20,"max_hp":25,"class":"Fighter","level":3,"stats":{"str":16,"dex":14,"con":12,"int":10,"wis":13,"cha":8},"inventory":["Langschwert","Schild","50 Gold"],"conditions":[]},"combat":false,"location":"Taverne"}]\n'
+            "- Im Kampf: combatants und round hinzufugen. Kampfende: combat:false (Spielerdaten behalten).\n"
             "- Regel der Coolness: wenn die kreative Idee des Spielers Spass macht, senke den DC oder lass es funktionieren.\n"
             "- Baue auf den Ideen des Spielers auf. Sage nie einfach 'nein' - biete Alternativen.\n"
             "- Beschreibe Fehlschlage dramatisch - ein verfehlter Angriff ist ein spektakulares Ausweichen.\n"
@@ -1602,8 +1609,9 @@ _DND_PROMPTS = {
             "- NAO role dados voce mesmo. Escreva [ROLL ...], o sistema rola automaticamente.\n"
             "- Escreva [ROLL ...] no FINAL da resposta (antes das opcoes). NAO narre o resultado — deixe o suspense.\n"
             "- O sistema rolara e fornecera o resultado. Na PROXIMA resposta, descreva o desfecho com base nesse resultado.\n"
-            "- No inicio do combate e com mudancas: [STATE {json}] com combatentes, PV, CA, condicoes.\n"
-            '  Fim do combate: [STATE {"combat":false}]\n'
+            "- Escreva SEMPRE um bloco [STATE {json}] em CADA resposta com dados do jogador e situacao:\n"
+            '  [STATE {"player":{"name":"...","hp":20,"max_hp":25,"class":"Fighter","level":3,"stats":{"str":16,"dex":14,"con":12,"int":10,"wis":13,"cha":8},"inventory":["espada longa","escudo","50 ouro"],"conditions":[]},"combat":false,"location":"Taverna"}]\n'
+            "- Em combate, adicione combatants e round. Fim do combate: combat:false (manter dados do jogador).\n"
             "- Regra do legal: se a ideia criativa do jogador e divertida, baixe o DC ou deixe funcionar.\n"
             "- Construa sobre as ideias do jogador. Nunca diga simplesmente 'nao' - ofereca alternativas.\n"
             "- Descreva falhas dramaticamente - um ataque errado e uma esquiva espetacular, nao apenas 'voce erra'.\n"
@@ -1663,8 +1671,9 @@ _DND_PROMPTS = {
             "- NON tirare i dadi tu stesso. Scrivi [ROLL ...], il sistema tira automaticamente.\n"
             "- Scrivi [ROLL ...] alla FINE della risposta (prima delle opzioni). NON narrare l'esito — lascia la suspense.\n"
             "- Il sistema tirera e fornira il risultato. Nella PROSSIMA risposta, descrivi l'esito in base a quel risultato.\n"
-            "- All'inizio del combattimento e con cambiamenti: [STATE {json}] con combattenti, PF, CA, condizioni.\n"
-            '  Fine combattimento: [STATE {"combat":false}]\n'
+            "- Scrivi SEMPRE un blocco [STATE {json}] in OGNI risposta con i dati del giocatore e la situazione:\n"
+            '  [STATE {"player":{"name":"...","hp":20,"max_hp":25,"class":"Fighter","level":3,"stats":{"str":16,"dex":14,"con":12,"int":10,"wis":13,"cha":8},"inventory":["spada lunga","scudo","50 oro"],"conditions":[]},"combat":false,"location":"Taverna"}]\n'
+            "- In combattimento, aggiungi combatants e round. Fine combattimento: combat:false (mantenere dati giocatore).\n"
             "- Regola del figo: se l'idea creativa del giocatore e divertente, abbassa il CD o lasciala funzionare.\n"
             "- Costruisci sulle idee del giocatore. Mai dire semplicemente 'no' - offri alternative.\n"
             "- Descrivi i fallimenti in modo drammatico - un attacco mancato e una schivata spettacolare.\n"

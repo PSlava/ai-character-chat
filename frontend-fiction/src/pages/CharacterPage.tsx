@@ -294,6 +294,13 @@ export function CharacterPage() {
                 <ThumbsDown className={`w-4 h-4 ${userVote === -1 ? 'fill-current' : ''}`} />
               </button>
             </span>
+            {character.avg_rating && character.rating_count ? (
+              <span className="flex items-center gap-1 shrink-0 text-amber-400">
+                <Star className="w-4 h-4 fill-current" />
+                {character.avg_rating.toFixed(1)}
+                <span className="text-neutral-500">({character.rating_count})</span>
+              </span>
+            ) : null}
             {(character.fork_count || 0) > 0 && (
               <span className="flex items-center gap-1 shrink-0">
                 <GitFork className="w-4 h-4" />
