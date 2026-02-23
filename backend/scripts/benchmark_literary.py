@@ -50,7 +50,7 @@ BENCHMARK_MODELS: dict[str, tuple[str, str]] = {
     "cerebras:qwen-3-235b": ("cerebras", "qwen-3-235b-a22b-instruct-2507"),
     # Paid models (used only if keys present)
     "openai:gpt-4o": ("openai", "gpt-4o"),
-    "anthropic:sonnet": ("claude", "claude-sonnet-4-5-20250514"),
+    "anthropic:sonnet": ("claude", ""),  # uses provider default
 }
 
 # Test scenario indices from SEED_STORIES
@@ -541,7 +541,7 @@ def save_results(results: list[ResponseResult], output_path: str):
     """Save full results to JSON."""
     data = {
         "meta": {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now().isoformat(),
             "total_results": len(results),
             "models": list({r.model_label for r in results}),
             "scenarios": list({r.story_name for r in results}),
@@ -671,14 +671,15 @@ async def run_benchmark(args):
 
     if not args.no_judge:
         if args.judge == "claude" and "claude" in available:
-            judge_provider, judge_model = "claude", "claude-sonnet-4-5-20250514"
+            judge_provider, judge_model = "claude", ""  # uses provider default
         elif args.judge == "openai" and "openai" in available:
             judge_provider, judge_model = "openai", "gpt-4o"
         elif args.judge == "auto" or not args.judge:
-            if "claude" in available:
-                judge_provider, judge_model = "claude", "claude-sonnet-4-5-20250514"
-            elif "openai" in available:
+            # Prefer OpenAI for judging (more stable model IDs)
+            if "openai" in available:
                 judge_provider, judge_model = "openai", "gpt-4o"
+            elif "claude" in available:
+                judge_provider, judge_model = "claude", ""
 
         if judge_provider:
             judge_label = f"{judge_provider}:{judge_model}"
@@ -780,7 +781,7 @@ async def run_benchmark(args):
     # Output
     print_summary(results, total_elapsed, judge_label)
 
-    output_path = args.output or f"benchmark_results_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+    output_path = args.output or f"benchmark_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     save_results(results, output_path)
 
 
