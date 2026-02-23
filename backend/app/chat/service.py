@@ -169,15 +169,17 @@ _POST_HISTORY = {
         "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи.\n"
         "ОБЯЗАТЕЛЬНО: сохраняй текущую локацию и обстановку из предыдущих сообщений. Не теряй место действия.\n"
         "Продвинь сюжет — новое действие или изменение.\n"
-        "СТРОГО ЗАПРЕЩЕНО повторять фразы, описания, звуки и реакции из предыдущих ответов. "
-        "Перечитай свои последние ответы — используй ДРУГИЕ слова, ДРУГИЕ описания, ДРУГИЕ реакции. Удиви читателя.]"
+        "СТРОГО ЗАПРЕЩЕНО повторять фразы, описания, звуки, реакции и СТРУКТУРУ предложений из предыдущих ответов. "
+        "Перечитай свои последние ответы — используй ДРУГИЕ слова, ДРУГИЕ описания, ДРУГИЕ реакции, ДРУГИЕ начала предложений. "
+        "НЕ начинай несколько предложений с «Она/Он/Её/Его». Удиви читателя.]"
     ),
     "en": (
         "[Continue the scene as {name}. Third person. Show, don't tell.\n"
         "REQUIRED: maintain the current location and setting from previous messages. Don't lose the scene's place.\n"
         "Advance the plot — a new action or change.\n"
-        "STRICTLY FORBIDDEN to repeat phrases, descriptions, sounds, or reactions from previous responses. "
-        "Re-read your recent responses — use DIFFERENT words, DIFFERENT descriptions, DIFFERENT reactions. Surprise the reader.]"
+        "STRICTLY FORBIDDEN to repeat phrases, descriptions, sounds, reactions, or sentence STRUCTURES from previous responses. "
+        "Re-read your recent responses — use DIFFERENT words, DIFFERENT descriptions, DIFFERENT reactions, DIFFERENT sentence openings. "
+        "Do NOT start multiple sentences with 'She/He/Her/His'. Surprise the reader.]"
     ),
     "es": (
         "[Continua la escena como {name}. Tercera persona. Muestra, no cuentes.\n"
