@@ -1,28 +1,27 @@
 # GrimQuill — Action Plan
 
-## Phase 0: Critical — Get Indexed
-- [x] Google Search Console — verify grimquill.io (**done**)
-- [x] Bing Webmaster Tools — verify (**done**)
-- [x] Fix sitemap — generate slugs for all 27 adventures (**done**, 260 URLs)
-- [x] robots.txt — verified, no accidental blocks
-- [x] Submit sitemap in GSC + Bing (**done**, grimquill.io/sitemap.xml)
+## Phase 0: Get Indexed — DONE
+- [x] Google Search Console — verified
+- [x] Bing Webmaster Tools — verified
+- [x] Fix sitemap — slugs for all 27 adventures (288 URLs total)
+- [x] robots.txt — verified, no blocks
+- [x] Sitemap submitted in GSC + Bing
 - [x] Indexation monitoring — daily cron, `/opt/ai-chat/indexation.log`
-- [x] Favicon — vector SVG (purple quill) + .ico + apple-touch-icon (**done**)
-- [ ] Request indexing for key pages (home, /campaigns, top 5 adventures)
+- [x] Favicon — vector SVG (purple quill) + .ico + apple-touch-icon
+- [ ] Request indexing for key pages (manually in GSC URL Inspection)
 - [ ] Submit to AI directories — TAIFT, Futurepedia, AlternativeTo, IFDB
 
-## Phase 1: SEO Foundation (1-2 weeks)
-- [ ] VideoGame + SoftwareApplication JSON-LD schema on home page
-- [ ] AggregateRating JSON-LD on adventures (when ratings implemented)
-- [ ] More tag landing pages (horror, sci-fi, mystery, adventure — currently only fantasy/romance/anime/modern)
-- [ ] Multilingual keyword-rich meta descriptions per genre
+## Phase 1: SEO Foundation — DONE
+- [x] VideoGame + SoftwareApplication JSON-LD (genre, playMode, inLanguage)
+- [x] 8 tag landing pages (fantasy, romance, anime, modern + horror, sci-fi, mystery, adventure)
+- [x] Multilingual meta descriptions per genre (7 languages × 8 tags)
+- [x] "Rewrite Fate" — regenerate branded, temperature +0.15 for variety
 - [ ] Blog section with first 3 articles (AI Dungeon alternatives, best text adventures, D&D solo with AI)
 
 ## Phase 2: Retention Features (1-3 months)
 - [ ] Visual Character Sheet UI — display HP, stats, inventory from [STATE] data
-- [ ] Undo/Retry ("Rewrite Fate") — regenerate last response with different outcome
 - [ ] Achievement System — badges for adventures started/completed, dice rolls
-- [ ] Adventure Ratings — completion detection + 1-5 stars
+- [ ] Adventure Ratings — completion detection + 1-5 stars + AggregateRating JSON-LD
 
 ## Phase 3: Growth Features (3-6 months)
 - [ ] Mid-story scene illustrations (DALL-E on dramatic moments)
