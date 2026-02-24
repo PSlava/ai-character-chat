@@ -54,12 +54,25 @@
 - `GET /api/personas/check-slug?slug=` (slug availability)
 
 ## Users
-- `GET /api/users/me` (includes role, username)
+- `GET /api/users/me` (includes role, username, xp_total, level)
 - `PUT /api/users/me`
+- `GET /api/users/me/stats` (aggregated: adventures, messages, ratings, achievements, campaigns, XP, member_since)
 - `GET /api/users/me/favorites`
 - `POST /api/users/me/favorites/{id}`
 - `DELETE /api/users/me/favorites/{id}`
 - `GET /api/users/me/votes` (user vote dict)
+- `GET /api/users/leaderboard?sort=level|messages|adventures&limit=20` (public, excludes admins/system/banned)
+
+## Game / Campaigns
+- `POST /api/campaigns` (create campaign with character)
+- `GET /api/campaigns` (list user campaigns)
+- `GET /api/campaigns/recent?limit=3` (active campaigns with character info, auth required)
+- `GET /api/campaigns/{id}` (campaign detail with sessions)
+- `POST /api/campaigns/{id}/sessions` (start new session, +15 XP)
+- `DELETE /api/campaigns/{id}`
+- `POST /api/game/roll` (dice roll expression)
+- `GET /api/chats/{id}/encounter-state`
+- `POST /api/chats/{id}/rate` (1-5 stars, +25 XP)
 
 ## Reports
 - `POST /api/characters/{id}/report` (rate limit 5/hr)

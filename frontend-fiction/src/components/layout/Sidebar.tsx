@@ -7,7 +7,7 @@ import { useVotesStore } from '@/store/votesStore';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
-import { Home, Heart, Settings, Users, BarChart3, X, Sparkles, Swords } from 'lucide-react';
+import { Home, Heart, Settings, Users, BarChart3, X, Sparkles, Swords, Trophy } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -64,6 +64,13 @@ export function Sidebar({ isOpen, onClose }: Props) {
         >
           <Swords className="w-4 h-4" />
           {t('game.campaigns', 'Campaigns')}
+        </Link>
+        <Link
+          to="/leaderboard"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-800 text-neutral-300"
+        >
+          <Trophy className="w-4 h-4" />
+          {t('leaderboard.title', 'Leaderboard')}
         </Link>
         {isAuthenticated && (
           <Link

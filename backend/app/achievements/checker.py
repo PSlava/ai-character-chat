@@ -22,6 +22,12 @@ async def _unlock(db: AsyncSession, user_id: str, achievement_id: str) -> bool:
         return False
     db.add(UserAchievement(user_id=user_id, achievement_id=achievement_id))
     await db.flush()
+    # Award XP for achievement
+    try:
+        from app.users.xp import award_xp
+        await award_xp(user_id, 50)
+    except Exception:
+        pass
     return True
 
 

@@ -9,6 +9,7 @@ import { localePath } from '@/lib/lang';
 import { useAuth } from '@/hooks/useAuth';
 import { getOnboardingPrefs } from '@/components/ui/OnboardingModal';
 import { Search, ChevronLeft, ChevronRight, Swords, Dice5 } from 'lucide-react';
+import { ContinueAdventure } from '@/components/home/ContinueAdventure';
 import type { Character } from '@/types';
 
 const TAG_PILLS = [
@@ -298,6 +299,9 @@ export function HomePage() {
             <Dice5 className="w-5 h-5 text-amber-500/50 group-hover:text-amber-400 transition-colors shrink-0" />
           </Link>
         )}
+
+        {/* Continue Adventure CTA for logged-in users */}
+        {isAuthenticated && !search && !activeTag && <ContinueAdventure />}
 
         <CharacterGrid characters={characters} loading={loading} />
 

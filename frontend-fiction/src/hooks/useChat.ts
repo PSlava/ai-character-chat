@@ -154,6 +154,10 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
                 toast.success(t('achievement.unlocked', { name: achId }), { duration: 4000, icon: '🏆' });
               }
             }
+            // XP level-up notification
+            if (data.xp?.leveled_up) {
+              toast.success(t('xp.levelUp', { level: data.xp.new_level }), { duration: 4000 });
+            }
             setIsStreaming(false);
           }
           if (data.type === 'error') {

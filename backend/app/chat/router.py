@@ -541,7 +541,15 @@ async def rate_adventure(
     except Exception:
         pass
 
-    return {"ok": True, "rating": rating, "new_achievements": new_achievements}
+    # Award XP for rating
+    xp_data = None
+    try:
+        from app.users.xp import award_xp
+        xp_data = await award_xp(user["id"], 25)
+    except Exception:
+        pass
+
+    return {"ok": True, "rating": rating, "new_achievements": new_achievements, "xp": xp_data}
 
 
 @router.post("/{chat_id}/message")
@@ -806,6 +814,11 @@ async def send_message(
                                 done_data['new_achievements'] = _new_ach
                         except Exception:
                             pass
+                        try:
+                            from app.users.xp import award_xp as _award_xp
+                            done_data['xp'] = await _award_xp(user_id_for_increment, 10)
+                        except Exception:
+                            pass
                     yield f"data: {json.dumps(done_data)}\n\n"
                     return
                 except Exception as e:
@@ -902,6 +915,11 @@ async def send_message(
                                         done_data['new_achievements'] = _new_ach
                                 except Exception:
                                     pass
+                                try:
+                                    from app.users.xp import award_xp as _award_xp
+                                    done_data['xp'] = await _award_xp(user_id_for_increment, 10)
+                                except Exception:
+                                    pass
                             yield f"data: {json.dumps(done_data)}\n\n"
                             return
                         except Exception:
@@ -951,6 +969,11 @@ async def send_message(
                         _new_ach = await _ach_check(db, user_id_for_increment, trigger="message")
                         if _new_ach:
                             done_data['new_achievements'] = _new_ach
+                    except Exception:
+                        pass
+                    try:
+                        from app.users.xp import award_xp as _award_xp
+                        done_data['xp'] = await _award_xp(user_id_for_increment, 10)
                     except Exception:
                         pass
                 yield f"data: {json.dumps(done_data)}\n\n"

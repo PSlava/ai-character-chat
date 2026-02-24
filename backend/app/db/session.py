@@ -114,6 +114,9 @@ async def init_db():
         # Adventure ratings
         "ALTER TABLE chats ADD COLUMN IF NOT EXISTS rating SMALLINT",
         "ALTER TABLE chats ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP",
+        # XP / Leveling system
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS xp_total INTEGER DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS level INTEGER DEFAULT 1",
     ]
     for sql in migrations:
         try:

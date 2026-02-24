@@ -55,6 +55,11 @@ Provider abstraction layer with 8 providers:
 - **`characters/export_import.py`** — SillyTavern character card v1/v2 support. `character_to_card(char)` exports to card v2 JSON (includes speech_pattern in `extensions.sweetsin`). `card_to_character_data(card)` imports from v1/v2, mapping SillyTavern fields to SweetSin fields. SweetSin-specific data in `extensions.sweetsin`.
 - **`reports/router.py`** — Report system: `POST /api/characters/{id}/report` (rate limit 5/hr), `GET /api/admin/reports?status=` (admin), `PUT /api/admin/reports/{id}` (admin). Reasons: inappropriate, spam, impersonation, underage, other. Statuses: pending, reviewed, dismissed.
 
+## Users
+
+- **`users/router.py`** — Profile CRUD, favorites, votes, account deletion. `GET /me` includes `xp_total`, `level`. `GET /me/stats` — aggregated stats (adventures, messages, ratings, achievements, campaigns, XP progress). `GET /leaderboard?sort=level|messages|adventures&limit=20` — public, excludes admins/system/banned.
+- **`users/xp.py`** — XP/Leveling system. `calc_level(xp) = floor(sqrt(xp/100)) + 1` (level 2=100XP, 5=1600XP, 10=8100XP). `award_xp(user_id, amount)` — atomic SQL via `engine.begin()`, returns `{xp_total, level, leveled_up, new_level}`. Awards: message +10 (chat router), rating +25 (rate endpoint), achievement +50 (checker._unlock), campaign session +15 (game router).
+
 ## SEO
 
 - **`seo/router.py`** — SEO prerender endpoints for bots: `/api/seo/home`, `/api/seo/c/{slug}`, `/api/seo/tags/{slug}`, `/api/seo/faq`, `/api/seo/about`, `/api/seo/terms`, `/api/seo/privacy`, `/api/seo/campaigns`, `/api/seo/sitemap.xml`, `/api/seo/robots.txt`, `/api/seo/feed.xml` (RSS). Anti-template variability (slug-hash section rotation, 6 heading/CTA variants). Quality gates for sitemap. noindex for thin pages. **Multi-site support**: `_brand()` helper replaces "SweetSin" with `SITE_NAME` at render time; fiction-mode conditional content for home (title/og/h1), RSS (title/description), Organization JSON-LD, robots.txt (NSFW disallow only for non-fiction). Campaigns endpoint queries DnD-tagged characters, added to sitemap in fiction mode only.

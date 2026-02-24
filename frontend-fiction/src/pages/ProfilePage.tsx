@@ -15,8 +15,9 @@ import { SEO } from '@/components/seo/SEO';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import type { Character, Persona } from '@/types';
-import { Plus, Star, Pencil, Trash2, Check, X, MessageCircle, MessagesSquare, User, Users, Shield, Trophy } from 'lucide-react';
+import { Plus, Star, Pencil, Trash2, Check, X, MessageCircle, User, Users, Shield, Trophy, Zap, BookOpen, Swords, Calendar } from 'lucide-react';
 import { getAchievements, type Achievement } from '@/api/achievements';
+import { getUserStats, type UserStats } from '@/api/userStats';
 
 type ProfileTab = 'profile' | 'characters' | 'personas' | 'achievements' | 'account';
 
@@ -56,6 +57,7 @@ export function ProfilePage() {
   const [deletePersonaId, setDeletePersonaId] = useState<string | null>(null);
   const [personaLimit, setPersonaLimit] = useState(5);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -70,6 +72,7 @@ export function ProfilePage() {
     getPersonas().then(setPersonas).catch(() => {});
     getPersonaLimit().then((r) => setPersonaLimit(r.limit)).catch(() => {});
     getAchievements(i18n.language).then(setAchievements).catch(() => {});
+    getUserStats().then(setStats).catch(() => {});
   }, [isAuthenticated]);
 
   const handleDeleteAccount = async () => {
@@ -239,16 +242,46 @@ export function ProfilePage() {
       {/* Profile tab */}
       {activeTab === 'profile' && (
         <>
-          {profile && (
-            <div className="flex items-center gap-4 mb-6 text-sm text-neutral-400">
-              <span className="flex items-center gap-1.5">
-                <MessageCircle className="w-4 h-4" />
-                {profile.message_count} {t('profile.messages')}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <MessagesSquare className="w-4 h-4" />
-                {profile.chat_count} {t('profile.chats')}
-              </span>
+          {/* XP / Level bar */}
+          {stats && (
+            <div className="mb-6 p-4 bg-neutral-800/50 border border-neutral-700 rounded-xl max-w-lg">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-amber-400" />
+                  <span className="font-semibold text-amber-300">{t('xp.level')} {stats.level}</span>
+                </div>
+                <span className="text-xs text-neutral-500">{stats.xp_total} {t('xp.totalXp')}</span>
+              </div>
+              <div className="h-2 bg-neutral-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all"
+                  style={{ width: `${stats.xp_next_level > stats.xp_current_level ? Math.min(100, ((stats.xp_total - stats.xp_current_level) / (stats.xp_next_level - stats.xp_current_level)) * 100) : 100}%` }}
+                />
+              </div>
+              <p className="text-xs text-neutral-500 mt-1">
+                {t('xp.progress', { current: stats.xp_total - stats.xp_current_level, needed: stats.xp_next_level - stats.xp_current_level })}
+              </p>
+            </div>
+          )}
+
+          {/* Stats grid */}
+          {stats && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { icon: <Zap className="w-4 h-4 text-amber-400" />, label: t('stats.level'), value: stats.level },
+                { icon: <BookOpen className="w-4 h-4 text-purple-400" />, label: t('stats.adventures'), value: stats.adventures_started },
+                { icon: <MessageCircle className="w-4 h-4 text-blue-400" />, label: t('stats.messagesSent'), value: stats.messages_sent },
+                { icon: <Star className="w-4 h-4 text-yellow-400" />, label: t('stats.rated'), value: stats.adventures_rated },
+                { icon: <Star className="w-4 h-4 text-orange-400" />, label: t('stats.avgRating'), value: stats.average_rating != null ? stats.average_rating.toFixed(1) : '-' },
+                { icon: <Trophy className="w-4 h-4 text-amber-400" />, label: t('stats.achievements'), value: stats.achievements_unlocked },
+                { icon: <Swords className="w-4 h-4 text-red-400" />, label: t('stats.campaigns'), value: stats.campaigns_created },
+                { icon: <Calendar className="w-4 h-4 text-green-400" />, label: t('stats.memberSince'), value: stats.member_since ? new Date(stats.member_since).toLocaleDateString() : '-' },
+              ].map((s, i) => (
+                <div key={i} className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 mb-1">{s.icon}<span className="text-xs text-neutral-500">{s.label}</span></div>
+                  <span className="text-lg font-semibold text-white">{s.value}</span>
+                </div>
+              ))}
             </div>
           )}
 

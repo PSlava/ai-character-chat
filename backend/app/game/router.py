@@ -110,6 +110,55 @@ async def list_campaigns(
     ]
 
 
+@router.get("/campaigns/recent")
+async def recent_campaigns(
+    limit: int = 3,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return user's most recently active campaigns with character info."""
+    from sqlalchemy import desc
+
+    # Get active campaigns with their latest session
+    result = await db.execute(
+        select(Campaign)
+        .options(selectinload(Campaign.sessions))
+        .where(Campaign.creator_id == user["id"], Campaign.status == "active")
+        .order_by(desc(Campaign.created_at))
+        .limit(limit)
+    )
+    campaigns = result.scalars().all()
+
+    items = []
+    for c in campaigns:
+        if not c.sessions:
+            continue
+        latest_session = max(c.sessions, key=lambda s: s.number)
+        if not latest_session.chat_id:
+            continue
+
+        # Get chat with character
+        chat_result = await db.execute(
+            select(Chat)
+            .options(selectinload(Chat.character))
+            .where(Chat.id == latest_session.chat_id)
+        )
+        chat = chat_result.scalar_one_or_none()
+        if not chat:
+            continue
+
+        items.append({
+            "id": c.id,
+            "name": c.name,
+            "character_name": chat.character.name if chat.character else None,
+            "character_avatar_url": chat.character.avatar_url if chat.character else None,
+            "session_number": latest_session.number,
+            "chat_id": chat.id,
+            "last_played": chat.updated_at.isoformat() if chat.updated_at else c.created_at.isoformat(),
+        })
+    return items
+
+
 @router.get("/campaigns/{campaign_id}")
 async def get_campaign(
     campaign_id: str,
@@ -191,6 +240,13 @@ async def create_session(
     )
     db.add(session)
     await db.commit()
+
+    # Award XP for starting a new session
+    try:
+        from app.users.xp import award_xp
+        await award_xp(user["id"], 15)
+    except Exception:
+        pass
 
     return {
         "id": session.id,

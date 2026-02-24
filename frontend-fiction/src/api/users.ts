@@ -11,6 +11,8 @@ export interface UserProfile {
   role: string;
   message_count: number;
   chat_count: number;
+  xp_total: number;
+  level: number;
 }
 
 export async function getProfile() {

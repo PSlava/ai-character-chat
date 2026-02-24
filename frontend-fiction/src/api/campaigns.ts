@@ -36,3 +36,18 @@ export async function rollDice(expression: string) {
   const { data } = await api.post<DiceRollResult>('/game/roll', { expression });
   return data;
 }
+
+export interface RecentCampaign {
+  id: string;
+  name: string;
+  character_name: string | null;
+  character_avatar_url: string | null;
+  session_number: number;
+  chat_id: string;
+  last_played: string;
+}
+
+export async function getRecentCampaigns(limit = 3): Promise<RecentCampaign[]> {
+  const { data } = await api.get<RecentCampaign[]>('/campaigns/recent', { params: { limit } });
+  return data;
+}

@@ -74,6 +74,14 @@
 - **RSS feed**: `/feed.xml` — RSS 2.0, 30 latest characters with avatar enclosures and EN translations for names/descriptions. NSFW characters included but taglines/scenarios hidden. Nginx proxies to `/api/seo/feed.xml`. `<link rel="alternate">` in index.html.
 - **og:image**: PNG 1200x630 (`frontend/public/og-image.png`). SVG not supported by social platforms.
 
+## XP / Leveling / Retention
+
+- **XP System**: `users.xp_total` + `users.level` columns. `calc_level(xp) = floor(sqrt(xp/100)) + 1`. Awards: message +10, rating +25, achievement +50, campaign session +15. Atomic SQL in `users/xp.py` via `engine.begin()`.
+- **User Stats**: `GET /api/users/me/stats` aggregates adventures/messages/ratings/achievements/campaigns. ProfilePage shows stats grid (2x4) + XP progress bar.
+- **Leaderboard**: `GET /api/users/leaderboard?sort=level|messages|adventures`. Public, excludes admins/system/banned. Frontend: LeaderboardPage with tab navigation.
+- **Resume CTA**: `GET /api/campaigns/recent?limit=3` returns active campaigns with character info. ContinueAdventure component on HomePage (auth users only).
+- **Level-up toast**: SSE done event includes `xp` field with `{leveled_up, new_level}`. Frontend shows toast on level-up.
+
 ## Frontend Patterns
 
 - **i18n**: react-i18next with `en.json`/`es.json`/`ru.json`/`fr.json`/`de.json`/`pt.json`/`it.json` locale files (~540 keys each). Default language: English. Language stored in localStorage, applied to prompts via `language` param. LanguageSwitcher: EN | ES | RU | FR | DE | PT | IT.

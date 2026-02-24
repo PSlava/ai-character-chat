@@ -57,6 +57,8 @@ class User(Base):
     is_banned: Mapped[bool] = mapped_column(Boolean, default=False)
     message_count: Mapped[int] = mapped_column(Integer, default=0)
     chat_count: Mapped[int] = mapped_column(Integer, default=0)
+    xp_total: Mapped[int] = mapped_column(Integer, default=0)
+    level: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     characters: Mapped[list["Character"]] = relationship(back_populates="creator")
