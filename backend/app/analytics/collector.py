@@ -47,7 +47,9 @@ def refresh_geoip_db() -> None:
         socket.setdefaulttimeout(30)
         tmp_path = _GEOIP_DB_PATH + ".tmp.gz"
         try:
-            urllib.request.urlretrieve(url, tmp_path)
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=30) as resp, open(tmp_path, "wb") as out:
+                out.write(resp.read())
         finally:
             socket.setdefaulttimeout(old_timeout)
         with gzip.open(tmp_path, "rb") as f:
