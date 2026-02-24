@@ -239,6 +239,11 @@ async def _generate_character_data(category: str, gender: str) -> dict | None:
                     text_clean = text_clean[:-3].strip()
 
             data = json.loads(text_clean)
+            # LLM sometimes returns dicts/lists instead of strings for text fields
+            for _fld in ("name", "personality", "appearance", "speech_pattern",
+                         "scenario", "greeting_message", "example_dialogues", "tagline"):
+                if _fld in data and not isinstance(data[_fld], str):
+                    data[_fld] = json.dumps(data[_fld], ensure_ascii=False) if isinstance(data[_fld], dict) else str(data[_fld])
             if isinstance(data, dict) and "name" in data and "personality" in data:
                 logger.info("Character generated via %s: %s", provider_name, data.get("name"))
                 return data
