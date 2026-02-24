@@ -78,6 +78,12 @@ services:
     volumes:
       - ${HOST_REPO_DIR:-.}/deploy/nginx/certs:/etc/nginx/certs:ro
       - uploads-fiction:/app/uploads:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsk https://localhost/api/health || curl -fsk http://localhost/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   autoheal:
     image: willfarrell/autoheal

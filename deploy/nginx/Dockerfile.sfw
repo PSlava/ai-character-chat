@@ -1,10 +1,10 @@
-# Stage 1: Build frontend
+# Stage 1: Build SFW frontend
 FROM node:20-alpine AS build
 
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json* ./
+COPY frontend-sfw/package.json frontend-sfw/package-lock.json* ./
 RUN npm install
-COPY frontend/ .
+COPY frontend-sfw/ .
 RUN npm run build
 
 # Stage 2: Serve with Nginx
@@ -12,7 +12,7 @@ FROM nginx:alpine
 
 RUN apk add --no-cache curl
 
-ARG NGINX_CONF=nginx-ssl.conf
+ARG NGINX_CONF=nginx-ssl-sfw.conf
 
 # Remove default config and add ours
 RUN rm /etc/nginx/conf.d/default.conf

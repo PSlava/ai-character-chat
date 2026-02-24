@@ -10,10 +10,13 @@ echo "=== Deploy started at $(date) ==="
 # Pull latest code
 git pull origin main
 
-# Webhook container mounts the repo at the same path as on the host
-# (HOST_REPO_DIR:/HOST_REPO_DIR), so docker compose sees identical paths
-# and build contexts resolve correctly for the daemon on the host.
-DC="docker compose"
+# Detect which compose file to use
+if [ -f docker-compose.fiction.yml ] && docker compose -f docker-compose.fiction.yml ps --quiet 2>/dev/null | head -1 | grep -q .; then
+    DC="docker compose -f docker-compose.fiction.yml"
+    echo "Detected fiction mode"
+else
+    DC="docker compose"
+fi
 
 # Build images first (no containers affected)
 echo "Building images..."
@@ -58,6 +61,36 @@ echo "Restarting nginx..."
 $DC stop nginx
 $DC rm -f nginx
 $DC up -d nginx
+
+# --- Verify ALL critical services are running ---
+echo "Verifying all services..."
+sleep 5
+
+FAILED=0
+for svc in backend nginx postgres; do
+    status=$($DC ps --format '{{.Status}}' "$svc" 2>/dev/null || echo "missing")
+    if echo "$status" | grep -qi "up"; then
+        echo "  $svc: OK ($status)"
+    else
+        echo "  $svc: FAILED ($status)"
+        FAILED=1
+    fi
+done
+
+if [ "$FAILED" -eq 1 ]; then
+    echo "ERROR: Some services are down. Attempting full restart..."
+    $DC up -d
+    sleep 10
+    # Final check
+    for svc in backend nginx postgres; do
+        status=$($DC ps --format '{{.Status}}' "$svc" 2>/dev/null || echo "missing")
+        if echo "$status" | grep -qi "up"; then
+            echo "  $svc: OK"
+        else
+            echo "  $svc: STILL DOWN — manual intervention needed"
+        fi
+    done
+fi
 
 # Clean up old images
 docker image prune -f

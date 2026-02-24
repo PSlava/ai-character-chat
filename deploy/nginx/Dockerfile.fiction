@@ -10,6 +10,8 @@ RUN npm run build
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
 
+RUN apk add --no-cache curl
+
 ARG NGINX_CONF=nginx-ssl-fiction.conf
 
 # Remove default config and add ours
