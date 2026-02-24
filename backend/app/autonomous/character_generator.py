@@ -16,8 +16,8 @@ from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
 # Character generation uses PAID providers only (NSFW content, quality matters)
-# Together (Llama, no moderation) > OpenAI > Claude > DeepSeek
-_CHAR_GEN_PROVIDERS = ("together", "openai", "claude", "deepseek")
+# Together (Llama, no moderation) > Groq (fast, Llama) > OpenAI > Claude > DeepSeek
+_CHAR_GEN_PROVIDERS = ("together", "groq", "openai", "claude", "deepseek")
 from app.autonomous.text_humanizer import humanize_character_data
 
 logger = logging.getLogger("autonomous")

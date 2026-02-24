@@ -25,8 +25,8 @@ from app.autonomous.text_humanizer import humanize_text
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(message)s")
 logger = logging.getLogger("rewrite")
 
-# PAID ONLY, NSFW-friendly first — Together (Llama, no moderation) → OpenAI → Claude
-_PROVIDER_ORDER = ("together", "openai", "claude")
+# PAID ONLY, NSFW-friendly first — Together (Llama, no moderation) → Groq → OpenAI → Claude
+_PROVIDER_ORDER = ("together", "groq", "openai", "claude")
 _TIMEOUT = 90.0
 
 # --- Personality: convert to behavioral PList ---
