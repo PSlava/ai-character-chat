@@ -64,6 +64,14 @@ Architecture and patterns are split into thematic files:
 - **[Key Patterns](docs/PATTERNS.md)** — DB, auth, LLM, prompts, SEO, i18n, performance patterns and conventions
 - **[API Routes](docs/API_ROUTES.md)** — complete API reference (auth, characters, chats, admin, SEO, etc.)
 
+## Shared Knowledge
+
+Cross-project patterns (shared with [Bot Arena](../botarena/)):
+- **[LLM Providers](../shared-knowledge/llm-providers.md)** — 9 providers, auto-fallback, cooldown, 402 blacklist
+- **[Deployment](../shared-knowledge/deployment.md)** — Docker, PostgreSQL, nginx, backup
+- **[Auth Patterns](../shared-knowledge/auth-patterns.md)** — JWT, OAuth, anti-bot, admin
+- **[Frontend Patterns](../shared-knowledge/frontend-patterns.md)** — React 18, i18n, Zustand, performance
+
 ## Scripts
 
 - **`backend/scripts/rewrite_characters.py`** — Script to rewrite all @sweetsin character descriptions via paid NSFW-friendly LLM models (Together → OpenAI → Claude). Rewrites personality (behavioral PList), appearance (character-revealing), scenario (clean AI-speak), greeting_message (structured) + always regenerates speech_pattern with examples + applies humanizer + clears translation cache. Run: `docker compose exec -T backend python scripts/rewrite_characters.py`
