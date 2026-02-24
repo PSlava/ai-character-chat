@@ -266,17 +266,55 @@ _POST_HISTORY_VARIANTS = {
 
 
 def _get_post_history(lang: str, chat_id: str, message_count: int,
-                      last_assistant_text: str = "") -> str:
+                      last_assistant_text: str = "",
+                      content_rating: str = "sfw") -> str:
     """Get a rotating post-history variant based on chat_id and message position.
 
     Anti-echo: if last_assistant_text is provided, extract the opening and
     explicitly instruct the model to start differently.
     Escalation: after 6+ exchanges, add stronger plot-advancement mandate.
+    NSFW reminder: if content_rating is nsfw, add explicit content instruction.
     """
     core = _POST_HISTORY_CORE.get(lang, _POST_HISTORY_CORE["en"])
     variants = _POST_HISTORY_VARIANTS.get(lang, _POST_HISTORY_VARIANTS["en"])
     idx = hash(f"{chat_id}:{message_count}") % len(variants)
     result = core + variants[idx]
+
+    # --- NSFW: remind model not to soften/censor intimate content ---
+    if content_rating == "nsfw":
+        nsfw_reminder = {
+            "ru": (
+                "\nИнтимная сцена: пиши ОТКРОВЕННО и подробно. НЕ сглаживай, НЕ смягчай, НЕ пропускай действия. "
+                "Называй тело и действия ПРЯМО. Передавай страсть через физику: дыхание, хватку, движения, жар кожи. "
+                "Ты автор взрослой прозы — пиши как взрослый автор."
+            ),
+            "en": (
+                "\nIntimate scene: write EXPLICITLY and in detail. Do NOT soften, tone down, or skip actions. "
+                "Name body parts and actions DIRECTLY. Convey passion through physicality: breath, grip, movement, heat. "
+                "You are an adult fiction author — write like one."
+            ),
+            "es": (
+                "\nEscena intima: escribe EXPLICITAMENTE y con detalle. NO suavices, NO atenúes, NO omitas acciones. "
+                "Nombra el cuerpo y las acciones DIRECTAMENTE. Transmite pasión a través de la fisicalidad."
+            ),
+            "fr": (
+                "\nScène intime: écris EXPLICITEMENT et en détail. NE PAS adoucir, atténuer ou sauter des actions. "
+                "Nomme le corps et les actions DIRECTEMENT. Transmets la passion par la physicalité."
+            ),
+            "de": (
+                "\nIntime Szene: schreibe EXPLIZIT und detailliert. NICHT abschwächen, mildern oder Handlungen überspringen. "
+                "Benenne Körper und Handlungen DIREKT. Vermittle Leidenschaft durch Körperlichkeit."
+            ),
+            "pt": (
+                "\nCena intima: escreva EXPLICITAMENTE e com detalhes. NÃO suavize, NÃO atenue, NÃO pule ações. "
+                "Nomeie o corpo e as ações DIRETAMENTE. Transmita paixão pela fisicalidade."
+            ),
+            "it": (
+                "\nScena intima: scrivi ESPLICITAMENTE e in dettaglio. NON ammorbidire, attenuare o saltare azioni. "
+                "Nomina il corpo e le azioni DIRETTAMENTE. Trasmetti passione attraverso la fisicità."
+            ),
+        }
+        result += nsfw_reminder.get(lang, nsfw_reminder["en"])
 
     # --- Anti-echo: tell the model its previous opening so it avoids it ---
     if last_assistant_text:
@@ -742,9 +780,11 @@ async def build_conversation_messages(
         lang = language if language in post_history_dict else "en"
         reminder = post_history_dict[lang].format(name=character.name)
     else:
+        cr = char_dict.get("content_rating", "sfw")
         reminder = _get_post_history(
             language, chat_id, msg_count,
             last_assistant_text=last_assistant_text,
+            content_rating=cr,
         ).format(name=character.name)
     all_messages = result_list + messages
 
