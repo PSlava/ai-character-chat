@@ -62,6 +62,7 @@ class TogetherProvider(BaseLLMProvider):
                     raise RuntimeError("Модель вернула пустой ответ")
                 return
             except Exception as e:
+                model_cooldown.handle_402_if_applicable(PROVIDER, e)
                 if self._is_not_found(e):
                     model_cooldown.mark_not_found(PROVIDER, model)
                 else:
@@ -118,6 +119,7 @@ class TogetherProvider(BaseLLMProvider):
                     model=model,
                 )
             except Exception as e:
+                model_cooldown.handle_402_if_applicable(PROVIDER, e)
                 if self._is_not_found(e):
                     model_cooldown.mark_not_found(PROVIDER, model)
                 else:

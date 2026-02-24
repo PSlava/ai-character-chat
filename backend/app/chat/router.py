@@ -20,6 +20,7 @@ from app.chat.daily_limit import check_daily_limit, get_daily_usage, get_cost_mo
 from app.chat.summarizer import maybe_summarize
 import re as _re
 import asyncio as _asyncio
+from app.llm import model_cooldown as _model_cooldown
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
 
@@ -808,6 +809,7 @@ async def send_message(
                     yield f"data: {json.dumps(done_data)}\n\n"
                     return
                 except Exception as e:
+                    _model_cooldown.handle_402_if_applicable(pname, e)
                     errors.append(f"{pname}: {e}")
                     continue
             full_err = 'Все провайдеры недоступны:\n' + '\n'.join(errors)
@@ -953,6 +955,7 @@ async def send_message(
                         pass
                 yield f"data: {json.dumps(done_data)}\n\n"
             except Exception as e:
+                _model_cooldown.handle_402_if_applicable(provider_name, e)
                 yield f"data: {json.dumps({'type': 'error', 'content': _user_error(str(e), is_admin), 'user_message_id': user_msg.id})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

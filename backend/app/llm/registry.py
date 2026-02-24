@@ -8,6 +8,7 @@ from app.llm.groq_provider import GroqProvider
 from app.llm.cerebras_provider import CerebrasProvider
 from app.llm.anthropic_provider import AnthropicProvider
 from app.llm.together_provider import TogetherProvider
+from app.llm import model_cooldown
 
 _providers: dict[str, BaseLLMProvider] = {}
 
@@ -50,6 +51,8 @@ def get_provider(name: str) -> BaseLLMProvider:
         raise ValueError(
             f"Provider '{name}' not configured. Available: {available}"
         )
+    if not model_cooldown.is_provider_available(name):
+        raise ValueError(f"Provider '{name}' is unavailable (blacklisted or disabled)")
     return _providers[name]
 
 

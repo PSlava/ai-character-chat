@@ -45,6 +45,15 @@ _SETTING_DEFAULTS: dict[str, str] = {
     "setting.daily_message_limit": "1000",
     "setting.max_personas": "5",
     "setting.anon_message_limit": "20",
+    "setting.provider_enabled.openrouter": "true",
+    "setting.provider_enabled.groq": "true",
+    "setting.provider_enabled.cerebras": "true",
+    "setting.provider_enabled.together": "true",
+    "setting.provider_enabled.openai": "true",
+    "setting.provider_enabled.claude": "true",
+    "setting.provider_enabled.deepseek": "true",
+    "setting.provider_enabled.gemini": "true",
+    "setting.provider_enabled.qwen": "true",
 }
 
 
@@ -62,10 +71,12 @@ async def get_admin_settings(
     for key, default_val in _SETTING_DEFAULTS.items():
         short_key = key.removeprefix("setting.")
         settings_out[short_key] = overrides.get(key, default_val)
+    # Sync provider disabled state from DB on settings load
+    await _sync_provider_disabled(db)
     return settings_out
 
 
-@router.put("/settings/{key}")
+@router.put("/settings/{key:path}")
 async def update_admin_setting(
     key: str,
     body: PromptUpdateBody,
@@ -85,7 +96,69 @@ async def update_admin_setting(
         row = PromptTemplate(key=full_key, value=body.value)
         db.add(row)
     await db.commit()
+
+    # Handle provider enable/disable
+    if key.startswith("provider_enabled."):
+        provider_name = key.removeprefix("provider_enabled.")
+        from app.llm import model_cooldown
+        if body.value == "true":
+            model_cooldown.clear_provider_blacklist(provider_name)
+        # Sync admin-disabled set from DB
+        await _sync_provider_disabled(db)
+
     return {"key": key, "value": body.value}
+
+
+async def _sync_provider_disabled(db: AsyncSession) -> None:
+    """Read provider_enabled.* settings from DB and sync to model_cooldown."""
+    from app.llm import model_cooldown
+    result = await db.execute(
+        select(PromptTemplate).where(PromptTemplate.key.like("setting.provider_enabled.%"))
+    )
+    disabled = set()
+    for row in result.scalars().all():
+        provider_name = row.key.removeprefix("setting.provider_enabled.")
+        if row.value != "true":
+            disabled.add(provider_name)
+    model_cooldown.set_admin_disabled(disabled)
+
+
+@router.get("/provider-status")
+async def get_provider_status(
+    user=Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return status of all LLM providers (enabled, blacklisted, configured)."""
+    from app.llm import model_cooldown
+    from app.llm.registry import get_available_providers
+
+    configured = get_available_providers()
+    blacklisted = model_cooldown.get_blacklisted_providers()
+    admin_disabled = model_cooldown.get_admin_disabled()
+
+    # Read settings from DB
+    result = await db.execute(
+        select(PromptTemplate).where(PromptTemplate.key.like("setting.provider_enabled.%"))
+    )
+    overrides = {
+        row.key.removeprefix("setting.provider_enabled."): row.value
+        for row in result.scalars().all()
+    }
+
+    providers = []
+    for name in configured:
+        enabled = overrides.get(name, "true") == "true"
+        bl = blacklisted.get(name)
+        providers.append({
+            "name": name,
+            "enabled": enabled,
+            "admin_disabled": name in admin_disabled,
+            "blacklisted": bl is not None,
+            "blacklist_remaining": bl["remaining_seconds"] if bl else None,
+            "blacklist_reason": bl["reason"] if bl else None,
+        })
+
+    return {"providers": providers, "blacklisted": blacklisted}
 
 
 @router.get("/prompts")

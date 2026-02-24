@@ -75,6 +75,7 @@ class GroqProvider(BaseLLMProvider):
                 except Exception as e:
                     if use_flex and self._is_flex_unavailable(e):
                         continue  # retry same model without flex
+                    model_cooldown.handle_402_if_applicable(PROVIDER, e)
                     if self._is_not_found(e):
                         model_cooldown.mark_not_found(PROVIDER, model)
                     else:
@@ -128,6 +129,7 @@ class GroqProvider(BaseLLMProvider):
                 except Exception as e:
                     if use_flex and self._is_flex_unavailable(e):
                         continue  # retry same model without flex
+                    model_cooldown.handle_402_if_applicable(PROVIDER, e)
                     if self._is_not_found(e):
                         model_cooldown.mark_not_found(PROVIDER, model)
                     else:

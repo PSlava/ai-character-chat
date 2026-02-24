@@ -76,6 +76,7 @@ class OpenRouterProvider(BaseLLMProvider):
                     raise RuntimeError("Модель вернула пустой ответ")
                 return
             except Exception as e:
+                model_cooldown.handle_402_if_applicable("openrouter", e)
                 if self._is_not_found(e):
                     model_cooldown.mark_not_found("openrouter", model)
                 else:
@@ -146,6 +147,7 @@ class OpenRouterProvider(BaseLLMProvider):
                 errors.append((model.split("/")[-1].replace(":free", ""), "таймаут"))
                 continue
             except Exception as e:
+                model_cooldown.handle_402_if_applicable("openrouter", e)
                 if self._is_not_found(e):
                     model_cooldown.mark_not_found("openrouter", model)
                 else:

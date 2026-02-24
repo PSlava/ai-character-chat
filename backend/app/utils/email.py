@@ -77,6 +77,46 @@ async def send_registration_notification(admin_email: str, new_user_email: str, 
         logger.exception("Failed to send registration notification to %s", admin_email)
 
 
+async def send_balance_alert(provider: str, error_details: str) -> None:
+    """Send immediate alert to all admins when a provider returns 402 (no balance)."""
+    admin_str = settings.admin_emails
+    if not admin_str:
+        logger.warning("No ADMIN_EMAILS configured, cannot send balance alert for %s", provider)
+        return
+
+    admin_list = [e.strip() for e in admin_str.split(",") if e.strip()]
+    if not admin_list:
+        return
+
+    site = settings.site_name
+    subject = f"{site} — {provider.upper()} NO BALANCE (402)"
+    text = (
+        f"Provider '{provider}' returned a 402 (no balance) error.\n\n"
+        f"  Error: {error_details[:300]}\n\n"
+        f"The provider has been automatically blacklisted for 6 hours.\n"
+        f"No requests will be sent to '{provider}' until the blacklist expires "
+        f"or you manually re-enable it in Admin > Users page.\n\n"
+        f"To re-enable: go to Admin panel, find Provider Status section, "
+        f"and toggle '{provider}' back on.\n\n"
+        f"-- {site}\n"
+    )
+
+    email_provider = _get_provider()
+    if email_provider == "console":
+        logger.warning("BALANCE ALERT [%s]: %s", provider, error_details[:200])
+        return
+
+    for admin_email in admin_list:
+        try:
+            if email_provider == "resend":
+                await _send_via_resend(admin_email, subject, text)
+            else:
+                await _send_via_smtp(admin_email, subject, text)
+            logger.info("Balance alert sent to %s about %s", admin_email, provider)
+        except Exception:
+            logger.exception("Failed to send balance alert to %s", admin_email)
+
+
 async def send_reset_email(to_email: str, reset_url: str) -> None:
     """Send a password reset email via the configured provider."""
     subject = "Password Reset — SweetSin"

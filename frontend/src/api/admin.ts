@@ -87,3 +87,23 @@ export async function getAdminSettings(): Promise<AdminSettings> {
 export async function updateAdminSetting(key: string, value: string): Promise<void> {
   await api.put(`/admin/settings/${key}`, { value });
 }
+
+// Provider status
+export interface ProviderInfo {
+  name: string;
+  enabled: boolean;
+  admin_disabled: boolean;
+  blacklisted: boolean;
+  blacklist_remaining: number | null;
+  blacklist_reason: string | null;
+}
+
+export interface ProviderStatusResponse {
+  providers: ProviderInfo[];
+  blacklisted: Record<string, { remaining_seconds: number; reason: string }>;
+}
+
+export async function getProviderStatus(): Promise<ProviderStatusResponse> {
+  const { data } = await api.get<ProviderStatusResponse>('/admin/provider-status');
+  return data;
+}

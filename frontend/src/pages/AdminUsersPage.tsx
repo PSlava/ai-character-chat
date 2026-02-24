@@ -2,11 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { getAdminUsers, banUser, unbanUser, deleteUser, getAdminSettings, updateAdminSetting } from '@/api/admin';
-import type { AdminUser } from '@/api/admin';
+import { getAdminUsers, banUser, unbanUser, deleteUser, getAdminSettings, updateAdminSetting, getProviderStatus } from '@/api/admin';
+import type { AdminUser, ProviderInfo } from '@/api/admin';
 import { Avatar } from '@/components/ui/Avatar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle, UserPlus, AlertTriangle, Gauge } from 'lucide-react';
+import { Search, Ban, ShieldCheck, Trash2, MessageCircle, MessagesSquare, Users, Bell, BellOff, DollarSign, MessageCircleWarning, UserCircle, UserPlus, AlertTriangle, Gauge, Zap, ZapOff, Clock } from 'lucide-react';
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
@@ -27,12 +27,17 @@ export function AdminUsersPage() {
   const [anonLimit, setAnonLimit] = useState('20');
   const [editingAnonLimit, setEditingAnonLimit] = useState(false);
   const [costMode, setCostMode] = useState<'quality' | 'balanced' | 'economy'>('quality');
+  const [providers, setProviders] = useState<ProviderInfo[]>([]);
+  const [togglingProvider, setTogglingProvider] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAdmin) return;
     getAdminUsers()
       .then(setUsers)
       .finally(() => setLoadingUsers(false));
+    getProviderStatus()
+      .then((s) => setProviders(s.providers))
+      .catch(() => {});
     getAdminSettings()
       .then((s) => {
         setNotifyRegistration(s.notify_registration === 'true');
@@ -124,6 +129,37 @@ export function AdminUsersPage() {
     } catch {
       // revert on error
     }
+  };
+
+  const toggleProvider = async (name: string, currentEnabled: boolean) => {
+    const newVal = !currentEnabled;
+    setTogglingProvider(name);
+    // Optimistic update
+    setProviders((prev) =>
+      prev.map((p) =>
+        p.name === name
+          ? { ...p, enabled: newVal, admin_disabled: !newVal, blacklisted: newVal ? false : p.blacklisted, blacklist_remaining: newVal ? null : p.blacklist_remaining }
+          : p
+      )
+    );
+    try {
+      await updateAdminSetting(`provider_enabled.${name}`, newVal ? 'true' : 'false');
+      // Refresh status to get accurate blacklist info
+      const fresh = await getProviderStatus();
+      setProviders(fresh.providers);
+    } catch {
+      setProviders((prev) =>
+        prev.map((p) => (p.name === name ? { ...p, enabled: currentEnabled, admin_disabled: currentEnabled ? false : true } : p))
+      );
+    } finally {
+      setTogglingProvider(null);
+    }
+  };
+
+  const formatRemaining = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
   const filtered = useMemo(() => {
@@ -346,6 +382,53 @@ export function AdminUsersPage() {
           </button>
         </div>
       </div>
+
+      {/* Provider Status */}
+      {providers.length > 0 && (
+        <div className="mb-4 p-3 bg-neutral-800/50 border border-neutral-700/50 rounded-xl">
+          <div className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Providers</div>
+          <div className="flex flex-wrap gap-2">
+            {providers.map((p) => {
+              const isBlacklisted = p.blacklisted && p.enabled;
+              const isDisabled = !p.enabled;
+              const isActive = p.enabled && !p.blacklisted;
+              return (
+                <button
+                  key={p.name}
+                  onClick={() => toggleProvider(p.name, p.enabled)}
+                  disabled={togglingProvider === p.name}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    isActive
+                      ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+                      : isBlacklisted
+                      ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-900/50'
+                      : 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
+                  } ${togglingProvider === p.name ? 'opacity-50' : ''}`}
+                  title={
+                    isBlacklisted
+                      ? `Auto-blocked (402). ${formatRemaining(p.blacklist_remaining!)} left. Click to unblock.`
+                      : isDisabled
+                      ? `Disabled by admin. Click to enable.`
+                      : `Active. Click to disable.`
+                  }
+                >
+                  {isActive ? (
+                    <Zap className="w-3 h-3" />
+                  ) : isBlacklisted ? (
+                    <Clock className="w-3 h-3" />
+                  ) : (
+                    <ZapOff className="w-3 h-3" />
+                  )}
+                  <span>{p.name}</span>
+                  {isBlacklisted && p.blacklist_remaining && (
+                    <span className="text-[10px] opacity-75">{formatRemaining(p.blacklist_remaining)}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="relative mb-4 max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
