@@ -265,12 +265,82 @@ _POST_HISTORY_VARIANTS = {
 }
 
 
-def _get_post_history(lang: str, chat_id: str, message_count: int) -> str:
-    """Get a rotating post-history variant based on chat_id and message position."""
+def _get_post_history(lang: str, chat_id: str, message_count: int,
+                      last_assistant_text: str = "") -> str:
+    """Get a rotating post-history variant based on chat_id and message position.
+
+    Anti-echo: if last_assistant_text is provided, extract the opening and
+    explicitly instruct the model to start differently.
+    Escalation: after 6+ exchanges, add stronger plot-advancement mandate.
+    """
     core = _POST_HISTORY_CORE.get(lang, _POST_HISTORY_CORE["en"])
     variants = _POST_HISTORY_VARIANTS.get(lang, _POST_HISTORY_VARIANTS["en"])
     idx = hash(f"{chat_id}:{message_count}") % len(variants)
-    return core + variants[idx]
+    result = core + variants[idx]
+
+    # --- Anti-echo: tell the model its previous opening so it avoids it ---
+    if last_assistant_text:
+        first_words = " ".join(last_assistant_text.split()[:8])
+        anti_echo = {
+            "ru": f'\nТвой предыдущий ответ начинался с: "{first_words}". Начни ЭТОТ ответ ИНАЧЕ — другие слова, другая конструкция.',
+            "en": f'\nYour previous response started with: "{first_words}". Start THIS response DIFFERENTLY — different words, different structure.',
+            "es": f'\nTu respuesta anterior empezó con: "{first_words}". Empieza ESTA respuesta DIFERENTE.',
+            "fr": f'\nTa réponse précédente commençait par: "{first_words}". Commence CETTE réponse DIFFÉREMMENT.',
+            "de": f'\nDeine vorherige Antwort begann mit: "{first_words}". Beginne DIESE Antwort ANDERS.',
+            "pt": f'\nSua resposta anterior começou com: "{first_words}". Comece ESTA resposta DIFERENTE.',
+            "it": f'\nLa tua risposta precedente iniziava con: "{first_words}". Inizia QUESTA risposta DIVERSAMENTE.',
+        }
+        result += anti_echo.get(lang, anti_echo["en"])
+
+    # --- Escalation: after 6+ exchanges, stronger plot advancement ---
+    if message_count >= 12:  # ~6 user + 6 assistant messages
+        escalation = {
+            "ru": (
+                "\n⚠ Эта сцена длится уже долго. ОБЯЗАТЕЛЬНО продвинь сюжет:"
+                "\n- Смени позу, действие или локацию"
+                "\n- Введи НОВЫЙ элемент (звук, прерывание, воспоминание, смена настроения)"
+                "\n- Покажи РАЗВИТИЕ эмоций персонажа, а не повтор одних и тех же"
+            ),
+            "en": (
+                "\n⚠ This scene has been going for a while. You MUST advance the plot:"
+                "\n- Change position, action, or location"
+                "\n- Introduce a NEW element (sound, interruption, memory, mood shift)"
+                "\n- Show DEVELOPMENT in the character's emotions, not repetition"
+            ),
+            "es": (
+                "\n⚠ Esta escena lleva un rato. DEBES avanzar la trama:"
+                "\n- Cambia posición, acción o ubicación"
+                "\n- Introduce un elemento NUEVO (sonido, interrupción, recuerdo, cambio de ánimo)"
+                "\n- Muestra DESARROLLO emocional, no repetición"
+            ),
+            "fr": (
+                "\n⚠ Cette scène dure depuis un moment. Tu DOIS faire avancer l'intrigue:"
+                "\n- Change de position, d'action ou de lieu"
+                "\n- Introduis un NOUVEL élément (son, interruption, souvenir, changement d'humeur)"
+                "\n- Montre le DÉVELOPPEMENT émotionnel, pas la répétition"
+            ),
+            "de": (
+                "\n⚠ Diese Szene dauert schon lange. Du MUSST die Handlung vorantreiben:"
+                "\n- Ändere Position, Aktion oder Ort"
+                "\n- Führe ein NEUES Element ein (Geräusch, Unterbrechung, Erinnerung, Stimmungswechsel)"
+                "\n- Zeige emotionale ENTWICKLUNG, keine Wiederholung"
+            ),
+            "pt": (
+                "\n⚠ Esta cena já dura um tempo. Você DEVE avançar a trama:"
+                "\n- Mude posição, ação ou local"
+                "\n- Introduza um elemento NOVO (som, interrupção, memória, mudança de humor)"
+                "\n- Mostre DESENVOLVIMENTO emocional, não repetição"
+            ),
+            "it": (
+                "\n⚠ Questa scena dura da un po'. DEVI far avanzare la trama:"
+                "\n- Cambia posizione, azione o luogo"
+                "\n- Introduci un elemento NUOVO (suono, interruzione, ricordo, cambio d'umore)"
+                "\n- Mostra SVILUPPO emotivo, non ripetizione"
+            ),
+        }
+        result += escalation.get(lang, escalation["en"])
+
+    return result
 
 
 async def get_or_create_chat(
@@ -651,6 +721,15 @@ async def build_conversation_messages(
     tags_str = char_dict.get("tags", "")
     is_dnd = bool(campaign_id) or "dnd" in [t.strip() for t in tags_str.split(",")]
     msg_count = len(messages_data)
+
+    # Extract last assistant message text for anti-echo injection
+    last_assistant_text = ""
+    for msg in reversed(messages_data):
+        role_val = msg.role.value if hasattr(msg.role, 'value') else msg.role
+        if role_val == "assistant":
+            last_assistant_text = msg.content or ""
+            break
+
     if is_dnd:
         post_history_dict = _DND_POST_HISTORY
     elif campaign_id:
@@ -663,7 +742,10 @@ async def build_conversation_messages(
         lang = language if language in post_history_dict else "en"
         reminder = post_history_dict[lang].format(name=character.name)
     else:
-        reminder = _get_post_history(language, chat_id, msg_count).format(name=character.name)
+        reminder = _get_post_history(
+            language, chat_id, msg_count,
+            last_assistant_text=last_assistant_text,
+        ).format(name=character.name)
     all_messages = result_list + messages
 
     # Inject previous dice results for DnD chats (before post-history)

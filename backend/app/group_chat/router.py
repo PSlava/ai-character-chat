@@ -329,7 +329,14 @@ async def send_group_message(
                     llm_msgs.append(LLMMessage(role="user", content=f"{prefix}{msg.content}"))
 
             # Post-history reminder (closest to generation = strongest effect)
-            reminder = _get_post_history(language, str(group_chat.id), len(llm_msgs)).format(name=character.name)
+            # Find last assistant text from this character for anti-echo
+            _last_asst = ""
+            for _cm in reversed(context_msgs):
+                _r = _cm.role.value if hasattr(_cm.role, 'value') else _cm.role
+                if _r == "assistant" and getattr(_cm, 'character_id', None) == character.id:
+                    _last_asst = _cm.content or ""
+                    break
+            reminder = _get_post_history(language, str(gc.id), len(llm_msgs), last_assistant_text=_last_asst).format(name=character.name)
             llm_msgs.append(LLMMessage(role="system", content=reminder))
 
             config = LLMConfig(model="", temperature=0.8, max_tokens=600)

@@ -682,13 +682,13 @@ async def send_message(
     capped_max_tokens = cap_max_tokens(requested_max_tokens, tier)
 
     base_config = {
-        "temperature": body.temperature if body.temperature is not None else 0.85,
+        "temperature": body.temperature if body.temperature is not None else (0.95 if content_rating == "nsfw" else 0.85),
         "max_tokens": capped_max_tokens,
         "top_p": body.top_p if body.top_p is not None else 0.95,
         "top_k": body.top_k if body.top_k is not None else 0,
         "min_p": 0.05,
         "frequency_penalty": body.frequency_penalty if body.frequency_penalty is not None else (0.6 if content_rating == "nsfw" else 0.4),
-        "presence_penalty": body.presence_penalty if body.presence_penalty is not None else 0.3,
+        "presence_penalty": body.presence_penalty if body.presence_penalty is not None else (0.5 if content_rating == "nsfw" else 0.3),
         "content_rating": content_rating,
     }
 
