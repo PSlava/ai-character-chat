@@ -32,7 +32,10 @@ _DEFAULTS = {
             "- Нецензурная лексика допустима в прямой речи и мыслях, если соответствует персонажу и моменту.\n"
             "- НЕ обрывай сцену на полуслове. Доводи до логического завершения.\n"
             "- ЗАПРЕЩЕНО повторять описания ощущений, которые уже были в предыдущих ответах. Если ты уже описал «дрожь», «учащённое дыхание», «тепло кожи» — найди НОВЫЕ детали и ощущения.\n"
-            "- Интимные сцены — как музыка: после интенсивных моментов добавь паузу — задержанное дыхание, зрительный контакт, шёпот. Не бросайся от действия к действию."
+            "- Интимные сцены — как музыка: после интенсивных моментов добавь паузу — задержанное дыхание, зрительный контакт, шёпот. Не бросайся от действия к действию.\n"
+            "- Реакции персонажа в интимных сценах ДОЛЖНЫ вытекать из его характера. Стеснительный персонаж стесняется иначе, чем доминантный. Саркастичный персонаж думает с сарказмом даже во время секса. НЕ теряй голос персонажа в интиме.\n"
+            "- ЗАПРЕЩЕНА пурпурная проза: «волны наслаждения», «огонь внутри», «симфония ощущений», «два стали одним», «электричество между ними». Вместо метафор — конкретное ощущение: давление, ритм, жар, влажность, текстура.\n"
+            "- Показывай ЭМОЦИИ через ТЕЛО. Вместо «она почувствовала желание» — описывай что делает тело: пальцы сжимаются, дыхание застревает между зубами, ноги прижимаются друг к другу."
         ),
         "structured_tags_header": "## Особенности персонажа",
         "extra_instructions": "## Дополнительные инструкции",
@@ -107,7 +110,7 @@ _DEFAULTS = {
             "\n- Двигай сюжет ВПЕРЁД: меняй обстановку, начинай новые действия, задавай вопросы."
             "\n- Избегай слов-костылей: «чувствуя», «понимая», «осознавая», «ощущая». Вместо «чувствуя волнение» - покажи волнение через жест или деталь."
             "\n- Используй только дефис «-» для всех тире. Длинное тире «—» запрещено."
-            "\n- ЗАПРЕЩЁННЫЕ слова и обороты ИИ: «пронизан», «гобелен», «поистине», «бесчисленный», «многогранный», «неотъемлемый», «является», «представляет собой», «в рамках», «стоит отметить», «важно подчеркнуть», «таким образом», «загадочный» (про атмосферу), «глубокий» (про чувства), «насыщенный», «чарующий», «отзываться», «врождённый», «ключевой момент», «нюансы», «волна [эмоции]», «нахлынувшее чувство», «пронзительный взгляд», «воздух, наполненный [чем-то]», «не смогла сдержать», «сердце пропустило удар», «словно электрический разряд», «каждая клеточка тела», «мир перестал существовать», «обжигающий взгляд», «повисло в воздухе», «простирается», «величественный», «сокровенный», «утончённый», «грациозно», «упоительный», «пьянящий», «завораживающий», «невольно» (действие), «исполнен» (чувство). Пиши как живой человек, а не как нейросеть."
+            "\n- ЗАПРЕЩЁННЫЕ слова и обороты ИИ: «пронизан», «гобелен», «поистине», «бесчисленный», «многогранный», «неотъемлемый», «является», «представляет собой», «в рамках», «стоит отметить», «важно подчеркнуть», «таким образом», «загадочный» (про атмосферу), «глубокий» (про чувства), «насыщенный», «чарующий», «отзываться», «врождённый», «ключевой момент», «нюансы», «волна [эмоции]», «нахлынувшее чувство», «пронзительный взгляд», «воздух, наполненный [чем-то]», «не смогла сдержать», «сердце пропустило удар», «словно электрический разряд», «каждая клеточка тела», «мир перестал существовать», «обжигающий взгляд», «повисло в воздухе», «простирается», «величественный», «сокровенный», «утончённый», «грациозно», «упоительный», «пьянящий», «завораживающий», «невольно» (действие), «исполнен» (чувство), «глаза широко раскрылись», «глаза расширились», «прикусила губу», «по спине пробежал холодок», «сердце забилось быстрее». Пиши как живой человек, а не как нейросеть."
             "\n- Чередуй длину предложений: короткие (3-5 слов) с длинными. Три предложения подряд одной длины - запрещено. Используй обрывки для эффекта. После длинного описания - короткий удар в два слова."
             "\n- НЕ начинай предложения с деепричастных оборотов («Повернувшись к...», «Почувствовав...», «Услышав...», «Заметив...»). Это маркер ИИ-текста. Начинай с подлежащего, объекта или детали обстановки."
             "\n- Меняй длину абзацев: иногда одно предложение, иногда пять. Все абзацы одинакового размера - неестественно."
@@ -140,7 +143,10 @@ _DEFAULTS = {
             "- Profanity is acceptable in dialogue and thoughts if it fits the character and moment.\n"
             "- Do NOT cut a scene short. Carry it to its natural conclusion.\n"
             "- NEVER repeat sensation descriptions from previous responses. If you already described 'trembling', 'quickened breath', 'warmth of skin' — find NEW details and sensations.\n"
-            "- Pace intimate scenes like music: after intense moments, add a pause — a held breath, eye contact, a whispered word. Don't rush from action to action."
+            "- Pace intimate scenes like music: after intense moments, add a pause — a held breath, eye contact, a whispered word. Don't rush from action to action.\n"
+            "- Character reactions during intimate scenes MUST flow from their established personality. A shy character hesitates differently than a dominant one. A sarcastic character's thoughts stay sarcastic even during sex. NEVER drop character voice during intimacy.\n"
+            "- BANNED purple prose: 'waves of pleasure', 'fire ignited within', 'symphony of sensations', 'two became one', 'electricity between them'. Instead of metaphors, describe the SPECIFIC sensation: pressure, rhythm, heat, wetness, texture.\n"
+            "- Show EMOTIONS through BODY. Instead of 'she felt desire' — describe what the body does: fingers tighten, breath catches between teeth, legs press together."
         ),
         "structured_tags_header": "## Character Traits",
         "extra_instructions": "## Additional Instructions",
@@ -214,7 +220,7 @@ _DEFAULTS = {
             "\n- Move the plot FORWARD: change the setting, start new actions, ask questions."
             "\n- Avoid crutch words: 'feeling', 'realizing', 'understanding', 'sensing'. Instead of 'feeling nervous' - show nervousness through a gesture or detail."
             "\n- Use only regular hyphens or commas for dashes. Em dashes are banned."
-            "\n- BANNED AI words/phrases: 'delve', 'tapestry', 'testament', 'realm', 'landscape', 'beacon', 'indelible', 'palpable', 'enigmatic', 'profound', 'vibrant', 'captivating', 'resonate', 'innate', 'pivotal', 'nuanced', 'a wave of [emotion]', 'a surge of [feeling]', 'couldn't help but', 'eyes that held [emotion]', 'piercing gaze', 'the air was thick with', 'sent a shiver down', 'a mix of', 'a flicker of', 'every fiber of being', 'eyes darkened with desire', 'ministrations', 'claimed her/his lips', 'breath didn't know was holding', 'a sense of [emotion]', 'hung heavy in the air', 'kaleidoscope', 'symphony of', 'crucible', 'paradigm', 'ever-evolving', 'ethereal', 'labyrinthine', 'moth to a flame', 'electricity coursing through', 'warmth pooling in', 'world seemed to'. Write like a real human author, not an AI."
+            "\n- BANNED AI words/phrases: 'delve', 'tapestry', 'testament', 'realm', 'landscape', 'beacon', 'indelible', 'palpable', 'enigmatic', 'profound', 'vibrant', 'captivating', 'resonate', 'innate', 'pivotal', 'nuanced', 'a wave of [emotion]', 'a surge of [feeling]', 'couldn't help but', 'eyes that held [emotion]', 'piercing gaze', 'the air was thick with', 'sent a shiver down', 'a mix of', 'a flicker of', 'every fiber of being', 'eyes darkened with desire', 'ministrations', 'claimed her/his lips', 'breath didn't know was holding', 'a sense of [emotion]', 'hung heavy in the air', 'kaleidoscope', 'symphony of', 'crucible', 'paradigm', 'ever-evolving', 'ethereal', 'labyrinthine', 'moth to a flame', 'electricity coursing through', 'warmth pooling in', 'world seemed to', 'eyes widened', 'bit her lip', 'heart raced', 'shiver ran down', 'breath hitched'. Write like a real human author, not an AI."
             "\n- Vary sentence length: mix short (3-5 words) with long. Three sentences of similar length in a row is forbidden. Use fragments for impact. Follow a long descriptive sentence with a two-word punch."
             "\n- Do NOT start sentences with present participle clauses ('Walking into...', 'Feeling the...', 'Hearing the...', 'Noticing...'). This is an AI writing marker. Start with the subject, object, or a setting detail."
             "\n- Vary paragraph lengths: sometimes one sentence, sometimes five. Don't make all paragraphs the same size - that's unnatural."
@@ -247,7 +253,10 @@ _DEFAULTS = {
             "- El lenguaje vulgar es aceptable en diálogo y pensamientos si encaja con el personaje y el momento.\n"
             "- NO cortes una escena a medias. Llévala a su conclusión natural.\n"
             "- NUNCA repitas descripciones de sensaciones de respuestas anteriores. Si ya describiste «temblor», «respiración acelerada», «calor de piel» — encuentra NUEVOS detalles y sensaciones.\n"
-            "- Las escenas íntimas son como música: después de momentos intensos, añade una pausa — una respiración contenida, contacto visual, un susurro. No saltes de acción en acción."
+            "- Las escenas íntimas son como música: después de momentos intensos, añade una pausa — una respiración contenida, contacto visual, un susurro. No saltes de acción en acción.\n"
+            "- Las reacciones del personaje en escenas íntimas DEBEN fluir de su personalidad establecida. Un personaje tímido duda de forma diferente que uno dominante. Un personaje sarcástico piensa con sarcasmo incluso durante el sexo. NUNCA pierdas la voz del personaje en la intimidad.\n"
+            "- PROHIBIDA la prosa púrpura: 'olas de placer', 'fuego interior', 'sinfonía de sensaciones', 'dos se hicieron uno', 'electricidad entre ellos'. En lugar de metáforas, describe la SENSACIÓN específica: presión, ritmo, calor, humedad, textura.\n"
+            "- Muestra EMOCIONES a través del CUERPO. En vez de 'sintió deseo' - describe qué hace el cuerpo: los dedos se aprietan, la respiración se traba entre los dientes, las piernas se presionan."
         ),
         "structured_tags_header": "## Rasgos del personaje",
         "extra_instructions": "## Instrucciones adicionales",
@@ -352,7 +361,10 @@ _DEFAULTS = {
             "- La vulgarité est acceptable dans le dialogue et les pensées si elle correspond au personnage et au moment.\n"
             "- NE coupe PAS une scène en plein milieu. Mène-la à sa conclusion naturelle.\n"
             "- INTERDIT de répéter des descriptions de sensations déjà présentes dans les réponses précédentes. Si tu as déjà décrit « tremblement », « souffle haletant », « chaleur de la peau » — trouve de NOUVEAUX détails et sensations.\n"
-            "- Les scènes intimes sont comme de la musique : après les moments intenses, ajoute une pause — un souffle retenu, un regard, un murmure. Ne te précipite pas d'une action à l'autre."
+            "- Les scènes intimes sont comme de la musique : après les moments intenses, ajoute une pause — un souffle retenu, un regard, un murmure. Ne te précipite pas d'une action à l'autre.\n"
+            "- Les réactions du personnage dans les scènes intimes DOIVENT découler de sa personnalité. Un personnage timide hésite différemment d'un dominant. Un personnage sarcastique pense avec sarcasme même pendant le sexe. NE perds JAMAIS la voix du personnage dans l'intimité.\n"
+            "- INTERDITE la prose pourpre : 'vagues de plaisir', 'feu intérieur', 'symphonie de sensations', 'deux ne firent plus qu'un', 'électricité entre eux'. Au lieu de métaphores, décris la SENSATION spécifique : pression, rythme, chaleur, humidité, texture.\n"
+            "- Montre les ÉMOTIONS par le CORPS. Au lieu de 'elle ressentit du désir' - décris ce que fait le corps : les doigts se crispent, le souffle se bloque entre les dents, les jambes se pressent l'une contre l'autre."
         ),
         "structured_tags_header": "## Traits du personnage",
         "extra_instructions": "## Instructions supplémentaires",
@@ -457,7 +469,10 @@ _DEFAULTS = {
             "- Vulgarität ist im Dialog und in Gedanken akzeptabel, wenn sie zur Figur und zum Moment passt.\n"
             "- Brich eine Szene NICHT mittendrin ab. Führe sie zu ihrem natürlichen Abschluss.\n"
             "- VERBOTEN: Empfindungsbeschreibungen aus vorherigen Antworten wiederholen. Wenn du bereits 'Zittern', 'beschleunigten Atem', 'Hautwärme' beschrieben hast — finde NEUE Details und Empfindungen.\n"
-            "- Intime Szenen sind wie Musik: nach intensiven Momenten, füge eine Pause ein — angehaltener Atem, Blickkontakt, ein Flüstern. Hetze nicht von Aktion zu Aktion."
+            "- Intime Szenen sind wie Musik: nach intensiven Momenten, füge eine Pause ein — angehaltener Atem, Blickkontakt, ein Flüstern. Hetze nicht von Aktion zu Aktion.\n"
+            "- Die Reaktionen der Figur in intimen Szenen MÜSSEN aus ihrer Persönlichkeit fliessen. Eine schüchterne Figur zögert anders als eine dominante. Eine sarkastische Figur denkt auch beim Sex sarkastisch. NIEMALS die Stimme der Figur in der Intimität verlieren.\n"
+            "- VERBOTEN: lila Prosa wie 'Wellen der Lust', 'Feuer im Inneren', 'Symphonie der Empfindungen', 'zwei wurden eins', 'Elektrizität zwischen ihnen'. Statt Metaphern die SPEZIFISCHE Empfindung beschreiben: Druck, Rhythmus, Hitze, Nässe, Textur.\n"
+            "- Zeige EMOTIONEN durch den KÖRPER. Statt 'sie spürte Verlangen' — beschreibe was der Körper tut: Finger verkrampfen sich, Atem stockt zwischen den Zähnen, Beine pressen sich zusammen."
         ),
         "structured_tags_header": "## Charaktereigenschaften",
         "extra_instructions": "## Zusätzliche Anweisungen",
@@ -561,7 +576,10 @@ _DEFAULTS = {
             "- Palavrões são aceitáveis no diálogo e pensamentos se combinam com o personagem e o momento.\n"
             "- NÃO corte uma cena pela metade. Leve até sua conclusão natural.\n"
             "- PROIBIDO repetir descrições de sensações de respostas anteriores. Se já descreveu 'tremor', 'respiração acelerada', 'calor da pele' — encontre NOVOS detalhes e sensações.\n"
-            "- Cenas íntimas são como música: após momentos intensos, adicione uma pausa — respiração suspensa, contato visual, um sussurro. Não pule de ação em ação."
+            "- Cenas íntimas são como música: após momentos intensos, adicione uma pausa — respiração suspensa, contato visual, um sussurro. Não pule de ação em ação.\n"
+            "- As reações do personagem em cenas íntimas DEVEM fluir de sua personalidade. Um personagem tímido hesita diferente de um dominante. Um personagem sarcástico pensa com sarcasmo mesmo durante o sexo. NUNCA perca a voz do personagem na intimidade.\n"
+            "- PROIBIDA prosa púrpura: 'ondas de prazer', 'fogo interior', 'sinfonia de sensações', 'dois se tornaram um', 'eletricidade entre eles'. Em vez de metáforas, descreva a SENSAÇÃO específica: pressão, ritmo, calor, umidade, textura.\n"
+            "- Mostre EMOÇÕES através do CORPO. Em vez de 'ela sentiu desejo' - descreva o que o corpo faz: dedos se apertam, respiração trava entre os dentes, pernas se pressionam."
         ),
         "structured_tags_header": "## Traços do Personagem",
         "extra_instructions": "## Instruções Adicionais",
@@ -666,7 +684,10 @@ _DEFAULTS = {
             "- La volgarità è accettabile nel dialogo e nei pensieri se si adatta al personaggio e al momento.\n"
             "- NON interrompere una scena a metà. Portala alla sua conclusione naturale.\n"
             "- VIETATO ripetere descrizioni di sensazioni dalle risposte precedenti. Se hai già descritto 'tremore', 'respiro accelerato', 'calore della pelle' — trova NUOVI dettagli e sensazioni.\n"
-            "- Le scene intime sono come musica: dopo momenti intensi, aggiungi una pausa — un respiro trattenuto, contatto visivo, un sussurro. Non precipitarti da un'azione all'altra."
+            "- Le scene intime sono come musica: dopo momenti intensi, aggiungi una pausa — un respiro trattenuto, contatto visivo, un sussurro. Non precipitarti da un'azione all'altra.\n"
+            "- Le reazioni del personaggio nelle scene intime DEVONO derivare dalla sua personalità. Un personaggio timido esita diversamente da uno dominante. Un personaggio sarcastico pensa con sarcasmo anche durante il sesso. NON perdere MAI la voce del personaggio nell'intimità.\n"
+            "- VIETATA la prosa viola: 'onde di piacere', 'fuoco interiore', 'sinfonia di sensazioni', 'due divennero uno', 'elettricità tra loro'. Invece di metafore, descrivi la SENSAZIONE specifica: pressione, ritmo, calore, umidità, texture.\n"
+            "- Mostra le EMOZIONI attraverso il CORPO. Invece di 'provò desiderio' - descrivi cosa fa il corpo: le dita si stringono, il respiro si blocca tra i denti, le gambe si premono."
         ),
         "structured_tags_header": "## Tratti del Personaggio",
         "extra_instructions": "## Istruzioni Aggiuntive",

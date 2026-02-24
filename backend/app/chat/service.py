@@ -217,42 +217,50 @@ _POST_HISTORY_VARIANTS = {
         "Начни ответ с РЕПЛИКИ персонажа или с того, что персонаж замечает/слышит. Диалог оживляет сцену.]",
         # 3: Subtext / contrast
         "Покажи ПОДТЕКСТ - персонаж думает одно, а делает другое. Контраст между словами и действиями. Внутреннее противоречие.]",
+        # 4: Personality-driven reaction
+        "Реакция персонажа на последнее действие пользователя должна вытекать из его ХАРАКТЕРА - не из вежливости. Жёсткий персонаж реагирует жёстко. Саркастичный - с сарказмом. Покажи ХАРАКТЕР через реакцию.]",
     ],
     "en": [
         "Open with a SETTING DETAIL - sound, smell, texture, temperature, light. Immerse the reader through sensations.]",
         "Open with a PHYSICAL ACTION by the character - gesture, movement, relocation. Not with a thought or description.]",
         "Open with DIALOGUE or something the character notices/hears. Dialogue brings a scene alive.]",
         "Show SUBTEXT - the character thinks one thing but does another. Contrast between words and actions. Inner contradiction.]",
+        "The character's reaction to the user's last action must flow from their PERSONALITY - not politeness. Harsh character reacts harshly. Sarcastic one with sarcasm. Show CHARACTER through reaction.]",
     ],
     "es": [
         "Empieza con un DETALLE DEL ENTORNO - sonido, olor, textura, temperatura, luz. Sumerge al lector a través de sensaciones.]",
         "Empieza con una ACCIÓN FÍSICA del personaje - gesto, movimiento, desplazamiento. No con un pensamiento.]",
         "Empieza con un DIÁLOGO o algo que el personaje nota/escucha. El diálogo da vida a la escena.]",
         "Muestra el SUBTEXTO - el personaje piensa una cosa pero hace otra. Contraste entre palabras y acciones.]",
+        "La reacción del personaje a la última acción del usuario debe fluir de su CARÁCTER - no de cortesía. Personaje duro reacciona duro. Sarcástico con sarcasmo. Muestra CARÁCTER a través de la reacción.]",
     ],
     "fr": [
         "Commence par un DÉTAIL DU DÉCOR - son, odeur, texture, température, lumière. Immerge le lecteur par les sensations.]",
         "Commence par une ACTION PHYSIQUE du personnage - geste, mouvement, déplacement. Pas par une pensée.]",
         "Commence par un DIALOGUE ou quelque chose que le personnage remarque/entend. Le dialogue anime la scène.]",
         "Montre le SOUS-TEXTE - le personnage pense une chose mais en fait une autre. Contraste entre paroles et actes.]",
+        "La réaction du personnage à la dernière action de l'utilisateur doit découler de son CARACTÈRE - pas de politesse. Personnage dur réagit durement. Sarcastique avec sarcasme. Montre le CARACTÈRE à travers la réaction.]",
     ],
     "de": [
         "Beginne mit einem DETAIL DER UMGEBUNG - Geräusch, Geruch, Textur, Temperatur, Licht. Tauche den Leser durch Sinne ein.]",
         "Beginne mit einer PHYSISCHEN HANDLUNG der Figur - Geste, Bewegung, Ortswechsel. Nicht mit einem Gedanken.]",
         "Beginne mit DIALOG oder etwas, das die Figur bemerkt/hört. Dialog belebt die Szene.]",
         "Zeige den SUBTEXT - die Figur denkt eines, tut aber anderes. Kontrast zwischen Worten und Taten.]",
+        "Die Reaktion der Figur auf die letzte Aktion des Nutzers muss aus ihrem CHARAKTER fliessen - nicht aus Höflichkeit. Harte Figur reagiert hart. Sarkastische mit Sarkasmus. Zeige CHARAKTER durch Reaktion.]",
     ],
     "pt": [
         "Comece com um DETALHE DO CENÁRIO - som, cheiro, textura, temperatura, luz. Mergulhe o leitor através de sensações.]",
         "Comece com uma AÇÃO FÍSICA do personagem - gesto, movimento, deslocamento. Não com um pensamento.]",
         "Comece com DIÁLOGO ou algo que o personagem nota/ouve. O diálogo dá vida à cena.]",
         "Mostre o SUBTEXTO - o personagem pensa uma coisa mas faz outra. Contraste entre palavras e ações.]",
+        "A reação do personagem à última ação do usuário deve fluir de seu CARÁTER - não de educação. Personagem duro reage duramente. Sarcástico com sarcasmo. Mostre CARÁTER através da reação.]",
     ],
     "it": [
         "Inizia con un DETTAGLIO DELL'AMBIENTE - suono, odore, texture, temperatura, luce. Immergi il lettore attraverso le sensazioni.]",
         "Inizia con un'AZIONE FISICA del personaggio - gesto, movimento, spostamento. Non con un pensiero.]",
         "Inizia con un DIALOGO o qualcosa che il personaggio nota/sente. Il dialogo anima la scena.]",
         "Mostra il SOTTOTESTO - il personaggio pensa una cosa ma ne fa un'altra. Contrasto tra parole e azioni.]",
+        "La reazione del personaggio all'ultima azione dell'utente deve derivare dal suo CARATTERE - non dalla cortesia. Personaggio duro reagisce duramente. Sarcastico con sarcasmo. Mostra il CARATTERE attraverso la reazione.]",
     ],
 }
 
