@@ -285,33 +285,49 @@ def _get_post_history(lang: str, chat_id: str, message_count: int,
         nsfw_reminder = {
             "ru": (
                 "\nИнтимная сцена: пиши ОТКРОВЕННО и подробно. НЕ сглаживай, НЕ смягчай, НЕ пропускай действия. "
-                "Называй тело и действия ПРЯМО. Передавай страсть через физику: дыхание, хватку, движения, жар кожи. "
-                "Ты автор взрослой прозы — пиши как взрослый автор."
+                "Называй тело и действия ПРЯМО, грубо, по-взрослому: член, киска, соски, задница, трахать, кончить, стонать. "
+                "НЕ используй эвфемизмы: 'мужское достоинство', 'интимное место', 'женственные формы', 'слились воедино'. "
+                "Персонаж может ругаться, стонать, шептать грязные слова если это в характере. "
+                "Описывай КАЖДОЕ движение, каждое прикосновение, влажность, жар, ритм. Растягивай сцену. "
+                "Ты автор эротической прозы — пиши как профессионал жанра."
             ),
             "en": (
-                "\nIntimate scene: write EXPLICITLY and in detail. Do NOT soften, tone down, or skip actions. "
-                "Name body parts and actions DIRECTLY. Convey passion through physicality: breath, grip, movement, heat. "
-                "You are an adult fiction author — write like one."
+                "\nIntimate scene: write EXPLICITLY, raw, unapologetically. Do NOT soften or skip actions. "
+                "Use direct words: cock, pussy, nipples, ass, fuck, cum, moan. "
+                "Do NOT use euphemisms: 'manhood', 'womanhood', 'intimate area', 'they became one'. "
+                "Character can swear, moan, whisper dirty words if it fits their personality. "
+                "Describe EVERY movement, every touch, wetness, heat, rhythm. Draw out the scene. "
+                "You are an erotica author — write like a genre professional."
             ),
             "es": (
-                "\nEscena intima: escribe EXPLICITAMENTE y con detalle. NO suavices, NO atenúes, NO omitas acciones. "
-                "Nombra el cuerpo y las acciones DIRECTAMENTE. Transmite pasión a través de la fisicalidad."
+                "\nEscena intima: escribe EXPLICITAMENTE, crudo, sin disculpas. NO suavices ni omitas acciones. "
+                "Usa palabras directas: polla, cono, pezones, culo, follar, correrse, gemir. "
+                "NO uses eufemismos. El personaje puede decir palabras sucias si encaja con su caracter. "
+                "Describe CADA movimiento, humedad, calor, ritmo. Estira la escena."
             ),
             "fr": (
-                "\nScène intime: écris EXPLICITEMENT et en détail. NE PAS adoucir, atténuer ou sauter des actions. "
-                "Nomme le corps et les actions DIRECTEMENT. Transmets la passion par la physicalité."
+                "\nScene intime: ecris EXPLICITEMENT, cru, sans retenue. NE PAS adoucir ou sauter des actions. "
+                "Utilise des mots directs: bite, chatte, tetons, cul, baiser, jouir, gemir. "
+                "PAS d'euphemismes. Le personnage peut dire des mots crus si ca correspond a son caractere. "
+                "Decris CHAQUE mouvement, humidite, chaleur, rythme. Etire la scene."
             ),
             "de": (
-                "\nIntime Szene: schreibe EXPLIZIT und detailliert. NICHT abschwächen, mildern oder Handlungen überspringen. "
-                "Benenne Körper und Handlungen DIREKT. Vermittle Leidenschaft durch Körperlichkeit."
+                "\nIntime Szene: schreibe EXPLIZIT, roh, ohne Entschuldigung. NICHT abschwachen oder uberspringen. "
+                "Verwende direkte Worte: Schwanz, Muschi, Nippel, Arsch, ficken, kommen, stohnen. "
+                "KEINE Euphemismen. Die Figur darf dreckige Worte sagen wenn es zum Charakter passt. "
+                "Beschreibe JEDE Bewegung, Nasse, Hitze, Rhythmus. Ziehe die Szene in die Lange."
             ),
             "pt": (
-                "\nCena intima: escreva EXPLICITAMENTE e com detalhes. NÃO suavize, NÃO atenue, NÃO pule ações. "
-                "Nomeie o corpo e as ações DIRETAMENTE. Transmita paixão pela fisicalidade."
+                "\nCena intima: escreva EXPLICITAMENTE, cru, sem pudor. NAO suavize nem pule acoes. "
+                "Use palavras diretas: pau, buceta, mamilos, bunda, foder, gozar, gemer. "
+                "NAO use eufemismos. O personagem pode dizer palavras sujas se combinar com seu carater. "
+                "Descreva CADA movimento, umidade, calor, ritmo. Estenda a cena."
             ),
             "it": (
-                "\nScena intima: scrivi ESPLICITAMENTE e in dettaglio. NON ammorbidire, attenuare o saltare azioni. "
-                "Nomina il corpo e le azioni DIRETTAMENTE. Trasmetti passione attraverso la fisicità."
+                "\nScena intima: scrivi ESPLICITAMENTE, crudo, senza scuse. NON ammorbidire o saltare azioni. "
+                "Usa parole dirette: cazzo, figa, capezzoli, culo, scopare, venire, gemere. "
+                "NIENTE eufemismi. Il personaggio puo dire parole sporche se si adatta al suo carattere. "
+                "Descrivi OGNI movimento, umidita, calore, ritmo. Allunga la scena."
             ),
         }
         result += nsfw_reminder.get(lang, nsfw_reminder["en"])
