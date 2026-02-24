@@ -3,7 +3,7 @@ import httpx
 import anthropic
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 
-DEFAULT_MODEL = "claude-sonnet-4-5-20250514"
+DEFAULT_MODEL = "claude-sonnet-4-6"
 
 
 class AnthropicProvider(BaseLLMProvider):
