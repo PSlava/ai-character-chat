@@ -65,17 +65,27 @@ def _build_model_entry(model_id: str, owned_by: str = "") -> dict:
 
 
 async def refresh_models(client) -> list[dict]:
-    """Fetch models from Together API and update cache."""
+    """Fetch models from Together API and update cache.
+
+    Uses httpx directly to avoid Pydantic compatibility issues with OpenAI SDK's models.list().
+    """
     global _cached_models, _cache_time
     try:
-        response = await client.models.list()
-        # Together SDK v2 returns a list directly; older versions return object with .data
-        items = response.data if hasattr(response, "data") else response
+        import httpx as _httpx
+        api_key = client.api_key
+        async with _httpx.AsyncClient(timeout=15) as http:
+            resp = await http.get(
+                "https://api.together.xyz/v1/models",
+                headers={"Authorization": f"Bearer {api_key}"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        items = data if isinstance(data, list) else data.get("data", data)
         models = []
         for m in items:
-            model_id = m.id if hasattr(m, "id") else m.get("id", "")
-            model_type = getattr(m, "type", None) or (m.get("type") if isinstance(m, dict) else "") or ""
-            owned_by = getattr(m, "owned_by", None) or (m.get("owned_by") if isinstance(m, dict) else "") or ""
+            model_id = m.get("id", "")
+            model_type = m.get("type", "")
+            owned_by = m.get("owned_by", "")
             if model_type and model_type not in INCLUDE_TYPES:
                 continue
             if _should_include(model_id):

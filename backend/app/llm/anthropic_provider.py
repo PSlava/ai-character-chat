@@ -39,13 +39,15 @@ class AnthropicProvider(BaseLLMProvider):
         kwargs: dict = {
             "model": config.model or DEFAULT_MODEL,
             "max_tokens": config.max_tokens,
-            "temperature": config.temperature,
             "messages": api_messages,
         }
         if system_blocks:
             kwargs["system"] = system_blocks
+        # Anthropic API: temperature and top_p cannot both be specified
         if config.top_p is not None:
             kwargs["top_p"] = config.top_p
+        else:
+            kwargs["temperature"] = config.temperature
 
         async with self.client.messages.stream(**kwargs) as stream:
             async for text in stream.text_stream:
@@ -69,13 +71,15 @@ class AnthropicProvider(BaseLLMProvider):
         kwargs: dict = {
             "model": config.model or DEFAULT_MODEL,
             "max_tokens": config.max_tokens,
-            "temperature": config.temperature,
             "messages": api_messages,
         }
         if system_blocks:
             kwargs["system"] = system_blocks
+        # Anthropic API: temperature and top_p cannot both be specified
         if config.top_p is not None:
             kwargs["top_p"] = config.top_p
+        else:
+            kwargs["temperature"] = config.temperature
 
         response = await self.client.messages.create(**kwargs)
         usage = getattr(response, "usage", None)
