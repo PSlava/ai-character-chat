@@ -15,7 +15,9 @@ from app.config import settings
 from app.db.session import engine as db_engine
 from app.llm.base import LLMMessage, LLMConfig
 from app.llm.registry import get_provider
-from app.autonomous.providers import get_autonomous_provider_order
+# Character generation uses PAID providers only (NSFW content, quality matters)
+# Together (Llama, no moderation) > OpenAI > Claude > DeepSeek
+_CHAR_GEN_PROVIDERS = ("together", "openai", "claude", "deepseek")
 from app.autonomous.text_humanizer import humanize_character_data
 
 logger = logging.getLogger("autonomous")
@@ -218,7 +220,7 @@ async def _generate_character_data(category: str, gender: str) -> dict | None:
     ]
     config = LLMConfig(model="", temperature=0.95, max_tokens=2048)
 
-    for provider_name in get_autonomous_provider_order():
+    for provider_name in _CHAR_GEN_PROVIDERS:
         try:
             provider = get_provider(provider_name)
         except ValueError:

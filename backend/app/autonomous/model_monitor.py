@@ -1,5 +1,6 @@
 """Model monitor — daily check for new/removed/changed models across LLM providers."""
 
+import asyncio
 import json
 import logging
 from datetime import datetime, timezone
@@ -19,13 +20,19 @@ async def check_models() -> bool:
     """Main entry — check all providers for model changes, notify if any."""
     all_changes = {}
 
-    for provider_name in ("groq", "cerebras", "together", "openrouter"):
+    # Check providers with model listing (free + paid with OpenAI-compatible API)
+    for provider_name in ("groq", "cerebras", "together", "openrouter", "openai", "deepseek"):
         try:
             changes = await _check_provider(provider_name)
             if changes:
                 all_changes[provider_name] = changes
         except Exception as e:
             logger.warning("Failed to check %s models: %s", provider_name, e)
+
+    # Health check paid providers (test actual API call)
+    health_issues = await _check_paid_health()
+    if health_issues:
+        all_changes["__health__"] = health_issues
 
     if all_changes:
         await _send_notification(all_changes)
@@ -34,6 +41,39 @@ async def check_models() -> bool:
         logger.info("No model changes detected across all providers")
 
     return True
+
+
+async def _check_paid_health() -> dict | None:
+    """Test each paid provider with a minimal request. Report errors."""
+    from app.llm.registry import get_provider
+    from app.llm.base import LLMMessage, LLMConfig
+
+    test_msgs = [LLMMessage(role="user", content="Say hi")]
+    config = LLMConfig(model="", temperature=0.1, max_tokens=10)
+    issues = []
+
+    for name in ("openai", "claude", "gemini", "deepseek", "together"):
+        try:
+            prov = get_provider(name)
+        except ValueError:
+            continue
+        try:
+            await asyncio.wait_for(prov.generate(test_msgs, config), timeout=20)
+        except asyncio.TimeoutError:
+            issues.append(f"{name}: TIMEOUT (>20s)")
+        except Exception as e:
+            err = str(e)[:200]
+            # Classify the error
+            if "402" in err or "Insufficient" in err:
+                issues.append(f"{name}: NO BALANCE - {err}")
+            elif "401" in err or "invalid" in err.lower() or "API key" in err:
+                issues.append(f"{name}: INVALID KEY - {err}")
+            elif "404" in err or "not_found" in err:
+                issues.append(f"{name}: MODEL NOT FOUND - {err}")
+            else:
+                issues.append(f"{name}: ERROR - {err}")
+
+    return {"issues": issues} if issues else None
 
 
 async def _check_provider(provider_name: str) -> dict | None:
@@ -191,7 +231,8 @@ async def _send_notification(all_changes: dict):
         logger.info("Email not configured. Model changes:\n%s", _format_email_body(all_changes))
         return
 
-    subject = "SweetSin — Model Changes Detected"
+    site_name = getattr(settings, "site_name", "SweetSin")
+    subject = f"{site_name} — Model Changes Detected"
     body = _format_email_body(all_changes)
 
     for email in admin_emails:
@@ -207,29 +248,40 @@ async def _send_notification(all_changes: dict):
 
 def _format_email_body(all_changes: dict) -> str:
     """Format email body with model changes."""
+    site_name = getattr(settings, "site_name", "SweetSin")
     lines = [
-        "Model changes detected on SweetSin:\n",
+        f"Model changes detected on {site_name}:\n",
         f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\n",
     ]
 
     for provider, changes in all_changes.items():
+        if provider == "__health__":
+            # Health check section
+            lines.append(f"\n{'=' * 40}")
+            lines.append("  PAID PROVIDER HEALTH CHECK")
+            lines.append(f"{'=' * 40}\n")
+            for issue in changes.get("issues", []):
+                lines.append(f"  ! {issue}")
+            lines.append("")
+            continue
+
         lines.append(f"\n{'=' * 40}")
         lines.append(f"  {provider.upper()}")
         lines.append(f"{'=' * 40}\n")
 
-        if changes["added"]:
+        if changes.get("added"):
             lines.append("  + NEW MODELS:")
             for mid in changes["added"]:
                 lines.append(f"    + {mid}")
             lines.append("")
 
-        if changes["removed"]:
+        if changes.get("removed"):
             lines.append("  - REMOVED MODELS:")
             for mid in changes["removed"]:
                 lines.append(f"    - {mid}")
             lines.append("")
 
-        if changes["changed"]:
+        if changes.get("changed"):
             lines.append("  ~ CHANGED MODELS:")
             for item in changes["changed"]:
                 lines.append(f"    ~ {item['id']}")
@@ -237,5 +289,5 @@ def _format_email_body(all_changes: dict) -> str:
                     lines.append(f"      {diff}")
             lines.append("")
 
-    lines.append("\n— SweetSin Model Monitor\n")
+    lines.append(f"\n-- {site_name} Model Monitor\n")
     return "\n".join(lines)
