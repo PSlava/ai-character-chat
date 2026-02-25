@@ -284,6 +284,7 @@ async def get_leaderboard(
             User.role != "admin",
             User.is_banned == False,  # noqa: E712
             ~User.email.like("system@%"),
+            ~User.email.like("anonymous@%"),
         )
         .order_by(*order_cols)
         .limit(limit)
