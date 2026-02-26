@@ -37,6 +37,8 @@ const MODEL_ALIASES: Record<string, string> = {
   groq: 'Groq',
   cerebras: 'Cerebras',
   together: 'Together',
+  grok: 'Grok',
+  mistral: 'Mistral',
 };
 
 type ConfirmAction = { type: 'deleteChat' } | { type: 'clearChat' } | { type: 'deleteMessage'; messageId: string };
