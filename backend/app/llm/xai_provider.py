@@ -32,8 +32,6 @@ class XAIProvider(BaseLLMProvider):
             max_tokens=config.max_tokens,
             temperature=config.temperature,
             top_p=config.top_p,
-            frequency_penalty=config.frequency_penalty,
-            presence_penalty=config.presence_penalty,
             stream=True,
         )
         async for chunk in stream:
@@ -62,8 +60,7 @@ class XAIProvider(BaseLLMProvider):
                 max_tokens=config.max_tokens,
                 temperature=config.temperature,
                 top_p=config.top_p,
-                frequency_penalty=config.frequency_penalty,
-                presence_penalty=config.presence_penalty,
+                # xAI does not support frequency/presence penalty
             ),
             timeout=TIMEOUT,
         )

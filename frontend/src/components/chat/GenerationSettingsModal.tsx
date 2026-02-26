@@ -134,7 +134,7 @@ const PROVIDER_LIMITS: Record<string, ParamLimits> = {
   openai:     { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 2 }, presence_penalty: { max: 2 } },
   gemini:     { temperature: { max: 2 }, top_k: false, frequency_penalty: false, presence_penalty: false },
   claude:     { temperature: { max: 1 }, top_k: false, frequency_penalty: false, presence_penalty: false },
-  grok:       { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 2 }, presence_penalty: { max: 2 } },
+  grok:       { temperature: { max: 2 }, top_k: false, frequency_penalty: false, presence_penalty: false },
   mistral:    { temperature: { max: 1.5 }, top_k: false, frequency_penalty: false, presence_penalty: false },
 };
 
