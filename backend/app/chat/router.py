@@ -646,6 +646,8 @@ async def send_message(
         "deepseek": "deepseek-chat",
         "qwen": "qwen3-32b",
         "claude": "claude-sonnet-4-5-20250514",
+        "grok": "grok-3-mini",
+        "mistral": "mistral-small-latest",
     }
     # Claude does not allow NSFW content — block in NSFW mode
     _NSFW_BLOCKED_PROVIDERS = {"claude"}

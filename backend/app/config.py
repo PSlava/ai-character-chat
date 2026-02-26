@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     groq_api_key: str | None = None
     cerebras_api_key: str | None = None
     together_api_key: str | None = None
+    xai_api_key: str | None = None
+    mistral_api_key: str | None = None
     default_model: str = "auto"
     auto_provider_order: str = "groq,cerebras,openrouter"
     auto_provider_order_paid: str = "together,groq,openrouter"

@@ -4,6 +4,14 @@ from google.genai import types
 from app.llm.base import BaseLLMProvider, LLMMessage, LLMConfig, LLMResult
 
 
+_SAFETY_OFF = [
+    types.SafetySetting(category="HARM_CATEGORY_HARASSMENT", threshold="OFF"),
+    types.SafetySetting(category="HARM_CATEGORY_HATE_SPEECH", threshold="OFF"),
+    types.SafetySetting(category="HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold="OFF"),
+    types.SafetySetting(category="HARM_CATEGORY_DANGEROUS_CONTENT", threshold="OFF"),
+]
+
+
 class GeminiProvider(BaseLLMProvider):
     def __init__(self, api_key: str, proxy_url: str | None = None):
         self.client = genai.Client(api_key=api_key)
@@ -21,6 +29,7 @@ class GeminiProvider(BaseLLMProvider):
             max_output_tokens=config.max_tokens,
             top_p=config.top_p,
             system_instruction=system_instruction,
+            safety_settings=_SAFETY_OFF,
         )
 
         async for chunk in self.client.aio.models.generate_content_stream(
@@ -52,6 +61,7 @@ class GeminiProvider(BaseLLMProvider):
             max_output_tokens=config.max_tokens,
             top_p=config.top_p,
             system_instruction=system_instruction,
+            safety_settings=_SAFETY_OFF,
         )
 
         response = await self.client.aio.models.generate_content(

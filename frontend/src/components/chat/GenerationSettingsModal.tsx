@@ -134,6 +134,8 @@ const PROVIDER_LIMITS: Record<string, ParamLimits> = {
   openai:     { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 2 }, presence_penalty: { max: 2 } },
   gemini:     { temperature: { max: 2 }, top_k: false, frequency_penalty: false, presence_penalty: false },
   claude:     { temperature: { max: 1 }, top_k: false, frequency_penalty: false, presence_penalty: false },
+  grok:       { temperature: { max: 2 }, top_k: false, frequency_penalty: { max: 2 }, presence_penalty: { max: 2 } },
+  mistral:    { temperature: { max: 1.5 }, top_k: false, frequency_penalty: false, presence_penalty: false },
 };
 
 function getProvider(modelId: string): string {
@@ -143,7 +145,7 @@ function getProvider(modelId: string): string {
   if (modelId.startsWith('together:') || modelId === 'together') return 'together';
   if (modelId.includes('/')) return 'openrouter';
   if (modelId === 'openrouter') return 'openrouter';
-  if (['deepseek', 'qwen', 'openai', 'gemini', 'claude'].includes(modelId)) return modelId;
+  if (['deepseek', 'qwen', 'openai', 'gemini', 'claude', 'grok', 'mistral'].includes(modelId)) return modelId;
   return 'default';
 }
 
@@ -185,6 +187,7 @@ const CONTEXT_OPTIONS = [
 interface ModelOption {
   id: string;
   label: string;
+  desc?: string;
   group: 'auto' | 'openrouter' | 'groq' | 'cerebras' | 'together' | 'direct' | 'paid';
   nsfwOk?: boolean;
 }
@@ -204,7 +207,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
   // Build full model list with groups
   const allModels: ModelOption[] = [
     // Auto (all providers)
-    { id: 'auto', label: t('settings.autoAll'), group: 'auto', nsfwOk: true },
+    { id: 'auto', label: t('settings.autoAll'), desc: t('settings.descAuto'), group: 'auto', nsfwOk: true },
     // OpenRouter
     { id: 'openrouter', label: 'OpenRouter Auto', group: 'openrouter', nsfwOk: true },
     ...orModels.map((m) => ({ id: m.id, label: `${m.name} (${m.quality}/10)`, group: 'openrouter' as const, nsfwOk: m.nsfw !== false })),
@@ -218,12 +221,14 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
     { id: 'together', label: 'Together Auto', group: 'together', nsfwOk: true },
     ...togetherModels.map((m) => ({ id: `together:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'together' as const, nsfwOk: m.nsfw !== false })),
     // Direct
-    { id: 'deepseek', label: 'DeepSeek', group: 'direct', nsfwOk: true },
-    { id: 'qwen', label: 'Qwen (DashScope)', group: 'direct', nsfwOk: false },
+    { id: 'deepseek', label: 'DeepSeek', desc: t('settings.descDeepseek'), group: 'direct', nsfwOk: true },
+    { id: 'qwen', label: 'Qwen', desc: t('settings.descQwen'), group: 'direct', nsfwOk: false },
     // Paid
-    { id: 'claude', label: 'Claude Sonnet', group: 'paid', nsfwOk: false },
-    { id: 'gemini', label: 'Gemini', group: 'paid', nsfwOk: true },
-    { id: 'openai', label: 'GPT-4o', group: 'paid', nsfwOk: true },
+    { id: 'grok', label: 'Grok', desc: t('settings.descGrok'), group: 'paid', nsfwOk: true },
+    { id: 'mistral', label: 'Mistral', desc: t('settings.descMistral'), group: 'paid', nsfwOk: true },
+    { id: 'gemini', label: 'Gemini', desc: t('settings.descGemini'), group: 'paid', nsfwOk: true },
+    { id: 'claude', label: 'Claude Sonnet', desc: t('settings.descClaude'), group: 'paid', nsfwOk: false },
+    { id: 'openai', label: 'GPT-4o', desc: t('settings.descOpenai'), group: 'paid', nsfwOk: true },
   ];
 
   const isSelected = (id: string) => model === id;
@@ -273,6 +278,7 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
                         title={disabled ? t('settings.nsfwBlocked') : undefined}
                       >
                         <span className="block font-medium truncate text-xs">{m.label}</span>
+                        {m.desc && <span className="block text-[10px] text-neutral-500 mt-0.5 line-clamp-2 leading-tight">{m.desc}</span>}
                       </button>
                     );
                   })}

@@ -8,6 +8,8 @@ from app.llm.groq_provider import GroqProvider
 from app.llm.cerebras_provider import CerebrasProvider
 from app.llm.anthropic_provider import AnthropicProvider
 from app.llm.together_provider import TogetherProvider
+from app.llm.xai_provider import XAIProvider
+from app.llm.mistral_provider import MistralProvider
 from app.llm import model_cooldown
 
 _providers: dict[str, BaseLLMProvider] = {}
@@ -23,6 +25,8 @@ def init_providers(
     groq_key: str | None = None,
     cerebras_key: str | None = None,
     together_key: str | None = None,
+    xai_key: str | None = None,
+    mistral_key: str | None = None,
     proxy_url: str | None = None,
 ):
     if anthropic_key:
@@ -43,6 +47,10 @@ def init_providers(
         _providers["cerebras"] = CerebrasProvider(api_key=cerebras_key, proxy_url=proxy_url)
     if together_key:
         _providers["together"] = TogetherProvider(api_key=together_key, proxy_url=proxy_url)
+    if xai_key:
+        _providers["grok"] = XAIProvider(api_key=xai_key, proxy_url=proxy_url)
+    if mistral_key:
+        _providers["mistral"] = MistralProvider(api_key=mistral_key, proxy_url=proxy_url)
 
 
 def get_provider(name: str) -> BaseLLMProvider:

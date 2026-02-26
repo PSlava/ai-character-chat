@@ -37,6 +37,8 @@ async def lifespan(app: FastAPI):
         groq_key=settings.groq_api_key,
         cerebras_key=settings.cerebras_api_key,
         together_key=settings.together_api_key,
+        xai_key=settings.xai_api_key,
+        mistral_key=settings.mistral_api_key,
         proxy_url=settings.proxy_url,
     )
 
