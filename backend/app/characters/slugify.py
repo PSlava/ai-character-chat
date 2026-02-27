@@ -34,14 +34,30 @@ def validate_slug(slug: str) -> str:
     return slug
 
 
-def generate_slug(name: str, short_id: str) -> str:
-    """Generate URL-friendly slug from character name + short ID suffix."""
+def generate_slug(name: str, short_id: str | None = None) -> str:
+    """Generate URL-friendly slug from character name, optionally with ID suffix."""
     text = transliterate(name)
     text = text.lower()
     text = re.sub(r'[^a-z0-9]+', '-', text)
     text = text.strip('-')
     if not text:
         text = 'character'
-    # Append short ID for uniqueness
-    suffix = short_id[:8]
-    return f"{text}-{suffix}"
+    if short_id:
+        suffix = short_id[:8]
+        return f"{text}-{suffix}"
+    return text
+
+
+async def generate_unique_slug(db, name: str, char_id: str) -> str:
+    """Generate a clean slug, appending ID suffix only if slug is already taken."""
+    from sqlalchemy import select, func
+    from app.db.models import Character
+
+    base = generate_slug(name)
+    result = await db.execute(
+        select(func.count()).select_from(Character)
+        .where(Character.slug == base, Character.id != char_id)
+    )
+    if result.scalar_one() == 0:
+        return base
+    return generate_slug(name, char_id)

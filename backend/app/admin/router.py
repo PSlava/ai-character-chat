@@ -301,12 +301,12 @@ async def import_seed_characters(
     await db.flush()
 
     # Generate slugs for all imported characters
-    from app.characters.slugify import generate_slug
+    from app.characters.slugify import generate_unique_slug
     result2 = await db.execute(
         select(Character).where(Character.creator_id == sweetsin.id, Character.slug.is_(None))
     )
     for c in result2.scalars().all():
-        c.slug = generate_slug(c.name, c.id)
+        c.slug = await generate_unique_slug(db, c.name, c.id)
 
     await db.commit()
 
@@ -381,20 +381,42 @@ async def _warmup_seed_translations():
 
 @router.post("/generate-slugs")
 async def generate_character_slugs(
+    regenerate: bool = False,
     user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Generate slugs for all characters that don't have one."""
-    from app.characters.slugify import generate_slug
+    """Generate slugs for characters. Use ?regenerate=true to regenerate all slugs to clean format."""
+    from app.characters.slugify import generate_slug, generate_unique_slug
 
-    result = await db.execute(
-        select(Character).where(Character.slug.is_(None))
-    )
-    characters = result.scalars().all()
-    for c in characters:
-        c.slug = generate_slug(c.name, c.id)
+    if regenerate:
+        # Regenerate ALL slugs: clean (no suffix) where possible, suffix only on collision
+        result = await db.execute(
+            select(Character).order_by(Character.created_at.asc())
+        )
+        characters = result.scalars().all()
+        used_slugs: dict[str, str] = {}  # slug -> char_id
+        updated = 0
+        for c in characters:
+            base = generate_slug(c.name)
+            if base not in used_slugs or used_slugs[base] == c.id:
+                new_slug = base
+            else:
+                new_slug = generate_slug(c.name, c.id)
+            used_slugs[new_slug] = c.id
+            if new_slug != c.slug:
+                c.slug = new_slug
+                updated += 1
+    else:
+        result = await db.execute(
+            select(Character).where(Character.slug.is_(None))
+        )
+        characters = result.scalars().all()
+        for c in characters:
+            c.slug = await generate_unique_slug(db, c.name, c.id)
+        updated = len(characters)
+
     await db.commit()
-    return {"updated": len(characters)}
+    return {"updated": updated}
 
 
 @router.delete("/seed-characters")

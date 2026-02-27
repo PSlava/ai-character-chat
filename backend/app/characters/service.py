@@ -195,6 +195,7 @@ async def get_character_rating(db: AsyncSession, character_id: str) -> dict | No
 
 
 async def get_character_by_slug(db: AsyncSession, slug: str):
+    # Exact match first
     result = await db.execute(
         select(Character)
         .options(selectinload(Character.creator))
@@ -202,11 +203,28 @@ async def get_character_by_slug(db: AsyncSession, slug: str):
         .order_by(Character.chat_count.desc())
         .limit(1)
     )
-    return result.scalar_one_or_none()
+    char = result.scalar_one_or_none()
+    if char:
+        return char
+
+    # Fallback: if slug looks like old format (base-slug-8hexchars), try base slug
+    import re
+    match = re.match(r'^(.+)-([0-9a-f]{8})$', slug)
+    if match:
+        base_slug = match.group(1)
+        result = await db.execute(
+            select(Character)
+            .options(selectinload(Character.creator))
+            .where(Character.slug == base_slug)
+            .order_by(Character.chat_count.desc())
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+    return None
 
 
 async def create_character(db: AsyncSession, creator_id: str, data: dict):
-    from app.characters.slugify import generate_slug
+    from app.characters.slugify import generate_unique_slug
     data.pop("slug", None)  # ignore any slug from input
     # Sanitize text fields
     for field in _TEXT_FIELDS_TO_SANITIZE:
@@ -223,7 +241,7 @@ async def create_character(db: AsyncSession, creator_id: str, data: dict):
     )
     db.add(character)
     await db.flush()  # get character.id
-    character.slug = generate_slug(data.get("name", "character"), character.id)
+    character.slug = await generate_unique_slug(db, data.get("name", "character"), character.id)
     await db.commit()
     # Re-fetch with creator loaded
     return await get_character(db, character.id)
@@ -270,8 +288,8 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
 
     # Regenerate slug when name changes
     if "name" in data and data["name"] is not None and data["name"] != character.name:
-        from app.characters.slugify import generate_slug
-        character.slug = generate_slug(data["name"], character.id)
+        from app.characters.slugify import generate_unique_slug
+        character.slug = await generate_unique_slug(db, data["name"], character.id)
 
     # Selectively clear only changed fields from translation cache (keep unchanged)
     _translatable = ("name", "tagline", "personality", "scenario", "appearance", "greeting_message")

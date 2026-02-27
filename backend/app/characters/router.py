@@ -262,8 +262,8 @@ async def import_character(
     )
     db.add(character)
     await db.flush()
-    from app.characters.slugify import generate_slug
-    character.slug = generate_slug(character.name, character.id)
+    from app.characters.slugify import generate_unique_slug
+    character.slug = await generate_unique_slug(db, character.name, character.id)
     await db.commit()
 
     return {"id": character.id, "name": character.name, "slug": character.slug}
@@ -279,6 +279,13 @@ async def get_character_by_slug(
     character = await service.get_character_by_slug(db, slug)
     if not character:
         raise HTTPException(status_code=404, detail="Character not found")
+    # If found via fallback (old slug with suffix), redirect to canonical URL
+    if character.slug != slug:
+        from fastapi.responses import RedirectResponse
+        url = f"/api/characters/by-slug/{character.slug}"
+        if language:
+            url += f"?language={language}"
+        return RedirectResponse(url=url, status_code=301)
     if not character.is_public:
         user_id = user["id"] if user else None
         user_role = user.get("role") if user else None
@@ -383,7 +390,7 @@ async def fork_character(
     if not original or not original.is_public:
         raise HTTPException(status_code=404, detail="Character not found")
 
-    from app.characters.slugify import generate_slug
+    from app.characters.slugify import generate_unique_slug
     import uuid
 
     new_id = str(uuid.uuid4())
@@ -410,9 +417,10 @@ async def fork_character(
         response_length=original.response_length,
         is_public=False,
         forked_from_id=character_id,
-        slug=generate_slug(fork_name, new_id),
     )
     db.add(forked)
+    await db.flush()
+    forked.slug = await generate_unique_slug(db, fork_name, new_id)
 
     # Increment fork_count on original
     original.fork_count = (original.fork_count or 0) + 1

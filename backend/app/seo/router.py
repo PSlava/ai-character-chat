@@ -181,6 +181,19 @@ async def prerender_character(
     )
     character = result.scalar_one_or_none()
     if not character:
+        # Fallback: old slug format (base-slug-8hexchars) → redirect to clean slug
+        import re as _re
+        _m = _re.match(r'^(.+)-([0-9a-f]{8})$', slug)
+        if _m:
+            _base = _m.group(1)
+            _r = await db.execute(
+                select(Character)
+                .where(Character.slug == _base, Character.is_public == True)
+            )
+            _char = _r.scalar_one_or_none()
+            if _char:
+                from fastapi.responses import RedirectResponse
+                return RedirectResponse(url=f"/api/seo/c/{_char.slug}?lang={lang}", status_code=301)
         return HTMLResponse("<html><body><h1>Not Found</h1></body></html>", status_code=404)
 
     # Apply translations if available

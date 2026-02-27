@@ -474,7 +474,11 @@ async def generate_daily_character() -> bool:
         from app.characters.slugify import generate_slug
 
         char_id = uuid.uuid4().hex
-        slug = generate_slug(char_data.get("name", "character"), char_id)
+        # Try clean slug first, add suffix only on collision
+        base_slug = generate_slug(char_data.get("name", "character"))
+        async with db_engine.connect() as _conn:
+            _r = await _conn.execute(sa_text("SELECT COUNT(*) FROM characters WHERE slug = :s"), {"s": base_slug})
+            slug = base_slug if _r.scalar() == 0 else generate_slug(char_data.get("name", "character"), char_id)
 
         # Language-preference-aware base counters
         from app.characters.language_preferences import get_initial_base_counts
