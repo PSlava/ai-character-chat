@@ -51,10 +51,12 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
   const [tagRegistry, setTagRegistry] = useState<StructuredTagsResponse | null>(null);
 
   useEffect(() => {
-    getOpenRouterModels().then(setOrModels).catch(() => {});
-    getGroqModels().then(setGroqModels).catch(() => {});
-    getCerebrasModels().then(setCerebrasModels).catch(() => {});
-    getTogetherModels().then(setTogetherModels).catch(() => {});
+    if (isAdmin) {
+      getOpenRouterModels().then(setOrModels).catch(() => {});
+      getGroqModels().then(setGroqModels).catch(() => {});
+      getCerebrasModels().then(setCerebrasModels).catch(() => {});
+      getTogetherModels().then(setTogetherModels).catch(() => {});
+    }
     getStructuredTags().then(setTagRegistry).catch(() => {});
   }, []);
 
@@ -101,7 +103,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
           .filter(Boolean),
         structured_tags: form.structured_tags,
         is_public: form.is_public,
-        preferred_model: form.preferred_model,
+        ...(isAdmin ? { preferred_model: form.preferred_model } : {}),
         max_tokens: form.max_tokens,
         response_length: form.response_length as Character['response_length'],
         original_language: i18n.language,
