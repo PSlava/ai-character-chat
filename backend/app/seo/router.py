@@ -1181,6 +1181,14 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
     return Response(content=xml, media_type="application/rss+xml; charset=utf-8")
 
 
+INDEXNOW_KEY = "b1e4d3a7f6c8e2d9a5b0c7f1e3d6a8b4"
+
+
+@router.api_route(f"/{INDEXNOW_KEY}.txt", methods=["GET", "HEAD"])
+async def indexnow_key():
+    return Response(content=INDEXNOW_KEY, media_type="text/plain")
+
+
 @router.api_route("/robots.txt", methods=["GET", "HEAD"])
 async def robots():
     nsfw_block = "\nDisallow: /*nsfw*\n" if not settings.is_fiction_mode else ""
