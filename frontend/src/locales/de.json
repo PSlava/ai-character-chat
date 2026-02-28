@@ -454,7 +454,7 @@
   "faq.q1": "Ist SweetSin kostenlos?",
   "faq.a1": "Ja! Die Kernfunktionen sind vollständig kostenlos. Wir bieten Dutzende kostenloser Modelle über Groq, Cerebras und OpenRouter an. Premium-Modelle (GPT-4o, Gemini) erfordern Ihren eigenen API-Schlüssel.",
   "faq.q2": "Welche KI-Modelle sind verfügbar?",
-  "faq.a2": "11 Anbieter: Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 kostenlose Modelle), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral und Claude/Anthropic. Automatisches Fallback wechselt Anbieter, wenn einer nicht verfügbar ist.",
+  "faq.a2": "11 Anbieter: Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 kostenlose Modelle), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral und Claude/Anthropic. Automatisches Fallback wechselt Anbieter, wenn einer nicht verfügbar ist.",
   "faq.q3": "Kann ich NSFW-Inhalte erstellen?",
   "faq.a3": "Ja, für Benutzer ab 18 Jahren. Sie steuern die Inhaltsbewertung pro Charakter. Einige Modelle (wie GPT-OSS) haben integrierte Inhaltsbeschränkungen, aber die meisten kostenlosen Modelle unterstützen uneingeschränkte Inhalte.",
   "faq.q4": "Wie erstelle ich einen Charakter?",

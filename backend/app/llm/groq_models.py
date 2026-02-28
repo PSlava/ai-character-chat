@@ -12,8 +12,7 @@ QUALITY_SCORES: dict[str, int] = {
     "llama-3.3-70b-versatile": 9,
     "moonshotai/kimi-k2-instruct-0905": 8,  # 1T MoE (32B active), 256K ctx, strong general capability
     "meta-llama/llama-4-scout-17b-16e-instruct": 7,
-    "meta-llama/llama-4-maverick-17b-128e-instruct": 7,
-    "openai/gpt-oss-120b": 6,
+    "openai/gpt-oss-120b": 7,
     "qwen/qwen3-32b": 5,  # produces CJK garbage in Russian, below auto-fallback threshold
     "openai/gpt-oss-20b": 5,
     "llama-3.1-8b-instant": 4,  # small 8B, fast but weak for RP

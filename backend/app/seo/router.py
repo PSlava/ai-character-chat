@@ -541,7 +541,7 @@ async def prerender_faq(lang: str = Query("en")):
     _faq = {
         "en": [
             ("Is SweetSin free?", "Yes! Core features are completely free. We offer dozens of free models via Groq, Cerebras, and OpenRouter. Premium models (GPT-4o, Gemini) require your own API key."),
-            ("What AI models are available?", "11 providers: Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 free models), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral, and Claude/Anthropic. Auto-fallback switches providers if one is unavailable."),
+            ("What AI models are available?", "11 providers: Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 free models), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral, and Claude/Anthropic. Auto-fallback switches providers if one is unavailable."),
             ("Can I create NSFW content?", "Yes, for users 18+. You control the content rating per character. Some models (like GPT-OSS) have built-in content restrictions, but most free models support unrestricted content."),
             ("How do I create a character?", "Click 'Create' in the header. You can build a character manually with personality, appearance, scenario, and example dialogues — or paste any text and let AI generate a character from it. You can also import SillyTavern character cards."),
             ("Is my chat history private?", "Yes. Your conversations are private and only visible to you. We do not share chat content with anyone."),
@@ -555,7 +555,7 @@ async def prerender_faq(lang: str = Query("en")):
         ],
         "es": [
             ("¿SweetSin es gratis?", "¡Sí! Las funciones principales son completamente gratuitas. Docenas de modelos gratuitos a través de Groq, Cerebras y OpenRouter. Los modelos premium (GPT-4o, Gemini) requieren tu propia clave API."),
-            ("¿Qué modelos de IA están disponibles?", "11 proveedores: Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 modelos gratis), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral y Claude/Anthropic. El auto-fallback cambia de proveedor automáticamente si uno no está disponible."),
+            ("¿Qué modelos de IA están disponibles?", "11 proveedores: Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 modelos gratis), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral y Claude/Anthropic. El auto-fallback cambia de proveedor automáticamente si uno no está disponible."),
             ("¿Puedo crear contenido NSFW?", "Sí, para usuarios de 18+. Tú controlas la clasificación de contenido por personaje. Algunos modelos (como GPT-OSS) tienen restricciones integradas, pero la mayoría de los modelos gratuitos soportan contenido sin restricciones."),
             ("¿Cómo creo un personaje?", "Haz clic en 'Crear' en la barra superior. Crea un personaje manualmente con personalidad, apariencia, escenario y diálogos de ejemplo — o pega cualquier texto y deja que la IA genere un personaje. También puedes importar tarjetas de SillyTavern."),
             ("¿Mi historial de chat es privado?", "Sí. Tus conversaciones son privadas y solo visibles para ti. No compartimos el contenido de los chats con nadie."),
@@ -569,7 +569,7 @@ async def prerender_faq(lang: str = Query("en")):
         ],
         "ru": [
             ("SweetSin бесплатный?", "Да! Основные функции полностью бесплатны. Десятки бесплатных моделей через Groq, Cerebras и OpenRouter. Премиум-модели (GPT-4o, Gemini) требуют собственного API-ключа."),
-            ("Какие AI-модели доступны?", "11 провайдеров: Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 бесплатных моделей), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral и Claude/Anthropic. Авто-фоллбэк переключает провайдеров при недоступности."),
+            ("Какие AI-модели доступны?", "11 провайдеров: Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 бесплатных моделей), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral и Claude/Anthropic. Авто-фоллбэк переключает провайдеров при недоступности."),
             ("Можно создавать NSFW контент?", "Да, для пользователей 18+. Вы контролируете рейтинг контента для каждого персонажа. Некоторые модели (GPT-OSS) имеют встроенные ограничения, но большинство бесплатных моделей поддерживают контент без ограничений."),
             ("Как создать персонажа?", "Нажмите 'Создать' в шапке. Создайте персонажа вручную с личностью, внешностью, сценарием и примерами диалогов — или вставьте любой текст, и AI сгенерирует персонажа. Также можно импортировать карточки SillyTavern."),
             ("Моя история чатов приватна?", "Да. Ваши разговоры приватны и видны только вам. Мы не делимся содержимым чатов ни с кем."),
@@ -583,7 +583,7 @@ async def prerender_faq(lang: str = Query("en")):
         ],
         "fr": [
             ("SweetSin est-il gratuit ?", "Oui ! Les fonctionnalités principales sont entièrement gratuites. Nous proposons des dizaines de modèles gratuits via Groq, Cerebras et OpenRouter. Les modèles premium (GPT-4o, Gemini) nécessitent votre propre clé API."),
-            ("Quels modèles d'IA sont disponibles ?", "11 fournisseurs : Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 modèles gratuits), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral et Claude/Anthropic. Le basculement automatique change de fournisseur si l'un est indisponible."),
+            ("Quels modèles d'IA sont disponibles ?", "11 fournisseurs : Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 modèles gratuits), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral et Claude/Anthropic. Le basculement automatique change de fournisseur si l'un est indisponible."),
             ("Puis-je créer du contenu NSFW ?", "Oui, pour les utilisateurs de 18 ans et plus. Vous contrôlez la classification du contenu par personnage. Certains modèles (comme GPT-OSS) ont des restrictions intégrées, mais la plupart des modèles gratuits prennent en charge le contenu sans restriction."),
             ("Comment créer un personnage ?", "Cliquez sur 'Créer' dans l'en-tête. Vous pouvez construire un personnage manuellement avec personnalité, apparence, scénario et exemples de dialogues — ou coller n'importe quel texte et laisser l'IA générer un personnage. Vous pouvez aussi importer des fiches SillyTavern."),
             ("Mon historique de discussion est-il privé ?", "Oui. Vos conversations sont privées et visibles uniquement par vous. Nous ne partageons le contenu des discussions avec personne."),
@@ -597,7 +597,7 @@ async def prerender_faq(lang: str = Query("en")):
         ],
         "de": [
             ("Ist SweetSin kostenlos?", "Ja! Die Kernfunktionen sind vollständig kostenlos. Wir bieten Dutzende kostenloser Modelle über Groq, Cerebras und OpenRouter an. Premium-Modelle (GPT-4o, Gemini) erfordern Ihren eigenen API-Schlüssel."),
-            ("Welche KI-Modelle sind verfügbar?", "11 Anbieter: Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 kostenlose Modelle), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral und Claude/Anthropic. Automatisches Fallback wechselt Anbieter, wenn einer nicht verfügbar ist."),
+            ("Welche KI-Modelle sind verfügbar?", "11 Anbieter: Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 kostenlose Modelle), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral und Claude/Anthropic. Automatisches Fallback wechselt Anbieter, wenn einer nicht verfügbar ist."),
             ("Kann ich NSFW-Inhalte erstellen?", "Ja, für Benutzer ab 18 Jahren. Sie steuern die Inhaltsbewertung pro Charakter. Einige Modelle (wie GPT-OSS) haben integrierte Inhaltsbeschränkungen, aber die meisten kostenlosen Modelle unterstützen uneingeschränkte Inhalte."),
             ("Wie erstelle ich einen Charakter?", "Klicken Sie auf 'Erstellen' in der Kopfzeile. Sie können einen Charakter manuell mit Persönlichkeit, Aussehen, Szenario und Beispieldialogen erstellen — oder einen beliebigen Text einfügen und die KI daraus einen Charakter generieren lassen. Sie können auch SillyTavern-Charakterkarten importieren."),
             ("Ist mein Chatverlauf privat?", "Ja. Ihre Gespräche sind privat und nur für Sie sichtbar. Wir teilen Chat-Inhalte mit niemandem."),
@@ -611,7 +611,7 @@ async def prerender_faq(lang: str = Query("en")):
         ],
         "pt": [
             ("O SweetSin é gratuito?", "Sim! Os recursos principais são totalmente gratuitos. Oferecemos dezenas de modelos gratuitos via Groq, Cerebras e OpenRouter. Modelos premium (GPT-4o, Gemini) exigem sua própria chave de API."),
-            ("Quais modelos de IA estão disponíveis?", "11 provedores: Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 modelos grátis), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral e Claude/Anthropic. O auto-fallback troca de provedor se um estiver indisponível."),
+            ("Quais modelos de IA estão disponíveis?", "11 provedores: Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 modelos grátis), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral e Claude/Anthropic. O auto-fallback troca de provedor se um estiver indisponível."),
             ("Posso criar conteúdo NSFW?", "Sim, para usuários maiores de 18 anos. Você controla a classificação de conteúdo por personagem. Alguns modelos (como GPT-OSS) têm restrições de conteúdo embutidas, mas a maioria dos modelos gratuitos suporta conteúdo sem restrições."),
             ("Como eu crio um personagem?", "Clique em 'Criar' no cabeçalho. Você pode construir um personagem manualmente com personalidade, aparência, cenário e diálogos de exemplo — ou colar qualquer texto e deixar a IA gerar um personagem a partir dele. Você também pode importar cards do SillyTavern."),
             ("Meu histórico de conversas é privado?", "Sim. Suas conversas são privadas e visíveis apenas para você. Não compartilhamos o conteúdo das conversas com ninguém."),
@@ -625,7 +625,7 @@ async def prerender_faq(lang: str = Query("en")):
         ],
         "it": [
             ("SweetSin è gratuito?", "Sì! Le funzionalità principali sono completamente gratuite. Offriamo decine di modelli gratuiti tramite Groq, Cerebras e OpenRouter. I modelli premium (GPT-4o, Gemini) richiedono la propria chiave API."),
-            ("Quali modelli AI sono disponibili?", "11 provider: Groq (Llama 3.3 70B, Llama 4 Maverick), Cerebras, OpenRouter (8 modelli gratuiti), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral e Claude/Anthropic. Il fallback automatico cambia provider se uno non è disponibile."),
+            ("Quali modelli AI sono disponibili?", "11 provider: Groq (Llama 3.3 70B, GPT-OSS 120B), Cerebras, OpenRouter (8 modelli gratuiti), Together, DeepSeek, Qwen, OpenAI GPT-4o, Google Gemini, Grok/xAI, Mistral e Claude/Anthropic. Il fallback automatico cambia provider se uno non è disponibile."),
             ("Posso creare contenuti NSFW?", "Sì, per utenti 18+. Puoi controllare la classificazione dei contenuti per ogni personaggio. Alcuni modelli (come GPT-OSS) hanno restrizioni integrate, ma la maggior parte dei modelli gratuiti supporta contenuti senza restrizioni."),
             ("Come posso creare un personaggio?", "Clicca 'Crea' nell'intestazione. Puoi costruire un personaggio manualmente con personalità, aspetto, scenario e dialoghi di esempio — oppure incolla qualsiasi testo e lascia che l'IA generi un personaggio. Puoi anche importare schede SillyTavern."),
             ("La mia cronologia delle chat è privata?", "Sì. Le tue conversazioni sono private e visibili solo a te. Non condividiamo il contenuto delle chat con nessuno."),
