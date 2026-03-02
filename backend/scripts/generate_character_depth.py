@@ -90,19 +90,26 @@ Scenario: {scenario}
 
 Return JSON:
 {{
-  "backstory": "3-5 sentences of WORLD HISTORY. Hidden truths about this world, NPC secrets, lore the reader discovers over time. NOT character backstory - this is world-building.",
-  "hidden_layers": "Phase 1: [setup - introduce the world, establish tone, first mystery or hook] Phase 2: [complications - new threats emerge, allies may betray, stakes rise] Phase 3: [climax - the central conflict reaches its peak, hard choices] Phase 4: [resolution - consequences unfold, world is changed forever]",
-  "inner_conflict": "CENTRAL DILEMMA: [an impossible moral choice the reader must face]. Two valid but incompatible values collide."
+  "backstory": "3-5 sentences of WORLD HISTORY. Hidden truths, NPC secrets, lore discovered over time. NOT character backstory - world-building only. Be CONCRETE: names, dates, places, specific events. Vary sentence length wildly - mix 5-word punches with 30-word complex sentences.",
+  "hidden_layers": "Phase 1: [specific opening events and hooks] Phase 2: [specific complications and betrayals] Phase 3: [specific climactic confrontations] Phase 4: [specific consequences and transformations]",
+  "inner_conflict": "A single raw sentence. Two concrete options that collide. Example format: 'Burning the ledger protects the family but lets the cartel walk free vs handing it to police saves the city but destroys everyone she loves'"
 }}
 
 RULES:
-- backstory: world lore, NOT character biography. Hidden truths, faction secrets, ancient history
-- hidden_layers: format STRICTLY "Phase 1: text Phase 2: text Phase 3: text Phase 4: text"
-- inner_conflict: a DILEMMA with no easy answer, not a character's internal struggle
-- Match the adventure's genre, tone, and setting
-- Do NOT use em-dashes, only regular hyphens
-- Write in vivid, evocative language
-- Return ONLY JSON"""
+- backstory: world lore only. Name a specific person, place, date, or event in every sentence. "The Thornwood pact of 1347 bound three houses to silence" not "ancient forces shaped the land"
+- hidden_layers: STRICTLY "Phase 1: text Phase 2: text Phase 3: text Phase 4: text". Each phase describes CONCRETE plot events unique to THIS story. No generic placeholders
+- inner_conflict: raw dilemma, one sentence. NEVER start with "The reader must choose" or "CENTRAL DILEMMA:" - just state the tension directly
+- Vary sentence length: short punches (3-6 words) mixed with longer ones. Three sentences of similar length in a row = fail
+- Use the second word that comes to mind, not the first. "Soot-colored" not "dark". "Sharp-featured" not "beautiful"
+
+HARD BANS (any of these = instant fail):
+- Words: tapestry, beacon, delve, enigmatic, realm, embark, testament, myriad, pivotal, captivating, resonate, profound, unveil, vibrant, intricate, nuanced, multifaceted, unravel, shrouded, intertwined, ethereal, celestial, labyrinthine, gossamer, ephemeral, palpable, culmination, indelible, meticulous, unwavering, crucible, paradigm, cacophony, vestiges, symphony (metaphorical), kaleidoscope, luminous, resplendent
+- Phrases: "a tapestry of", "a testament to", "a symphony of", "something stirred", "the air crackled", "tension hung", "darkness crept", "walls crumbled", "everything changed", "in that moment", "was only just beginning", "little did they know"
+- Patterns: "It wasn't X. It was Y." construction. Starting sentences with "The reader". Lists of exactly three adjectives/nouns
+- Body cliches: eyes sparkled/widened/glistened, heart raced/pounded, breath caught/hitched, shivers down spine, knot in stomach, warmth spread through
+
+Write like a thriller novelist on deadline. Gritty. Specific. No poetry.
+Return ONLY JSON"""
 
 _DND_DEPTH_PROMPT = """Based on this D&D campaign, create three narrative depth fields. Reply with strict JSON.
 
@@ -113,19 +120,25 @@ Scenario: {scenario}
 
 Return JSON:
 {{
-  "backstory": "3-5 sentences of CAMPAIGN LORE. The BBEG's true motivation, faction secrets, ancient prophecies, hidden alliances. What the players don't know yet.",
-  "hidden_layers": "Phase 1: [exploration - players learn the world, meet NPCs, first quest hooks] Phase 2: [escalation - BBEG's influence grows, allies tested, betrayals possible] Phase 3: [crisis - direct confrontation looms, sacrifices required, alliances fracture] Phase 4: [endgame - final battle, world-changing consequences, heroic or tragic conclusion]",
-  "inner_conflict": "MORAL STAKES: [the campaign's central ethical question]. What must be sacrificed for victory? Is the 'right' choice truly right?"
+  "backstory": "3-5 sentences of CAMPAIGN LORE. The BBEG's true motivation, faction secrets, hidden alliances. Be CONCRETE: name every person, place, event. Vary sentence length - short punches mixed with complex ones.",
+  "hidden_layers": "Phase 1: [specific encounters and discoveries] Phase 2: [specific betrayals and reveals] Phase 3: [specific confrontations and sacrifices] Phase 4: [specific endgame conditions and consequences]",
+  "inner_conflict": "A single raw sentence. Two concrete options from THIS campaign that collide. Example: 'Sparing the necromancer means saving the enslaved dead but dooms the valley to eternal winter vs destroying him frees the land but kills every revenant including the paladin's daughter'"
 }}
 
 RULES:
-- backstory: campaign lore and secrets, NOT player character history
-- hidden_layers: format STRICTLY "Phase 1: text Phase 2: text Phase 3: text Phase 4: text"
-- inner_conflict: the campaign's moral question, not a single NPC's feelings
-- Match the campaign's genre, tone, and setting (dark fantasy, high adventure, etc.)
-- Do NOT use em-dashes, only regular hyphens
-- Write in vivid, evocative language
-- Return ONLY JSON"""
+- backstory: campaign secrets only. Name a specific NPC, location, or event in every sentence. "Commander Voss sealed the tomb in 1183 to hide the failed ritual" not "ancient forces were at work"
+- hidden_layers: STRICTLY "Phase 1: text Phase 2: text Phase 3: text Phase 4: text". Each phase describes CONCRETE events unique to THIS campaign. No stock D&D tropes
+- inner_conflict: raw dilemma, one sentence. NEVER start with "The players must" or "Moral stakes:" - just state the tension directly using names from the campaign
+- Vary sentence length: short punches (3-6 words) mixed with longer ones. No three sentences of similar length in a row
+
+HARD BANS (any of these = instant fail):
+- Words: tapestry, beacon, delve, enigmatic, realm, embark, testament, myriad, pivotal, captivating, resonate, profound, unveil, vibrant, intricate, nuanced, multifaceted, unravel, shrouded, intertwined, ethereal, celestial, labyrinthine, gossamer, ephemeral, palpable, culmination, indelible, meticulous, unwavering, crucible, paradigm, cacophony, vestiges, symphony (metaphorical), kaleidoscope, luminous, resplendent
+- Phrases: "a tapestry of", "a testament to", "something stirred", "the air crackled", "tension hung", "darkness crept", "walls crumbled", "everything changed", "in that moment", "can the ends justify the means", "was only just beginning"
+- Patterns: "It wasn't X. It was Y." construction. Starting sentences with "The players must" or "The campaign's central". Lists of exactly three
+- Body cliches: eyes sparkled/widened, heart raced, breath caught, shivers down spine
+
+Write like a game master whispering secrets at 2am. Blunt. Concrete. No grandeur.
+Return ONLY JSON"""
 
 
 async def _call_llm(messages: list[LLMMessage], config: LLMConfig, label: str = "") -> str | None:
@@ -169,7 +182,11 @@ async def _generate_depth(name: str, personality: str, appearance: str, scenario
         scenario=(scenario or "")[:500],
     )
     if mode in ("fiction", "dnd"):
-        sys_msg = "You are an expert narrative designer for interactive fiction and tabletop RPGs. Reply with strict JSON."
+        sys_msg = (
+            "You are an expert narrative designer. Write like a human novelist - gritty, specific, varied rhythm. "
+            "NEVER use AI-typical words: tapestry, beacon, delve, enigmatic, realm, embark, profound, unveil, vibrant, intricate, nuanced, pivotal, multifaceted, unravel, shrouded, intertwined, ethereal, celestial, palpable, culmination. "
+            "Vary sentence length aggressively. Use concrete details, not abstractions. Reply with strict JSON only."
+        )
     elif lang == "ru":
         sys_msg = "Ты - эксперт по глубоким персонажам для ролевых чатов. Отвечай строго JSON."
     else:
