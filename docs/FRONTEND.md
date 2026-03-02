@@ -22,7 +22,7 @@
 
 ## Pages
 
-- **`pages/`** — Home (tag filters, gender filter pills, featured character, ContinueAdventure CTA), Chat (+ new chat button), CharacterPage (online dot, report, vote, highlights, connections; export/fork admin-only), CreateCharacter (manual + story + SillyTavern import), EditCharacter, Auth (+ Google OAuth), OAuthCallbackPage, Profile (stats grid, XP bar, achievements), LeaderboardPage (sort by level/messages/adventures), CampaignsPage, CampaignDetailPage, AdminPromptsPage, AdminUsersPage, AdminReportsPage, AboutPage (10 feature cards incl. "Character Depth"), TermsPage, PrivacyPage, FAQPage (12 Q&A incl. character depth, JSON-LD).
+- **`pages/`** — Home (tag filters, gender filter pills, featured character, ContinueAdventure CTA), Chat (+ new chat button), CharacterPage (online dot, report, vote, highlights, connections, companion avatar badge + lightbox; export/fork admin-only), CreateCharacter (manual + story + SillyTavern import), EditCharacter, Auth (+ Google OAuth), OAuthCallbackPage, Profile (stats grid, XP bar, achievements), LeaderboardPage (sort by level/messages/adventures), CampaignsPage, CampaignDetailPage, AdminPromptsPage, AdminUsersPage, AdminReportsPage, AboutPage (10 feature cards incl. "Character Depth"), TermsPage, PrivacyPage, FAQPage (12 Q&A incl. character depth, JSON-LD).
 
 ## Components
 
@@ -37,9 +37,10 @@
 - **`components/chat/ChatWindow.tsx`** — Message list with infinite scroll (loads older messages on scroll-to-top, preserves scroll position). Persistent regenerate button below last assistant message. Streaming scroll uses `requestAnimationFrame`-batched instant `scrollTop` (not `scrollIntoView`) to prevent jank.
 
 ### Characters
-- **`components/characters/CharacterForm.tsx`** — Full character form with appearance, speech_pattern, backstory, hidden_layers, inner_conflict, structured tag pills (fetched from API, grouped by category), `{{char}}`/`{{user}}` hint in example dialogues placeholder, hint props on greeting/example dialogues Textareas, and estimated token budget display (~N tokens, amber >2000, red >3000). Character depth fields (backstory, hidden_layers, inner_conflict) appear after speech_pattern, before scenario. Admin-only fields: preferred_model, max_tokens slider, system_prompt_suffix. Response length dropdown visible to all users.
+- **`components/characters/CharacterForm.tsx`** — Full character form with appearance, speech_pattern, backstory, hidden_layers, inner_conflict, structured tag pills (fetched from API, grouped by category), `{{char}}`/`{{user}}` hint in example dialogues placeholder, hint props on greeting/example dialogues Textareas, and estimated token budget display (~N tokens, amber >2000, red >3000). Character depth fields (backstory, hidden_layers, inner_conflict) appear after speech_pattern, before scenario. Admin-only fields: preferred_model, max_tokens slider, system_prompt_suffix. Response length dropdown visible to all users. Companion NPC section: optional toggle, name/role/personality/appearance fields. When companion enabled and name entered, shows `AvatarUpload` for companion avatar (same upload + AI generation as main avatar). Disabling companion sends `null` for all 5 companion fields.
 - **`components/characters/ReportModal.tsx`** — Modal with 5 radio button reasons + details textarea. Handles duplicate report (409).
 
 ### UI
+- **`components/ui/Avatar.tsx`** — Avatar component with `getThumbUrl()` (exported) for deriving thumbnail URLs (`_thumb.webp`). Used by CharacterCard companion badge.
 - **`components/ui/CookieConsent.tsx`** — Cookie consent banner (bottom, localStorage `cookie-consent`, link to Privacy Policy).
 - **`components/ui/Skeleton.tsx`** — Pulse animation skeleton helper for loading states.
