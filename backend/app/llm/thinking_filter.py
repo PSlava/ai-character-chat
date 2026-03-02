@@ -21,16 +21,28 @@ def has_foreign_chars(text: str) -> bool:
 
 
 _LATIN_WORDS_RE = re.compile(r'\b[a-zA-Z]{3,}\b')
-_ALLOWED_LATIN = {'ok', 'lol', 'vip', 'sms', 'wifi', 'url', 'http', 'https', 'www', 'nsfw', 'sfw'}
+_ALLOWED_LATIN = {
+    # Common abbreviations
+    'ok', 'lol', 'vip', 'sms', 'wifi', 'url', 'http', 'https', 'www', 'nsfw', 'sfw',
+    # Tech loanwords used internationally
+    'online', 'offline', 'email', 'web', 'app', 'blog', 'chat', 'video',
+    'smartphone', 'laptop', 'internet', 'computer',
+    # Common international words
+    'bar', 'cafe', 'hotel', 'taxi', 'bus', 'metro', 'club', 'pub',
+    'pizza', 'cocktail', 'menu', 'jeans', 'style',
+    # RP/chat context
+    'roleplay', 'ooc',
+}
 
 
 def has_mixed_languages(text: str, target_lang: str = "ru") -> bool:
     """Detect English words mixed into non-English text (model language bleed).
 
-    Only checks when target language is Russian or Spanish.
-    Returns False for English target (mixing is expected).
+    Only works for Cyrillic-script languages (Russian) where Latin words
+    are clearly foreign. Latin-script languages (en/es/fr/de/pt/it) can't
+    be distinguished from English by character set alone.
     """
-    if target_lang == "en":
+    if target_lang != "ru":
         return False
     latin_words = _LATIN_WORDS_RE.findall(text)
     if not latin_words:

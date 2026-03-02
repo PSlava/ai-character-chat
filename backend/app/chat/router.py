@@ -21,6 +21,7 @@ from app.chat.summarizer import maybe_summarize
 import re as _re
 import asyncio as _asyncio
 from app.llm import model_cooldown as _model_cooldown
+from app.llm.thinking_filter import has_mixed_languages as _has_mixed_langs
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
 
@@ -919,8 +920,11 @@ async def send_message(
                             buffered.append(chunk)
                             buf_text = "".join(buffered)
                             if len(buf_text) >= 200:
-                                # Check buffered text for refusal
+                                # Check buffered text for refusal or language bleed
                                 if _is_refusal_response(buf_text):
+                                    is_refusal = True
+                                    break
+                                if _has_mixed_langs(buf_text, language):
                                     is_refusal = True
                                     break
                                 # Flush buffer
@@ -932,15 +936,15 @@ async def send_message(
 
                     if is_refusal:
                         actual_m = getattr(prov, 'last_model_used', '') or ''
-                        errors.append(f"{pname}:{actual_m}: content refusal")
+                        errors.append(f"{pname}:{actual_m}: content refusal or language bleed")
                         continue
 
                     # Check short responses that finished before buffer flush
                     complete_text = "".join(full_response)
                     if not buffer_flushed:
-                        if _is_refusal_response(complete_text):
+                        if _is_refusal_response(complete_text) or _has_mixed_langs(complete_text, language):
                             actual_m = getattr(prov, 'last_model_used', '') or ''
-                            errors.append(f"{pname}:{actual_m}: content refusal")
+                            errors.append(f"{pname}:{actual_m}: content refusal or language bleed")
                             continue
                         # Flush remaining buffer
                         for b in buffered:
@@ -1021,7 +1025,7 @@ async def send_message(
                         buffered.append(chunk)
                         buf_text = "".join(buffered)
                         if len(buf_text) >= 200:
-                            if _is_refusal_response(buf_text):
+                            if _is_refusal_response(buf_text) or _has_mixed_langs(buf_text, language):
                                 is_refusal = True
                                 break
                             for b in buffered:
@@ -1032,7 +1036,7 @@ async def send_message(
 
                 complete_text = "".join(full_response)
                 if not buffer_flushed and not is_refusal:
-                    if _is_refusal_response(complete_text):
+                    if _is_refusal_response(complete_text) or _has_mixed_langs(complete_text, language):
                         is_refusal = True
 
                 if is_refusal:
@@ -1054,7 +1058,7 @@ async def send_message(
                                 fb_response.append(chunk)
                                 yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
                             fb_text = "".join(fb_response)
-                            if _is_refusal_response(fb_text):
+                            if _is_refusal_response(fb_text) or _has_mixed_langs(fb_text, language):
                                 continue
                             actual_model = f"{fb_name}:{getattr(fb_prov, 'last_model_used', '') or ''}"
                             est_prompt = _estimate_prompt_tokens(messages)
