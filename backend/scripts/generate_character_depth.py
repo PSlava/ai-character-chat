@@ -44,13 +44,13 @@ _DEPTH_PROMPT = """На основе описания персонажа, соз
 
 Верни JSON:
 {{
-  "backstory": "3-5 предложений. (1) ОДНО конкретное событие из прошлого (Ghost) - НЕ эпическая трагедия, а тихое предательство, потеря, ошибка. Назови дату, место, имя. (2) Эмоциональная рана (Wound) - как это влияет на поведение СЕЙЧАС, через конкретные действия. (3) Ложное убеждение (Lie) - защитная реакция одним предложением. (4) Секрет - что персонаж скрывает от всех.",
+  "backstory": "3-5 предложений. (1) ОДНО конкретное событие из прошлого (Ghost) - НЕ эпическая трагедия, а тихое предательство, потеря, ошибка. Покажи через сенсорную деталь (запах, звук, предмет). (2) Эмоциональная рана (Wound) - как это влияет на поведение СЕЙЧАС, через привычку или жест. (3) Ложное убеждение (Lie) - защитная реакция одним предложением. (4) Секрет - что персонаж скрывает от всех.",
   "hidden_layers": "Level 1: [поведение с незнакомцем - конкретная маска, защитный жест, первая фраза] Level 2: [~10 сообщений - делится конкретными мнениями, проскальзывают намеки на прошлое через оговорки] Level 3: [~20 сообщений - раскрывает рану через конкретное действие или признание] Level 4: [30+ сообщений - главный секрет, момент когда Ложь ломается, конкретная сцена]",
   "inner_conflict": "ХОЧЕТ: [конкретная внешняя цель с деталями] vs НУЖДАЕТСЯ: [внутренний рост]. Они КОНФЛИКТУЮТ."
 }}
 
 ПРАВИЛА:
-- backstory: конкретика. "Мать ушла в ноябре, когда ей было семь - забрала только кота" лучше чем "тяжелое детство"
+- backstory: конкретика через детали, НЕ через даты и города. "Мать ушла когда ей было семь - забрала только кота" лучше чем "тяжелое детство". НЕ ПИШИ реальные даты (2012, 2015) и города (Лондон, Глазго) - вместо них сенсорные якоря (запах, звук, предмет, привычка)
 - hidden_layers: формат СТРОГО "Level 1: текст Level 2: текст Level 3: текст Level 4: текст"
 - inner_conflict: ХОЧЕТ и НУЖДАЕТСЯ должны ПРОТИВОРЕЧИТЬ друг другу
 - Соответствуй характеру и тону персонажа
@@ -75,13 +75,13 @@ Scenario: {scenario}
 
 Return JSON:
 {{
-  "backstory": "3-5 sentences. (1) ONE specific past event (Ghost) - NOT an epic tragedy. A quiet betrayal, loss, or mistake. Name a date, place, person. (2) Emotional wound (Wound) - how it affects behavior NOW through concrete actions. (3) False belief (Lie) - defensive reaction, one sentence. (4) Secret - what they hide from everyone.",
+  "backstory": "3-5 sentences. (1) ONE specific past event (Ghost) - NOT an epic tragedy. A quiet betrayal, loss, or mistake. Show through a sensory detail (smell, sound, object). (2) Emotional wound (Wound) - how it affects behavior NOW through a habit or gesture. (3) False belief (Lie) - defensive reaction, one sentence. (4) Secret - what they hide from everyone.",
   "hidden_layers": "Level 1: [stranger behavior - specific mask, defensive gesture, opening line] Level 2: [~10 messages - shares concrete opinions, past slips through in specific phrases] Level 3: [~20 messages - reveals wound through a specific action or confession] Level 4: [30+ messages - main secret, the moment the Lie breaks, a concrete scene]",
   "inner_conflict": "WANTS: [specific external goal with details] vs NEEDS: [internal growth]. They must CONFLICT."
 }}
 
 RULES:
-- backstory: concrete. "Mother left in November when she was seven - took only the cat" beats "difficult childhood"
+- backstory: concrete through details, NOT through dates and cities. "Mother left when she was seven - took only the cat" beats "difficult childhood". Do NOT write real dates (2012, 2015) or cities (London, Glasgow) - use sensory anchors instead (smell, sound, object, habit)
 - hidden_layers: format STRICTLY "Level 1: text Level 2: text Level 3: text Level 4: text"
 - inner_conflict: WANTS and NEEDS must CONTRADICT each other
 - Match the character's personality and tone
@@ -106,13 +106,13 @@ Scenario: {scenario}
 
 Return JSON:
 {{
-  "backstory": "3-5 sentences of WORLD HISTORY. Hidden truths, NPC secrets, lore discovered over time. NOT character backstory - world-building only. Be CONCRETE: names, dates, places, specific events. Vary sentence length wildly - mix 5-word punches with 30-word complex sentences.",
+  "backstory": "3-5 sentences of WORLD HISTORY. Hidden truths, NPC secrets, lore discovered over time. NOT character backstory - world-building only. Be CONCRETE: NPC names, fictional places, specific events with sensory anchors. Vary sentence length wildly - mix 5-word punches with 30-word complex sentences.",
   "hidden_layers": "Phase 1: [specific opening events and hooks] Phase 2: [specific complications and betrayals] Phase 3: [specific climactic confrontations] Phase 4: [specific consequences and transformations]",
   "inner_conflict": "A single raw sentence. Two concrete options that collide. Example format: 'Burning the ledger protects the family but lets the cartel walk free vs handing it to police saves the city but destroys everyone she loves'"
 }}
 
 RULES:
-- backstory: world lore only. Name a specific person, place, date, or event in every sentence. "The Thornwood pact of 1347 bound three houses to silence" not "ancient forces shaped the land"
+- backstory: world lore only. Name a specific NPC, fictional place, or event in every sentence. "The Thornwood pact bound three houses to silence after the well ran red" not "ancient forces shaped the land"
 - hidden_layers: STRICTLY "Phase 1: text Phase 2: text Phase 3: text Phase 4: text". Each phase describes CONCRETE plot events unique to THIS story. No generic placeholders
 - inner_conflict: raw dilemma, one sentence. NEVER start with "The reader must choose" or "CENTRAL DILEMMA:" - just state the tension directly
 - Vary sentence length: short punches (3-6 words) mixed with longer ones. Three sentences of similar length in a row = fail
@@ -136,7 +136,7 @@ Scenario: {scenario}
 
 Return JSON:
 {{
-  "backstory": "3-5 sentences of CAMPAIGN LORE. The BBEG's true motivation, faction secrets, hidden alliances. Be CONCRETE: name every person, place, event. Vary sentence length - short punches mixed with complex ones.",
+  "backstory": "3-5 sentences of CAMPAIGN LORE. The BBEG's true motivation, faction secrets, hidden alliances. Be CONCRETE: NPC names, fictional locations, specific events with sensory anchors. Vary sentence length - short punches mixed with complex ones.",
   "hidden_layers": "Phase 1: [specific encounters and discoveries] Phase 2: [specific betrayals and reveals] Phase 3: [specific confrontations and sacrifices] Phase 4: [specific endgame conditions and consequences]",
   "inner_conflict": "A single raw sentence. Two concrete options from THIS campaign that collide. Example: 'Sparing the necromancer means saving the enslaved dead but dooms the valley to eternal winter vs destroying him frees the land but kills every revenant including the paladin's daughter'"
 }}
@@ -209,6 +209,7 @@ async def _generate_depth(name: str, personality: str, appearance: str, scenario
             "Пиши как человек - рвано, конкретно, с перепадами ритма. "
             "ЗАПРЕЩЕНО: пронизан, гобелен, многогранный, неотъемлемый, является, представляет собой, величественный, утонченный, "
             "пленительный, завораживающий, непередаваемый, сокровенный, таинственный, роковой, судьбоносный. "
+            "НЕ пиши реальные даты (2012, 2015) и города (Лондон, Глазго, Нью-Йорк). Вместо них - сенсорные детали (запах, звук, предмет). "
             "Чередуй короткие предложения (3-6 слов) с длинными. Покажи через действие, не рассказывай. "
             "Отвечай строго JSON."
         )
@@ -218,6 +219,7 @@ async def _generate_depth(name: str, personality: str, appearance: str, scenario
             "Write like a human - rough, specific, varied rhythm. "
             "BANNED words: tapestry, beacon, delve, enigmatic, realm, embark, testament, myriad, pivotal, captivating, "
             "resonate, profound, unveil, vibrant, intricate, nuanced, multifaceted, ethereal, palpable, luminous. "
+            "Do NOT write real-world dates (2012, 2015) or cities (London, Glasgow, New York). Use sensory details instead (smell, sound, object). "
             "Alternate short sentences (3-6 words) with longer ones. Show through action, don't tell. "
             "Reply with strict JSON."
         )
