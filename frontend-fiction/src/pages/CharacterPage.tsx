@@ -335,18 +335,16 @@ export function CharacterPage() {
             </button>
           </div>
         )}
-        {character.is_public && (
+        {isAdmin && character.is_public && !isOwner && (
           <div className="flex gap-2">
-            {isAuthenticated && !isOwner && (
-              <button
-                onClick={handleFork}
-                disabled={forking}
-                className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-purple-400 transition-colors"
-                title={t('character.fork')}
-              >
-                <GitFork className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={handleFork}
+              disabled={forking}
+              className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-purple-400 transition-colors"
+              title={t('character.fork')}
+            >
+              <GitFork className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>

@@ -315,8 +315,11 @@ async def get_similar(
 @router.get("/{character_id}/export")
 async def export_character(
     character_id: str,
+    user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Export is admin-only")
     result = await db.execute(select(Character).where(Character.id == character_id, Character.is_public == True))
     character = result.scalar_one_or_none()
     if not character:
@@ -381,7 +384,9 @@ async def fork_character(
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Fork a public character into a private draft."""
+    """Fork a public character into a private draft (admin-only)."""
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Fork is admin-only")
     from sqlalchemy.orm import selectinload
     result = await db.execute(
         select(Character).where(Character.id == character_id).options(selectinload(Character.creator))

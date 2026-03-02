@@ -335,9 +335,9 @@ export function CharacterPage() {
             </button>
           </div>
         )}
-        {character.is_public && (
+        {isAdmin && character.is_public && (
           <div className="flex gap-2">
-            {isAuthenticated && !isOwner && (
+            {!isOwner && (
               <button
                 onClick={handleFork}
                 disabled={forking}
