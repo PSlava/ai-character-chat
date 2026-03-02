@@ -246,6 +246,7 @@
   "form.companionAppearance": "Aspetto",
   "form.companionAppearancePlaceholder": "Dettagli visivi chiave: specie, taglia, colore, tratti distintivi...",
   "form.companionAppearanceHint": "1-2 frasi. Solo i tratti piu riconoscibili.",
+  "form.companionAvatarHint": "Avatar del compagno",
   "form.scenario": "Scenario / Mondo",
   "form.scenarioPlaceholder": "Descrizione della situazione, del mondo e del contesto di interazione...",
   "form.greeting": "Messaggio di saluto *",

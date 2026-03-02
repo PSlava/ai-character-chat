@@ -27,7 +27,7 @@ function Fallback({ name, size = 'md' }: { name: string; size?: string }) {
 }
 
 /** Derive thumbnail URL from full avatar URL (convention: _thumb before .webp) */
-function getThumbUrl(url: string): string {
+export function getThumbUrl(url: string): string {
   if (url.includes('/api/uploads/') && url.endsWith('.webp')) {
     return url.replace('.webp', '_thumb.webp');
   }

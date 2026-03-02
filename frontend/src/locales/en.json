@@ -246,6 +246,7 @@
   "form.companionAppearance": "Appearance",
   "form.companionAppearancePlaceholder": "Key visual details: species, size, coloring, distinctive features...",
   "form.companionAppearanceHint": "1-2 sentences. Only the most recognizable features.",
+  "form.companionAvatarHint": "Companion avatar",
   "form.scenario": "Scenario / World",
   "form.scenarioPlaceholder": "Description of the situation, world, and interaction context...",
   "form.greeting": "Greeting message *",

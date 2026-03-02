@@ -236,6 +236,7 @@
   "form.companionAppearance": "Appearance",
   "form.companionAppearancePlaceholder": "Key visual details: species, build, distinctive features, clothing...",
   "form.companionAppearanceHint": "1-2 sentences. Only the most memorable traits.",
+  "form.companionAvatarHint": "Companion avatar",
   "form.scenario": "Opening Situation",
   "form.scenarioPlaceholder": "Where does the story begin? What is the reader's situation?",
   "form.greeting": "Opening scene *",

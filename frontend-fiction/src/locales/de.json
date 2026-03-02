@@ -248,6 +248,7 @@
   "form.companionAppearance": "Aussehen",
   "form.companionAppearancePlaceholder": "Wichtige visuelle Details: Art, Statur, markante Merkmale, Kleidung...",
   "form.companionAppearanceHint": "1-2 Saetze. Nur die einpraegsemsten Merkmale.",
+  "form.companionAvatarHint": "Begleiter-Avatar",
   "form.scenario": "Ausgangssituation",
   "form.scenarioPlaceholder": "Wo beginnt die Geschichte? Was ist die Situation des Lesers?",
   "form.greeting": "Eröffnungsszene *",

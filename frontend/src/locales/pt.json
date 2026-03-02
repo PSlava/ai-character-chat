@@ -246,6 +246,7 @@
   "form.companionAppearance": "Aparencia",
   "form.companionAppearancePlaceholder": "Detalhes visuais chave: especie, tamanho, cor, tracos marcantes...",
   "form.companionAppearanceHint": "1-2 frases. Apenas os tracos mais reconheciveis.",
+  "form.companionAvatarHint": "Avatar do companheiro",
   "form.scenario": "Cenário / Mundo",
   "form.scenarioPlaceholder": "Descrição da situação, mundo e contexto de interação...",
   "form.greeting": "Mensagem de saudação *",

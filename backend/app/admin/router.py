@@ -290,6 +290,7 @@ async def import_seed_characters(
             companion_role=char_data.get("companion_role"),
             companion_personality=char_data.get("companion_personality"),
             companion_appearance=char_data.get("companion_appearance"),
+            companion_avatar_url=char_data.get("companion_avatar_url"),
             scenario=char_data.get("scenario"),
             greeting_message=char_data["greeting_message"],
             example_dialogues=char_data.get("example_dialogues"),

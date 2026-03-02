@@ -26,6 +26,7 @@ def character_to_dict(c: Character, language: str = None, is_admin: bool = False
         "companion_role": getattr(c, 'companion_role', None),
         "companion_personality": getattr(c, 'companion_personality', None),
         "companion_appearance": getattr(c, 'companion_appearance', None),
+        "companion_avatar_url": getattr(c, 'companion_avatar_url', None),
         "content_rating": c.content_rating.value if hasattr(c.content_rating, 'value') else (c.content_rating or "sfw"),
         "system_prompt_suffix": c.system_prompt_suffix,
         "tags": tr["tags"] if tr and "tags" in tr else ([t for t in c.tags.split(",") if t] if c.tags else []),

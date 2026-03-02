@@ -248,6 +248,7 @@
   "form.companionAppearance": "Apparence",
   "form.companionAppearancePlaceholder": "Details visuels cles : espece, carrure, traits distinctifs, vetements...",
   "form.companionAppearanceHint": "1-2 phrases. Seulement les traits les plus memorables.",
+  "form.companionAvatarHint": "Avatar du compagnon",
   "form.scenario": "Situation de départ",
   "form.scenarioPlaceholder": "Où commence l'histoire ? Quelle est la situation du lecteur ?",
   "form.greeting": "Scène d'ouverture *",

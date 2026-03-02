@@ -23,6 +23,7 @@ export interface Character {
   companion_role: string | null;
   companion_personality: string | null;
   companion_appearance: string | null;
+  companion_avatar_url: string | null;
   scenario: string | null;
   greeting_message: string;
   example_dialogues: string | null;

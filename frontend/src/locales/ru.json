@@ -246,6 +246,7 @@
   "form.companionAppearance": "Внешность",
   "form.companionAppearancePlaceholder": "Ключевые визуальные детали: вид, размер, окрас, особые приметы...",
   "form.companionAppearanceHint": "1-2 предложения. Только самые узнаваемые черты.",
+  "form.companionAvatarHint": "Аватар компаньона",
   "form.scenario": "Сценарий / Мир",
   "form.scenarioPlaceholder": "Описание ситуации, мира, контекста взаимодействия с пользователем...",
   "form.greeting": "Приветственное сообщение *",

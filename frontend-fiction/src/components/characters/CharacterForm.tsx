@@ -36,6 +36,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     companion_role: initial?.companion_role || '',
     companion_personality: str(initial?.companion_personality),
     companion_appearance: str(initial?.companion_appearance),
+    companion_avatar_url: initial?.companion_avatar_url || '',
     scenario: str(initial?.scenario),
     greeting_message: str(initial?.greeting_message),
     example_dialogues: str(initial?.example_dialogues),
@@ -107,6 +108,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         companion_role: companionEnabled ? (form.companion_role || undefined) : null,
         companion_personality: companionEnabled ? (form.companion_personality || undefined) : null,
         companion_appearance: companionEnabled ? (form.companion_appearance || undefined) : null,
+        companion_avatar_url: companionEnabled ? (form.companion_avatar_url || undefined) : null,
         scenario: form.scenario || undefined,
         greeting_message: form.greeting_message,
         example_dialogues: form.example_dialogues || undefined,
@@ -272,6 +274,19 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
               placeholder={t('form.companionNamePlaceholder')}
               maxLength={100}
             />
+
+            {form.companion_name && (
+              <div>
+                <label className="block text-sm text-neutral-400 mb-1">{t('form.companionAvatarHint')}</label>
+                <AvatarUpload
+                  currentUrl={form.companion_avatar_url || null}
+                  name={form.companion_name || '?'}
+                  onChange={(url) => setForm((prev) => ({ ...prev, companion_avatar_url: url }))}
+                  isAdmin={isAdmin}
+                  characterDescription={form.companion_appearance || form.companion_name || ''}
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm text-neutral-400 mb-1">

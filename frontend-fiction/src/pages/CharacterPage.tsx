@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useChatStore } from '@/store/chatStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { useVotesStore } from '@/store/votesStore';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar, getThumbUrl } from '@/components/ui/Avatar';
 import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -37,6 +37,7 @@ export function CharacterPage() {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [forceNewChat, setForceNewChat] = useState(false);
   const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
+  const [showCompanionLightbox, setShowCompanionLightbox] = useState(false);
   const [similar, setSimilar] = useState<Character[]>([]);
   const [relations, setRelations] = useState<CharacterRelation[]>([]);
 
@@ -243,6 +244,19 @@ export function CharacterPage() {
           >
             <Avatar src={character.avatar_url} name={character.name} size="lg" />
           </button>
+          {character.companion_avatar_url && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setShowCompanionLightbox(true); }}
+              className="absolute -bottom-1 -right-1 cursor-pointer"
+            >
+              <img
+                src={getThumbUrl(character.companion_avatar_url)}
+                alt={character.companion_name || ''}
+                className="w-9 h-9 rounded-full object-cover border-2 border-neutral-800"
+              />
+            </button>
+          )}
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{character.name}</h1>
@@ -513,6 +527,13 @@ export function CharacterPage() {
           src={character.avatar_url}
           alt={character.name}
           onClose={() => setShowAvatarLightbox(false)}
+        />
+      )}
+      {showCompanionLightbox && character?.companion_avatar_url && (
+        <ImageLightbox
+          src={character.companion_avatar_url}
+          alt={character.companion_name || character.name}
+          onClose={() => setShowCompanionLightbox(false)}
         />
       )}
       </div>

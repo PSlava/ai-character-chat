@@ -1,7 +1,7 @@
 import { useRef, memo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { Character } from '@/types';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar, getThumbUrl } from '@/components/ui/Avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { useVotesStore } from '@/store/votesStore';
@@ -58,8 +58,15 @@ export const CharacterCard = memo(function CharacterCard({ character }: Props) {
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
           <Avatar src={character.avatar_url} name={character.name} size="lg" />
+          {character.companion_avatar_url && (
+            <img
+              src={getThumbUrl(character.companion_avatar_url)}
+              alt={character.companion_name || ''}
+              className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full object-cover border-2 border-neutral-800"
+            />
+          )}
           {isCharacterOnline(character.id) && (
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-neutral-800" />
+            <span className={`absolute w-3 h-3 bg-green-500 rounded-full border-2 border-neutral-800 ${character.companion_avatar_url ? '-top-0.5 -right-0.5' : 'bottom-0 right-0'}`} />
           )}
         </div>
         <div className="flex-1 min-w-0">

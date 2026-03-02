@@ -9,7 +9,7 @@ _TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "spe
 _CHARACTER_ALLOWED_FIELDS = {
     "name", "tagline", "avatar_url", "personality", "appearance",
     "speech_pattern", "backstory", "hidden_layers", "inner_conflict",
-    "companion_name", "companion_role", "companion_personality", "companion_appearance",
+    "companion_name", "companion_role", "companion_personality", "companion_appearance", "companion_avatar_url",
     "scenario", "greeting_message", "example_dialogues",
     "content_rating", "system_prompt_suffix", "is_public", "preferred_model",
     "max_tokens", "response_length", "original_language",
@@ -17,7 +17,7 @@ _CHARACTER_ALLOWED_FIELDS = {
 
 # Fields that can be explicitly set to NULL (cleared) via update
 _NULLABLE_CLEARABLE_FIELDS = {
-    "companion_name", "companion_role", "companion_personality", "companion_appearance",
+    "companion_name", "companion_role", "companion_personality", "companion_appearance", "companion_avatar_url",
 }
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload

@@ -246,6 +246,7 @@
   "form.companionAppearance": "Aussehen",
   "form.companionAppearancePlaceholder": "Wichtige visuelle Details: Art, Groesse, Farbe, markante Merkmale...",
   "form.companionAppearanceHint": "1-2 Saetze. Nur die markantesten Merkmale.",
+  "form.companionAvatarHint": "Begleiter-Avatar",
   "form.scenario": "Szenario / Welt",
   "form.scenarioPlaceholder": "Beschreibung der Situation, Welt und des Interaktionskontexts...",
   "form.greeting": "Begrüßungsnachricht *",

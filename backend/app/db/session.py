@@ -126,6 +126,8 @@ async def init_db():
         "ALTER TABLE characters ADD COLUMN IF NOT EXISTS companion_role VARCHAR(50)",
         "ALTER TABLE characters ADD COLUMN IF NOT EXISTS companion_personality TEXT",
         "ALTER TABLE characters ADD COLUMN IF NOT EXISTS companion_appearance TEXT",
+        # Companion avatar
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS companion_avatar_url VARCHAR(2000)",
     ]
     for sql in migrations:
         try:

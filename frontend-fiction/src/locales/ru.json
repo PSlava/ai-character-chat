@@ -236,6 +236,7 @@
   "form.companionAppearance": "Внешность",
   "form.companionAppearancePlaceholder": "Ключевые визуальные детали: вид, телосложение, особые приметы, одежда...",
   "form.companionAppearanceHint": "1-2 предложения. Только самые запоминающиеся черты.",
+  "form.companionAvatarHint": "Аватар компаньона",
   "form.scenario": "Начальная ситуация",
   "form.scenarioPlaceholder": "Где начинается история? Какова ситуация читателя?",
   "form.greeting": "Начальная сцена *",

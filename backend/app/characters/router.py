@@ -417,6 +417,7 @@ async def fork_character(
         companion_role=getattr(original, 'companion_role', None),
         companion_personality=getattr(original, 'companion_personality', None),
         companion_appearance=getattr(original, 'companion_appearance', None),
+        companion_avatar_url=getattr(original, 'companion_avatar_url', None),
         scenario=original.scenario,
         greeting_message=original.greeting_message,
         example_dialogues=original.example_dialogues,
