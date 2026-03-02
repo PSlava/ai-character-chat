@@ -3,13 +3,21 @@ from sqlalchemy import select, func, text, case
 from app.utils.sanitize import strip_html_tags
 
 _TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "speech_pattern",
-                            "scenario", "greeting_message", "example_dialogues", "system_prompt_suffix"}
+                            "scenario", "greeting_message", "example_dialogues", "system_prompt_suffix",
+                            "companion_personality", "companion_appearance"}
 
 _CHARACTER_ALLOWED_FIELDS = {
     "name", "tagline", "avatar_url", "personality", "appearance",
-    "speech_pattern", "scenario", "greeting_message", "example_dialogues",
+    "speech_pattern", "backstory", "hidden_layers", "inner_conflict",
+    "companion_name", "companion_role", "companion_personality", "companion_appearance",
+    "scenario", "greeting_message", "example_dialogues",
     "content_rating", "system_prompt_suffix", "is_public", "preferred_model",
     "max_tokens", "response_length", "original_language",
+}
+
+# Fields that can be explicitly set to NULL (cleared) via update
+_NULLABLE_CLEARABLE_FIELDS = {
+    "companion_name", "companion_role", "companion_personality", "companion_appearance",
 }
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -279,8 +287,12 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
     tags = data.pop("tags", None)
     structured_tags = data.pop("structured_tags", None)
     for key, value in data.items():
-        if value is not None and key in _CHARACTER_ALLOWED_FIELDS:
+        if key not in _CHARACTER_ALLOWED_FIELDS:
+            continue
+        if value is not None:
             setattr(character, key, value)
+        elif key in _NULLABLE_CLEARABLE_FIELDS:
+            setattr(character, key, None)
     if tags is not None:
         character.tags = ",".join(tags) if isinstance(tags, list) else tags
     if structured_tags is not None:

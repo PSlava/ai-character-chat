@@ -799,6 +799,10 @@ async def build_conversation_messages(
         "backstory": getattr(character, 'backstory', None),
         "hidden_layers": getattr(character, 'hidden_layers', None),
         "inner_conflict": getattr(character, 'inner_conflict', None),
+        "companion_name": getattr(character, 'companion_name', None),
+        "companion_role": getattr(character, 'companion_role', None),
+        "companion_personality": getattr(character, 'companion_personality', None),
+        "companion_appearance": getattr(character, 'companion_appearance', None),
         "structured_tags": [t for t in (getattr(character, 'structured_tags', '') or '').split(",") if t],
         "tags": getattr(character, 'tags', '') or '',
     }
@@ -904,6 +908,33 @@ async def build_conversation_messages(
             content_rating=cr,
             hidden_layers=char_dict.get("hidden_layers") or "",
         ).format(name=character.name)
+    # Companion re-injection in post-history (prevents context rot)
+    comp_name = char_dict.get("companion_name")
+    if comp_name:
+        _COMP_ROLE_LABELS = {
+            "sidekick": {"ru": "помощник", "en": "sidekick", "es": "companero", "fr": "acolyte", "de": "Gehilfe", "pt": "ajudante", "it": "assistente"},
+            "rival": {"ru": "соперник", "en": "rival", "es": "rival", "fr": "rival", "de": "Rivale", "pt": "rival", "it": "rivale"},
+            "mentor": {"ru": "наставник", "en": "mentor", "es": "mentor", "fr": "mentor", "de": "Mentor", "pt": "mentor", "it": "mentore"},
+            "pet": {"ru": "питомец", "en": "pet", "es": "mascota", "fr": "animal", "de": "Haustier", "pt": "animal", "it": "animale"},
+            "lover": {"ru": "возлюбленный", "en": "lover", "es": "amante", "fr": "amant", "de": "Geliebter", "pt": "amante", "it": "amante"},
+            "family": {"ru": "родственник", "en": "family", "es": "familia", "fr": "famille", "de": "Familie", "pt": "familia", "it": "famiglia"},
+            "guide": {"ru": "проводник", "en": "guide", "es": "guia", "fr": "guide", "de": "Wegweiser", "pt": "guia", "it": "guida"},
+            "comic_relief": {"ru": "комик", "en": "comic relief", "es": "comico", "fr": "comique", "de": "Komiker", "pt": "comico", "it": "comico"},
+        }
+        _COMP_REMINDER = {
+            "ru": "{comp} ({role}) рядом. {main} — главный. Включай {comp} когда уместно, НЕ в каждом ответе.",
+            "en": "{comp} ({role}) is present. {main} is the lead. Include {comp} when relevant, NOT every response.",
+            "es": "{comp} ({role}) esta presente. {main} lidera. Incluye a {comp} cuando sea relevante, NO siempre.",
+            "fr": "{comp} ({role}) est present. {main} mene. Inclus {comp} quand pertinent, PAS a chaque reponse.",
+            "de": "{comp} ({role}) ist anwesend. {main} fuhrt. Erwahne {comp} wenn relevant, NICHT immer.",
+            "pt": "{comp} ({role}) esta presente. {main} lidera. Inclua {comp} quando relevante, NAO sempre.",
+            "it": "{comp} ({role}) e presente. {main} guida. Includi {comp} quando rilevante, NON sempre.",
+        }
+        comp_role = char_dict.get("companion_role") or "sidekick"
+        role_label = _COMP_ROLE_LABELS.get(comp_role, _COMP_ROLE_LABELS["sidekick"]).get(language, comp_role)
+        comp_reminder_tpl = _COMP_REMINDER.get(language, _COMP_REMINDER["en"])
+        reminder += "\n" + comp_reminder_tpl.format(comp=comp_name, role=role_label, main=character.name)
+
     all_messages = result_list + messages
 
     # Inject previous dice results for DnD chats (before post-history)

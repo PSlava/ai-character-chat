@@ -1244,6 +1244,43 @@ async def _build_tutor_prompt(
     return "\n".join(parts)
 
 
+def _build_companion_section(character: dict, char_name: str, lang: str) -> str | None:
+    """Build companion NPC prompt section. Returns None if no companion."""
+    comp_name = character.get("companion_name")
+    if not comp_name:
+        return None
+    _COMP_HEADER = {"ru": "## Компаньон: {comp}", "en": "## Companion: {comp}", "es": "## Companero: {comp}", "fr": "## Compagnon: {comp}", "de": "## Begleiter: {comp}", "pt": "## Companheiro: {comp}", "it": "## Compagno: {comp}"}
+    _COMP_ROLES = {
+        "sidekick": {"ru": "Помощник", "en": "Sidekick", "es": "Companero", "fr": "Acolyte", "de": "Gehilfe", "pt": "Ajudante", "it": "Assistente"},
+        "rival": {"ru": "Соперник", "en": "Rival", "es": "Rival", "fr": "Rival", "de": "Rivale", "pt": "Rival", "it": "Rivale"},
+        "mentor": {"ru": "Наставник", "en": "Mentor", "es": "Mentor", "fr": "Mentor", "de": "Mentor", "pt": "Mentor", "it": "Mentore"},
+        "pet": {"ru": "Питомец", "en": "Pet", "es": "Mascota", "fr": "Animal", "de": "Haustier", "pt": "Animal", "it": "Animale"},
+        "lover": {"ru": "Возлюбленный", "en": "Lover", "es": "Amante", "fr": "Amant", "de": "Geliebter", "pt": "Amante", "it": "Amante"},
+        "family": {"ru": "Родственник", "en": "Family", "es": "Familia", "fr": "Famille", "de": "Familie", "pt": "Familia", "it": "Famiglia"},
+        "guide": {"ru": "Проводник", "en": "Guide", "es": "Guia", "fr": "Guide", "de": "Wegweiser", "pt": "Guia", "it": "Guida"},
+        "comic_relief": {"ru": "Комик", "en": "Comic Relief", "es": "Comico", "fr": "Comique", "de": "Komiker", "pt": "Comico", "it": "Comico"},
+    }
+    _COMP_RULES = {
+        "ru": "ТЫ — {main}. {comp} — ОТДЕЛЬНАЯ личность с ДРУГИМ голосом, лексикой и ритмом речи. 80% внимания на {main}, 20% на {comp}. {comp} НЕ перехватывает инициативу. Включай {comp} когда уместно, НЕ в каждом ответе.",
+        "en": "YOU are {main}. {comp} is a SEPARATE person with DIFFERENT voice, vocabulary, and speech rhythm. 80% focus on {main}, 20% on {comp}. {comp} NEVER takes over. Include {comp} when relevant, NOT every response.",
+        "es": "TU eres {main}. {comp} es una persona SEPARADA con voz, vocabulario y ritmo DIFERENTES. 80% en {main}, 20% en {comp}. {comp} NUNCA toma el control. Incluye a {comp} cuando sea relevante, NO en cada respuesta.",
+        "fr": "TU es {main}. {comp} est une personne SEPAREE avec une voix, un vocabulaire et un rythme DIFFERENTS. 80% sur {main}, 20% sur {comp}. {comp} ne prend JAMAIS le controle. Inclus {comp} quand pertinent, PAS a chaque reponse.",
+        "de": "DU bist {main}. {comp} ist eine SEPARATE Person mit ANDERER Stimme, Wortschatz und Sprechrhythmus. 80% Fokus auf {main}, 20% auf {comp}. {comp} ubernimmt NIE. Erwahne {comp} wenn relevant, NICHT bei jeder Antwort.",
+        "pt": "VOCE e {main}. {comp} e uma pessoa SEPARADA com voz, vocabulario e ritmo DIFERENTES. 80% em {main}, 20% em {comp}. {comp} NUNCA assume o controle. Inclua {comp} quando relevante, NAO em toda resposta.",
+        "it": "TU sei {main}. {comp} e una persona SEPARATA con voce, vocabolario e ritmo DIVERSI. 80% su {main}, 20% su {comp}. {comp} NON prende MAI il controllo. Includi {comp} quando rilevante, NON in ogni risposta.",
+    }
+    comp_role = character.get("companion_role") or "sidekick"
+    role_label = _COMP_ROLES.get(comp_role, _COMP_ROLES["sidekick"]).get(lang, comp_role)
+    section = _COMP_HEADER.get(lang, _COMP_HEADER["en"]).format(comp=comp_name)
+    section += f"\nRole: {role_label}"
+    if character.get("companion_personality"):
+        section += f"\n{character['companion_personality']}"
+    if character.get("companion_appearance"):
+        section += f"\n{character['companion_appearance']}"
+    section += "\n" + _COMP_RULES.get(lang, _COMP_RULES["en"]).format(main=char_name, comp=comp_name)
+    return section
+
+
 async def _build_fiction_prompt(
     character: dict,
     user_name: str | None = None,
@@ -1304,6 +1341,10 @@ async def _build_fiction_prompt(
             "it": "## Dilemma centrale",
         }
         parts.append(f"\n{dilemma_header.get(lang, dilemma_header['en'])}\n{character['inner_conflict']}")
+
+    comp_section = _build_companion_section(character, char_name, lang)
+    if comp_section:
+        parts.append(f"\n{comp_section}")
 
     parts.append(f"\n{fp['storytelling_rules']}")
     parts.append(f"\n{fp['choices_rules']}")
@@ -1827,6 +1868,10 @@ async def _build_dnd_prompt(
         }
         parts.append(f"\n{stakes_header.get(lang, stakes_header['en'])}\n{character['inner_conflict']}")
 
+    comp_section = _build_companion_section(character, char_name, lang)
+    if comp_section:
+        parts.append(f"\n{comp_section}")
+
     parts.append(f"\n{dp['rules_summary']}")
     parts.append(f"\n{dp['gm_rules']}")
     parts.append(f"\n{dp['choices_rules']}")
@@ -1901,6 +1946,11 @@ async def build_system_prompt(
     if character.get("inner_conflict"):
         conflict_header = {"ru": "## Внутренний конфликт", "en": "## Inner Conflict", "es": "## Conflicto Interno", "fr": "## Conflit Intérieur", "de": "## Innerer Konflikt", "pt": "## Conflito Interno", "it": "## Conflitto Interiore"}
         parts.append(f"\n{conflict_header.get(lang, conflict_header['en'])}\n{tpl(character['inner_conflict'])}")
+
+    # Companion NPC section
+    comp_section = _build_companion_section(character, char_name, lang)
+    if comp_section:
+        parts.append(f"\n{comp_section}")
 
     if character.get("structured_tags"):
         from app.characters.structured_tags import get_snippets_for_ids

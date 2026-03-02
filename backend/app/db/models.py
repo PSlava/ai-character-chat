@@ -87,6 +87,10 @@ class Character(Base):
     backstory: Mapped[str | None] = mapped_column(Text, nullable=True)
     hidden_layers: Mapped[str | None] = mapped_column(Text, nullable=True)
     inner_conflict: Mapped[str | None] = mapped_column(Text, nullable=True)
+    companion_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    companion_role: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    companion_personality: Mapped[str | None] = mapped_column(Text, nullable=True)
+    companion_appearance: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_rating: Mapped[ContentRating] = mapped_column(
         SAEnum(ContentRating), default=ContentRating.sfw
     )
