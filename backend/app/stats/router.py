@@ -8,8 +8,12 @@ from app.config import settings
 
 router = APIRouter(prefix="/api/stats", tags=["stats"])
 
-BASE_USERS = 1200 if settings.is_nsfw_mode else 0
-BASE_MESSAGES = 45000 if settings.is_nsfw_mode else 0
+if settings.is_nsfw_mode:
+    BASE_USERS, BASE_MESSAGES = 1200, 45000
+elif settings.is_fiction_mode:
+    BASE_USERS, BASE_MESSAGES = 340, 8500
+else:
+    BASE_USERS, BASE_MESSAGES = 0, 0
 
 # System emails excluded from public stats
 _SYSTEM_EMAILS = ("system@sweetsin.cc", "system@fiction.local", "anonymous@system.local")

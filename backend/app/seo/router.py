@@ -1161,7 +1161,12 @@ async def rss_feed(db: AsyncSession = Depends(get_db)):
         else:
             tagline = _escape(tr["tagline"] if tr and "tagline" in tr else (c.tagline or ""))
             scenario_text = tr["scenario"] if tr and "scenario" in tr else (c.scenario or c.tagline or "")
-        desc = _escape(_truncate(scenario_text, 300))
+        # Enrich description: tagline + scenario for better RSS presentation
+        if tagline and scenario_text and tagline != scenario_text:
+            full_desc = f"{tagline}. {scenario_text}" if not tagline.endswith(".") else f"{tagline} {scenario_text}"
+        else:
+            full_desc = scenario_text
+        desc = _escape(_truncate(full_desc, 300))
         link = f"{SITE_URL}/en/c/{c.slug}"
         pub_date = c.created_at.strftime("%a, %d %b %Y %H:%M:%S +0000") if c.created_at else now
         avatar = ""
