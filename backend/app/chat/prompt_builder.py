@@ -1286,6 +1286,25 @@ async def _build_fiction_prompt(
         }
         parts.append(f"\n{setting_header.get(lang, setting_header['en'])}\n{character['appearance']}")
 
+    # Narrative depth: world history + central dilemma (fiction mode)
+    if character.get("backstory"):
+        lore_header = {
+            "ru": "## История мира", "en": "## World History",
+            "es": "## Historia del mundo", "fr": "## Histoire du monde",
+            "de": "## Weltgeschichte", "pt": "## Historia do mundo",
+            "it": "## Storia del mondo",
+        }
+        parts.append(f"\n{lore_header.get(lang, lore_header['en'])}\n{character['backstory']}")
+
+    if character.get("inner_conflict"):
+        dilemma_header = {
+            "ru": "## Центральная дилемма", "en": "## Central Dilemma",
+            "es": "## Dilema central", "fr": "## Dilemme central",
+            "de": "## Zentrales Dilemma", "pt": "## Dilema central",
+            "it": "## Dilemma centrale",
+        }
+        parts.append(f"\n{dilemma_header.get(lang, dilemma_header['en'])}\n{character['inner_conflict']}")
+
     parts.append(f"\n{fp['storytelling_rules']}")
     parts.append(f"\n{fp['choices_rules']}")
     parts.append(f"\n{fp['format_rules']}")
@@ -1788,6 +1807,25 @@ async def _build_dnd_prompt(
 
     if character.get("appearance"):
         parts.append(f"\n## World Details\n{character['appearance']}")
+
+    # Narrative depth: campaign lore + moral stakes (DnD mode)
+    if character.get("backstory"):
+        lore_header = {
+            "ru": "## Предыстория кампании", "en": "## Campaign Lore",
+            "es": "## Trasfondo de campana", "fr": "## Histoire de la campagne",
+            "de": "## Kampagnen-Hintergrund", "pt": "## Historia da campanha",
+            "it": "## Retroscena della campagna",
+        }
+        parts.append(f"\n{lore_header.get(lang, lore_header['en'])}\n{character['backstory']}")
+
+    if character.get("inner_conflict"):
+        stakes_header = {
+            "ru": "## Моральные ставки", "en": "## Moral Stakes",
+            "es": "## Dilemas morales", "fr": "## Enjeux moraux",
+            "de": "## Moralische Einsaetze", "pt": "## Dilemas morais",
+            "it": "## Posta in gioco morale",
+        }
+        parts.append(f"\n{stakes_header.get(lang, stakes_header['en'])}\n{character['inner_conflict']}")
 
     parts.append(f"\n{dp['rules_summary']}")
     parts.append(f"\n{dp['gm_rules']}")

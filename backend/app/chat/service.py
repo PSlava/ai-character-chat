@@ -154,6 +154,54 @@ def _format_dice_injection(dice_rolls: list[dict], language: str) -> str:
     return "\n".join(lines)
 
 
+# ── Plot phase injection for fiction/DnD post-history ──────────────
+def _inject_fiction_plot_phase(hidden_layers: str, message_count: int, lang: str, is_dnd: bool) -> str:
+    """Parse Phase/Level N: format and return localized plot phase reminder."""
+    import re as _re
+    phases = {}
+    for m in _re.finditer(r"(?:Phase|Level)\s*(\d)\s*:\s*(.+?)(?=(?:Phase|Level)\s*\d|$)", hidden_layers, _re.DOTALL | _re.IGNORECASE):
+        phases[int(m.group(1))] = m.group(2).strip()
+    if not phases:
+        return ""
+    # DnD uses same thresholds as RP; fiction uses tighter thresholds
+    if is_dnd:
+        if message_count >= 59:
+            current = 4
+        elif message_count >= 39:
+            current = 3
+        elif message_count >= 19:
+            current = 2
+        else:
+            current = 1
+    else:
+        if message_count >= 45:
+            current = 4
+        elif message_count >= 25:
+            current = 3
+        elif message_count >= 11:
+            current = 2
+        else:
+            current = 1
+    phase_text = None
+    for p in range(current, 0, -1):
+        if p in phases:
+            phase_text = phases[p]
+            break
+    if not phase_text:
+        return ""
+    headers = {
+        "ru": "\nТЕКУЩАЯ фаза сюжета (фаза {n}): {text}. Направляй повествование соответственно.",
+        "en": "\nCURRENT plot phase (phase {n}): {text}. Guide the narrative accordingly.",
+        "es": "\nFASE ACTUAL de la trama (fase {n}): {text}. Guia la narrativa en consecuencia.",
+        "fr": "\nPHASE ACTUELLE de l'intrigue (phase {n}): {text}. Guide le recit en consequence.",
+        "de": "\nAKTUELLE Handlungsphase (Phase {n}): {text}. Lenke die Erzaehlung entsprechend.",
+        "pt": "\nFASE ATUAL da trama (fase {n}): {text}. Guie a narrativa de acordo.",
+        "it": "\nFASE ATTUALE della trama (fase {n}): {text}. Guida la narrazione di conseguenza.",
+    }
+    tpl = headers.get(lang, headers["en"])
+    return tpl.format(n=current, text=phase_text)
+
+
 _TUTOR_POST_HISTORY = {
     "en": "[Continue as {name}. If the user made language errors, gently correct 1-2 of them. Introduce a new word or phrase naturally. Keep it conversational.]",
     "ru": "[\u041f\u0440\u043e\u0434\u043e\u043b\u0436\u0430\u0439 \u043a\u0430\u043a {name}. \u0415\u0441\u043b\u0438 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c \u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043b \u043e\u0448\u0438\u0431\u043a\u0438, \u043c\u044f\u0433\u043a\u043e \u0438\u0441\u043f\u0440\u0430\u0432\u044c 1-2. \u0412\u0432\u0435\u0434\u0438 \u043d\u043e\u0432\u043e\u0435 \u0441\u043b\u043e\u0432\u043e \u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d\u043d\u043e. \u0413\u043e\u0432\u043e\u0440\u0438 \u0440\u0430\u0437\u0433\u043e\u0432\u043e\u0440\u043d\u043e.]",
@@ -844,6 +892,10 @@ async def build_conversation_messages(
     if post_history_dict is not None:
         lang = language if language in post_history_dict else "en"
         reminder = post_history_dict[lang].format(name=character.name)
+        # Inject plot phase for fiction/DnD (hidden_layers = plot phases)
+        hl = char_dict.get("hidden_layers") or ""
+        if hl and site_mode == "fiction":
+            reminder += _inject_fiction_plot_phase(hl, msg_count, lang, is_dnd=is_dnd)
     else:
         cr = char_dict.get("content_rating", "sfw")
         reminder = _get_post_history(

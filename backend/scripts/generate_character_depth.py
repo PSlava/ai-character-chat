@@ -81,6 +81,52 @@ RULES:
 - Write in natural language without AI cliches
 - Return ONLY JSON"""
 
+_FICTION_DEPTH_PROMPT = """Based on this interactive fiction adventure, create three narrative depth fields. Reply with strict JSON.
+
+Adventure: {name}
+Setting: {personality}
+Visual Details: {appearance}
+Scenario: {scenario}
+
+Return JSON:
+{{
+  "backstory": "3-5 sentences of WORLD HISTORY. Hidden truths about this world, NPC secrets, lore the reader discovers over time. NOT character backstory - this is world-building.",
+  "hidden_layers": "Phase 1: [setup - introduce the world, establish tone, first mystery or hook] Phase 2: [complications - new threats emerge, allies may betray, stakes rise] Phase 3: [climax - the central conflict reaches its peak, hard choices] Phase 4: [resolution - consequences unfold, world is changed forever]",
+  "inner_conflict": "CENTRAL DILEMMA: [an impossible moral choice the reader must face]. Two valid but incompatible values collide."
+}}
+
+RULES:
+- backstory: world lore, NOT character biography. Hidden truths, faction secrets, ancient history
+- hidden_layers: format STRICTLY "Phase 1: text Phase 2: text Phase 3: text Phase 4: text"
+- inner_conflict: a DILEMMA with no easy answer, not a character's internal struggle
+- Match the adventure's genre, tone, and setting
+- Do NOT use em-dashes, only regular hyphens
+- Write in vivid, evocative language
+- Return ONLY JSON"""
+
+_DND_DEPTH_PROMPT = """Based on this D&D campaign, create three narrative depth fields. Reply with strict JSON.
+
+Campaign: {name}
+Setting: {personality}
+World Details: {appearance}
+Scenario: {scenario}
+
+Return JSON:
+{{
+  "backstory": "3-5 sentences of CAMPAIGN LORE. The BBEG's true motivation, faction secrets, ancient prophecies, hidden alliances. What the players don't know yet.",
+  "hidden_layers": "Phase 1: [exploration - players learn the world, meet NPCs, first quest hooks] Phase 2: [escalation - BBEG's influence grows, allies tested, betrayals possible] Phase 3: [crisis - direct confrontation looms, sacrifices required, alliances fracture] Phase 4: [endgame - final battle, world-changing consequences, heroic or tragic conclusion]",
+  "inner_conflict": "MORAL STAKES: [the campaign's central ethical question]. What must be sacrificed for victory? Is the 'right' choice truly right?"
+}}
+
+RULES:
+- backstory: campaign lore and secrets, NOT player character history
+- hidden_layers: format STRICTLY "Phase 1: text Phase 2: text Phase 3: text Phase 4: text"
+- inner_conflict: the campaign's moral question, not a single NPC's feelings
+- Match the campaign's genre, tone, and setting (dark fantasy, high adventure, etc.)
+- Do NOT use em-dashes, only regular hyphens
+- Write in vivid, evocative language
+- Return ONLY JSON"""
+
 
 async def _call_llm(messages: list[LLMMessage], config: LLMConfig, label: str = "") -> str | None:
     for provider_name in _PROVIDER_ORDER:
@@ -103,20 +149,31 @@ async def _call_llm(messages: list[LLMMessage], config: LLMConfig, label: str = 
     return None
 
 
-async def _generate_depth(name: str, personality: str, appearance: str, scenario: str, lang: str = "ru") -> dict | None:
-    """Generate backstory, hidden_layers, inner_conflict for a character."""
-    prompt_tpl = _DEPTH_PROMPT if lang == "ru" else _DEPTH_PROMPT_EN
+async def _generate_depth(name: str, personality: str, appearance: str, scenario: str, lang: str = "ru", mode: str = "rp") -> dict | None:
+    """Generate backstory, hidden_layers, inner_conflict for a character.
+
+    mode: 'rp' (SweetSin), 'fiction' (GrimQuill IF), 'dnd' (GrimQuill DnD)
+    """
+    if mode == "fiction":
+        prompt_tpl = _FICTION_DEPTH_PROMPT
+    elif mode == "dnd":
+        prompt_tpl = _DND_DEPTH_PROMPT
+    elif lang == "ru":
+        prompt_tpl = _DEPTH_PROMPT
+    else:
+        prompt_tpl = _DEPTH_PROMPT_EN
     prompt = prompt_tpl.format(
         name=name,
         personality=personality[:1500],
         appearance=(appearance or "")[:500],
         scenario=(scenario or "")[:500],
     )
-    sys_msg = (
-        "Ты - эксперт по глубоким персонажам для ролевых чатов. Отвечай строго JSON."
-        if lang == "ru" else
-        "You are an expert at creating deep characters for roleplay chats. Reply with strict JSON."
-    )
+    if mode in ("fiction", "dnd"):
+        sys_msg = "You are an expert narrative designer for interactive fiction and tabletop RPGs. Reply with strict JSON."
+    elif lang == "ru":
+        sys_msg = "Ты - эксперт по глубоким персонажам для ролевых чатов. Отвечай строго JSON."
+    else:
+        sys_msg = "You are an expert at creating deep characters for roleplay chats. Reply with strict JSON."
     messages = [
         LLMMessage(role="system", content=sys_msg),
         LLMMessage(role="user", content=prompt),
@@ -200,7 +257,7 @@ async def main():
     async with db_engine.connect() as conn:
         result = await conn.execute(text(f"""
             SELECT c.id, c.name, c.personality, c.appearance, c.scenario, c.original_language,
-                   c.backstory, c.hidden_layers, c.inner_conflict
+                   c.backstory, c.hidden_layers, c.inner_conflict, c.tags
             FROM characters c
             JOIN users u ON c.creator_id = u.id
             WHERE {where_sql}
@@ -215,14 +272,21 @@ async def main():
     failed = 0
 
     for char in characters:
-        char_id, name, personality, appearance, scenario, orig_lang, existing_bs, existing_hl, existing_ic = char
+        char_id, name, personality, appearance, scenario, orig_lang, existing_bs, existing_hl, existing_ic, tags_str = char
 
         # Skip if all fields already filled (unless --force)
         if not force and existing_bs and existing_hl and existing_ic:
             skipped += 1
             continue
 
-        logger.info("\n=== %s (id=%s, lang=%s) ===", name, char_id[:8], orig_lang)
+        # Detect mode from tags and owner
+        tag_list = [t.strip().lower() for t in (tags_str or "").split(",") if t.strip()]
+        if fiction_only or "dnd" in tag_list:
+            mode = "dnd" if "dnd" in tag_list else "fiction"
+        else:
+            mode = "rp"
+
+        logger.info("\n=== %s (id=%s, lang=%s, mode=%s) ===", name, char_id[:8], orig_lang, mode)
 
         if dry_run:
             logger.info("  [DRY RUN] Would generate depth fields")
@@ -230,7 +294,7 @@ async def main():
             continue
 
         lang = orig_lang if orig_lang in ("ru", "en") else "en"
-        depth = await _generate_depth(name, personality, appearance or "", scenario or "", lang=lang)
+        depth = await _generate_depth(name, personality, appearance or "", scenario or "", lang=lang, mode=mode)
 
         if not depth:
             logger.warning("  Failed to generate depth for %s", name)
