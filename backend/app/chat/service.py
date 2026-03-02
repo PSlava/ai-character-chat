@@ -173,36 +173,43 @@ _POST_HISTORY_CORE = {
         "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи.\n"
         "Сохраняй текущую локацию. Продвинь сюжет.\n"
         "ЗАПРЕЩЕНО повторять фразы, описания и СТРУКТУРУ из предыдущих ответов.\n"
+        "Помни ВСЮ личность персонажа - не своди к одной доминирующей черте.\n"
     ),
     "en": (
         "[Continue the scene as {name}. Third person. Show, don't tell.\n"
         "Maintain the current location. Advance the plot.\n"
         "FORBIDDEN to repeat phrases, descriptions, or STRUCTURES from previous responses.\n"
+        "Remember the character's FULL personality - do not reduce to a single dominant trait.\n"
     ),
     "es": (
         "[Continua la escena como {name}. Tercera persona. Muestra, no cuentes.\n"
         "Mantén la ubicación actual. Avanza la trama.\n"
         "PROHIBIDO repetir frases, descripciones o ESTRUCTURAS de respuestas anteriores.\n"
+        "Recuerda TODA la personalidad del personaje - no la reduzcas a un solo rasgo dominante.\n"
     ),
     "fr": (
         "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas.\n"
         "Maintiens le lieu actuel. Fais avancer l'intrigue.\n"
         "INTERDIT de répéter phrases, descriptions ou STRUCTURES des réponses précédentes.\n"
+        "Souviens-toi de TOUTE la personnalité du personnage - ne la réduis pas à un seul trait dominant.\n"
     ),
     "de": (
         "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen.\n"
         "Behalte den aktuellen Ort bei. Bringe die Handlung voran.\n"
         "VERBOTEN, Phrasen, Beschreibungen oder STRUKTUREN aus vorherigen Antworten zu wiederholen.\n"
+        "Erinnere dich an die GESAMTE Persoenlichkeit der Figur - reduziere sie nicht auf ein einziges dominantes Merkmal.\n"
     ),
     "pt": (
         "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte.\n"
         "Mantenha a localização atual. Avance a trama.\n"
         "PROIBIDO repetir frases, descrições ou ESTRUTURAS de respostas anteriores.\n"
+        "Lembre-se de TODA a personalidade do personagem - nao reduza a um unico traco dominante.\n"
     ),
     "it": (
         "[Continua la scena come {name}. Terza persona. Mostra, non raccontare.\n"
         "Mantieni la posizione attuale. Fai avanzare la trama.\n"
         "VIETATO ripetere frasi, descrizioni o STRUTTURE dalle risposte precedenti.\n"
+        "Ricorda TUTTA la personalità del personaggio - non ridurla a un singolo tratto dominante.\n"
     ),
 }
 
@@ -267,18 +274,56 @@ _POST_HISTORY_VARIANTS = {
 
 def _get_post_history(lang: str, chat_id: str, message_count: int,
                       last_assistant_text: str = "",
-                      content_rating: str = "sfw") -> str:
+                      content_rating: str = "sfw",
+                      hidden_layers: str = "") -> str:
     """Get a rotating post-history variant based on chat_id and message position.
 
     Anti-echo: if last_assistant_text is provided, extract the opening and
     explicitly instruct the model to start differently.
     Escalation: after 6+ exchanges, add stronger plot-advancement mandate.
     NSFW reminder: if content_rating is nsfw, add explicit content instruction.
+    Hidden layers: inject trust-level-appropriate behavior based on message_count.
     """
     core = _POST_HISTORY_CORE.get(lang, _POST_HISTORY_CORE["en"])
     variants = _POST_HISTORY_VARIANTS.get(lang, _POST_HISTORY_VARIANTS["en"])
     idx = hash(f"{chat_id}:{message_count}") % len(variants)
     result = core + variants[idx]
+
+    # --- Hidden layers: inject trust-level behavior based on message count ---
+    if hidden_layers and hidden_layers.strip():
+        # Parse "Level N: text" format
+        import re as _re
+        levels = {}
+        for m in _re.finditer(r"Level\s*(\d)\s*:\s*(.+?)(?=Level\s*\d|$)", hidden_layers, _re.DOTALL | _re.IGNORECASE):
+            levels[int(m.group(1))] = m.group(2).strip()
+        if levels:
+            # Determine current trust level by message count
+            if message_count >= 59:
+                current_level = 4
+            elif message_count >= 39:
+                current_level = 3
+            elif message_count >= 19:
+                current_level = 2
+            else:
+                current_level = 1
+            # Find the best available level (fall back to nearest lower)
+            layer_text = None
+            for lvl in range(current_level, 0, -1):
+                if lvl in levels:
+                    layer_text = levels[lvl]
+                    break
+            if layer_text:
+                layer_headers = {
+                    "ru": "\nТЕКУЩЕЕ ПОВЕДЕНИЕ персонажа (уровень доверия {level}): {text}",
+                    "en": "\nCURRENT character behavior (trust level {level}): {text}",
+                    "es": "\nCOMPORTAMIENTO ACTUAL del personaje (nivel de confianza {level}): {text}",
+                    "fr": "\nCOMPORTEMENT ACTUEL du personnage (niveau de confiance {level}): {text}",
+                    "de": "\nAKTUELLES Verhalten der Figur (Vertrauensstufe {level}): {text}",
+                    "pt": "\nCOMPORTAMENTO ATUAL do personagem (nivel de confianca {level}): {text}",
+                    "it": "\nCOMPORTAMENTO ATTUALE del personaggio (livello di fiducia {level}): {text}",
+                }
+                tpl = layer_headers.get(lang, layer_headers["en"])
+                result += tpl.format(level=current_level, text=layer_text)
 
     # --- NSFW: remind model not to soften/censor intimate content ---
     if content_rating == "nsfw":
@@ -702,6 +747,10 @@ async def build_conversation_messages(
         "system_prompt_suffix": character.system_prompt_suffix,
         "response_length": getattr(character, 'response_length', None) or "long",
         "appearance": getattr(character, 'appearance', None),
+        "speech_pattern": getattr(character, 'speech_pattern', None),
+        "backstory": getattr(character, 'backstory', None),
+        "hidden_layers": getattr(character, 'hidden_layers', None),
+        "inner_conflict": getattr(character, 'inner_conflict', None),
         "structured_tags": [t for t in (getattr(character, 'structured_tags', '') or '').split(",") if t],
         "tags": getattr(character, 'tags', '') or '',
     }
@@ -801,6 +850,7 @@ async def build_conversation_messages(
             language, chat_id, msg_count,
             last_assistant_text=last_assistant_text,
             content_rating=cr,
+            hidden_layers=char_dict.get("hidden_layers") or "",
         ).format(name=character.name)
     all_messages = result_list + messages
 

@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
     upload_dir: str = "data/uploads"
     max_avatar_size: int = 4 * 1024 * 1024  # 4MB default, override via MAX_AVATAR_SIZE env
-    auto_character_enabled: bool = True  # daily auto-generation of characters
+    auto_character_enabled: bool = False  # daily auto-generation of characters (temporarily disabled)
     environment: str = "development"  # development | production
     site_mode: str = "nsfw"  # "nsfw" (SweetSin) | "sfw" (LangTutor) | "fiction" (IF + DnD)
     site_name: str = "SweetSin"  # display name for emails, titles

@@ -117,6 +117,10 @@ async def init_db():
         # XP / Leveling system
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS xp_total INTEGER DEFAULT 0",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS level INTEGER DEFAULT 1",
+        # Character depth: backstory, hidden layers, inner conflict
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS backstory TEXT",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS hidden_layers TEXT",
+        "ALTER TABLE characters ADD COLUMN IF NOT EXISTS inner_conflict TEXT",
     ]
     for sql in migrations:
         try:

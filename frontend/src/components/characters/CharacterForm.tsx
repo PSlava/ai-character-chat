@@ -29,6 +29,9 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     personality: str(initial?.personality),
     appearance: str(initial?.appearance),
     speech_pattern: str(initial?.speech_pattern),
+    backstory: str(initial?.backstory),
+    hidden_layers: str(initial?.hidden_layers),
+    inner_conflict: str(initial?.inner_conflict),
     scenario: str(initial?.scenario),
     greeting_message: str(initial?.greeting_message),
     example_dialogues: str(initial?.example_dialogues),
@@ -65,10 +68,10 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
   // Approximate token count for system prompt (~4 chars/token for Latin, ~2 for Cyrillic/CJK)
   const estimatedTokens = useMemo(() => {
-    const text = [form.personality, form.appearance, form.speech_pattern, form.scenario, form.greeting_message, form.example_dialogues].join(' ');
+    const text = [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, form.scenario, form.greeting_message, form.example_dialogues].join(' ');
     const hasCyrillic = /[\u0400-\u04FF]/.test(text);
     return Math.round(text.length / (hasCyrillic ? 2 : 4));
-  }, [form.personality, form.appearance, form.speech_pattern, form.scenario, form.greeting_message, form.example_dialogues]);
+  }, [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, form.scenario, form.greeting_message, form.example_dialogues]);
 
   const toggleTag = (tagId: string) =>
     setForm((prev) => ({
@@ -92,6 +95,9 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         tagline: form.tagline || undefined,
         personality: form.personality,
         appearance: form.appearance || undefined,
+        backstory: form.backstory || undefined,
+        hidden_layers: form.hidden_layers || undefined,
+        inner_conflict: form.inner_conflict || undefined,
         scenario: form.scenario || undefined,
         greeting_message: form.greeting_message,
         example_dialogues: form.example_dialogues || undefined,
@@ -203,6 +209,36 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         placeholder={t('form.speechPatternPlaceholder')}
         rows={2}
         maxLength={3000}
+      />
+
+      <Textarea
+        label={t('form.backstory')}
+        hint={t('form.backstoryHint')}
+        value={form.backstory}
+        onChange={(e) => update('backstory', e.target.value)}
+        placeholder={t('form.backstoryPlaceholder')}
+        rows={3}
+        maxLength={5000}
+      />
+
+      <Textarea
+        label={t('form.hiddenLayers')}
+        hint={t('form.hiddenLayersHint')}
+        value={form.hidden_layers}
+        onChange={(e) => update('hidden_layers', e.target.value)}
+        placeholder={t('form.hiddenLayersPlaceholder')}
+        rows={3}
+        maxLength={5000}
+      />
+
+      <Textarea
+        label={t('form.innerConflict')}
+        hint={t('form.innerConflictHint')}
+        value={form.inner_conflict}
+        onChange={(e) => update('inner_conflict', e.target.value)}
+        placeholder={t('form.innerConflictPlaceholder')}
+        rows={2}
+        maxLength={2000}
       />
 
       <Textarea

@@ -16,6 +16,9 @@ export interface Character {
   personality: string;
   appearance: string | null;
   speech_pattern: string | null;
+  backstory: string | null;
+  hidden_layers: string | null;
+  inner_conflict: string | null;
   scenario: string | null;
   greeting_message: string;
   example_dialogues: string | null;

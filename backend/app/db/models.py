@@ -84,6 +84,9 @@ class Character(Base):
     example_dialogues: Mapped[str | None] = mapped_column(Text, nullable=True)
     appearance: Mapped[str | None] = mapped_column(Text, nullable=True)
     speech_pattern: Mapped[str | None] = mapped_column(Text, nullable=True)
+    backstory: Mapped[str | None] = mapped_column(Text, nullable=True)
+    hidden_layers: Mapped[str | None] = mapped_column(Text, nullable=True)
+    inner_conflict: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_rating: Mapped[ContentRating] = mapped_column(
         SAEnum(ContentRating), default=ContentRating.sfw
     )

@@ -1856,6 +1856,14 @@ async def build_system_prompt(
     parts.append(_get(lang, "intro").format(name=char_name))
     parts.append(f"\n{_get(lang, 'personality')}\n{tpl(character['personality'])}")
 
+    if character.get("backstory"):
+        backstory_header = {"ru": "## Предыстория", "en": "## Backstory", "es": "## Trasfondo", "fr": "## Passé", "de": "## Hintergrundgeschichte", "pt": "## História", "it": "## Retroscena"}
+        parts.append(f"\n{backstory_header.get(lang, backstory_header['en'])}\n{tpl(character['backstory'])}")
+
+    if character.get("inner_conflict"):
+        conflict_header = {"ru": "## Внутренний конфликт", "en": "## Inner Conflict", "es": "## Conflicto Interno", "fr": "## Conflit Intérieur", "de": "## Innerer Konflikt", "pt": "## Conflito Interno", "it": "## Conflitto Interiore"}
+        parts.append(f"\n{conflict_header.get(lang, conflict_header['en'])}\n{tpl(character['inner_conflict'])}")
+
     if character.get("structured_tags"):
         from app.characters.structured_tags import get_snippets_for_ids
         snippets = get_snippets_for_ids(character["structured_tags"], lang)
