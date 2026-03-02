@@ -101,7 +101,7 @@ async def get_max_personas() -> int:
 
 async def _count_user_messages_today(user_id: str) -> int:
     """Count user messages sent today (UTC) across all chats."""
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
     async with db_engine.connect() as conn:
         result = await conn.execute(
             sa_text("""
