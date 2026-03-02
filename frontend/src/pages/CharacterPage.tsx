@@ -430,26 +430,6 @@ export function CharacterPage() {
         </div>
       )}
 
-      {character.appearance && (
-        <div className="mb-6">
-          <h2 className="text-sm font-medium text-neutral-400 mb-2 uppercase tracking-wider">
-            {t('character.appearance')}
-          </h2>
-          <p className="text-neutral-200 bg-neutral-800/50 rounded-xl p-4 whitespace-pre-wrap">
-            {tpl(character.appearance)}
-          </p>
-        </div>
-      )}
-
-      <div className="mb-6">
-        <h2 className="text-sm font-medium text-neutral-400 mb-2 uppercase tracking-wider">
-          {t('character.greeting')}
-        </h2>
-        <div className="bg-neutral-800/50 rounded-xl p-4 text-neutral-200 whitespace-pre-wrap">
-          {tpl(character.greeting_message)}
-        </div>
-      </div>
-
       <div className="flex gap-2">
         <Button onClick={() => handleStartChat()} disabled={loading} size="lg" className="flex-1">
           {loading ? t('character.creatingChat') : t('character.startChat')}
