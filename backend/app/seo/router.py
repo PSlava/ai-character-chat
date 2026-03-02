@@ -448,7 +448,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("What languages are supported?", "The interface supports English, Spanish, Russian, French, German, Portuguese, and Italian. The AI Game Master responds in whatever language you write in."),
             ("How does the AI Game Master work?", "The GM uses advanced language models to generate narrative responses, manage game mechanics, and adapt to your playstyle. It follows D&D 5e rules while maintaining an engaging story."),
             ("What are achievements and XP?", "Earn XP for every message, adventure rating, and achievement unlocked. Level up as you play, track your stats in your profile, and compete on the leaderboard. Seven achievements to unlock including Bookworm, Storyteller, and Dice Roller."),
-            ("What D&D rules are supported?", "GrimQuill follows D&D 5e core rules: ability checks, saving throws, attack rolls, spell slots, conditions, and more. The GM handles the mechanics so you can focus on the adventure."),
+            ("How deep are the characters?", "Every character has a backstory with formative events and secrets, hidden personality layers that unlock as trust grows over 30+ messages, and inner conflicts that drive dramatic tension. Characters evolve and surprise you throughout the adventure."),
             ("Is my data private?", "Yes. Your conversations and campaign data are private and visible only to you. We do not share your data with anyone."),
         ],
         "es": [
@@ -462,7 +462,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("¿Qué idiomas están disponibles?", "La interfaz soporta inglés, español, ruso, francés, alemán, portugués e italiano. El Game Master responde en el idioma en que le escribas."),
             ("¿Cómo funciona el Game Master con IA?", "El GM usa modelos de lenguaje avanzados para generar respuestas narrativas, gestionar mecánicas de juego y adaptarse a tu estilo. Sigue las reglas de D&D 5e manteniendo una historia envolvente."),
             ("¿Qué son los logros y la XP?", "Gana XP por cada mensaje, calificación de aventura y logro desbloqueado. Sube de nivel mientras juegas, revisa tus estadísticas en tu perfil y compite en la tabla de clasificación. Siete logros por desbloquear incluyendo Ratón de biblioteca, Narrador y Lanzador de dados."),
-            ("¿Qué reglas de D&D se soportan?", "GrimQuill sigue las reglas básicas de D&D 5e: pruebas de habilidad, salvaciones, ataques, espacios de conjuro, condiciones y más. El GM maneja las mecánicas para que te centres en la aventura."),
+            ("¿Qué tan profundos son los personajes?", "Cada personaje tiene una historia de fondo con eventos formativos y secretos, capas ocultas de personalidad que se revelan a medida que crece la confianza en más de 30 mensajes, y conflictos internos que generan tensión dramática. Los personajes evolucionan y te sorprenden a lo largo de la aventura."),
             ("¿Mis datos son privados?", "Sí. Tus conversaciones y datos de campaña son privados y solo visibles para ti. No compartimos tus datos con nadie."),
         ],
         "ru": [
@@ -476,7 +476,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Какие языки поддерживаются?", "Интерфейс поддерживает английский, испанский, русский, французский, немецкий, португальский и итальянский. AI Game Master отвечает на том языке, на котором вы пишете."),
             ("Как работает AI Game Master?", "GM использует продвинутые языковые модели для генерации нарратива, управления игровыми механиками и адаптации к вашему стилю игры. Он следует правилам D&D 5e, поддерживая увлекательный сюжет."),
             ("Что такое достижения и XP?", "Получайте XP за каждое сообщение, оценку приключения и разблокированное достижение. Повышайте уровень по мере игры, отслеживайте статистику в профиле и соревнуйтесь в таблице лидеров. Семь достижений: Книжный червь, Рассказчик, Мастер кубиков и другие."),
-            ("Какие правила D&D поддерживаются?", "GrimQuill следует базовым правилам D&D 5e: проверки способностей, спасброски, атаки, ячейки заклинаний, состояния и многое другое. GM берет механику на себя, чтобы вы могли сосредоточиться на приключении."),
+            ("Насколько глубокие персонажи?", "У каждого персонажа есть предыстория с ключевыми событиями и секретами, скрытые слои личности, раскрывающиеся по мере роста доверия за 30+ сообщений, и внутренние конфликты, создающие драматическое напряжение. Персонажи развиваются и удивляют на протяжении всего приключения."),
             ("Мои данные приватны?", "Да. Ваши разговоры и данные кампаний приватны и видны только вам. Мы не передаем ваши данные третьим лицам."),
         ],
         "fr": [
@@ -490,7 +490,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Quelles langues sont disponibles ?", "L'interface supporte l'anglais, l'espagnol, le russe, le francais, l'allemand, le portugais et l'italien. Le Game Master repond dans la langue dans laquelle vous ecrivez."),
             ("Comment fonctionne le Game Master IA ?", "Le GM utilise des modeles de langage avances pour generer des reponses narratives, gerer les mecaniques de jeu et s'adapter a votre style. Il suit les regles de D&D 5e tout en maintenant une histoire captivante."),
             ("Que sont les succes et l'XP ?", "Gagnez de l'XP pour chaque message, note d'aventure et succes debloque. Montez de niveau en jouant, suivez vos statistiques dans votre profil et rivalisez dans le classement. Sept succes a debloquer dont Rat de bibliotheque, Conteur et Lanceur de des."),
-            ("Quelles regles de D&D sont supportees ?", "GrimQuill suit les regles de base de D&D 5e : tests de competence, jets de sauvegarde, attaques, emplacements de sorts, conditions et plus. Le GM gere les mecaniques pour que vous vous concentriez sur l'aventure."),
+            ("Quelle est la profondeur des personnages ?", "Chaque personnage possede une histoire avec des evenements marquants et des secrets, des couches de personnalite cachees qui se revelent au fil de la confiance sur 30+ messages, et des conflits interieurs qui creent la tension dramatique. Les personnages evoluent et vous surprennent tout au long de l'aventure."),
             ("Mes donnees sont-elles privees ?", "Oui. Vos conversations et donnees de campagne sont privees et visibles uniquement par vous. Nous ne partageons vos donnees avec personne."),
         ],
         "de": [
@@ -504,7 +504,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Welche Sprachen werden unterstuetzt?", "Die Oberflaeche unterstuetzt Englisch, Spanisch, Russisch, Franzoesisch, Deutsch, Portugiesisch und Italienisch. Der Spielleiter antwortet in der Sprache, in der du schreibst."),
             ("Wie funktioniert der KI-Spielleiter?", "Der GM nutzt fortschrittliche Sprachmodelle, um Erzaehlungen zu generieren, Spielmechaniken zu verwalten und sich an deinen Spielstil anzupassen. Er folgt den D&D-5e-Regeln und haelt die Geschichte spannend."),
             ("Was sind Erfolge und XP?", "Verdiene XP fuer jede Nachricht, Abenteuerbewertung und freigeschaltete Erfolge. Steige im Level auf, verfolge deine Statistiken im Profil und tritt auf der Bestenliste an. Sieben Erfolge zum Freischalten: Buecherwurm, Geschichtenerzaehler, Wuerfelmeister und mehr."),
-            ("Welche D&D-Regeln werden unterstuetzt?", "GrimQuill folgt den D&D-5e-Grundregeln: Faehigkeitsproben, Rettungswuerfe, Angriffe, Zauberplaetze, Zustaende und mehr. Der GM uebernimmt die Mechanik, damit du dich auf das Abenteuer konzentrieren kannst."),
+            ("Wie tiefgruendig sind die Charaktere?", "Jeder Charakter hat eine Hintergrundgeschichte mit praegenden Ereignissen und Geheimnissen, verborgene Persoenlichkeitsschichten, die sich ueber 30+ Nachrichten mit wachsendem Vertrauen entfalten, und innere Konflikte, die dramatische Spannung erzeugen. Charaktere entwickeln sich und ueberraschen dich im Laufe des Abenteuers."),
             ("Sind meine Daten privat?", "Ja. Deine Gespraeche und Kampagnendaten sind privat und nur fuer dich sichtbar. Wir geben deine Daten an niemanden weiter."),
         ],
         "pt": [
@@ -518,7 +518,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Quais idiomas sao suportados?", "A interface suporta ingles, espanhol, russo, frances, alemao, portugues e italiano. O Mestre de Jogo responde no idioma em que voce escreve."),
             ("Como funciona o Mestre de Jogo com IA?", "O GM usa modelos de linguagem avancados para gerar respostas narrativas, gerenciar mecanicas de jogo e se adaptar ao seu estilo. Segue as regras de D&D 5e mantendo uma historia envolvente."),
             ("O que sao conquistas e XP?", "Ganhe XP por cada mensagem, avaliacao de aventura e conquista desbloqueada. Suba de nivel enquanto joga, acompanhe suas estatisticas no perfil e compita no ranking. Sete conquistas para desbloquear incluindo Rato de biblioteca, Contador de historias e Mestre dos dados."),
-            ("Quais regras de D&D sao suportadas?", "GrimQuill segue as regras basicas de D&D 5e: testes de habilidade, salvamentos, ataques, espacos de magia, condicoes e mais. O GM gerencia as mecanicas para que voce foque na aventura."),
+            ("Qual e a profundidade dos personagens?", "Cada personagem tem uma historia de fundo com eventos marcantes e segredos, camadas ocultas de personalidade que se revelam com a confianca ao longo de 30+ mensagens, e conflitos internos que geram tensao dramatica. Personagens evoluem e surpreendem ao longo da aventura."),
             ("Meus dados sao privados?", "Sim. Suas conversas e dados de campanha sao privados e visiveis apenas para voce. Nao compartilhamos seus dados com ninguem."),
         ],
         "it": [
@@ -532,7 +532,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Quali lingue sono supportate?", "L'interfaccia supporta inglese, spagnolo, russo, francese, tedesco, portoghese e italiano. Il Game Master risponde nella lingua in cui scrivi."),
             ("Come funziona il Game Master IA?", "Il GM utilizza modelli linguistici avanzati per generare risposte narrative, gestire le meccaniche di gioco e adattarsi al tuo stile. Segue le regole di D&D 5e mantenendo una storia avvincente."),
             ("Cosa sono i traguardi e l'XP?", "Guadagna XP per ogni messaggio, valutazione di avventura e traguardo sbloccato. Sali di livello mentre giochi, monitora le tue statistiche nel profilo e competi nella classifica. Sette traguardi da sbloccare tra cui Topo di biblioteca, Narratore e Maestro dei dadi."),
-            ("Quali regole di D&D sono supportate?", "GrimQuill segue le regole base di D&D 5e: prove di abilita, tiri salvezza, attacchi, slot incantesimo, condizioni e altro. Il GM gestisce le meccaniche per farti concentrare sull'avventura."),
+            ("Quanto sono profondi i personaggi?", "Ogni personaggio ha un passato con eventi formativi e segreti, strati nascosti di personalita che si rivelano con la fiducia in 30+ messaggi, e conflitti interiori che creano tensione drammatica. I personaggi evolvono e sorprendono nel corso dell'avventura."),
             ("I miei dati sono privati?", "Si. Le tue conversazioni e i dati delle campagne sono privati e visibili solo a te. Non condividiamo i tuoi dati con nessuno."),
         ],
     }
@@ -550,7 +550,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("How do group chats work?", "Open a chat and add other characters via the group chat panel. Each character responds in turn based on the conversation context. They interact with you and with each other."),
             ("What are lorebooks?", "Lorebooks are world-building tools. Add entries with keywords — when those keywords appear in chat, the related lore is automatically included in the AI's context. Great for consistent world details."),
             ("How does chat memory work?", "For long conversations, the AI automatically summarizes earlier messages so it remembers important details even as the context window fills up. You can toggle this per chat in settings."),
-            ("Can I import SillyTavern characters?", "Yes! Go to Create, then the Import tab. Upload a SillyTavern character card (JSON, v1 or v2 format) or paste the JSON directly. All fields are mapped automatically."),
+            ("What is character depth?", "Each character has a backstory (formative past event, emotional wound, secret), hidden layers that unlock as trust grows over 30+ messages, and an inner conflict between what they want and what they truly need. Characters evolve and surprise you over time."),
             ("Can I have multiple chats with the same character?", "Yes. Click 'New Chat' on the character page or in the chat header. Each chat has its own independent history, context, and model settings."),
         ],
         "es": [
@@ -564,7 +564,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("¿Cómo funcionan los chats grupales?", "Abre un chat y añade otros personajes a través del panel de chat grupal. Cada personaje responde por turnos según el contexto de la conversación. Interactúan contigo y entre ellos."),
             ("¿Qué son los lorebooks?", "Los lorebooks son herramientas de construcción de mundo. Añade entradas con palabras clave — cuando esas palabras aparecen en el chat, la información relacionada se incluye automáticamente en el contexto de la IA."),
             ("¿Cómo funciona la memoria del chat?", "Para conversaciones largas, la IA resume automáticamente los mensajes anteriores para recordar detalles importantes incluso cuando la ventana de contexto se llena. Puedes activar/desactivar esto por chat en configuración."),
-            ("¿Puedo importar personajes de SillyTavern?", "¡Sí! Ve a Crear, pestaña Importar. Sube una tarjeta de SillyTavern (JSON, formato v1 o v2) o pega el JSON directamente. Todos los campos se mapean automáticamente."),
+            ("¿Qué es la profundidad de personaje?", "Cada personaje tiene una historia de fondo (evento pasado, herida emocional, secreto), capas ocultas que se revelan a medida que crece la confianza en más de 30 mensajes, y un conflicto interno entre lo que quieren y lo que realmente necesitan. Los personajes evolucionan y te sorprenden con el tiempo."),
             ("¿Puedo tener múltiples chats con el mismo personaje?", "Sí. Haz clic en 'Nuevo chat' en la página del personaje o en la cabecera del chat. Cada chat tiene su propio historial, contexto y configuración de modelo independiente."),
         ],
         "ru": [
@@ -578,7 +578,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Как работают групповые чаты?", "Откройте чат и добавьте других персонажей через панель группового чата. Каждый персонаж отвечает по очереди на основе контекста разговора. Они взаимодействуют с вами и друг с другом."),
             ("Что такое лорбуки?", "Лорбуки — инструменты для построения мира. Добавьте записи с ключевыми словами — когда эти слова появляются в чате, связанная информация автоматически включается в контекст AI. Отлично подходит для поддержания деталей мира."),
             ("Как работает память чата?", "Для длинных разговоров AI автоматически суммаризирует ранние сообщения, чтобы помнить важные детали даже при заполнении контекстного окна. Можно включить/выключить для каждого чата в настройках."),
-            ("Можно импортировать персонажей из SillyTavern?", "Да! Перейдите в Создать, вкладка Импорт. Загрузите карточку SillyTavern (JSON, формат v1 или v2) или вставьте JSON напрямую. Все поля маппятся автоматически."),
+            ("Что такое глубина персонажей?", "У каждого персонажа есть предыстория (событие из прошлого, эмоциональная рана, секрет), скрытые слои, раскрывающиеся по мере роста доверия за 30+ сообщений, и внутренний конфликт между тем, чего они хотят, и тем, что им нужно. Персонажи развиваются и удивляют со временем."),
             ("Можно вести несколько чатов с одним персонажем?", "Да. Нажмите 'Новый чат' на странице персонажа или в шапке чата. Каждый чат имеет свою независимую историю, контекст и настройки модели."),
         ],
         "fr": [
@@ -592,7 +592,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Comment fonctionnent les discussions de groupe ?", "Ouvrez une discussion et ajoutez d'autres personnages via le panneau de discussion de groupe. Chaque personnage répond à son tour en fonction du contexte de la conversation. Ils interagissent avec vous et entre eux."),
             ("Que sont les lorebooks ?", "Les lorebooks sont des outils de construction d'univers. Ajoutez des entrées avec des mots-clés — lorsque ces mots-clés apparaissent dans la discussion, le lore associé est automatiquement inclus dans le contexte de l'IA."),
             ("Comment fonctionne la mémoire du chat ?", "Pour les longues conversations, l'IA résume automatiquement les messages précédents afin de se souvenir des détails importants même lorsque la fenêtre de contexte se remplit. Vous pouvez activer ou désactiver cette fonctionnalité par discussion dans les paramètres."),
-            ("Puis-je importer des personnages SillyTavern ?", "Oui ! Allez dans Créer puis l'onglet Import. Téléversez une fiche personnage SillyTavern (JSON, format v1 ou v2) ou collez le JSON directement. Tous les champs sont mappés automatiquement."),
+            ("Qu'est-ce que la profondeur des personnages ?", "Chaque personnage a une histoire (evenement passe, blessure emotionnelle, secret), des couches cachees qui se revelent au fil de la confiance sur 30+ messages, et un conflit interieur entre ce qu'il veut et ce dont il a vraiment besoin. Les personnages evoluent et vous surprennent."),
             ("Puis-je avoir plusieurs discussions avec le même personnage ?", "Oui. Cliquez sur 'Nouvelle discussion' sur la page du personnage ou dans l'en-tête de la discussion. Chaque discussion a son propre historique, contexte et paramètres de modèle indépendants."),
         ],
         "de": [
@@ -606,7 +606,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Wie funktionieren Gruppenchats?", "Öffnen Sie einen Chat und fügen Sie andere Charaktere über das Gruppenchat-Panel hinzu. Jeder Charakter antwortet abwechselnd basierend auf dem Gesprächskontext. Sie interagieren mit Ihnen und miteinander."),
             ("Was sind Lorebooks?", "Lorebooks sind Weltenbau-Werkzeuge. Fügen Sie Einträge mit Schlüsselwörtern hinzu — wenn diese Schlüsselwörter im Chat erscheinen, wird die zugehörige Lore automatisch in den KI-Kontext eingefügt. Ideal für konsistente Weltdetails."),
             ("Wie funktioniert die Chat-Erinnerung?", "Bei langen Gesprächen fasst die KI automatisch frühere Nachrichten zusammen, damit sie sich an wichtige Details erinnert, auch wenn das Kontextfenster sich füllt. Sie können dies pro Chat in den Einstellungen umschalten."),
-            ("Kann ich SillyTavern-Charaktere importieren?", "Ja! Gehen Sie zu Erstellen, dann der Import-Tab. Laden Sie eine SillyTavern-Charakterkarte hoch (JSON, v1- oder v2-Format) oder fügen Sie das JSON direkt ein. Alle Felder werden automatisch zugeordnet."),
+            ("Was ist Charaktertiefe?", "Jeder Charakter hat eine Hintergrundgeschichte (praegendes Ereignis, emotionale Wunde, Geheimnis), verborgene Schichten, die sich ueber 30+ Nachrichten mit wachsendem Vertrauen entfalten, und einen inneren Konflikt zwischen dem, was er will, und dem, was er wirklich braucht. Charaktere entwickeln sich und ueberraschen."),
             ("Kann ich mehrere Chats mit demselben Charakter haben?", "Ja. Klicken Sie auf 'Neuer Chat' auf der Charakterseite oder in der Chat-Kopfzeile. Jeder Chat hat seinen eigenen unabhängigen Verlauf, Kontext und Modelleinstellungen."),
         ],
         "pt": [
@@ -620,7 +620,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Como funcionam os chats em grupo?", "Abra uma conversa e adicione outros personagens pelo painel de chat em grupo. Cada personagem responde por vez baseado no contexto da conversa. Eles interagem com você e entre si."),
             ("O que são lorebooks?", "Lorebooks são ferramentas de construção de mundo. Adicione entradas com palavras-chave — quando essas palavras-chave aparecerem no chat, o lore relacionado é automaticamente incluído no contexto da IA."),
             ("Como funciona a memória do chat?", "Para conversas longas, a IA automaticamente resume mensagens anteriores para lembrar detalhes importantes mesmo quando a janela de contexto enche. Você pode ativar ou desativar isso por conversa nas configurações."),
-            ("Posso importar personagens do SillyTavern?", "Sim! Vá em Criar, aba Importar. Envie um card de personagem do SillyTavern (JSON, formato v1 ou v2) ou cole o JSON diretamente. Todos os campos são mapeados automaticamente."),
+            ("O que e profundidade de personagem?", "Cada personagem tem uma historia de fundo (evento formativo, ferida emocional, segredo), camadas ocultas que se revelam com a confianca ao longo de 30+ mensagens, e um conflito interno entre o que querem e o que realmente precisam. Personagens evoluem e surpreendem."),
             ("Posso ter múltiplas conversas com o mesmo personagem?", "Sim. Clique em 'Nova Conversa' na página do personagem ou no cabeçalho do chat. Cada conversa tem seu próprio histórico, contexto e configurações de modelo independentes."),
         ],
         "it": [
@@ -634,7 +634,7 @@ async def prerender_faq(lang: str = Query("en")):
             ("Come funzionano le chat di gruppo?", "Apri una chat e aggiungi altri personaggi tramite il pannello chat di gruppo. Ogni personaggio risponde a turno in base al contesto della conversazione. Interagiscono con te e tra loro."),
             ("Cosa sono i lorebook?", "I lorebook sono strumenti di world-building. Aggiungi voci con parole chiave — quando quelle parole chiave appaiono nella chat, le informazioni correlate vengono automaticamente incluse nel contesto dell'IA."),
             ("Come funziona la memoria della chat?", "Per le conversazioni lunghe, l'IA riassume automaticamente i messaggi precedenti in modo da ricordare i dettagli importanti anche quando la finestra di contesto si riempie. Puoi attivare o disattivare questa funzione per ogni chat nelle impostazioni."),
-            ("Posso importare personaggi di SillyTavern?", "Sì! Vai su Crea, scheda Importa. Carica una scheda personaggio SillyTavern (JSON, formato v1 o v2) oppure incolla direttamente il JSON. Tutti i campi vengono mappati automaticamente."),
+            ("Cos'e la profondita del personaggio?", "Ogni personaggio ha una storia (evento passato, ferita emotiva, segreto), strati nascosti che si rivelano con la fiducia in 30+ messaggi, e un conflitto interiore tra cio che vuole e cio di cui ha veramente bisogno. I personaggi evolvono e sorprendono nel tempo."),
             ("Posso avere più chat con lo stesso personaggio?", "Sì. Clicca 'Nuova chat' nella pagina del personaggio o nell'intestazione della chat. Ogni chat ha la propria cronologia, contesto e impostazioni del modello indipendenti."),
         ],
     }
