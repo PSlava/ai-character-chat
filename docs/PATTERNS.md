@@ -43,6 +43,17 @@
 - **Response length**: Character setting (`short`/`medium`/`long`/`very_long`) controls system prompt instructions about response format and length. Separate from `max_tokens` which is a hard token limit.
 - **Generation settings**: Per-request overrides (model, temperature, top_p, top_k, frequency_penalty, max_tokens) sent in `SendMessageRequest`. Character's `max_tokens` used as default. Settings stored per-model in localStorage (`model-settings:{modelId}`), model choice stored per-chat (`chat-model:{chatId}`).
 
+## Character Depth
+
+- **3 depth fields**: `backstory` (Text, max 5000), `hidden_layers` (Text, max 5000), `inner_conflict` (Text, max 2000). All nullable, on `characters` table.
+- **Backstory** (Ghost-Wound-Lie framework): ONE specific past event (Ghost), emotional wound affecting behavior NOW, false belief as defense (Lie), and a secret hidden from everyone. Injected into system prompt after personality, before structured tags.
+- **Hidden layers** (trust-level system): 4 levels unlocked by message count. Format: `Level 1: text Level 2: text Level 3: text Level 4: text`. Injected into post-history (strongest position, near generation). Thresholds: msg 1-18→L1 (mask/defense), 19-38→L2 (shares opinions, hints at past), 39-58→L3 (reveals wound/vulnerability), 59+→L4 (main secret, breaking the Lie).
+- **Inner conflict** (Want vs Need): External goal (WANTS) contradicts internal growth (NEEDS). Creates tension and character arc. Injected into system prompt alongside backstory.
+- **Re-centering clause**: "Remember the character's FULL personality — do not reduce to a single dominant trait" added to `_POST_HISTORY_CORE` in all 7 languages. Prevents personality flattening over long conversations.
+- **Character generator**: All 3 fields are required in auto-generated characters. Prompt includes Ghost-Wound-Lie framework, strict Level format, and Want-vs-Need contradiction.
+- **Backfill script**: `backend/scripts/generate_character_depth.py` — generates depth fields for existing characters via LLM (Together → Groq → OpenAI → Claude → DeepSeek). Flags: `--sweetsin-only`, `--fiction-only`, `--all`, `--dry-run`, `--force`. Run: `docker compose exec -T backend python scripts/generate_character_depth.py`
+- **Not shown publicly**: Depth fields are internal AI data (spoilers). Only visible in CharacterForm for creators/admin, NOT on public CharacterPage.
+
 ## Chat & Messaging
 
 - **Render free tier**: Sleeps after inactivity. Frontend calls `wakeUpServer()` before generation requests.

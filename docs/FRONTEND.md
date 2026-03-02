@@ -18,7 +18,7 @@
 
 - **`hooks/useChat.ts`** — SSE streaming via `@microsoft/fetch-event-source`. `GenerationSettings` includes model, temperature, top_p, top_k, frequency_penalty, max_tokens. Updates user message ID from `done` event. Uses `messagesRef` (always synced via `setMessages` wrapper) for reliable reads in `regenerate`/`resendLast` — avoids React 18 setState batching issues where updater side-effects are deferred.
 - **`store/`** — Zustand: `authStore` (with role, clears votes+favorites on logout), `chatStore`, `favoritesStore`, `votesStore` (optimistic updates, loaded on login).
-- **`locales/`** — i18n via react-i18next. `en.json`, `es.json`, `ru.json`, `fr.json`, `de.json`, `pt.json`, `it.json` (~540 keys each). Default: English. Language stored in localStorage.
+- **`locales/`** — i18n via react-i18next. `en.json`, `es.json`, `ru.json`, `fr.json`, `de.json`, `pt.json`, `it.json` (~550 keys each). Default: English. Language stored in localStorage. Character depth keys: `form.backstory`, `form.backstoryPlaceholder`, `form.backstoryHint`, `form.hiddenLayers`, `form.hiddenLayersPlaceholder`, `form.hiddenLayersHint`, `form.innerConflict`, `form.innerConflictPlaceholder`, `form.innerConflictHint`.
 
 ## Pages
 
@@ -37,7 +37,7 @@
 - **`components/chat/ChatWindow.tsx`** — Message list with infinite scroll (loads older messages on scroll-to-top, preserves scroll position). Persistent regenerate button below last assistant message. Streaming scroll uses `requestAnimationFrame`-batched instant `scrollTop` (not `scrollIntoView`) to prevent jank.
 
 ### Characters
-- **`components/characters/CharacterForm.tsx`** — Full character form with appearance, speech_pattern, structured tag pills (fetched from API, grouped by category), `{{char}}`/`{{user}}` hint in example dialogues placeholder, hint props on greeting/example dialogues Textareas, and estimated token budget display (~N tokens, amber >2000, red >3000). Admin-only fields: preferred_model, max_tokens slider, system_prompt_suffix. Response length dropdown visible to all users.
+- **`components/characters/CharacterForm.tsx`** — Full character form with appearance, speech_pattern, backstory, hidden_layers, inner_conflict, structured tag pills (fetched from API, grouped by category), `{{char}}`/`{{user}}` hint in example dialogues placeholder, hint props on greeting/example dialogues Textareas, and estimated token budget display (~N tokens, amber >2000, red >3000). Character depth fields (backstory, hidden_layers, inner_conflict) appear after speech_pattern, before scenario. Admin-only fields: preferred_model, max_tokens slider, system_prompt_suffix. Response length dropdown visible to all users.
 - **`components/characters/ReportModal.tsx`** — Modal with 5 radio button reasons + details textarea. Handles duplicate report (409).
 
 ### UI
