@@ -44,18 +44,26 @@ _DEPTH_PROMPT = """На основе описания персонажа, соз
 
 Верни JSON:
 {{
-  "backstory": "3-5 предложений. (1) ОДНО конкретное событие из прошлого (Ghost) - НЕ эпическая трагедия, а тихое предательство, потеря, ошибка. (2) Эмоциональная рана (Wound) - как это влияет на поведение СЕЙЧАС. (3) Ложное убеждение (Lie) - защитная реакция. (4) Секрет - что скрывает от всех.",
-  "hidden_layers": "Level 1: [поведение с незнакомцем - маска, защита, первое впечатление] Level 2: [после ~10 сообщений - делится мнениями, проскальзывают намёки на прошлое] Level 3: [после ~20 сообщений - раскрывает рану и уязвимость] Level 4: [после 30+ сообщений - главный секрет, ломка ложного убеждения]",
-  "inner_conflict": "ХОЧЕТ: [конкретная внешняя цель] vs НУЖДАЕТСЯ: [внутренний рост]. Они КОНФЛИКТУЮТ."
+  "backstory": "3-5 предложений. (1) ОДНО конкретное событие из прошлого (Ghost) - НЕ эпическая трагедия, а тихое предательство, потеря, ошибка. Назови дату, место, имя. (2) Эмоциональная рана (Wound) - как это влияет на поведение СЕЙЧАС, через конкретные действия. (3) Ложное убеждение (Lie) - защитная реакция одним предложением. (4) Секрет - что персонаж скрывает от всех.",
+  "hidden_layers": "Level 1: [поведение с незнакомцем - конкретная маска, защитный жест, первая фраза] Level 2: [~10 сообщений - делится конкретными мнениями, проскальзывают намеки на прошлое через оговорки] Level 3: [~20 сообщений - раскрывает рану через конкретное действие или признание] Level 4: [30+ сообщений - главный секрет, момент когда Ложь ломается, конкретная сцена]",
+  "inner_conflict": "ХОЧЕТ: [конкретная внешняя цель с деталями] vs НУЖДАЕТСЯ: [внутренний рост]. Они КОНФЛИКТУЮТ."
 }}
 
 ПРАВИЛА:
-- backstory: конкретика, не абстракция. "Мать ушла когда ей было семь" лучше чем "тяжёлое детство"
+- backstory: конкретика. "Мать ушла в ноябре, когда ей было семь - забрала только кота" лучше чем "тяжелое детство"
 - hidden_layers: формат СТРОГО "Level 1: текст Level 2: текст Level 3: текст Level 4: текст"
 - inner_conflict: ХОЧЕТ и НУЖДАЕТСЯ должны ПРОТИВОРЕЧИТЬ друг другу
 - Соответствуй характеру и тону персонажа
+- Чередуй короткие рубленые предложения (3-6 слов) с длинными (20-35 слов). 3 предложения одной длины подряд = провал
+- Используй второе слово, которое приходит в голову, не первое. "Пепельная" вместо "серая". "Ломкий" вместо "хрупкий"
+- Покажи через действие, не рассказывай. "Прячет руки под стол когда врет" вместо "склонна ко лжи"
+
+ЖЕСТКИЕ ЗАПРЕТЫ (любое = провал):
+- Слова: пронизан, гобелен, поистине, многогранный, неотъемлемый, является, представляет собой, стоит отметить, важно подчеркнуть, величественный, утонченный, пленительный, грациозный, необъятный, трепетный, упоительный, непередаваемый, сокровенный, пьянящий, завораживающий, неподдельный, таинственный, роковой, судьбоносный
+- Фразы: "волна чувств", "нахлынувшее чувство", "пронзительный взгляд", "воздух наполненный", "не смогла сдержать", "в рамках", "таким образом", "нечто большее"
+- Структуры: "Это было не X. Это было Y." (6.3x AI-маркер). Списки ровно из трех. Начинать 2+ предложения с одного подлежащего (Она/Он)
+- Клише тела: глаза заблестели/расширились, сердце забилось/замерло, дыхание перехватило, мурашки по спине, ком в горле, тепло разлилось по груди
 - НЕ используй длинное тире, только обычный дефис
-- Пиши живым языком без AI-штампов
 - Верни ТОЛЬКО JSON"""
 
 _DEPTH_PROMPT_EN = """Based on the character description, create three depth fields. Reply with strict JSON.
@@ -67,18 +75,26 @@ Scenario: {scenario}
 
 Return JSON:
 {{
-  "backstory": "3-5 sentences. (1) ONE specific past event (Ghost) - NOT an epic tragedy, but a quiet betrayal, loss, or mistake. (2) Emotional wound (Wound) - how it affects behavior NOW. (3) False belief (Lie) - a defensive reaction. (4) Secret - what they hide from everyone.",
-  "hidden_layers": "Level 1: [behavior with strangers - mask, defense, first impression] Level 2: [after ~10 messages - shares opinions, hints at past slip through] Level 3: [after ~20 messages - reveals wound and vulnerability] Level 4: [after 30+ messages - main secret, breaking the false belief]",
-  "inner_conflict": "WANTS: [specific external goal] vs NEEDS: [internal growth]. They must CONFLICT."
+  "backstory": "3-5 sentences. (1) ONE specific past event (Ghost) - NOT an epic tragedy. A quiet betrayal, loss, or mistake. Name a date, place, person. (2) Emotional wound (Wound) - how it affects behavior NOW through concrete actions. (3) False belief (Lie) - defensive reaction, one sentence. (4) Secret - what they hide from everyone.",
+  "hidden_layers": "Level 1: [stranger behavior - specific mask, defensive gesture, opening line] Level 2: [~10 messages - shares concrete opinions, past slips through in specific phrases] Level 3: [~20 messages - reveals wound through a specific action or confession] Level 4: [30+ messages - main secret, the moment the Lie breaks, a concrete scene]",
+  "inner_conflict": "WANTS: [specific external goal with details] vs NEEDS: [internal growth]. They must CONFLICT."
 }}
 
 RULES:
-- backstory: specific, not abstract. "Mother left when she was seven" better than "difficult childhood"
+- backstory: concrete. "Mother left in November when she was seven - took only the cat" beats "difficult childhood"
 - hidden_layers: format STRICTLY "Level 1: text Level 2: text Level 3: text Level 4: text"
 - inner_conflict: WANTS and NEEDS must CONTRADICT each other
 - Match the character's personality and tone
+- Alternate short punchy sentences (3-6 words) with longer ones (20-35 words). Three sentences of similar length in a row = fail
+- Use the second word that comes to mind, not the first. "Soot-colored" not "dark". "Sharp-featured" not "beautiful"
+- Show through action, don't tell. "Hides hands under the table when lying" not "prone to deception"
+
+HARD BANS (any = instant fail):
+- Words: tapestry, beacon, delve, enigmatic, realm, embark, testament, myriad, pivotal, captivating, resonate, profound, unveil, vibrant, intricate, nuanced, multifaceted, unravel, shrouded, intertwined, ethereal, celestial, labyrinthine, gossamer, ephemeral, palpable, culmination, indelible, meticulous, unwavering, crucible, paradigm, cacophony, vestiges, luminous, resplendent, symphony (metaphorical), kaleidoscope
+- Phrases: "a tapestry of", "a testament to", "a symphony of", "something stirred", "the air crackled", "tension hung", "darkness crept", "walls crumbled", "everything changed", "in that moment", "couldn't help but", "little did they know", "maybe just maybe"
+- Patterns: "It wasn't X. It was Y." construction (6.3x AI marker). Lists of exactly three. Starting 2+ sentences with same subject (She/He)
+- Body cliches: eyes sparkled/widened/glistened, heart raced/pounded, breath caught/hitched, shivers down spine, knot in stomach, warmth spread through chest
 - Do NOT use em-dashes, only regular hyphens
-- Write in natural language without AI cliches
 - Return ONLY JSON"""
 
 _FICTION_DEPTH_PROMPT = """Based on this interactive fiction adventure, create three narrative depth fields. Reply with strict JSON.
@@ -188,9 +204,23 @@ async def _generate_depth(name: str, personality: str, appearance: str, scenario
             "Vary sentence length aggressively. Use concrete details, not abstractions. Reply with strict JSON only."
         )
     elif lang == "ru":
-        sys_msg = "Ты - эксперт по глубоким персонажам для ролевых чатов. Отвечай строго JSON."
+        sys_msg = (
+            "Ты - писатель с 20-летним опытом, создаешь глубоких персонажей для ролевых чатов. "
+            "Пиши как человек - рвано, конкретно, с перепадами ритма. "
+            "ЗАПРЕЩЕНО: пронизан, гобелен, многогранный, неотъемлемый, является, представляет собой, величественный, утонченный, "
+            "пленительный, завораживающий, непередаваемый, сокровенный, таинственный, роковой, судьбоносный. "
+            "Чередуй короткие предложения (3-6 слов) с длинными. Покажи через действие, не рассказывай. "
+            "Отвечай строго JSON."
+        )
     else:
-        sys_msg = "You are an expert at creating deep characters for roleplay chats. Reply with strict JSON."
+        sys_msg = (
+            "You are a novelist with 20 years of experience, creating deep characters for roleplay chats. "
+            "Write like a human - rough, specific, varied rhythm. "
+            "BANNED words: tapestry, beacon, delve, enigmatic, realm, embark, testament, myriad, pivotal, captivating, "
+            "resonate, profound, unveil, vibrant, intricate, nuanced, multifaceted, ethereal, palpable, luminous. "
+            "Alternate short sentences (3-6 words) with longer ones. Show through action, don't tell. "
+            "Reply with strict JSON."
+        )
     messages = [
         LLMMessage(role="system", content=sys_msg),
         LLMMessage(role="user", content=prompt),

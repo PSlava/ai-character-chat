@@ -22,7 +22,7 @@
 
 ## Pages
 
-- **`pages/`** — Home (tag filters, gender filter pills, featured character, ContinueAdventure CTA), Chat (+ new chat button), CharacterPage (online dot, report, export, vote, fork, highlights, connections), CreateCharacter (manual + story + SillyTavern import), EditCharacter, Auth (+ Google OAuth), OAuthCallbackPage, Profile (stats grid, XP bar, achievements), LeaderboardPage (sort by level/messages/adventures), CampaignsPage, CampaignDetailPage, AdminPromptsPage, AdminUsersPage, AdminReportsPage, AboutPage (10 feature cards), TermsPage, PrivacyPage, FAQPage (12 Q&A, JSON-LD).
+- **`pages/`** — Home (tag filters, gender filter pills, featured character, ContinueAdventure CTA), Chat (+ new chat button), CharacterPage (online dot, report, vote, highlights, connections; export/fork admin-only), CreateCharacter (manual + story + SillyTavern import), EditCharacter, Auth (+ Google OAuth), OAuthCallbackPage, Profile (stats grid, XP bar, achievements), LeaderboardPage (sort by level/messages/adventures), CampaignsPage, CampaignDetailPage, AdminPromptsPage, AdminUsersPage, AdminReportsPage, AboutPage (10 feature cards incl. "Character Depth"), TermsPage, PrivacyPage, FAQPage (12 Q&A incl. character depth, JSON-LD).
 
 ## Components
 

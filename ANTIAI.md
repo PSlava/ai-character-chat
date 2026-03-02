@@ -47,18 +47,85 @@
 ## AI-маркерные слова и фразы
 
 ### Запрещённые слова (RU)
-«пронизан», «гобелен», «поистине», «бесчисленный», «многогранный», «неотъемлемый», «является», «представляет собой», «в рамках», «стоит отметить», «важно подчеркнуть», «таким образом», «волна [эмоции]», «нахлынувшее чувство», «пронзительный взгляд», «воздух, наполненный [чем-то]», «не смогла сдержать»
+«пронизан», «гобелен», «поистине», «бесчисленный», «многогранный», «неотъемлемый», «является», «представляет собой», «в рамках», «стоит отметить», «важно подчеркнуть», «таким образом», «волна [эмоции]», «нахлынувшее чувство», «пронзительный взгляд», «воздух, наполненный [чем-то]», «не смогла сдержать», «величественный», «утончённый», «пленительный», «грациозный», «необъятный», «трепетный», «упоительный», «непередаваемый», «сокровенный», «пьянящий», «неизведанный», «необузданный», «завораживающий», «неподдельный»
 
-### Запрещённые слова (EN)
-'delve', 'tapestry', 'testament', 'realm', 'landscape', 'beacon', 'indelible', 'palpable', 'a wave of [emotion]', 'a surge of [feeling]', 'couldn't help but', 'eyes that held [emotion]', 'piercing gaze', 'the air was thick with', 'sent a shiver down'
+### Запрещённые слова (EN) — Tier 1 (Hard Ban)
+delve, tapestry, symphony, kaleidoscope, ethereal, gossamer, enigma, labyrinthine, mellifluous, ephemeral, resplendent, celestial, bioluminescent, beacon (metaphorical), realm, crucible, paradigm, juxtaposition, cacophony, interplay, culmination, ministrations, vestiges, multifaceted, myriad, innate, pivotal, meticulous, unwavering, indelible, palpable, testament ("a testament to"), landscape (metaphorical), journey (metaphorical), embark, unveil, harness, transcend, encompass, unravel, resonate, underscore, foster, leverage, luminous, gossamer
 
-### Другие маркеры
+### Запрещённые фразы (EN) — Tier 2
+"couldn't help but", "a testament to", "a tapestry of", "a symphony of", "a kaleidoscope of", "a surge of [emotion]", "a wave of [emotion]", "the weight of [emotion]", "a sense of [emotion]", "something stirred within", "the air crackled/hummed", "tension hung in the air", "electricity between them", "voice barely above a whisper", "let out a breath didn't know", "darkness crept", "walls crumbled", "maybe, just maybe", "little did they know", "for what seemed like an eternity", "was only just beginning", "everything changed", "in that moment", "It wasn't X. It was Y."
+
+### Запрещённые dialogue tags — Tier 3 (use "said")
+murmured, rasped, breathed, exclaimed, intoned, quipped, mused, retorted, chuckled darkly, hissed (unless literal), stammered, implored, proclaimed
+
+### Запрещённые AI-имена — Tier 4
+Elara, Kael, Lyra, Eira, Aria, Elysia, Eldoria, Zephyria, Moonwhisper, Ravenswood, Whisperwood
+
+### Body/Emotion Cliches (Hard Ban)
+eyes sparkled/widened/glistened, breath caught/hitched, heart raced/pounded/skipped, shivers down spine, jaw clenched, knot in stomach, warmth spread through chest, electricity between them, bit her/his lip, let out a breath she/he didn't know they were holding, tears pricked, a surge of, a wave of (emotion), the weight of (emotion)
+
+### Структурные маркеры
+- **"Not X; Y" construction** — 6.3x чаще у AI чем у людей ("It wasn't fear. It was something deeper.")
+- **Списки из ровно трёх** (triads) — "fast, efficient, and reliable" → использовать 2 или 4
 - Длинное тире `—` (заменено на дефис `-` во всех промптах)
 - Единообразная длина предложений (3+ подряд одной длины — запрещено)
+- **Present participle openers** — "Walking into...", "Feeling the...", "Noticing..." = AI marker
 - Hedging phrases: "It's important to note that...", "It's worth mentioning..."
 - Crutch words: feeling/realizing/understanding, чувствуя/понимая/осознавая
 - Overuse of adverbs: meticulously, seamlessly, intricate
 - Template pattern: `*does X* text *does Y*`
+- **Uniform paragraph lengths** — all roughly same size = AI marker
+- **Summary endings** — "As she walked away, she realized..." = AI marker
+
+---
+
+## Детекторы AI-контента — как они работают (исследование 2026-03-02)
+
+### 5 методов детекции
+
+1. **Perplexity** — предсказуемость на уровне слов. AI выбирает high-probability токены → низкая perplexity. Люди пишут с большим разбросом. Детекторы усредняют по окнам 150-300 токенов
+2. **Burstiness** — вариация на уровне предложений. Люди чередуют короткие/длинные предложения (bursts). AI = однородные длины. Детекторы строят графики variance длин предложений
+3. **Token probability distribution** — AI кластеризуется в зоне "высокой вероятности". У людей больше "сюрпризных" выборов слов
+4. **Stylometric analysis** — повторяемость лексики, однородность абзацев, шаблонные структуры, лексическое разнообразие
+5. **Watermarking (SynthID, OpenAI)** — bias к "green list" словам. Детектируется через hypothesis testing
+
+### Ключевой вывод
+- **Perplexity** = predictability → надо выбирать 2-й/3-й вариант слова, а не первый
+- **Burstiness** = rhythm variation → надо чередовать 3-слово и 30-слово предложения
+- **"Not X; Y" pattern** — в 6.3 раза чаще у AI чем у людей (исследование Pangram Labs)
+
+### Практические anti-detection правила для промптов
+
+**Ритм и структура:**
+- Чередовать short punches (3-6 слов) с complex sentences (25-40 слов). 3 предложения одной длины подряд = fail
+- Использовать fragments: "Not yet." "Gone." "The smell of wet concrete."
+- Варьировать длину абзацев драматически (1 предложение → 5 предложений)
+- Никогда не начинать 2+ предложения с одного подлежащего (She/He/Her/His)
+- Иногда инвертировать порядок: "Down the corridor she walked" (1-2 раза)
+
+**Лексика:**
+- Выбирать 2-е/3-е слово, не 1-е: "soot-colored" а не "dark", "sharp-featured" а не "beautiful"
+- Конкретные сенсорные детали: click of a heel, crease in a shirt, smell of burnt coffee
+- Запретить crutch verbs: never "feeling", "realizing", "sensing" — показывать через действие
+
+**Диалоги:**
+- "said" для 80% тегов. Запретить: murmured, rasped, breathed, exclaimed, quipped, mused
+- Никогда не навешивать adverbs: "said softly" = AI marker
+- Несовершенства: contractions, trailing off, self-interruption
+
+**Нарратив:**
+- Никогда "Not X; Y" (6.3x AI marker)
+- Avoid triads (2 или 4, не 3)
+- Show don't tell: "She slammed the mug hard enough to crack the handle" not "She was angry"
+- Никогда не резюмировать в конце: "As she walked away, she realized..."
+- Max 1 метафора на абзац. Метафоры из конкретных доменов (механика, кулинария)
+
+### Источники
+- AntiSlop Sampler (github.com/sam-paech/antislop-sampler) — 8000+ slop patterns
+- Originality.AI — perplexity/burstiness research
+- Pangram Labs — comprehensive AI writing pattern guide, "Not X; Y" = 6.3x stat
+- RecordCrash — AI web fiction detection patterns
+- Creativindie — humanizing ChatGPT fiction
 
 ---
 
