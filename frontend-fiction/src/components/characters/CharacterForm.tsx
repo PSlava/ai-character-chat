@@ -32,6 +32,10 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     backstory: str(initial?.backstory),
     hidden_layers: str(initial?.hidden_layers),
     inner_conflict: str(initial?.inner_conflict),
+    companion_name: str(initial?.companion_name),
+    companion_role: initial?.companion_role || '',
+    companion_personality: str(initial?.companion_personality),
+    companion_appearance: str(initial?.companion_appearance),
     scenario: str(initial?.scenario),
     greeting_message: str(initial?.greeting_message),
     example_dialogues: str(initial?.example_dialogues),
@@ -46,6 +50,7 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     max_tokens: initial?.max_tokens ?? 2048,
     response_length: initial?.response_length || 'long',
   });
+  const [companionEnabled, setCompanionEnabled] = useState(!!initial?.companion_name);
   const [loading, setLoading] = useState(false);
   const [orModels, setOrModels] = useState<OpenRouterModel[]>([]);
   const [groqModels, setGroqModels] = useState<OpenRouterModel[]>([]);
@@ -68,10 +73,10 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
   // Approximate token count for system prompt (~4 chars/token for Latin, ~2 for Cyrillic/CJK)
   const estimatedTokens = useMemo(() => {
-    const text = [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, form.scenario, form.greeting_message, form.example_dialogues].join(' ');
+    const text = [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, companionEnabled ? form.companion_personality : '', companionEnabled ? form.companion_appearance : '', form.scenario, form.greeting_message, form.example_dialogues].join(' ');
     const hasCyrillic = /[\u0400-\u04FF]/.test(text);
     return Math.round(text.length / (hasCyrillic ? 2 : 4));
-  }, [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, form.scenario, form.greeting_message, form.example_dialogues]);
+  }, [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, form.companion_personality, form.companion_appearance, companionEnabled, form.scenario, form.greeting_message, form.example_dialogues]);
 
   const toggleTag = (tagId: string) =>
     setForm((prev) => ({
@@ -98,6 +103,10 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         backstory: form.backstory || undefined,
         hidden_layers: form.hidden_layers || undefined,
         inner_conflict: form.inner_conflict || undefined,
+        companion_name: companionEnabled ? (form.companion_name || undefined) : null,
+        companion_role: companionEnabled ? (form.companion_role || undefined) : null,
+        companion_personality: companionEnabled ? (form.companion_personality || undefined) : null,
+        companion_appearance: companionEnabled ? (form.companion_appearance || undefined) : null,
         scenario: form.scenario || undefined,
         greeting_message: form.greeting_message,
         example_dialogues: form.example_dialogues || undefined,
@@ -240,6 +249,73 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         rows={2}
         maxLength={2000}
       />
+
+      {/* NPC Companion toggle + fields */}
+      <div className="border-t border-neutral-800 pt-4 mt-2">
+        <label className="flex items-center gap-2 cursor-pointer mb-3">
+          <input
+            type="checkbox"
+            checked={companionEnabled}
+            onChange={(e) => setCompanionEnabled(e.target.checked)}
+            className="w-4 h-4 rounded border-neutral-600 bg-neutral-800 text-purple-500 focus:ring-purple-500"
+          />
+          <span className="text-sm text-neutral-300">{t('form.companionToggle')}</span>
+          <span className="text-xs text-neutral-500">{t('form.companionToggleHint')}</span>
+        </label>
+
+        {companionEnabled && (
+          <div className="space-y-3 pl-2 border-l-2 border-neutral-700">
+            <Input
+              label={t('form.companionName')}
+              value={form.companion_name}
+              onChange={(e) => update('companion_name', e.target.value)}
+              placeholder={t('form.companionNamePlaceholder')}
+              maxLength={100}
+            />
+
+            <div>
+              <label className="block text-sm text-neutral-400 mb-1">
+                {t('form.companionRole')}
+              </label>
+              <select
+                value={form.companion_role}
+                onChange={(e) => update('companion_role', e.target.value)}
+                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-neutral-200"
+              >
+                <option value="">{t('form.companionRoleNone')}</option>
+                <option value="sidekick">{t('form.companionRoleSidekick')}</option>
+                <option value="rival">{t('form.companionRoleRival')}</option>
+                <option value="mentor">{t('form.companionRoleMentor')}</option>
+                <option value="pet">{t('form.companionRolePet')}</option>
+                <option value="lover">{t('form.companionRoleLover')}</option>
+                <option value="family">{t('form.companionRoleFamily')}</option>
+                <option value="guide">{t('form.companionRoleGuide')}</option>
+                <option value="comic_relief">{t('form.companionRoleComic')}</option>
+              </select>
+            </div>
+
+            <Textarea
+              label={t('form.companionPersonality')}
+              hint={t('form.companionPersonalityHint')}
+              value={form.companion_personality}
+              onChange={(e) => update('companion_personality', e.target.value)}
+              placeholder={t('form.companionPersonalityPlaceholder')}
+              rows={2}
+              maxLength={500}
+            />
+
+            <Textarea
+              label={t('form.companionAppearance')}
+              hint={t('form.companionAppearanceHint')}
+              value={form.companion_appearance}
+              onChange={(e) => update('companion_appearance', e.target.value)}
+              placeholder={t('form.companionAppearancePlaceholder')}
+              rows={2}
+              maxLength={300}
+            />
+          </div>
+        )}
+      </div>
 
       <Textarea
         label={t('form.scenario')}

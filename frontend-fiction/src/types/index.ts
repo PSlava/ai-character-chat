@@ -19,6 +19,10 @@ export interface Character {
   backstory: string | null;
   hidden_layers: string | null;
   inner_conflict: string | null;
+  companion_name: string | null;
+  companion_role: string | null;
+  companion_personality: string | null;
+  companion_appearance: string | null;
   scenario: string | null;
   greeting_message: string;
   example_dialogues: string | null;
