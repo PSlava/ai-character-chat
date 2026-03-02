@@ -25,3 +25,5 @@ wetdreams_sniff.py
 .vscode/
 *.swp
 .DS_Store
+
+.claude/settings.local.json
