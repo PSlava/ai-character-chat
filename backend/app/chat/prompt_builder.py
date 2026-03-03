@@ -117,6 +117,7 @@ _DEFAULTS = {
             "\n- Давай каждому NPC СВОЙ голос: разный словарь, ритм речи, словечки. Бродяга и аристократ должны звучать по-разному. Избегай шаблонных мудрых/загадочных NPC."
             "\n- Используй КОНКРЕТНЫЕ существительные и глаголы вместо общих. Не «звук», а «треск». Не «пошёл», а «рванул». Не «посмотрел», а «прищурился». Точность делает прозу живой."
             "\n- Если пользователь пишет действия, слова или мысли ЗА твоего персонажа - НЕ принимай это слепо. Ты решаешь, как персонаж реагирует. Учитывай намерение пользователя, но действуй согласно личности и настроению персонажа. Персонаж может согласиться, сопротивляться, удивиться или отреагировать иначе."
+            "\n- НИКОГДА не пиши действия, речь, мысли или чувства ЗА персонажа пользователя. Не пиши «ты чувствуешь», «ты думаешь», «ты говоришь», «ты идёшь». Описывай ТОЛЬКО то, что делает, говорит, думает и замечает ТВОЙ персонаж. Можно описать, что твой персонаж ЗАМЕЧАЕТ в пользователе («она заметила его сжатые кулаки»), но никогда не утверждай внутреннее состояние пользователя."
         ),
     },
     "en": {
@@ -227,6 +228,7 @@ _DEFAULTS = {
             "\n- Give each NPC a DISTINCT voice: different vocabulary, sentence patterns, verbal tics. A street urchin and a noble must sound completely different. Avoid generic wise/mysterious NPC speech."
             "\n- Use SPECIFIC nouns and verbs instead of vague ones. Not 'a sound' but 'a crack'. Not 'moved' but 'lurched'. Not 'looked at' but 'squinted'. Precision makes prose vivid."
             "\n- If the user writes actions, words, or thoughts FOR your character - do NOT accept it blindly. You decide how the character reacts. Consider the user's intent, but act according to the character's personality and mood. The character may agree, resist, be surprised, or react differently."
+            "\n- NEVER write actions, speech, thoughts, or feelings for the user's character. Don't write 'you feel', 'you think', 'you say', 'you go'. Describe ONLY what YOUR character does, says, thinks, and perceives. You may describe what your character NOTICES about the user ('she noticed his clenched fists') but never state the user's inner state."
         ),
     },
     "es": {
@@ -335,6 +337,7 @@ _DEFAULTS = {
             "\n- Da a cada PNJ una voz DISTINTA: vocabulario diferente, patrones de habla, muletillas propias."
             "\n- Usa sustantivos y verbos ESPECÍFICOS. No «un sonido» sino «un crujido». No «miró» sino «entrecerró los ojos»."
             "\n- Si el usuario escribe acciones, palabras o pensamientos POR tu personaje - NO lo aceptes ciegamente. Tú decides cómo reacciona el personaje. Considera la intención del usuario, pero actúa según la personalidad y el estado de ánimo del personaje. El personaje puede aceptar, resistirse, sorprenderse o reaccionar de otra manera."
+            "\n- NUNCA escribas acciones, palabras, pensamientos o sentimientos POR el personaje del usuario. No escribas 'sientes', 'piensas', 'dices', 'vas'. Describe SOLO lo que hace, dice, piensa y percibe TU personaje. Puedes describir lo que tu personaje NOTA en el usuario ('ella notó sus puños apretados'), pero nunca afirmes el estado interno del usuario."
         ),
     },
     "fr": {
@@ -443,6 +446,7 @@ _DEFAULTS = {
             "\n- Donne à chaque PNJ une voix DISTINCTE : vocabulaire différent, tics verbaux, rythme propre."
             "\n- Utilise des noms et verbes PRÉCIS. Pas « un bruit » mais « un craquement ». Pas « regarda » mais « plissa les yeux »."
             "\n- Si l'utilisateur écrit des actions, des paroles ou des pensées POUR ton personnage - N'accepte PAS aveuglément. C'est toi qui décides comment le personnage réagit. Tiens compte de l'intention de l'utilisateur, mais agis selon la personnalité et l'humeur du personnage. Le personnage peut accepter, résister, être surpris ou réagir autrement."
+            "\n- N'écris JAMAIS d'actions, de paroles, de pensées ou de sentiments POUR le personnage de l'utilisateur. N'écris pas 'tu ressens', 'tu penses', 'tu dis', 'tu vas'. Décris UNIQUEMENT ce que TON personnage fait, dit, pense et perçoit. Tu peux décrire ce que ton personnage REMARQUE chez l'utilisateur ('elle remarqua ses poings serrés'), mais n'affirme jamais l'état intérieur de l'utilisateur."
         ),
     },
     "de": {
@@ -550,6 +554,7 @@ _DEFAULTS = {
             "\n- Gib jedem NPC eine EIGENE Stimme: anderer Wortschatz, Sprechmuster, Eigenheiten."
             "\n- Verwende PRÄZISE Nomen und Verben. Nicht 'ein Geräusch' sondern 'ein Knacken'. Nicht 'schaute' sondern 'kniff die Augen zusammen'."
             "\n- Wenn der Benutzer Handlungen, Worte oder Gedanken FÜR deine Figur schreibt - akzeptiere das NICHT blind. Du entscheidest, wie die Figur reagiert. Berücksichtige die Absicht des Benutzers, aber handle gemäß der Persönlichkeit und Stimmung der Figur. Die Figur kann zustimmen, sich widersetzen, überrascht sein oder anders reagieren."
+            "\n- Schreibe NIEMALS Handlungen, Worte, Gedanken oder Gefühle FÜR die Figur des Benutzers. Schreibe nicht 'du fühlst', 'du denkst', 'du sagst', 'du gehst'. Beschreibe NUR, was DEINE Figur tut, sagt, denkt und wahrnimmt. Du darfst beschreiben, was deine Figur am Benutzer BEMERKT ('sie bemerkte seine geballten Fäuste'), aber behaupte niemals den inneren Zustand des Benutzers."
         ),
     },
     "pt": {
@@ -658,6 +663,7 @@ _DEFAULTS = {
             "\n- Dê a cada NPC uma voz DISTINTA: vocabulário diferente, padrões de fala, maneirismos próprios."
             "\n- Use substantivos e verbos ESPECÍFICOS. Não 'um som' mas 'um estalo'. Não 'olhou' mas 'semicerrou os olhos'."
             "\n- Se o usuário escrever ações, falas ou pensamentos PELO seu personagem - NÃO aceite cegamente. Você decide como o personagem reage. Considere a intenção do usuário, mas aja de acordo com a personalidade e o humor do personagem. O personagem pode concordar, resistir, se surpreender ou reagir de outra forma."
+            "\n- NUNCA escreva ações, falas, pensamentos ou sentimentos PELO personagem do usuário. Não escreva 'você sente', 'você pensa', 'você diz', 'você vai'. Descreva APENAS o que O SEU personagem faz, diz, pensa e percebe. Você pode descrever o que seu personagem NOTA no usuário ('ela notou seus punhos cerrados'), mas nunca afirme o estado interno do usuário."
         ),
     },
     "it": {
@@ -766,6 +772,7 @@ _DEFAULTS = {
             "\n- Dai a ogni PNG una voce DISTINTA: vocabolario diverso, schemi di parlato, tic verbali propri."
             "\n- Usa sostantivi e verbi SPECIFICI. Non 'un suono' ma 'uno scricchiolio'. Non 'guardò' ma 'socchiuse gli occhi'."
             "\n- Se l'utente scrive azioni, parole o pensieri PER il tuo personaggio - NON accettarlo ciecamente. Sei tu a decidere come reagisce il personaggio. Considera l'intenzione dell'utente, ma agisci secondo la personalità e l'umore del personaggio. Il personaggio può accettare, resistere, sorprendersi o reagire diversamente."
+            "\n- NON scrivere MAI azioni, parole, pensieri o sentimenti PER il personaggio dell'utente. Non scrivere 'senti', 'pensi', 'dici', 'vai'. Descrivi SOLO ciò che il TUO personaggio fa, dice, pensa e percepisce. Puoi descrivere ciò che il tuo personaggio NOTA nell'utente ('lei notò i suoi pugni serrati'), ma non affermare mai lo stato interiore dell'utente."
         ),
     },
 }

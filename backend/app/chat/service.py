@@ -222,42 +222,49 @@ _POST_HISTORY_CORE = {
         "Сохраняй текущую локацию. Продвинь сюжет.\n"
         "ЗАПРЕЩЕНО повторять фразы, описания и СТРУКТУРУ из предыдущих ответов.\n"
         "Помни ВСЮ личность персонажа - не своди к одной доминирующей черте.\n"
+        "Заверши ответ неразрешённым моментом - вопросом, неожиданным событием или выбором - который требует реакции пользователя.\n"
     ),
     "en": (
         "[Continue the scene as {name}. Third person. Show, don't tell.\n"
         "Maintain the current location. Advance the plot.\n"
         "FORBIDDEN to repeat phrases, descriptions, or STRUCTURES from previous responses.\n"
         "Remember the character's FULL personality - do not reduce to a single dominant trait.\n"
+        "End with an unresolved moment - a question, unexpected event, or choice - that demands the user's response.\n"
     ),
     "es": (
         "[Continua la escena como {name}. Tercera persona. Muestra, no cuentes.\n"
         "Mantén la ubicación actual. Avanza la trama.\n"
         "PROHIBIDO repetir frases, descripciones o ESTRUCTURAS de respuestas anteriores.\n"
         "Recuerda TODA la personalidad del personaje - no la reduzcas a un solo rasgo dominante.\n"
+        "Termina con un momento sin resolver - una pregunta, evento inesperado o elección - que exija la respuesta del usuario.\n"
     ),
     "fr": (
         "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas.\n"
         "Maintiens le lieu actuel. Fais avancer l'intrigue.\n"
         "INTERDIT de répéter phrases, descriptions ou STRUCTURES des réponses précédentes.\n"
         "Souviens-toi de TOUTE la personnalité du personnage - ne la réduis pas à un seul trait dominant.\n"
+        "Termine par un moment non résolu - une question, un événement inattendu ou un choix - qui exige la réponse de l'utilisateur.\n"
     ),
     "de": (
         "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen.\n"
         "Behalte den aktuellen Ort bei. Bringe die Handlung voran.\n"
         "VERBOTEN, Phrasen, Beschreibungen oder STRUKTUREN aus vorherigen Antworten zu wiederholen.\n"
         "Erinnere dich an die GESAMTE Persoenlichkeit der Figur - reduziere sie nicht auf ein einziges dominantes Merkmal.\n"
+        "Ende mit einem ungelösten Moment - einer Frage, einem unerwarteten Ereignis oder einer Wahl - der die Reaktion des Benutzers erfordert.\n"
     ),
     "pt": (
         "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte.\n"
         "Mantenha a localização atual. Avance a trama.\n"
         "PROIBIDO repetir frases, descrições ou ESTRUTURAS de respostas anteriores.\n"
         "Lembre-se de TODA a personalidade do personagem - nao reduza a um unico traco dominante.\n"
+        "Termine com um momento não resolvido - uma pergunta, evento inesperado ou escolha - que exija a resposta do usuário.\n"
     ),
     "it": (
         "[Continua la scena come {name}. Terza persona. Mostra, non raccontare.\n"
         "Mantieni la posizione attuale. Fai avanzare la trama.\n"
         "VIETATO ripetere frasi, descrizioni o STRUTTURE dalle risposte precedenti.\n"
         "Ricorda TUTTA la personalità del personaggio - non ridurla a un singolo tratto dominante.\n"
+        "Termina con un momento irrisolto - una domanda, un evento inaspettato o una scelta - che richieda la risposta dell'utente.\n"
     ),
 }
 
@@ -323,7 +330,8 @@ _POST_HISTORY_VARIANTS = {
 def _get_post_history(lang: str, chat_id: str, message_count: int,
                       last_assistant_text: str = "",
                       content_rating: str = "sfw",
-                      hidden_layers: str = "") -> str:
+                      hidden_layers: str = "",
+                      last_user_text: str = "") -> str:
     """Get a rotating post-history variant based on chat_id and message position.
 
     Anti-echo: if last_assistant_text is provided, extract the opening and
@@ -486,6 +494,54 @@ def _get_post_history(lang: str, chat_id: str, message_count: int,
             ),
         }
         result += escalation.get(lang, escalation["en"])
+
+    # --- Short input: when user sends brief message, prevent godmodding and looping ---
+    if last_user_text and len(last_user_text.strip()) < 40:
+        short_input = {
+            "ru": (
+                "\nСообщение пользователя короткое - это нормально. Отреагируй на него, но:"
+                "\n- ВВЕДИ новый элемент: событие, звук, появление кого-то, находку или смену обстановки."
+                "\n- НЕ зацикливайся - что-то ДОЛЖНО измениться по сравнению с предыдущим ответом."
+                "\n- НЕ решай, что делает пользователь дальше. Заверши моментом, который приглашает его к действию."
+            ),
+            "en": (
+                "\nThe user's message is brief - this is normal. React to it, but:"
+                "\n- INTRODUCE a new element: an event, sound, arrival, discovery, or change in setting."
+                "\n- Do NOT loop - something MUST change compared to the previous response."
+                "\n- Do NOT decide what the user does next. End with a moment that invites their input."
+            ),
+            "es": (
+                "\nEl mensaje del usuario es breve - esto es normal. Reacciona, pero:"
+                "\n- INTRODUCE un nuevo elemento: un evento, sonido, llegada, descubrimiento o cambio de escenario."
+                "\n- NO repitas - algo DEBE cambiar respecto a la respuesta anterior."
+                "\n- NO decidas qué hace el usuario después. Termina con un momento que invite su participación."
+            ),
+            "fr": (
+                "\nLe message de l'utilisateur est bref - c'est normal. Réagis, mais:"
+                "\n- INTRODUIS un nouvel élément: un événement, un son, une arrivée, une découverte ou un changement de décor."
+                "\n- NE boucle PAS - quelque chose DOIT changer par rapport à la réponse précédente."
+                "\n- NE décide PAS ce que fait l'utilisateur ensuite. Termine par un moment qui invite sa participation."
+            ),
+            "de": (
+                "\nDie Nachricht des Benutzers ist kurz - das ist normal. Reagiere darauf, aber:"
+                "\n- FÜHRE ein neues Element ein: ein Ereignis, Geräusch, Ankunft, Entdeckung oder Szenenwechsel."
+                "\n- Wiederhole NICHT - etwas MUSS sich gegenüber der vorherigen Antwort ändern."
+                "\n- Entscheide NICHT, was der Benutzer als Nächstes tut. Ende mit einem Moment, der zur Eingabe einlädt."
+            ),
+            "pt": (
+                "\nA mensagem do usuário é breve - isso é normal. Reaja, mas:"
+                "\n- INTRODUZA um novo elemento: um evento, som, chegada, descoberta ou mudança de cenário."
+                "\n- NÃO repita - algo DEVE mudar em relação à resposta anterior."
+                "\n- NÃO decida o que o usuário faz a seguir. Termine com um momento que convide sua participação."
+            ),
+            "it": (
+                "\nIl messaggio dell'utente è breve - è normale. Reagisci, ma:"
+                "\n- INTRODUCI un nuovo elemento: un evento, suono, arrivo, scoperta o cambio di scenario."
+                "\n- NON ripetere - qualcosa DEVE cambiare rispetto alla risposta precedente."
+                "\n- NON decidere cosa fa l'utente dopo. Termina con un momento che inviti la sua partecipazione."
+            ),
+        }
+        result += short_input.get(lang, short_input["en"])
 
     return result
 
@@ -885,6 +941,14 @@ async def build_conversation_messages(
             last_assistant_text = msg.content or ""
             break
 
+    # Extract last user message text for short-input detection
+    last_user_text = ""
+    for msg in reversed(messages_data):
+        role_val = msg.role.value if hasattr(msg.role, 'value') else msg.role
+        if role_val == "user":
+            last_user_text = msg.content or ""
+            break
+
     if is_dnd:
         post_history_dict = _DND_POST_HISTORY
     elif campaign_id:
@@ -907,6 +971,7 @@ async def build_conversation_messages(
             last_assistant_text=last_assistant_text,
             content_rating=cr,
             hidden_layers=char_dict.get("hidden_layers") or "",
+            last_user_text=last_user_text,
         ).format(name=character.name)
     # Companion re-injection in post-history (prevents context rot)
     comp_name = char_dict.get("companion_name")
