@@ -922,13 +922,13 @@ async def build_conversation_messages(
             "comic_relief": {"ru": "комик", "en": "comic relief", "es": "comico", "fr": "comique", "de": "Komiker", "pt": "comico", "it": "comico"},
         }
         _COMP_REMINDER = {
-            "ru": "{comp} ({role}) рядом. {main} — главный. Включай {comp} когда уместно, НЕ в каждом ответе.",
-            "en": "{comp} ({role}) is present. {main} is the lead. Include {comp} when relevant, NOT every response.",
-            "es": "{comp} ({role}) esta presente. {main} lidera. Incluye a {comp} cuando sea relevante, NO siempre.",
-            "fr": "{comp} ({role}) est present. {main} mene. Inclus {comp} quand pertinent, PAS a chaque reponse.",
-            "de": "{comp} ({role}) ist anwesend. {main} fuhrt. Erwahne {comp} wenn relevant, NICHT immer.",
-            "pt": "{comp} ({role}) esta presente. {main} lidera. Inclua {comp} quando relevante, NAO sempre.",
-            "it": "{comp} ({role}) e presente. {main} guida. Includi {comp} quando rilevante, NON sempre.",
+            "ru": "{comp} ({role}) — часть истории. Если {comp} давно не появлялся, ВКЛЮЧИ: приход, звонок, реплика, упоминание.",
+            "en": "{comp} ({role}) is part of the story. If {comp} hasn't appeared recently, INCLUDE them: arrival, call, line, mention.",
+            "es": "{comp} ({role}) es parte de la historia. Si {comp} no ha aparecido recientemente, INCLUYE: llegada, llamada, frase, mencion.",
+            "fr": "{comp} ({role}) fait partie de l'histoire. Si {comp} n'est pas apparu recemment, INCLUS: arrivee, appel, replique, mention.",
+            "de": "{comp} ({role}) ist Teil der Geschichte. Wenn {comp} lange nicht erschien, EINBEZIEHEN: Ankunft, Anruf, Replik, Erwaehnung.",
+            "pt": "{comp} ({role}) faz parte da historia. Se {comp} nao apareceu recentemente, INCLUA: chegada, ligacao, fala, mencao.",
+            "it": "{comp} ({role}) fa parte della storia. Se {comp} non e apparso di recente, INCLUDI: arrivo, chiamata, battuta, menzione.",
         }
         comp_role = char_dict.get("companion_role") or "sidekick"
         role_label = _COMP_ROLE_LABELS.get(comp_role, _COMP_ROLE_LABELS["sidekick"]).get(language, comp_role)

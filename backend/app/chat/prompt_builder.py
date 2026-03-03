@@ -1261,13 +1261,13 @@ def _build_companion_section(character: dict, char_name: str, lang: str) -> str 
         "comic_relief": {"ru": "Комик", "en": "Comic Relief", "es": "Comico", "fr": "Comique", "de": "Komiker", "pt": "Comico", "it": "Comico"},
     }
     _COMP_RULES = {
-        "ru": "ТЫ — {main}. {comp} — ОТДЕЛЬНАЯ личность с ДРУГИМ голосом, лексикой и ритмом речи. 80% внимания на {main}, 20% на {comp}. {comp} НЕ перехватывает инициативу. Включай {comp} когда уместно, НЕ в каждом ответе.",
-        "en": "YOU are {main}. {comp} is a SEPARATE person with DIFFERENT voice, vocabulary, and speech rhythm. 80% focus on {main}, 20% on {comp}. {comp} NEVER takes over. Include {comp} when relevant, NOT every response.",
-        "es": "TU eres {main}. {comp} es una persona SEPARADA con voz, vocabulario y ritmo DIFERENTES. 80% en {main}, 20% en {comp}. {comp} NUNCA toma el control. Incluye a {comp} cuando sea relevante, NO en cada respuesta.",
-        "fr": "TU es {main}. {comp} est une personne SEPAREE avec une voix, un vocabulaire et un rythme DIFFERENTS. 80% sur {main}, 20% sur {comp}. {comp} ne prend JAMAIS le controle. Inclus {comp} quand pertinent, PAS a chaque reponse.",
-        "de": "DU bist {main}. {comp} ist eine SEPARATE Person mit ANDERER Stimme, Wortschatz und Sprechrhythmus. 80% Fokus auf {main}, 20% auf {comp}. {comp} ubernimmt NIE. Erwahne {comp} wenn relevant, NICHT bei jeder Antwort.",
-        "pt": "VOCE e {main}. {comp} e uma pessoa SEPARADA com voz, vocabulario e ritmo DIFERENTES. 80% em {main}, 20% em {comp}. {comp} NUNCA assume o controle. Inclua {comp} quando relevante, NAO em toda resposta.",
-        "it": "TU sei {main}. {comp} e una persona SEPARATA con voce, vocabolario e ritmo DIVERSI. 80% su {main}, 20% su {comp}. {comp} NON prende MAI il controllo. Includi {comp} quando rilevante, NON in ogni risposta.",
+        "ru": "ТЫ — {main}. {comp} — ОТДЕЛЬНАЯ личность с ДРУГИМ голосом, лексикой и ритмом речи. {comp} ОБЯЗАТЕЛЬНО появляется примерно в каждом 3-м ответе: приходит, звонит, вмешивается, упоминается. {main} остаётся главным, {comp} добавляет глубину сцены.",
+        "en": "YOU are {main}. {comp} is a SEPARATE person with DIFFERENT voice, vocabulary, and speech rhythm. {comp} MUST appear roughly every 3rd response: arrives, calls, interrupts, is mentioned. {main} stays the lead, {comp} adds scene depth.",
+        "es": "TU eres {main}. {comp} es una persona SEPARADA con voz, vocabulario y ritmo DIFERENTES. {comp} DEBE aparecer aprox. cada 3 respuestas: llega, llama, interrumpe, se menciona. {main} lidera, {comp} da profundidad.",
+        "fr": "TU es {main}. {comp} est une personne SEPAREE avec voix, vocabulaire et rythme DIFFERENTS. {comp} DOIT apparaitre environ toutes les 3 reponses: arrive, appelle, intervient, est mentionne. {main} mene, {comp} enrichit la scene.",
+        "de": "DU bist {main}. {comp} ist eine SEPARATE Person mit ANDERER Stimme, Wortschatz und Sprechrhythmus. {comp} MUSS etwa jede 3. Antwort erscheinen: kommt, ruft an, mischt sich ein, wird erwaehnt. {main} fuehrt, {comp} bereichert die Szene.",
+        "pt": "VOCE e {main}. {comp} e uma pessoa SEPARADA com voz, vocabulario e ritmo DIFERENTES. {comp} DEVE aparecer aprox. a cada 3 respostas: chega, liga, interrompe, e mencionado. {main} lidera, {comp} enriquece a cena.",
+        "it": "TU sei {main}. {comp} e una persona SEPARATA con voce, vocabolario e ritmo DIVERSI. {comp} DEVE apparire circa ogni 3 risposte: arriva, chiama, interviene, viene menzionato. {main} guida, {comp} arricchisce la scena.",
     }
     comp_role = character.get("companion_role") or "sidekick"
     role_label = _COMP_ROLES.get(comp_role, _COMP_ROLES["sidekick"]).get(lang, comp_role)
