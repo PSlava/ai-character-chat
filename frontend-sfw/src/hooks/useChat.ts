@@ -12,7 +12,6 @@ export interface GenerationSettings {
   frequency_penalty?: number;
   presence_penalty?: number;
   max_tokens?: number;
-  context_limit?: number;
 }
 
 export function useChat(chatId: string, initialMessages: Message[] = []) {
@@ -80,7 +79,6 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
           ...(s.frequency_penalty !== undefined && { frequency_penalty: s.frequency_penalty }),
           ...(s.presence_penalty !== undefined && { presence_penalty: s.presence_penalty }),
           ...(s.max_tokens !== undefined && { max_tokens: s.max_tokens }),
-          ...(s.context_limit && { context_limit: s.context_limit }),
         }),
         signal: ctrl.signal,
         onmessage(event) {
@@ -312,7 +310,6 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
           ...(s.frequency_penalty !== undefined && { frequency_penalty: s.frequency_penalty }),
           ...(s.presence_penalty !== undefined && { presence_penalty: s.presence_penalty }),
           ...(s.max_tokens !== undefined && { max_tokens: s.max_tokens }),
-          ...(s.context_limit && { context_limit: s.context_limit }),
         }),
         signal: ctrl.signal,
         onmessage(event) {

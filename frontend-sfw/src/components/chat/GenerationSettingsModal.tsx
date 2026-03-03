@@ -112,7 +112,6 @@ const GEN_DEFAULTS = {
   frequency_penalty: 0.3,
   presence_penalty: 0.3,
   max_tokens: 2048,
-  context_limit: 0,
 };
 
 // Per-provider parameter limits
@@ -174,12 +173,6 @@ function saveModelSettings(modelId: string, s: typeof GEN_DEFAULTS) {
   try { localStorage.setItem(`model-settings:${modelId}`, JSON.stringify(s)); } catch {}
 }
 
-const CONTEXT_OPTIONS = [
-  { value: 4000, label: '4K' },
-  { value: 8000, label: '8K' },
-  { value: 16000, label: '16K' },
-  { value: 0, label: '\u221E' }, // ∞
-];
 
 interface ModelOption {
   id: string;
@@ -278,30 +271,6 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
               </div>
             );
           })}
-        </div>
-
-        {/* Context memory */}
-        <div className="mb-6">
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="text-sm text-neutral-200">{t('settings.contextLimit')}</span>
-            <TooltipIcon text={t('settings.contextLimitTooltip')} />
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {CONTEXT_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => update('context_limit', opt.value)}
-                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                  local.context_limit === opt.value
-                    ? 'border-blue-500 bg-blue-500/10 text-white'
-                    : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Generation params — dynamic limits per provider */}
