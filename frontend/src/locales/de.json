@@ -304,8 +304,6 @@
   "settings.presencePenalty": "Präsenzstrafe",
   "settings.presencePenaltyTooltip": "Bestraft Wörter und Phrasen, die bereits im Dialogkontext vorkamen. Hilft, die Wiederholung derselben Beschreibungen von Nachricht zu Nachricht zu vermeiden.\n\n0,0 — keine Strafe.\n0,3 — leichte Strafe, weniger nachrichtenübergreifende Wiederholungen (empfohlen).\n0,6 — spürbare Strafe, vielfältigere Antworten.\n1,0+ — starke Strafe, Modell vermeidet aktiv zuvor erwähnte Themen.\n\nStandard: 0,3",
   "settings.maxTokens": "Max. Token",
-  "settings.contextLimit": "Erinnerung",
-  "settings.contextLimitTooltip": "Wie viel Gesprächsverlauf das Modell sieht.\n\n4K — ~10–15 Nachrichten, schnelle Antworten.\n8K — ~25–35 Nachrichten, gute Balance.\n16K — ~50–70 Nachrichten, tiefer Kontext.\n∞ — kein Limit, gesamter Verlauf (kann Modellgrenzen erreichen).\n\nÄltere Nachrichten jenseits des Limits werden vom Modell 'vergessen'.\n\nStandard: ∞ (kein Limit)",
   "settings.descAuto": "Bestes kostenloses Modell, automatisch gewahlt. Balance zwischen Qualitat und Geschwindigkeit.",
   "settings.descDeepseek": "Tiefe Psychologie, lebendige Dialoge. Meistert sowohl alltagliche als auch komplexe Handlungen.",
   "settings.descQwen": "Chinesische KI. Starke Logik und lange Kontexte, aber strenge Inhaltsfilter.",

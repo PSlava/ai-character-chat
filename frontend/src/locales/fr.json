@@ -304,8 +304,6 @@
   "settings.presencePenalty": "Pénalité de présence",
   "settings.presencePenaltyTooltip": "Pénalise les mots et expressions déjà apparus dans le contexte du dialogue. Aide à éviter de répéter les mêmes descriptions d'un message à l'autre.\n\n0.0 — aucune pénalité.\n0.3 — pénalité légère, moins de répétitions entre messages (recommandé).\n0.6 — pénalité notable, réponses plus diversifiées.\n1.0+ — pénalité forte, le modèle évite activement les sujets déjà mentionnés.\n\nPar défaut : 0.3",
   "settings.maxTokens": "Tokens maximum",
-  "settings.contextLimit": "Mémoire",
-  "settings.contextLimitTooltip": "Quantité d'historique de conversation visible par le modèle.\n\n4K — environ 10-15 messages, réponses rapides.\n8K — environ 25-35 messages, bon équilibre.\n16K — environ 50-70 messages, contexte approfondi.\n\u221E — aucune limite, tout l'historique (peut atteindre les limites du modèle).\n\nLes messages plus anciens au-delà de la limite sont « oubliés » par le modèle.\n\nPar défaut : \u221E (aucune limite)",
   "settings.descAuto": "Le meilleur modele gratuit, choisi automatiquement. Equilibre qualite et vitesse.",
   "settings.descDeepseek": "Psychologie profonde, dialogues vivants. A l'aise avec les intrigues simples et complexes.",
   "settings.descQwen": "IA chinoise. Logique solide et longs contextes, mais filtres de contenu stricts.",
