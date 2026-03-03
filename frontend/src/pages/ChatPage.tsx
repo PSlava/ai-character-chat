@@ -68,11 +68,12 @@ export function ChatPage() {
   const isAnon = !isAuthenticated;
 
   useEffect(() => {
+    if (!isAdmin) return;
     getOpenRouterModels().then(setOrModels).catch(() => {});
     getGroqModels().then(setGroqModels).catch(() => {});
     getCerebrasModels().then(setCerebrasModels).catch(() => {});
     getTogetherModels().then(setTogetherModels).catch(() => {});
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!chatId) return;

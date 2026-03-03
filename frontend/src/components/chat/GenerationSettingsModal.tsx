@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Check, AlertTriangle } from 'lucide-react';
 import type { GenerationSettings } from '@/hooks/useChat';
 import type { OpenRouterModel } from '@/api/characters';
 
@@ -10,10 +10,10 @@ export interface ChatSettings extends GenerationSettings {
 
 interface Props {
   currentModel: string;
-  orModels: OpenRouterModel[];
-  groqModels: OpenRouterModel[];
-  cerebrasModels: OpenRouterModel[];
-  togetherModels: OpenRouterModel[];
+  orModels?: OpenRouterModel[];
+  groqModels?: OpenRouterModel[];
+  cerebrasModels?: OpenRouterModel[];
+  togetherModels?: OpenRouterModel[];
   contentRating?: string;
   isAdmin?: boolean;
   onApply: (settings: ChatSettings) => void;
@@ -177,6 +177,22 @@ function saveModelSettings(modelId: string, s: typeof GEN_DEFAULTS) {
   try { localStorage.setItem(`model-settings:${modelId}`, JSON.stringify(s)); } catch {}
 }
 
+// User-facing model cards (visible to all users)
+const USER_MODELS = [
+  { id: 'auto', label: 'Auto', nsfwOk: true },
+  { id: 'deepseek', label: 'DeepSeek V3', nsfwOk: true },
+  { id: 'grok', label: 'Grok', nsfwOk: true },
+  { id: 'mistral', label: 'Mistral', nsfwOk: true },
+  { id: 'gemini', label: 'Gemini', nsfwOk: true },
+];
+
+// Admin-only direct providers
+const ADMIN_DIRECT_MODELS = [
+  { id: 'claude', label: 'Claude Sonnet', nsfwOk: false },
+  { id: 'openai', label: 'GPT-4o', nsfwOk: true },
+  { id: 'qwen', label: 'Qwen', nsfwOk: false },
+];
+
 const CONTEXT_OPTIONS = [
   { value: 4000, label: '4K' },
   { value: 8000, label: '8K' },
@@ -184,59 +200,70 @@ const CONTEXT_OPTIONS = [
   { value: 0, label: '\u221E' }, // ∞
 ];
 
-interface ModelOption {
-  id: string;
-  label: string;
-  desc?: string;
-  group: 'auto' | 'openrouter' | 'groq' | 'cerebras' | 'together' | 'direct' | 'paid';
-  nsfwOk?: boolean;
+// Resolve description i18n key for a model ID
+function descKey(id: string): string {
+  return `settings.desc${id.charAt(0).toUpperCase()}${id.slice(1)}`;
 }
 
-// GROUP_LABELS are now resolved via t() inside the component
-
-export function GenerationSettingsModal({ currentModel, orModels, groqModels, cerebrasModels, togetherModels, contentRating, isAdmin, onApply, onClose }: Props) {
+export function GenerationSettingsModal({ currentModel, orModels = [], groqModels = [], cerebrasModels = [], togetherModels = [], contentRating, isAdmin, onApply, onClose }: Props) {
   const { t } = useTranslation();
   const [model, setModel] = useState(currentModel);
   const [local, setLocal] = useState(() => loadModelSettings(currentModel));
+  const [showPicker, setShowPicker] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [advancedConfirmed, setAdvancedConfirmed] = useState(false);
+  const [showAdvancedWarning, setShowAdvancedWarning] = useState(false);
 
   const update = <K extends keyof typeof GEN_DEFAULTS>(key: K, value: number) =>
     setLocal((prev) => ({ ...prev, [key]: value }));
 
   const isNsfw = contentRating === 'nsfw';
 
-  // Build full model list with groups
-  const allModels: ModelOption[] = [
-    // Auto (all providers)
-    { id: 'auto', label: t('settings.autoAll'), desc: t('settings.descAuto'), group: 'auto', nsfwOk: true },
-    // OpenRouter
-    { id: 'openrouter', label: 'OpenRouter Auto', group: 'openrouter', nsfwOk: true },
-    ...orModels.map((m) => ({ id: m.id, label: `${m.name} (${m.quality}/10)`, group: 'openrouter' as const, nsfwOk: m.nsfw !== false })),
-    // Groq
-    { id: 'groq', label: 'Groq Auto', group: 'groq', nsfwOk: true },
-    ...groqModels.map((m) => ({ id: `groq:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'groq' as const, nsfwOk: m.nsfw !== false })),
-    // Cerebras
-    { id: 'cerebras', label: 'Cerebras Auto', group: 'cerebras', nsfwOk: true },
-    ...cerebrasModels.map((m) => ({ id: `cerebras:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'cerebras' as const, nsfwOk: m.nsfw !== false })),
-    // Together
-    { id: 'together', label: 'Together Auto', group: 'together', nsfwOk: true },
-    ...togetherModels.map((m) => ({ id: `together:${m.id}`, label: `${m.name} (${m.quality}/10)`, group: 'together' as const, nsfwOk: m.nsfw !== false })),
-    // Direct
-    { id: 'deepseek', label: 'DeepSeek', desc: t('settings.descDeepseek'), group: 'direct', nsfwOk: true },
-    { id: 'qwen', label: 'Qwen', desc: t('settings.descQwen'), group: 'direct', nsfwOk: false },
-    // Paid
-    { id: 'grok', label: 'Grok', desc: t('settings.descGrok'), group: 'paid', nsfwOk: true },
-    { id: 'mistral', label: 'Mistral', desc: t('settings.descMistral'), group: 'paid', nsfwOk: true },
-    { id: 'gemini', label: 'Gemini', desc: t('settings.descGemini'), group: 'paid', nsfwOk: true },
-    { id: 'claude', label: 'Claude Sonnet', desc: t('settings.descClaude'), group: 'paid', nsfwOk: false },
-    { id: 'openai', label: 'GPT-4o', desc: t('settings.descOpenai'), group: 'paid', nsfwOk: true },
-  ];
+  // Resolve display info for any model ID
+  const getModelInfo = (id: string): { label: string; desc?: string; nsfwOk: boolean } => {
+    const userM = USER_MODELS.find((m) => m.id === id);
+    if (userM) return { ...userM, desc: t(descKey(id) as any) };
+    const adminM = ADMIN_DIRECT_MODELS.find((m) => m.id === id);
+    if (adminM) return { ...adminM, desc: t(descKey(id) as any) };
+    if (['groq', 'openrouter', 'cerebras', 'together'].includes(id))
+      return { label: `${id.charAt(0).toUpperCase()}${id.slice(1)} Auto`, nsfwOk: true };
+    if (id.startsWith('groq:')) {
+      const found = groqModels.find((m) => m.id === id.slice(5));
+      return { label: found ? `Groq: ${found.name}` : `Groq: ${id.slice(5)}`, nsfwOk: found?.nsfw !== false };
+    }
+    if (id.startsWith('cerebras:')) {
+      const found = cerebrasModels.find((m) => m.id === id.slice(9));
+      return { label: found ? `Cerebras: ${found.name}` : `Cerebras: ${id.slice(9)}`, nsfwOk: found?.nsfw !== false };
+    }
+    if (id.startsWith('together:')) {
+      const found = togetherModels.find((m) => m.id === id.slice(9));
+      return { label: found ? `Together: ${found.name}` : `Together: ${id.slice(9)}`, nsfwOk: found?.nsfw !== false };
+    }
+    if (id.includes('/')) {
+      const found = orModels.find((m) => m.id === id);
+      return { label: found ? found.name : id, nsfwOk: found?.nsfw !== false };
+    }
+    return { label: id, nsfwOk: true };
+  };
 
-  const isSelected = (id: string) => model === id;
+  const selectModel = (id: string) => {
+    setModel(id);
+    setLocal(clampToLimits(loadModelSettings(id), id));
+    setShowPicker(false);
+  };
 
-  // Group models for rendering with headers
-  const groups = isAdmin
-    ? (['auto', 'openrouter', 'groq', 'cerebras', 'together', 'direct', 'paid'] as const)
-    : (['auto', 'openrouter', 'groq', 'cerebras', 'together', 'direct'] as const);
+  const handleAdvancedClick = () => {
+    if (showAdvanced) {
+      setShowAdvanced(false);
+    } else if (advancedConfirmed) {
+      setShowAdvanced(true);
+    } else {
+      setShowAdvancedWarning(true);
+    }
+  };
+
+  const currentInfo = getModelInfo(model);
+  const limits = getLimits(model);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
@@ -244,167 +271,327 @@ export function GenerationSettingsModal({ currentModel, orModels, groqModels, ce
         className="bg-neutral-900 border border-neutral-700 rounded-2xl p-4 sm:p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold">{t('settings.title')}</h2>
-          <button onClick={onClose} className="p-1 text-neutral-400 hover:text-white transition-colors">
-            <X size={20} />
-          </button>
-        </div>
+        {showPicker ? (
+          /* ── Model picker view ── */
+          <>
+            <div className="flex items-center gap-3 mb-6">
+              <button onClick={() => setShowPicker(false)} className="p-1 text-neutral-400 hover:text-white transition-colors">
+                <ChevronLeft size={20} />
+              </button>
+              <h2 className="text-lg font-bold">{t('settings.chooseModel')}</h2>
+            </div>
 
-        {/* Model selection */}
-        <div className="mb-6">
-          <p className="text-sm text-neutral-400 mb-3">{t('settings.modelLabel')}</p>
-          {groups.map((group) => {
-            const items = allModels.filter((m) => m.group === group);
-            if (items.length === 0) return null;
-            return (
-              <div key={group} className="mb-3">
-                <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1.5">{t(`settings.group${group.charAt(0).toUpperCase()}${group.slice(1)}` as any)}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {items.map((m) => {
+            {/* User models */}
+            <div className="space-y-2">
+              {USER_MODELS.map((m) => {
+                const disabled = isNsfw && !m.nsfwOk;
+                const selected = model === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => !disabled && selectModel(m.id)}
+                    disabled={disabled}
+                    className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
+                      disabled
+                        ? 'border-neutral-800 bg-neutral-800/50 text-neutral-600 cursor-not-allowed'
+                        : selected
+                          ? 'border-rose-500 bg-rose-500/10 text-white'
+                          : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                    }`}
+                    title={disabled ? t('settings.nsfwBlocked') : undefined}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{m.label}</span>
+                      {selected && <Check size={18} className="text-rose-400 shrink-0" />}
+                    </div>
+                    <span className="block text-xs text-neutral-500 mt-1 leading-relaxed">{t(descKey(m.id) as any)}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Admin section */}
+            {isAdmin && (
+              <>
+                <div className="mt-6 mb-3">
+                  <p className="text-xs text-neutral-500 uppercase tracking-wider">Admin</p>
+                </div>
+
+                {/* Direct providers */}
+                <div className="space-y-2 mb-4">
+                  {ADMIN_DIRECT_MODELS.map((m) => {
                     const disabled = isNsfw && !m.nsfwOk;
+                    const selected = model === m.id;
                     return (
                       <button
                         key={m.id}
-                        onClick={() => { if (!disabled) { setModel(m.id); setLocal(clampToLimits(loadModelSettings(m.id), m.id)); } }}
+                        onClick={() => !disabled && selectModel(m.id)}
                         disabled={disabled}
-                        className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                        className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
                           disabled
                             ? 'border-neutral-800 bg-neutral-800/50 text-neutral-600 cursor-not-allowed'
-                            : isSelected(m.id)
+                            : selected
                               ? 'border-rose-500 bg-rose-500/10 text-white'
                               : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
                         }`}
                         title={disabled ? t('settings.nsfwBlocked') : undefined}
                       >
-                        <span className="block font-medium truncate text-xs">{m.label}</span>
-                        {m.desc && <span className="block text-[10px] text-neutral-500 mt-0.5 line-clamp-2 leading-tight">{m.desc}</span>}
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{m.label}</span>
+                          {selected && <Check size={18} className="text-rose-400 shrink-0" />}
+                        </div>
+                        <span className="block text-xs text-neutral-500 mt-1 leading-relaxed">{t(descKey(m.id) as any)}</span>
                       </button>
                     );
                   })}
                 </div>
-              </div>
-            );
-          })}
-        </div>
 
-        {/* Context memory */}
-        <div className="mb-6">
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="text-sm text-neutral-200">{t('settings.contextLimit')}</span>
-            <TooltipIcon text={t('settings.contextLimitTooltip')} />
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {CONTEXT_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => update('context_limit', opt.value)}
-                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                  local.context_limit === opt.value
-                    ? 'border-rose-500 bg-rose-500/10 text-white'
-                    : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
-                }`}
-              >
-                {opt.label}
+                {/* Aggregators with internal models */}
+                {[
+                  { key: 'groq', label: 'Groq', models: groqModels, prefix: 'groq:' },
+                  { key: 'openrouter', label: 'OpenRouter', models: orModels, prefix: '' },
+                  { key: 'cerebras', label: 'Cerebras', models: cerebrasModels, prefix: 'cerebras:' },
+                  { key: 'together', label: 'Together', models: togetherModels, prefix: 'together:' },
+                ].map(({ key, label, models, prefix }) => (
+                  <div key={key} className="mb-4">
+                    <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">{label}</p>
+                    <div className="space-y-1.5">
+                      <button
+                        onClick={() => selectModel(key)}
+                        className={`w-full text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                          model === key
+                            ? 'border-rose-500 bg-rose-500/10 text-white'
+                            : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-xs">{label} Auto</span>
+                          {model === key && <Check size={14} className="text-rose-400 shrink-0" />}
+                        </div>
+                      </button>
+                      {models.map((m) => {
+                        const fullId = prefix ? `${prefix}${m.id}` : m.id;
+                        const disabled = isNsfw && m.nsfw === false;
+                        const selected = model === fullId;
+                        return (
+                          <button
+                            key={fullId}
+                            onClick={() => !disabled && selectModel(fullId)}
+                            disabled={disabled}
+                            className={`w-full text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                              disabled
+                                ? 'border-neutral-800 bg-neutral-800/50 text-neutral-600 cursor-not-allowed'
+                                : selected
+                                  ? 'border-rose-500 bg-rose-500/10 text-white'
+                                  : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-xs">{m.name} ({m.quality}/10)</span>
+                              {selected && <Check size={14} className="text-rose-400 shrink-0" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </>
+        ) : (
+          /* ── Default view ── */
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold">{t('settings.title')}</h2>
+              <button onClick={onClose} className="p-1 text-neutral-400 hover:text-white transition-colors">
+                <X size={20} />
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Generation params — dynamic limits per provider */}
-        {(() => {
-          const limits = getLimits(model);
-          return (
-            <div className="space-y-5">
-              <Slider
-                label={t('settings.temperature')}
-                tooltip={t('settings.temperatureTooltip')}
-                value={local.temperature}
-                onChange={(v) => update('temperature', Math.min(v, limits.temperature.max))}
-                min={0}
-                max={limits.temperature.max}
-                step={0.01}
-              />
-              <Slider
-                label={t('settings.topP')}
-                tooltip={t('settings.topPTooltip')}
-                value={local.top_p}
-                onChange={(v) => update('top_p', v)}
-                min={0}
-                max={1}
-                step={0.01}
-              />
-              {limits.top_k && (
-                <Slider
-                  label={t('settings.topK')}
-                  tooltip={t('settings.topKTooltip')}
-                  value={local.top_k}
-                  onChange={(v) => update('top_k', Math.round(v))}
-                  min={0}
-                  max={100}
-                  step={1}
-                />
-              )}
-              {limits.frequency_penalty !== false ? (
-                <Slider
-                  label={t('settings.frequencyPenalty')}
-                  tooltip={t('settings.frequencyPenaltyTooltip')}
-                  value={local.frequency_penalty}
-                  onChange={(v) => update('frequency_penalty', Math.min(v, (limits.frequency_penalty as { max: number }).max))}
-                  min={0}
-                  max={(limits.frequency_penalty as { max: number }).max}
-                  step={0.01}
-                />
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm text-neutral-500">{t('settings.frequencyPenalty')}</span>
-                  <span className="text-xs text-neutral-600">— {t('settings.notSupported')}</span>
-                </div>
-              )}
-              {limits.presence_penalty !== false ? (
-                <Slider
-                  label={t('settings.presencePenalty')}
-                  tooltip={t('settings.presencePenaltyTooltip')}
-                  value={local.presence_penalty}
-                  onChange={(v) => update('presence_penalty', Math.min(v, (limits.presence_penalty as { max: number }).max))}
-                  min={0}
-                  max={(limits.presence_penalty as { max: number }).max}
-                  step={0.01}
-                />
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm text-neutral-500">{t('settings.presencePenalty')}</span>
-                  <span className="text-xs text-neutral-600">— {t('settings.notSupported')}</span>
-                </div>
-              )}
-              <Slider
-                label={t('settings.maxTokens')}
-                tooltip={t('settings.maxTokensTooltip')}
-                value={local.max_tokens}
-                onChange={(v) => update('max_tokens', Math.round(v))}
-                min={256}
-                max={4096}
-                step={128}
-              />
             </div>
-          );
-        })()}
 
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg text-sm transition-colors"
-          >
-            {t('common.cancel')}
-          </button>
-          <button
-            onClick={() => { saveModelSettings(model, local); onApply({ ...local, model }); onClose(); }}
-            className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            {t('common.apply')}
-          </button>
-        </div>
+            {/* Current model card */}
+            <div className="mb-6">
+              <p className="text-sm text-neutral-400 mb-3">{t('settings.modelLabel')}</p>
+              <div className="border border-neutral-700 rounded-xl p-4 bg-neutral-800/50">
+                <h3 className="text-base font-semibold text-white">{currentInfo.label}</h3>
+                {currentInfo.desc && (
+                  <p className="text-sm text-neutral-400 mt-1 leading-relaxed">{currentInfo.desc}</p>
+                )}
+                <button
+                  onClick={() => setShowPicker(true)}
+                  className="mt-3 w-full px-4 py-2 border border-neutral-600 rounded-lg text-sm text-neutral-300 hover:border-neutral-400 hover:text-white transition-colors"
+                >
+                  {t('settings.changeModel')}
+                </button>
+              </div>
+            </div>
+
+            {/* Context memory */}
+            <div className="mb-6">
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="text-sm text-neutral-200">{t('settings.contextLimit')}</span>
+                <TooltipIcon text={t('settings.contextLimitTooltip')} />
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {CONTEXT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => update('context_limit', opt.value)}
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                      local.context_limit === opt.value
+                        ? 'border-rose-500 bg-rose-500/10 text-white'
+                        : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Advanced settings toggle */}
+            <div className="mb-4">
+              <button
+                onClick={handleAdvancedClick}
+                className="w-full flex items-center justify-between px-4 py-3 border border-neutral-700 rounded-xl text-sm text-neutral-300 hover:border-neutral-500 hover:text-white transition-colors"
+              >
+                <span>{showAdvanced ? t('settings.advancedHide') : t('settings.advancedSettings')}</span>
+                <ChevronRight size={16} className={`transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
+              </button>
+            </div>
+
+            {/* Advanced settings content */}
+            {showAdvanced && (
+              <div className="space-y-5 mb-4 px-1">
+                <Slider
+                  label={t('settings.temperature')}
+                  tooltip={t('settings.temperatureTooltip')}
+                  value={local.temperature}
+                  onChange={(v) => update('temperature', Math.min(v, limits.temperature.max))}
+                  min={0}
+                  max={limits.temperature.max}
+                  step={0.01}
+                />
+                <Slider
+                  label={t('settings.topP')}
+                  tooltip={t('settings.topPTooltip')}
+                  value={local.top_p}
+                  onChange={(v) => update('top_p', v)}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                />
+                {limits.top_k && (
+                  <Slider
+                    label={t('settings.topK')}
+                    tooltip={t('settings.topKTooltip')}
+                    value={local.top_k}
+                    onChange={(v) => update('top_k', Math.round(v))}
+                    min={0}
+                    max={100}
+                    step={1}
+                  />
+                )}
+                {limits.frequency_penalty !== false ? (
+                  <Slider
+                    label={t('settings.frequencyPenalty')}
+                    tooltip={t('settings.frequencyPenaltyTooltip')}
+                    value={local.frequency_penalty}
+                    onChange={(v) => update('frequency_penalty', Math.min(v, (limits.frequency_penalty as { max: number }).max))}
+                    min={0}
+                    max={(limits.frequency_penalty as { max: number }).max}
+                    step={0.01}
+                  />
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm text-neutral-500">{t('settings.frequencyPenalty')}</span>
+                    <span className="text-xs text-neutral-600">&mdash; {t('settings.notSupported')}</span>
+                  </div>
+                )}
+                {limits.presence_penalty !== false ? (
+                  <Slider
+                    label={t('settings.presencePenalty')}
+                    tooltip={t('settings.presencePenaltyTooltip')}
+                    value={local.presence_penalty}
+                    onChange={(v) => update('presence_penalty', Math.min(v, (limits.presence_penalty as { max: number }).max))}
+                    min={0}
+                    max={(limits.presence_penalty as { max: number }).max}
+                    step={0.01}
+                  />
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm text-neutral-500">{t('settings.presencePenalty')}</span>
+                    <span className="text-xs text-neutral-600">&mdash; {t('settings.notSupported')}</span>
+                  </div>
+                )}
+                <Slider
+                  label={t('settings.maxTokens')}
+                  tooltip={t('settings.maxTokensTooltip')}
+                  value={local.max_tokens}
+                  onChange={(v) => update('max_tokens', Math.round(v))}
+                  min={256}
+                  max={4096}
+                  step={128}
+                />
+                <button
+                  onClick={() => setLocal(clampToLimits({ ...GEN_DEFAULTS }, model))}
+                  className="w-full px-4 py-2 border border-neutral-700 rounded-lg text-sm text-neutral-400 hover:text-white hover:border-neutral-500 transition-colors"
+                >
+                  {t('settings.resetDefaults')}
+                </button>
+              </div>
+            )}
+
+            {/* Cancel / Apply */}
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg text-sm transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={() => { saveModelSettings(model, local); onApply({ ...local, model }); onClose(); }}
+                className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                {t('common.apply')}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Advanced warning dialog */}
+        {showAdvancedWarning && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50" onClick={() => setShowAdvancedWarning(false)}>
+            <div
+              className="bg-neutral-900 border border-neutral-600 rounded-2xl p-5 sm:p-6 w-full max-w-sm mx-4 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-amber-500/10 rounded-lg">
+                  <AlertTriangle size={20} className="text-amber-400" />
+                </div>
+                <h3 className="text-base font-semibold text-white">{t('settings.advancedWarningTitle')}</h3>
+              </div>
+              <p className="text-sm text-neutral-400 mb-5 leading-relaxed">{t('settings.advancedWarningText')}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowAdvancedWarning(false)}
+                  className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg text-sm transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={() => { setAdvancedConfirmed(true); setShowAdvancedWarning(false); setShowAdvanced(true); }}
+                  className="flex-1 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  {t('settings.advancedContinue')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
