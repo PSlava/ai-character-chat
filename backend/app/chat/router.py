@@ -386,6 +386,7 @@ def chat_to_dict(c):
             "name": c.character.name,
             "avatar_url": c.character.avatar_url,
             "tagline": c.character.tagline,
+            "scenario": c.character.scenario,
             "content_rating": c.character.content_rating.value if c.character.content_rating else "sfw",
         }
     return d
