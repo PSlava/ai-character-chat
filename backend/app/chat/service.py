@@ -327,6 +327,19 @@ _POST_HISTORY_VARIANTS = {
 }
 
 
+def _extract_companion_sentences(text: str, comp_name: str) -> str:
+    """Extract sentences mentioning the companion from last response for anti-echo."""
+    import re as _re
+    sentences = _re.split(r'(?<=[.!?…»"])\s+', text)
+    comp_lower = comp_name.lower()
+    found = [s.strip() for s in sentences if comp_lower in s.lower() and len(s.strip()) > 10]
+    if not found:
+        return ""
+    # Limit to first 3 sentences, max 300 chars total
+    result = " | ".join(found[:3])
+    return result[:300]
+
+
 def _get_post_history(lang: str, chat_id: str, message_count: int,
                       last_assistant_text: str = "",
                       content_rating: str = "sfw",
@@ -1001,6 +1014,21 @@ async def build_conversation_messages(
         role_label = _COMP_ROLE_LABELS.get(comp_role, _COMP_ROLE_LABELS["sidekick"]).get(language, comp_role)
         comp_reminder_tpl = _COMP_REMINDER.get(language, _COMP_REMINDER["en"])
         reminder += "\n" + comp_reminder_tpl.format(comp=comp_name, role=role_label, main=character.name)
+        # Extract companion's last actions for explicit anti-echo
+        if last_assistant_text and comp_name:
+            _comp_sentences = _extract_companion_sentences(last_assistant_text, comp_name)
+            if _comp_sentences:
+                _COMP_ANTI_ECHO = {
+                    "ru": "ЗАПРЕЩЕНО повторять (предыдущие действия {comp}): {actions}",
+                    "en": "FORBIDDEN to repeat ({comp}'s previous actions): {actions}",
+                    "es": "PROHIBIDO repetir (acciones previas de {comp}): {actions}",
+                    "fr": "INTERDIT de repeter (actions precedentes de {comp}): {actions}",
+                    "de": "VERBOTEN zu wiederholen (vorherige Aktionen von {comp}): {actions}",
+                    "pt": "PROIBIDO repetir (acoes anteriores de {comp}): {actions}",
+                    "it": "VIETATO ripetere (azioni precedenti di {comp}): {actions}",
+                }
+                anti_echo_tpl = _COMP_ANTI_ECHO.get(language, _COMP_ANTI_ECHO["en"])
+                reminder += "\n" + anti_echo_tpl.format(comp=comp_name, actions=_comp_sentences)
 
     all_messages = result_list + messages
 
