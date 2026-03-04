@@ -1284,6 +1284,10 @@ def _build_companion_section(character: dict, char_name: str, lang: str) -> str 
         section += f"\n{character['companion_personality']}"
     if character.get("companion_appearance"):
         section += f"\n{character['companion_appearance']}"
+    if character.get("companion_speech_pattern"):
+        section += f"\nSpeech: {character['companion_speech_pattern']}"
+    if character.get("companion_backstory"):
+        section += f"\nBackground: {character['companion_backstory']}"
     section += "\n" + _COMP_RULES.get(lang, _COMP_RULES["en"]).format(main=char_name, comp=comp_name)
     return section
 

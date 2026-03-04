@@ -24,6 +24,8 @@ export interface Character {
   companion_personality: string | null;
   companion_appearance: string | null;
   companion_avatar_url: string | null;
+  companion_speech_pattern: string | null;
+  companion_backstory: string | null;
   scenario: string | null;
   greeting_message: string;
   example_dialogues: string | null;

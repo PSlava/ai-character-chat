@@ -92,6 +92,8 @@ class Character(Base):
     companion_personality: Mapped[str | None] = mapped_column(Text, nullable=True)
     companion_appearance: Mapped[str | None] = mapped_column(Text, nullable=True)
     companion_avatar_url: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    companion_speech_pattern: Mapped[str | None] = mapped_column(Text, nullable=True)
+    companion_backstory: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_rating: Mapped[ContentRating] = mapped_column(
         SAEnum(ContentRating), default=ContentRating.sfw
     )

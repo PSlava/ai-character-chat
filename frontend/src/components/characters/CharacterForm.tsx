@@ -36,6 +36,8 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
     companion_role: initial?.companion_role || '',
     companion_personality: str(initial?.companion_personality),
     companion_appearance: str(initial?.companion_appearance),
+    companion_speech_pattern: str(initial?.companion_speech_pattern),
+    companion_backstory: str(initial?.companion_backstory),
     companion_avatar_url: initial?.companion_avatar_url || '',
     scenario: str(initial?.scenario),
     greeting_message: str(initial?.greeting_message),
@@ -74,10 +76,10 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
 
   // Approximate token count for system prompt (~4 chars/token for Latin, ~2 for Cyrillic/CJK)
   const estimatedTokens = useMemo(() => {
-    const text = [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, companionEnabled ? form.companion_personality : '', companionEnabled ? form.companion_appearance : '', form.scenario, form.greeting_message, form.example_dialogues].join(' ');
+    const text = [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, companionEnabled ? form.companion_personality : '', companionEnabled ? form.companion_appearance : '', companionEnabled ? form.companion_speech_pattern : '', companionEnabled ? form.companion_backstory : '', form.scenario, form.greeting_message, form.example_dialogues].join(' ');
     const hasCyrillic = /[\u0400-\u04FF]/.test(text);
     return Math.round(text.length / (hasCyrillic ? 2 : 4));
-  }, [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, form.companion_personality, form.companion_appearance, companionEnabled, form.scenario, form.greeting_message, form.example_dialogues]);
+  }, [form.personality, form.appearance, form.speech_pattern, form.backstory, form.hidden_layers, form.inner_conflict, form.companion_personality, form.companion_appearance, form.companion_speech_pattern, form.companion_backstory, companionEnabled, form.scenario, form.greeting_message, form.example_dialogues]);
 
   const toggleTag = (tagId: string) =>
     setForm((prev) => ({
@@ -109,6 +111,8 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         companion_personality: companionEnabled ? (form.companion_personality || undefined) : null,
         companion_appearance: companionEnabled ? (form.companion_appearance || undefined) : null,
         companion_avatar_url: companionEnabled ? (form.companion_avatar_url || undefined) : null,
+        companion_speech_pattern: companionEnabled ? (form.companion_speech_pattern || undefined) : null,
+        companion_backstory: companionEnabled ? (form.companion_backstory || undefined) : null,
         scenario: form.scenario || undefined,
         greeting_message: form.greeting_message,
         example_dialogues: form.example_dialogues || undefined,
@@ -327,6 +331,26 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
               placeholder={t('form.companionAppearancePlaceholder')}
               rows={2}
               maxLength={300}
+            />
+
+            <Textarea
+              label={t('form.companionSpeechPattern')}
+              hint={t('form.companionSpeechPatternHint')}
+              value={form.companion_speech_pattern}
+              onChange={(e) => update('companion_speech_pattern', e.target.value)}
+              placeholder={t('form.companionSpeechPatternPlaceholder')}
+              rows={2}
+              maxLength={300}
+            />
+
+            <Textarea
+              label={t('form.companionBackstory')}
+              hint={t('form.companionBackstoryHint')}
+              value={form.companion_backstory}
+              onChange={(e) => update('companion_backstory', e.target.value)}
+              placeholder={t('form.companionBackstoryPlaceholder')}
+              rows={2}
+              maxLength={500}
             />
           </div>
         )}

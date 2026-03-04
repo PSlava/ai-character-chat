@@ -859,6 +859,8 @@ async def build_conversation_messages(
         "companion_role": getattr(character, 'companion_role', None),
         "companion_personality": getattr(character, 'companion_personality', None),
         "companion_appearance": getattr(character, 'companion_appearance', None),
+        "companion_speech_pattern": getattr(character, 'companion_speech_pattern', None),
+        "companion_backstory": getattr(character, 'companion_backstory', None),
         "structured_tags": [t for t in (getattr(character, 'structured_tags', '') or '').split(",") if t],
         "tags": getattr(character, 'tags', '') or '',
     }
