@@ -364,9 +364,6 @@ export function ChatPage() {
               )}
             </span>
           )}
-          {character?.scenario && (
-            <p className="text-xs text-neutral-400 line-clamp-1">{character.scenario}</p>
-          )}
           <p className="text-xs text-neutral-500">
             {character?.profiles?.username && `@${character.profiles.username}`}
             {isAdmin && <> · {getModelLabel(activeModel)}</>}
@@ -412,6 +409,7 @@ export function ChatPage() {
         messages={messages}
         characterName={character?.name}
         characterAvatar={character?.avatar_url}
+        scenario={character?.scenario}
         userName={authUser?.username}
         isStreaming={isStreaming}
         isAdmin={isAdmin}

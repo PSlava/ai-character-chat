@@ -8,6 +8,7 @@ interface Props {
   messages: Message[];
   characterName?: string;
   characterAvatar?: string | null;
+  scenario?: string | null;
   userName?: string;
   isStreaming: boolean;
   isAdmin?: boolean;
@@ -21,7 +22,7 @@ interface Props {
   onResendLast?: (editedContent?: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, userName, isStreaming, isAdmin, hasMore, loadingMore, onLoadMore, onDeleteMessage, onRegenerate, onContinue, truncated, onResendLast }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, scenario, userName, isStreaming, isAdmin, hasMore, loadingMore, onLoadMore, onDeleteMessage, onRegenerate, onContinue, truncated, onResendLast }: Props) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -114,6 +115,11 @@ export function ChatWindow({ messages, characterName, characterAvatar, userName,
         {loadingMore && (
           <div className="flex justify-center py-2">
             <Loader2 className="w-5 h-5 text-neutral-500 animate-spin" />
+          </div>
+        )}
+        {scenario && !hasMore && (
+          <div className="text-center px-4 py-3 mx-auto max-w-lg bg-neutral-800/50 border border-neutral-700/50 rounded-xl text-sm text-neutral-300 italic">
+            {scenario}
           </div>
         )}
         {visible.map((message, index) => (
