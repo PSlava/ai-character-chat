@@ -989,13 +989,13 @@ async def build_conversation_messages(
             "comic_relief": {"ru": "комик", "en": "comic relief", "es": "comico", "fr": "comique", "de": "Komiker", "pt": "comico", "it": "comico"},
         }
         _COMP_REMINDER = {
-            "ru": "{comp} ({role}) — часть истории. Если {comp} давно не появлялся, ВКЛЮЧИ: приход, звонок, реплика, упоминание.",
-            "en": "{comp} ({role}) is part of the story. If {comp} hasn't appeared recently, INCLUDE them: arrival, call, line, mention.",
-            "es": "{comp} ({role}) es parte de la historia. Si {comp} no ha aparecido recientemente, INCLUYE: llegada, llamada, frase, mencion.",
-            "fr": "{comp} ({role}) fait partie de l'histoire. Si {comp} n'est pas apparu recemment, INCLUS: arrivee, appel, replique, mention.",
-            "de": "{comp} ({role}) ist Teil der Geschichte. Wenn {comp} lange nicht erschien, EINBEZIEHEN: Ankunft, Anruf, Replik, Erwaehnung.",
-            "pt": "{comp} ({role}) faz parte da historia. Se {comp} nao apareceu recentemente, INCLUA: chegada, ligacao, fala, mencao.",
-            "it": "{comp} ({role}) fa parte della storia. Se {comp} non e apparso di recente, INCLUDI: arrivo, chiamata, battuta, menzione.",
+            "ru": "{comp} ({role}) — часть истории. Если {comp} давно не появлялся, ВКЛЮЧИ кратко. НЕ ПОВТОРЯЙ действия {comp} из предыдущих ответов — каждое появление {comp} должно быть НОВЫМ: другая реакция, другая поза, другие слова. {comp} должен развиваться, а не зацикливаться.",
+            "en": "{comp} ({role}) is part of the story. If {comp} hasn't appeared recently, INCLUDE briefly. DO NOT repeat {comp}'s actions from previous responses — each appearance must be NEW: different reaction, different position, different words. {comp} must progress, not loop.",
+            "es": "{comp} ({role}) es parte de la historia. Si {comp} no ha aparecido recientemente, INCLUYE brevemente. NO repitas acciones de {comp} de respuestas anteriores — cada aparicion debe ser NUEVA: diferente reaccion, posicion, palabras.",
+            "fr": "{comp} ({role}) fait partie de l'histoire. Si {comp} n'est pas apparu recemment, INCLUS brievement. NE repete PAS les actions de {comp} des reponses precedentes — chaque apparition doit etre NOUVELLE: reaction, position, mots differents.",
+            "de": "{comp} ({role}) ist Teil der Geschichte. Wenn {comp} lange nicht erschien, EINBEZIEHEN kurz. NICHT die Aktionen von {comp} aus vorherigen Antworten wiederholen — jedes Auftreten muss NEU sein: andere Reaktion, andere Position, andere Worte.",
+            "pt": "{comp} ({role}) faz parte da historia. Se {comp} nao apareceu recentemente, INCLUA brevemente. NAO repita acoes de {comp} de respostas anteriores — cada aparicao deve ser NOVA: reacao, posicao, palavras diferentes.",
+            "it": "{comp} ({role}) fa parte della storia. Se {comp} non e apparso di recente, INCLUDI brevemente. NON ripetere le azioni di {comp} dalle risposte precedenti — ogni apparizione deve essere NUOVA: reazione, posizione, parole diverse.",
         }
         comp_role = char_dict.get("companion_role") or "sidekick"
         role_label = _COMP_ROLE_LABELS.get(comp_role, _COMP_ROLE_LABELS["sidekick"]).get(language, comp_role)
