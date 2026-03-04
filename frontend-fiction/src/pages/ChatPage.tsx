@@ -364,6 +364,9 @@ export function ChatPage() {
               )}
             </span>
           )}
+          {character?.scenario && (
+            <p className="text-xs text-neutral-400 line-clamp-1">{character.scenario}</p>
+          )}
           <p className="text-xs text-neutral-500">
             {character?.profiles?.username && `@${character.profiles.username}`}
             {isAdmin && <> · {getModelLabel(activeModel)}</>}

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, ChevronLeft, ChevronRight, Check, AlertTriangle } from 'lucide-react';
+import { X, ChevronRight, Check, AlertTriangle } from 'lucide-react';
 import type { GenerationSettings } from '@/hooks/useChat';
 import type { OpenRouterModel } from '@/api/characters';
 
@@ -202,6 +202,7 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
   const [model, setModel] = useState(currentModel);
   const [local, setLocal] = useState(() => loadModelSettings(currentModel));
   const [showPicker, setShowPicker] = useState(false);
+  const [pickerModel, setPickerModel] = useState(currentModel);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [advancedConfirmed, setAdvancedConfirmed] = useState(false);
   const [showAdvancedWarning, setShowAdvancedWarning] = useState(false);
@@ -239,9 +240,18 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
   };
 
   const selectModel = (id: string) => {
-    setModel(id);
-    setLocal(clampToLimits(loadModelSettings(id), id));
+    setPickerModel(id);
+  };
+
+  const confirmPicker = () => {
+    setModel(pickerModel);
+    setLocal(clampToLimits(loadModelSettings(pickerModel), pickerModel));
     setShowPicker(false);
+  };
+
+  const openPicker = () => {
+    setPickerModel(model);
+    setShowPicker(true);
   };
 
   const handleAdvancedClick = () => {
@@ -266,10 +276,7 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
         {showPicker ? (
           /* ── Model picker view ── */
           <>
-            <div className="flex items-center gap-3 mb-6">
-              <button onClick={() => setShowPicker(false)} className="p-1 text-neutral-400 hover:text-white transition-colors">
-                <ChevronLeft size={20} />
-              </button>
+            <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold">{t('settings.chooseModel')}</h2>
             </div>
 
@@ -277,7 +284,7 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
             <div className="space-y-2">
               {USER_MODELS.map((m) => {
                 const disabled = isNsfw && !m.nsfwOk;
-                const selected = model === m.id;
+                const selected = pickerModel === m.id;
                 return (
                   <button
                     key={m.id}
@@ -313,7 +320,7 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
                 <div className="space-y-2 mb-4">
                   {ADMIN_DIRECT_MODELS.map((m) => {
                     const disabled = isNsfw && !m.nsfwOk;
-                    const selected = model === m.id;
+                    const selected = pickerModel === m.id;
                     return (
                       <button
                         key={m.id}
@@ -351,20 +358,20 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
                       <button
                         onClick={() => selectModel(key)}
                         className={`w-full text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
-                          model === key
+                          pickerModel === key
                             ? 'border-purple-500 bg-purple-500/10 text-white'
                             : 'border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-500'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-xs">{label} Auto</span>
-                          {model === key && <Check size={14} className="text-purple-400 shrink-0" />}
+                          {pickerModel === key && <Check size={14} className="text-purple-400 shrink-0" />}
                         </div>
                       </button>
                       {models.map((m) => {
                         const fullId = prefix ? `${prefix}${m.id}` : m.id;
                         const disabled = isNsfw && m.nsfw === false;
-                        const selected = model === fullId;
+                        const selected = pickerModel === fullId;
                         return (
                           <button
                             key={fullId}
@@ -390,6 +397,22 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
                 ))}
               </>
             )}
+
+            {/* OK / Cancel */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowPicker(false)}
+                className="flex-1 px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg text-sm transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={confirmPicker}
+                className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                OK
+              </button>
+            </div>
           </>
         ) : (
           /* ── Default view ── */
@@ -410,7 +433,7 @@ export function GenerationSettingsModal({ currentModel, orModels = [], groqModel
                   <p className="text-sm text-neutral-400 mt-1 leading-relaxed">{currentInfo.desc}</p>
                 )}
                 <button
-                  onClick={() => setShowPicker(true)}
+                  onClick={openPicker}
                   className="mt-3 w-full px-4 py-2 border border-neutral-600 rounded-lg text-sm text-neutral-300 hover:border-neutral-400 hover:text-white transition-colors"
                 >
                   {t('settings.changeModel')}
