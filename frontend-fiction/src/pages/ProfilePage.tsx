@@ -342,6 +342,17 @@ export function ProfilePage() {
       {/* Characters tab */}
       {activeTab === 'characters' && (
         <div>
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate('/create')}
+              className="flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              {t('header.create')}
+            </Button>
+          </div>
           <CharacterGrid characters={myCharacters} loading={loading} />
         </div>
       )}

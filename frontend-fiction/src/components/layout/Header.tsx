@@ -6,7 +6,7 @@ import { signOut } from '@/api/auth';
 import { Button } from '@/components/ui/Button';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { Logo } from '@/components/ui/Logo';
-import { Plus, LogOut, User, Menu } from 'lucide-react';
+import { LogOut, User, Menu } from 'lucide-react';
 
 interface Props {
   onToggleSidebar?: () => void;
@@ -45,12 +45,6 @@ export function Header({ onToggleSidebar }: Props) {
         <LanguageSwitcher compact />
         {isAuthenticated ? (
           <>
-            <Link to="/create">
-              <Button variant="secondary" size="sm" className="flex items-center gap-1">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">{t('header.create')}</span>
-              </Button>
-            </Link>
             <Link to="/profile">
               <Button variant="ghost" size="sm">
                 <User className="w-4 h-4" />
