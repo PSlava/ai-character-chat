@@ -209,37 +209,44 @@ _PROVIDER_HINTS: dict[str, dict[str, str]] = {
         "ru": (
             "Пиши в традиции европейской литературной прозы. Каждая сцена — живая: звуки, запахи, текстуры, свет. "
             "Диалоги {name} звучат натурально — с паузами, недосказанностью, подтекстом. "
-            "Предпочитай показывать через действия и детали, а не рассказывать напрямую."
+            "Предпочитай показывать через действия и детали, а не рассказывать напрямую. "
+            "СТРОГО соблюдай длину: максимум 3-4 абзаца. Лучше ярко и коротко, чем длинно и водянисто."
         ),
         "en": (
             "Write in the tradition of European literary prose. Every scene is alive: sounds, scents, textures, light. "
             "Dialogue of {name} sounds natural — with pauses, things left unsaid, subtext. "
-            "Prefer showing through actions and details over telling directly."
+            "Prefer showing through actions and details over telling directly. "
+            "STRICTLY follow length: max 3-4 paragraphs. Better vivid and short than long and watery."
         ),
         "es": (
             "Escribe en la tradicion de la prosa literaria europea. Cada escena vive: sonidos, olores, texturas, luz. "
             "Los dialogos de {name} suenan naturales — con pausas, cosas no dichas, subtexto. "
-            "Prefiere mostrar a traves de acciones y detalles."
+            "Prefiere mostrar a traves de acciones y detalles. "
+            "RESPETA estrictamente la longitud: maximo 3-4 parrafos. Mejor vivido y breve que largo y aguado."
         ),
         "fr": (
             "Ecris dans la tradition de la prose litteraire europeenne. Chaque scene est vivante: sons, odeurs, textures, lumiere. "
             "Les dialogues de {name} sonnent naturels — avec des pauses, des non-dits, du sous-texte. "
-            "Prefere montrer a travers les actions et les details plutot que raconter."
+            "Prefere montrer a travers les actions et les details plutot que raconter. "
+            "RESPECTE strictement la longueur: max 3-4 paragraphes. Mieux vif et court que long et dilue."
         ),
         "de": (
             "Schreibe in der Tradition europaeischer literarischer Prosa. Jede Szene lebt: Geraeusche, Gerueche, Texturen, Licht. "
             "Die Dialoge von {name} klingen natuerlich — mit Pausen, Ungesagtem, Subtext. "
-            "Bevorzuge Zeigen durch Handlungen und Details statt direktem Erzaehlen."
+            "Bevorzuge Zeigen durch Handlungen und Details statt direktem Erzaehlen. "
+            "Halte dich STRIKT an die Laenge: max 3-4 Absaetze. Lieber lebendig und kurz als lang und verwaeessert."
         ),
         "pt": (
             "Escreva na tradicao da prosa literaria europeia. Cada cena e viva: sons, cheiros, texturas, luz. "
             "Os dialogos de {name} soam naturais — com pausas, coisas nao ditas, subtexto. "
-            "Prefira mostrar atraves de acoes e detalhes em vez de contar diretamente."
+            "Prefira mostrar atraves de acoes e detalhes em vez de contar diretamente. "
+            "RESPEITE estritamente o comprimento: maximo 3-4 paragrafos. Melhor vivido e curto do que longo e aguado."
         ),
         "it": (
             "Scrivi nella tradizione della prosa letteraria europea. Ogni scena e viva: suoni, profumi, texture, luce. "
             "I dialoghi di {name} suonano naturali — con pause, non detti, sottotesto. "
-            "Preferisci mostrare attraverso azioni e dettagli piuttosto che raccontare direttamente."
+            "Preferisci mostrare attraverso azioni e dettagli piuttosto che raccontare direttamente. "
+            "RISPETTA rigorosamente la lunghezza: max 3-4 paragrafi. Meglio vivido e breve che lungo e annacquato."
         ),
     },
     "mistral_nsfw": {
