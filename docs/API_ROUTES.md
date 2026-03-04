@@ -36,7 +36,7 @@
 - `POST /api/chats/{id}/message` (SSE, supports anon)
 - `POST /api/chats/{id}/generate-persona-reply` (ghostwrite as persona)
 - `DELETE /api/chats/{id}/messages` (clear)
-- `DELETE /api/chats/{id}/messages/{msg_id}`
+- `DELETE /api/chats/{id}/messages/{msg_id}` (cascade: deletes target + all after, returns `{"deleted": N}`)
 
 ## Group Chats
 - `POST /api/group-chats` (2-3 character_ids)
