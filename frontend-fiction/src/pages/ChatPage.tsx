@@ -366,7 +366,6 @@ export function ChatPage() {
           )}
           <p className="text-xs text-neutral-500">
             {character?.profiles?.username && `@${character.profiles.username}`}
-            {isAdmin && <> · {getModelLabel(activeModel)}</>}
           </p>
         </div>
         <button
