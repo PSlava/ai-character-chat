@@ -114,7 +114,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
       {characterAvatar && (
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: `url(${characterAvatar})`, backgroundSize: 'cover', backgroundPosition: 'center top', filter: 'blur(5px) saturate(0.6)', opacity: 0.4 }}
+          style={{ backgroundImage: `url(${characterAvatar})`, backgroundSize: 'cover', backgroundPosition: 'center top', filter: 'blur(10px) saturate(0.6)', opacity: 0.2 }}
         />
       )}
       <div ref={containerRef} onScroll={handleScroll} className="absolute inset-0 overflow-y-auto p-2 sm:p-4">
