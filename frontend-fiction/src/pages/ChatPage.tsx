@@ -28,19 +28,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 
-const MODEL_ALIASES: Record<string, string> = {
-  openai: 'GPT-4o',
-  gemini: 'Gemini',
-  openrouter: 'OpenRouter Auto',
-  deepseek: 'DeepSeek',
-  qwen: 'Qwen',
-  groq: 'Groq',
-  cerebras: 'Cerebras',
-  together: 'Together',
-  grok: 'Grok',
-  mistral: 'Mistral',
-};
-
 type ConfirmAction = { type: 'deleteChat' } | { type: 'clearChat' } | { type: 'deleteMessage'; messageId: string };
 
 export function ChatPage() {
@@ -151,27 +138,6 @@ export function ChatPage() {
         try { localStorage.setItem(`chat-model:${chatId}`, s.model); } catch {}
       }
     }
-  };
-
-  const getModelLabel = (m: string) => {
-    if (MODEL_ALIASES[m]) return MODEL_ALIASES[m];
-    if (m.startsWith('groq:')) {
-      const id = m.slice(5);
-      const found = groqModels.find((gm) => gm.id === id);
-      return found ? `Groq: ${found.name}` : `Groq: ${id}`;
-    }
-    if (m.startsWith('cerebras:')) {
-      const id = m.slice(9);
-      const found = cerebrasModels.find((cm) => cm.id === id);
-      return found ? `Cerebras: ${found.name}` : `Cerebras: ${id}`;
-    }
-    if (m.startsWith('together:')) {
-      const id = m.slice(9);
-      const found = togetherModels.find((tm) => tm.id === id);
-      return found ? `Together: ${found.name}` : `Together: ${id}`;
-    }
-    const found = orModels.find((om) => om.id === m);
-    return found ? found.name : m;
   };
 
   const handleDeleteChat = () => {
