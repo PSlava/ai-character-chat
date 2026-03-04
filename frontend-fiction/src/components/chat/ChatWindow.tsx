@@ -110,14 +110,13 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
   };
 
   return (
-    <div className="flex-1 flex flex-col relative" style={{ overflow: 'clip' }}>
+    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 relative isolate">
       {characterAvatar && (
         <div
-          className="absolute inset-0 -z-10 pointer-events-none"
-          style={{ backgroundImage: `url(${characterAvatar})`, backgroundSize: 'cover', backgroundPosition: 'center top', filter: 'blur(10px) saturate(0.6)', opacity: 0.2 }}
+          className="sticky top-0 -z-10 pointer-events-none"
+          style={{ backgroundImage: `url(${characterAvatar})`, backgroundSize: 'cover', backgroundPosition: 'center top', filter: 'blur(10px) saturate(0.6)', opacity: 0.2, height: '100dvh', marginBottom: '-100dvh' }}
         />
       )}
-      <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-2 sm:p-4">
       <div className="max-w-3xl mx-auto space-y-4">
         {loadingMore && (
           <div className="flex justify-center py-2">
@@ -247,7 +246,6 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
           <ArrowDown size={18} />
         </button>
       )}
-      </div>
     </div>
   );
 }
