@@ -340,6 +340,38 @@ def _extract_companion_sentences(text: str, comp_name: str) -> str:
     return result[:300]
 
 
+# Rotated companion action directives — concrete instructions instead of vague "do something new"
+_COMPANION_DIRECTIVES = {
+    "ru": [
+        "{comp} делает что-то физически активное: двигается, берёт что-то, меняет позу, перемещается в другое место.",
+        "{comp} эмоционально реагирует на происходящее: смеётся, хмурится, удивляется, закатывает глаза, вздыхает.",
+        "{comp} говорит что-то — мнение, вопрос, комментарий, шутку или ворчание о ситуации.",
+        "{comp} занят своим делом рядом: что-то делает руками, смотрит в телефон, готовит, читает.",
+        "{comp} только что пришёл или собирается уйти — его присутствие меняется.",
+        "{comp} замечает что-то, чего другие не заметили, и реагирует молча или говорит об этом.",
+        "{comp} раскрывает личную деталь: воспоминание, привычку, предпочтение или секрет.",
+        "{comp} физически взаимодействует с кем-то: касается, толкает, передаёт что-то, жестикулирует.",
+    ],
+    "en": [
+        "{comp} does something physically active: moves, grabs something, changes position, walks somewhere.",
+        "{comp} reacts emotionally to what's happening: laughs, frowns, gasps, rolls eyes, sighs.",
+        "{comp} speaks up — an opinion, question, joke, or complaint about the situation.",
+        "{comp} is busy with their own thing nearby: doing something with hands, on phone, cooking, reading.",
+        "{comp} has just arrived or is about to leave — their presence changes.",
+        "{comp} notices something others missed and reacts silently or speaks about it.",
+        "{comp} reveals a personal detail: a memory, habit, preference, or secret.",
+        "{comp} physically interacts with someone: touches, nudges, hands something, gestures.",
+    ],
+}
+
+
+def _get_companion_directive(chat_id: str, msg_count: int, comp_name: str, lang: str) -> str:
+    """Pick a concrete rotated directive for the companion."""
+    directives = _COMPANION_DIRECTIVES.get(lang, _COMPANION_DIRECTIVES["en"])
+    idx = hash(f"{chat_id}:comp:{msg_count}") % len(directives)
+    return directives[idx].format(comp=comp_name)
+
+
 def _get_post_history(lang: str, chat_id: str, message_count: int,
                       last_assistant_text: str = "",
                       content_rating: str = "sfw",
@@ -988,8 +1020,9 @@ async def build_conversation_messages(
             hidden_layers=char_dict.get("hidden_layers") or "",
             last_user_text=last_user_text,
         ).format(name=character.name)
-    # Companion re-injection in post-history (prevents context rot)
+    # Companion re-injection as SEPARATE system message (own attention slot)
     comp_name = char_dict.get("companion_name")
+    comp_system_msg = None
     if comp_name:
         _COMP_ROLE_LABELS = {
             "sidekick": {"ru": "помощник", "en": "sidekick", "es": "companero", "fr": "acolyte", "de": "Gehilfe", "pt": "ajudante", "it": "assistente"},
@@ -1001,34 +1034,30 @@ async def build_conversation_messages(
             "guide": {"ru": "проводник", "en": "guide", "es": "guia", "fr": "guide", "de": "Wegweiser", "pt": "guia", "it": "guida"},
             "comic_relief": {"ru": "комик", "en": "comic relief", "es": "comico", "fr": "comique", "de": "Komiker", "pt": "comico", "it": "comico"},
         }
-        _COMP_REMINDER = {
-            "ru": "{comp} ({role}) — часть истории. Если {comp} давно не появлялся, ВКЛЮЧИ кратко. НЕ ПОВТОРЯЙ действия {comp} из предыдущих ответов — каждое появление {comp} должно быть НОВЫМ: другая реакция, другая поза, другие слова. {comp} должен развиваться, а не зацикливаться.",
-            "en": "{comp} ({role}) is part of the story. If {comp} hasn't appeared recently, INCLUDE briefly. DO NOT repeat {comp}'s actions from previous responses — each appearance must be NEW: different reaction, different position, different words. {comp} must progress, not loop.",
-            "es": "{comp} ({role}) es parte de la historia. Si {comp} no ha aparecido recientemente, INCLUYE brevemente. NO repitas acciones de {comp} de respuestas anteriores — cada aparicion debe ser NUEVA: diferente reaccion, posicion, palabras.",
-            "fr": "{comp} ({role}) fait partie de l'histoire. Si {comp} n'est pas apparu recemment, INCLUS brievement. NE repete PAS les actions de {comp} des reponses precedentes — chaque apparition doit etre NOUVELLE: reaction, position, mots differents.",
-            "de": "{comp} ({role}) ist Teil der Geschichte. Wenn {comp} lange nicht erschien, EINBEZIEHEN kurz. NICHT die Aktionen von {comp} aus vorherigen Antworten wiederholen — jedes Auftreten muss NEU sein: andere Reaktion, andere Position, andere Worte.",
-            "pt": "{comp} ({role}) faz parte da historia. Se {comp} nao apareceu recentemente, INCLUA brevemente. NAO repita acoes de {comp} de respostas anteriores — cada aparicao deve ser NOVA: reacao, posicao, palavras diferentes.",
-            "it": "{comp} ({role}) fa parte della storia. Se {comp} non e apparso di recente, INCLUDI brevemente. NON ripetere le azioni di {comp} dalle risposte precedenti — ogni apparizione deve essere NUOVA: reazione, posizione, parole diverse.",
-        }
         comp_role = char_dict.get("companion_role") or "sidekick"
         role_label = _COMP_ROLE_LABELS.get(comp_role, _COMP_ROLE_LABELS["sidekick"]).get(language, comp_role)
-        comp_reminder_tpl = _COMP_REMINDER.get(language, _COMP_REMINDER["en"])
-        reminder += "\n" + comp_reminder_tpl.format(comp=comp_name, role=role_label, main=character.name)
-        # Extract companion's last actions for explicit anti-echo
-        if last_assistant_text and comp_name:
-            _comp_sentences = _extract_companion_sentences(last_assistant_text, comp_name)
-            if _comp_sentences:
-                _COMP_ANTI_ECHO = {
-                    "ru": "ЗАПРЕЩЕНО повторять (предыдущие действия {comp}): {actions}",
-                    "en": "FORBIDDEN to repeat ({comp}'s previous actions): {actions}",
-                    "es": "PROHIBIDO repetir (acciones previas de {comp}): {actions}",
-                    "fr": "INTERDIT de repeter (actions precedentes de {comp}): {actions}",
-                    "de": "VERBOTEN zu wiederholen (vorherige Aktionen von {comp}): {actions}",
-                    "pt": "PROIBIDO repetir (acoes anteriores de {comp}): {actions}",
-                    "it": "VIETATO ripetere (azioni precedenti di {comp}): {actions}",
-                }
-                anti_echo_tpl = _COMP_ANTI_ECHO.get(language, _COMP_ANTI_ECHO["en"])
-                reminder += "\n" + anti_echo_tpl.format(comp=comp_name, actions=_comp_sentences)
+
+        # Build companion-specific system message with: state + directive + anti-echo
+        comp_parts = []
+        # 1. State tracking: what companion did last (so model advances FROM here)
+        comp_prev_actions = _extract_companion_sentences(last_assistant_text, comp_name) if last_assistant_text else ""
+        if comp_prev_actions:
+            _STATE_TPL = {
+                "ru": "{comp} в прошлом ответе: {actions}\nПРОДВИНЬ {comp} ДАЛЬШЕ. Другое действие, другая поза, другие слова. ЗАПРЕЩЕНО повторять предыдущее.",
+                "en": "{comp} in previous response: {actions}\nADVANCE {comp} FORWARD. Different action, different position, different words. FORBIDDEN to repeat previous.",
+            }
+            state_tpl = _STATE_TPL.get(language, _STATE_TPL["en"])
+            comp_parts.append(state_tpl.format(comp=comp_name, actions=comp_prev_actions))
+        # 2. Concrete rotated directive
+        directive = _get_companion_directive(chat_id, msg_count, comp_name, language)
+        _DIR_TPL = {
+            "ru": "В ЭТОМ ответе {comp} ({role}): {directive}",
+            "en": "In THIS response {comp} ({role}): {directive}",
+        }
+        dir_tpl = _DIR_TPL.get(language, _DIR_TPL["en"])
+        comp_parts.append(dir_tpl.format(comp=comp_name, role=role_label, directive=directive))
+
+        comp_system_msg = LLMMessage(role="system", content="\n".join(comp_parts))
 
     all_messages = result_list + messages
 
@@ -1044,5 +1073,8 @@ async def build_conversation_messages(
                     ))
                 break
 
+    # Companion gets its own system message (separate attention slot)
+    if comp_system_msg:
+        all_messages.append(comp_system_msg)
     all_messages.append(LLMMessage(role="system", content=reminder))
     return all_messages

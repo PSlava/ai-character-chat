@@ -967,8 +967,14 @@ async def send_message(
     capped_max_tokens = cap_max_tokens(requested_max_tokens, tier)
     _resp_length = getattr(character, 'response_length', None) or "long"
 
+    has_companion = bool(getattr(character, 'companion_name', None))
+    # Companion chats get higher temperature for more varied output
+    _default_temp = 0.95 if content_rating == "nsfw" else 0.85
+    if has_companion:
+        _default_temp = min(_default_temp + 0.07, 1.0)
+
     base_config = {
-        "temperature": body.temperature if body.temperature is not None else (0.95 if content_rating == "nsfw" else 0.85),
+        "temperature": body.temperature if body.temperature is not None else _default_temp,
         "max_tokens": capped_max_tokens,
         "top_p": body.top_p if body.top_p is not None else 0.95,
         "top_k": body.top_k if body.top_k is not None else 0,
@@ -1001,6 +1007,13 @@ async def send_message(
         # Skip NSFW-blocked providers (e.g. Claude) when content is NSFW
         if content_rating == "nsfw":
             auto_order = [p for p in auto_order if p not in _NSFW_BLOCKED_PROVIDERS]
+        # Companion chats: prefer providers that support repetition penalties
+        # Groq/Grok/Mistral/Cerebras ignore penalties → deprioritize them
+        if has_companion:
+            _NO_PENALTY_PROVIDERS = {"groq", "grok", "mistral", "cerebras"}
+            good = [p for p in auto_order if p not in _NO_PENALTY_PROVIDERS]
+            bad = [p for p in auto_order if p in _NO_PENALTY_PROVIDERS]
+            auto_order = good + bad
 
         async def event_stream():
             errors: list[str] = []
