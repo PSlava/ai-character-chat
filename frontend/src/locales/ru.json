@@ -118,6 +118,7 @@
   "chat.editTooltip": "Редактировать и отправить",
   "chat.deleteMessage": "Удалить сообщение",
   "chat.deleteMessageConfirm": "Это сообщение будет удалено без возможности восстановления.",
+  "chat.deleteMessageConfirmMulti": "Это также удалит ещё {{count}} сообщений после него. Продолжить?",
   "chat.deleteMessageTitle": "Удалить сообщение?",
   "chat.deleteChatTitle": "Удалить чат?",
   "chat.clearChatTitle": "Очистить чат?",

@@ -113,6 +113,7 @@
   "chat.editTooltip": "Edit and send",
   "chat.deleteMessage": "Delete message",
   "chat.deleteMessageConfirm": "This message will be permanently deleted.",
+  "chat.deleteMessageConfirmMulti": "This will also delete {{count}} more message(s) after it. Continue?",
   "chat.deleteMessageTitle": "Delete message?",
   "chat.deleteChatTitle": "Delete chat?",
   "chat.clearChatTitle": "Clear chat?",

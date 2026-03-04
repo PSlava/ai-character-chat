@@ -28,7 +28,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 
-type ConfirmAction = { type: 'deleteChat' } | { type: 'clearChat' } | { type: 'deleteMessage'; messageId: string };
+type ConfirmAction = { type: 'deleteChat' } | { type: 'clearChat' } | { type: 'deleteMessage'; messageId: string; deleteCount: number };
 
 export function ChatPage() {
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -158,7 +158,9 @@ export function ChatPage() {
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
       return;
     }
-    setConfirmAction({ type: 'deleteMessage', messageId });
+    const idx = messages.findIndex((m) => m.id === messageId);
+    const deleteCount = idx >= 0 ? messages.length - idx : 1;
+    setConfirmAction({ type: 'deleteMessage', messageId, deleteCount });
   };
 
   const executeConfirm = async () => {
@@ -188,7 +190,10 @@ export function ChatPage() {
     } else if (action.type === 'deleteMessage') {
       try {
         await deleteChatMessage(chatId, action.messageId);
-        setMessages((prev) => prev.filter((m) => m.id !== action.messageId));
+        setMessages((prev) => {
+          const idx = prev.findIndex((m) => m.id === action.messageId);
+          return idx >= 0 ? prev.slice(0, idx) : prev;
+        });
       } catch {
         // Silently fail — message might be the greeting
       }
@@ -213,7 +218,9 @@ export function ChatPage() {
       case 'deleteMessage':
         return {
           title: t('chat.deleteMessageTitle'),
-          message: t('chat.deleteMessageConfirm'),
+          message: confirmAction.deleteCount > 1
+            ? t('chat.deleteMessageConfirmMulti', { count: confirmAction.deleteCount - 1 })
+            : t('chat.deleteMessageConfirm'),
         };
     }
   };

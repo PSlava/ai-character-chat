@@ -118,6 +118,7 @@
   "chat.editTooltip": "Editar e enviar",
   "chat.deleteMessage": "Excluir mensagem",
   "chat.deleteMessageConfirm": "Esta mensagem será excluída permanentemente.",
+  "chat.deleteMessageConfirmMulti": "Isso também excluirá mais {{count}} mensagem(ns) após ela. Continuar?",
   "chat.deleteMessageTitle": "Excluir mensagem?",
   "chat.deleteChatTitle": "Excluir conversa?",
   "chat.clearChatTitle": "Limpar conversa?",

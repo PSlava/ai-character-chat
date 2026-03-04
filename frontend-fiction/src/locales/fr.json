@@ -120,6 +120,7 @@
   "chat.editTooltip": "Modifier et envoyer",
   "chat.deleteMessage": "Supprimer le message",
   "chat.deleteMessageConfirm": "Ce message sera définitivement supprimé.",
+  "chat.deleteMessageConfirmMulti": "Cela supprimera également {{count}} message(s) après celui-ci. Continuer ?",
   "chat.deleteMessageTitle": "Supprimer le message ?",
   "chat.deleteChatTitle": "Supprimer la discussion ?",
   "chat.clearChatTitle": "Effacer la discussion ?",

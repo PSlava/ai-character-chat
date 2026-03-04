@@ -820,15 +820,16 @@ async def clear_chat_messages(db: AsyncSession, chat_id: str, user_id: str):
     return True
 
 
-async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_id: str):
-    """Delete a single message. Cannot delete the first (greeting) message."""
+async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_id: str) -> int:
+    """Delete a message and all messages after it. Cannot delete the first (greeting) message.
+    Returns the number of deleted messages, or 0 on failure."""
     # Verify chat ownership
     result = await db.execute(
         select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id)
     )
     chat = result.scalar_one_or_none()
     if not chat:
-        return False
+        return 0
 
     # Get the first message to protect it
     first_msg = await db.execute(
@@ -839,19 +840,23 @@ async def delete_message(db: AsyncSession, chat_id: str, message_id: str, user_i
     )
     first = first_msg.scalar_one_or_none()
     if first and first.id == message_id:
-        return False  # can't delete greeting
+        return 0  # can't delete greeting
 
-    # Delete the message
+    # Get the target message
     msg_result = await db.execute(
         select(Message).where(Message.id == message_id, Message.chat_id == chat_id)
     )
     msg = msg_result.scalar_one_or_none()
     if not msg:
-        return False
+        return 0
 
-    await db.delete(msg)
+    # Delete target + all messages after it (cascade)
+    del_result = await db.execute(
+        text("DELETE FROM messages WHERE chat_id = :chat_id AND created_at >= :ts"),
+        {"chat_id": chat_id, "ts": msg.created_at},
+    )
     await db.commit()
-    return True
+    return del_result.rowcount
 
 
 async def increment_message_count(character_id: str, language: str, user_id: str | None = None):

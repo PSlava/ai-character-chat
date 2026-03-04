@@ -653,17 +653,18 @@ async def clear_messages(
         raise HTTPException(status_code=404, detail="Chat not found")
 
 
-@router.delete("/{chat_id}/messages/{message_id}", status_code=204)
+@router.delete("/{chat_id}/messages/{message_id}")
 async def delete_message(
     chat_id: str,
     message_id: str,
     user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete a single message (cannot delete greeting)."""
-    deleted = await service.delete_message(db, chat_id, message_id, user["id"])
-    if not deleted:
+    """Delete a message and all messages after it (cannot delete greeting)."""
+    count = await service.delete_message(db, chat_id, message_id, user["id"])
+    if not count:
         raise HTTPException(status_code=404, detail="Message not found or cannot be deleted")
+    return {"deleted": count}
 
 
 @router.post("/{chat_id}/generate-persona-reply")
