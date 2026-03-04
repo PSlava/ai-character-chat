@@ -392,6 +392,66 @@ def _is_refusal_response(text: str) -> bool:
     return any(phrase in low for phrase in _REFUSAL_PHRASES)
 
 
+def _dedup_response(text: str) -> str:
+    """Remove duplicated content from model output.
+
+    Some models (e.g. Llama 3.3) repeat themselves — generating the same
+    scene twice with minor rewording. Two strategies:
+    1. Paragraph-level: first 3 words of paragraphs match earlier ones
+    2. Substring-level: a long sentence from the first half reappears later
+    """
+    if len(text) < 100:
+        return text
+
+    # Strategy 1: paragraph-level dedup
+    paragraphs = [p.strip() for p in _re.split(r'\n\s*\n|\n', text) if p.strip()]
+    if len(paragraphs) >= 3:
+        def _key(p: str) -> str:
+            clean = _re.sub(r'^[\s\-\u2014\u2013\u00ab"\']+', '', p)
+            words = clean.split()[:3]
+            return " ".join(w.lower().rstrip('.,!?;:') for w in words)
+        keys = [_key(p) for p in paragraphs]
+        for i in range(1, len(paragraphs)):
+            if not keys[i]:
+                continue
+            for j in range(i):
+                if keys[i] == keys[j]:
+                    remaining = len(paragraphs) - i
+                    matches = 0
+                    for k in range(remaining):
+                        if i + k < len(paragraphs) and j + k < i:
+                            if keys[i + k] and keys[i + k] == keys[j + k]:
+                                matches += 1
+                    if matches >= remaining * 0.5 and matches >= 2:
+                        return "\n\n".join(paragraphs[:i])
+
+    # Strategy 2: repeated phrase detection (handles mid-sentence repeats)
+    # The model restarts the scene mid-sentence — look for a phrase from the
+    # beginning of the text that reappears later (e.g. character name + action).
+    # Extract opening phrase (first 3-5 words) and search for it in the second half.
+    words = text.split()
+    if len(words) >= 20:
+        # Try phrases of 3, 4, 5 opening words
+        for phrase_len in (5, 4, 3):
+            phrase = " ".join(words[:phrase_len])
+            if len(phrase) < 12:
+                continue
+            # Search for this phrase in the second half of text
+            search_start = len(text) // 3
+            pos = text.find(phrase, search_start)
+            if pos > 0:
+                # Found a repeat — cut before it, at nearest sentence boundary
+                clean_cut = text.rfind('. ', 0, pos)
+                if clean_cut > len(text) // 5:
+                    return text[:clean_cut + 1].rstrip()
+                # No sentence boundary — cut at word boundary before repeat
+                clean_cut = text.rfind(' ', 0, pos)
+                if clean_cut > len(text) // 5:
+                    return text[:clean_cut].rstrip()
+
+    return text
+
+
 def _estimate_prompt_tokens(messages) -> int:
     """Estimate prompt tokens from LLM messages (rough: chars / 4)."""
     return sum(len(m.content) for m in messages) // 4
@@ -985,7 +1045,7 @@ async def send_message(
                         continue
 
                     # Check short responses that finished before buffer flush
-                    complete_text = "".join(full_response)
+                    complete_text = _dedup_response("".join(full_response))
                     if not buffer_flushed:
                         if _is_refusal_response(complete_text) or _has_mixed_langs(complete_text, language):
                             actual_m = getattr(prov, 'last_model_used', '') or ''
@@ -1082,7 +1142,7 @@ async def send_message(
                     else:
                         yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
 
-                complete_text = "".join(full_response)
+                complete_text = _dedup_response("".join(full_response))
                 if not buffer_flushed and not is_refusal:
                     if _is_refusal_response(complete_text) or _has_mixed_langs(complete_text, language):
                         is_refusal = True
