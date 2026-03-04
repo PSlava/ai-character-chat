@@ -52,7 +52,7 @@ async def _check_paid_health() -> dict | None:
     config = LLMConfig(model="", temperature=0.1, max_tokens=10)
     issues = []
 
-    for name in ("openai", "claude", "gemini", "deepseek", "together"):
+    for name in ("openai", "claude", "gemini", "deepseek", "together", "grok", "mistral", "qwen"):
         try:
             prov = get_provider(name)
         except ValueError:
