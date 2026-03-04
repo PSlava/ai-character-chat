@@ -1,4 +1,5 @@
 """Simple in-memory rate limiter. No external dependencies."""
+import asyncio
 import time
 from collections import defaultdict
 from fastapi import Request, HTTPException, status
@@ -18,6 +19,16 @@ class RateLimiter:
             return False
         self._requests[key].append(now)
         return True
+
+    def wait_seconds(self, key: str) -> float:
+        """Return seconds to wait before the next request is allowed, or 0."""
+        now = time.monotonic()
+        cutoff = now - self.window
+        self._requests[key] = [t for t in self._requests[key] if t > cutoff]
+        if len(self._requests[key]) < self.max_requests:
+            return 0
+        oldest = self._requests[key][0]
+        return max(0, oldest + self.window - now)
 
 
 # 10 auth attempts per minute per IP
@@ -69,12 +80,12 @@ def check_message_rate(user_id: str):
         )
 
 
-def check_message_interval(user_id: str):
-    if not message_interval_limiter.check(f"msg_int:{user_id}"):
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Please wait a few seconds between messages.",
-        )
+async def check_message_interval(user_id: str):
+    key = f"msg_int:{user_id}"
+    wait = message_interval_limiter.wait_seconds(key)
+    if wait > 0:
+        await asyncio.sleep(min(wait + 0.1, 6))  # wait up to 6s, then proceed
+    message_interval_limiter.check(key)  # record the request
 
 
 def check_reset_rate(request: Request, email: str | None = None):
