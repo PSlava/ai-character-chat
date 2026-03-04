@@ -117,7 +117,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
           style={{ backgroundImage: `url(${characterAvatar})`, backgroundSize: 'cover', backgroundPosition: 'center top', filter: 'blur(10px) saturate(0.6)', opacity: 0.2 }}
         />
       )}
-      <div ref={containerRef} onScroll={handleScroll} className="absolute inset-0 overflow-y-auto p-2 sm:p-4">
+      <div ref={containerRef} onScroll={handleScroll} className="absolute inset-0 z-10 overflow-y-auto p-2 sm:p-4 isolate">
       <div className="max-w-3xl mx-auto space-y-4 relative">
         {loadingMore && (
           <div className="flex justify-center py-2">
