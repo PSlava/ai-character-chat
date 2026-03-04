@@ -35,9 +35,11 @@ class AnthropicProvider(BaseLLMProvider):
         config: LLMConfig,
     ) -> AsyncIterator[str]:
         system_blocks, api_messages = self._prepare(messages)
+        model = config.model or DEFAULT_MODEL
+        self.last_model_used = model
 
         kwargs: dict = {
-            "model": config.model or DEFAULT_MODEL,
+            "model": model,
             "max_tokens": config.max_tokens,
             "messages": api_messages,
         }
@@ -67,9 +69,11 @@ class AnthropicProvider(BaseLLMProvider):
         config: LLMConfig,
     ) -> LLMResult:
         system_blocks, api_messages = self._prepare(messages)
+        model = config.model or DEFAULT_MODEL
+        self.last_model_used = model
 
         kwargs: dict = {
-            "model": config.model or DEFAULT_MODEL,
+            "model": model,
             "max_tokens": config.max_tokens,
             "messages": api_messages,
         }

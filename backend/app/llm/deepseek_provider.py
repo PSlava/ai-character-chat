@@ -24,8 +24,10 @@ class DeepSeekProvider(BaseLLMProvider):
         config: LLMConfig,
     ) -> AsyncIterator[str]:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
+        model = config.model or "deepseek-chat"
+        self.last_model_used = model
         stream = await self.client.chat.completions.create(
-            model=config.model or "deepseek-chat",
+            model=model,
             messages=api_messages,
             max_tokens=config.max_tokens,
             temperature=config.temperature,
