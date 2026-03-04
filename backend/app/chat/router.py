@@ -21,6 +21,7 @@ from app.chat.summarizer import maybe_summarize
 import re as _re
 import asyncio as _asyncio
 from app.llm import model_cooldown as _model_cooldown
+from app.llm import model_resolver as _model_resolver
 from app.llm.thinking_filter import has_mixed_languages as _has_mixed_langs
 
 router = APIRouter(prefix="/api/chats", tags=["chat"])
@@ -209,44 +210,37 @@ _PROVIDER_HINTS: dict[str, dict[str, str]] = {
         "ru": (
             "Пиши в традиции европейской литературной прозы. Каждая сцена — живая: звуки, запахи, текстуры, свет. "
             "Диалоги {name} звучат натурально — с паузами, недосказанностью, подтекстом. "
-            "Предпочитай показывать через действия и детали, а не рассказывать напрямую. "
-            "СТРОГО соблюдай длину: максимум 3-4 абзаца. Лучше ярко и коротко, чем длинно и водянисто."
+            "Предпочитай показывать через действия и детали, а не рассказывать напрямую."
         ),
         "en": (
             "Write in the tradition of European literary prose. Every scene is alive: sounds, scents, textures, light. "
             "Dialogue of {name} sounds natural — with pauses, things left unsaid, subtext. "
-            "Prefer showing through actions and details over telling directly. "
-            "STRICTLY follow length: max 3-4 paragraphs. Better vivid and short than long and watery."
+            "Prefer showing through actions and details over telling directly."
         ),
         "es": (
             "Escribe en la tradicion de la prosa literaria europea. Cada escena vive: sonidos, olores, texturas, luz. "
             "Los dialogos de {name} suenan naturales — con pausas, cosas no dichas, subtexto. "
-            "Prefiere mostrar a traves de acciones y detalles. "
-            "RESPETA estrictamente la longitud: maximo 3-4 parrafos. Mejor vivido y breve que largo y aguado."
+            "Prefiere mostrar a traves de acciones y detalles."
         ),
         "fr": (
             "Ecris dans la tradition de la prose litteraire europeenne. Chaque scene est vivante: sons, odeurs, textures, lumiere. "
             "Les dialogues de {name} sonnent naturels — avec des pauses, des non-dits, du sous-texte. "
-            "Prefere montrer a travers les actions et les details plutot que raconter. "
-            "RESPECTE strictement la longueur: max 3-4 paragraphes. Mieux vif et court que long et dilue."
+            "Prefere montrer a travers les actions et les details plutot que raconter."
         ),
         "de": (
             "Schreibe in der Tradition europaeischer literarischer Prosa. Jede Szene lebt: Geraeusche, Gerueche, Texturen, Licht. "
             "Die Dialoge von {name} klingen natuerlich — mit Pausen, Ungesagtem, Subtext. "
-            "Bevorzuge Zeigen durch Handlungen und Details statt direktem Erzaehlen. "
-            "Halte dich STRIKT an die Laenge: max 3-4 Absaetze. Lieber lebendig und kurz als lang und verwaeessert."
+            "Bevorzuge Zeigen durch Handlungen und Details statt direktem Erzaehlen."
         ),
         "pt": (
             "Escreva na tradicao da prosa literaria europeia. Cada cena e viva: sons, cheiros, texturas, luz. "
             "Os dialogos de {name} soam naturais — com pausas, coisas nao ditas, subtexto. "
-            "Prefira mostrar atraves de acoes e detalhes em vez de contar diretamente. "
-            "RESPEITE estritamente o comprimento: maximo 3-4 paragrafos. Melhor vivido e curto do que longo e aguado."
+            "Prefira mostrar atraves de acoes e detalhes em vez de contar diretamente."
         ),
         "it": (
             "Scrivi nella tradizione della prosa letteraria europea. Ogni scena e viva: suoni, profumi, texture, luce. "
             "I dialoghi di {name} suonano naturali — con pause, non detti, sottotesto. "
-            "Preferisci mostrare attraverso azioni e dettagli piuttosto che raccontare direttamente. "
-            "RISPETTA rigorosamente la lunghezza: max 3-4 paragrafi. Meglio vivido e breve che lungo e annacquato."
+            "Preferisci mostrare attraverso azioni e dettagli piuttosto che raccontare direttamente."
         ),
     },
     "mistral_nsfw": {
@@ -289,16 +283,67 @@ _PROVIDER_HINTS: dict[str, dict[str, str]] = {
 }
 
 
-def _get_provider_hint(provider_name: str, content_rating: str, language: str, char_name: str) -> str | None:
+_LENGTH_REMINDER: dict[str, dict[str, str]] = {
+    "short": {
+        "ru": " ДЛИНА: строго 1-3 предложения. Не больше.",
+        "en": " LENGTH: strictly 1-3 sentences. No more.",
+        "es": " LONGITUD: estrictamente 1-3 oraciones. No mas.",
+        "fr": " LONGUEUR: strictement 1-3 phrases. Pas plus.",
+        "de": " LAENGE: strikt 1-3 Saetze. Nicht mehr.",
+        "pt": " COMPRIMENTO: estritamente 1-3 frases. Nao mais.",
+        "it": " LUNGHEZZA: rigorosamente 1-3 frasi. Non di piu.",
+    },
+    "medium": {
+        "ru": " ДЛИНА: строго 2 абзаца (5-8 предложений). Не больше.",
+        "en": " LENGTH: strictly 2 paragraphs (5-8 sentences). No more.",
+        "es": " LONGITUD: estrictamente 2 parrafos (5-8 oraciones). No mas.",
+        "fr": " LONGUEUR: strictement 2 paragraphes (5-8 phrases). Pas plus.",
+        "de": " LAENGE: strikt 2 Absaetze (5-8 Saetze). Nicht mehr.",
+        "pt": " COMPRIMENTO: estritamente 2 paragrafos (5-8 frases). Nao mais.",
+        "it": " LUNGHEZZA: rigorosamente 2 paragrafi (5-8 frasi). Non di piu.",
+    },
+    "long": {
+        "ru": " ДЛИНА: строго 3-4 абзаца. Не больше 4 абзацев. Лучше ярко и коротко, чем длинно и водянисто.",
+        "en": " LENGTH: strictly 3-4 paragraphs. No more than 4. Better vivid and short than long and watery.",
+        "es": " LONGITUD: estrictamente 3-4 parrafos. No mas de 4. Mejor vivido y breve que largo y aguado.",
+        "fr": " LONGUEUR: strictement 3-4 paragraphes. Pas plus de 4. Mieux vif et court que long et dilue.",
+        "de": " LAENGE: strikt 3-4 Absaetze. Nicht mehr als 4. Lieber lebendig und kurz als lang und verwaeessert.",
+        "pt": " COMPRIMENTO: estritamente 3-4 paragrafos. Nao mais que 4. Melhor vivido e curto do que longo e aguado.",
+        "it": " LUNGHEZZA: rigorosamente 3-4 paragrafi. Non piu di 4. Meglio vivido e breve che lungo e annacquato.",
+    },
+    "very_long": {
+        "ru": " ДЛИНА: максимум 4-6 абзацев. Не больше 6.",
+        "en": " LENGTH: max 4-6 paragraphs. No more than 6.",
+        "es": " LONGITUD: maximo 4-6 parrafos. No mas de 6.",
+        "fr": " LONGUEUR: max 4-6 paragraphes. Pas plus de 6.",
+        "de": " LAENGE: max 4-6 Absaetze. Nicht mehr als 6.",
+        "pt": " COMPRIMENTO: maximo 4-6 paragrafos. Nao mais que 6.",
+        "it": " LUNGHEZZA: massimo 4-6 paragrafi. Non piu di 6.",
+    },
+}
+
+
+def _get_provider_hint(provider_name: str, content_rating: str, language: str, char_name: str, response_length: str = "long") -> str | None:
     """Return a provider-specific prompt hint, or None if no hint needed."""
     key = provider_name
     if content_rating == "nsfw" and f"{provider_name}_nsfw" in _PROVIDER_HINTS:
         key = f"{provider_name}_nsfw"
     hints = _PROVIDER_HINTS.get(key)
+
+    # Length reminder — applies to ALL providers
+    length_hints = _LENGTH_REMINDER.get(response_length, _LENGTH_REMINDER["long"])
+    length_text = length_hints.get(language, length_hints.get("en", ""))
+
     if not hints:
-        return None
+        # No provider-specific hint, but still inject length reminder
+        return length_text.strip() if length_text else None
     text = hints.get(language, hints.get("en", ""))
-    return text.format(name=char_name) if text else None
+    if not text:
+        return length_text.strip() if length_text else None
+    text = text.format(name=char_name)
+    if length_text:
+        text += length_text
+    return text
 
 
 # ── Paid mode cache (60s TTL) ─────────────────────────────────
@@ -818,16 +863,6 @@ async def send_message(
         messages.append(LLMMessage(role="user", content="Continue writing exactly from where you stopped. Do not repeat anything already written. Pick up mid-sentence if needed."))
 
     # Resolve provider and model ID
-    PROVIDER_MODELS = {
-        "openai": "gpt-4o",
-        "gemini": "gemini-3.0-flash",
-        "deepseek": "deepseek-chat",
-        "qwen": "qwen3-235b-a22b",
-        "claude": "claude-sonnet-4-6",
-        "haiku": "claude-haiku-4-5-20251001",
-        "grok": "grok-4-1-fast-non-reasoning",
-        "mistral": "mistral-medium-latest",
-    }
     # Claude does not allow NSFW content — block in NSFW mode
     _NSFW_BLOCKED_PROVIDERS = {"claude", "haiku"}
     is_auto = model_name == "auto"
@@ -839,7 +874,7 @@ async def send_message(
         if content_rating == "nsfw":
             raise HTTPException(status_code=400, detail="Claude is not available for NSFW content")
         provider_name = "claude"
-        model_id = PROVIDER_MODELS[model_name]
+        model_id = _model_resolver.get_model(model_name)
     elif model_name.startswith("groq:"):
         provider_name = "groq"
         model_id = model_name[5:]
@@ -866,10 +901,11 @@ async def send_message(
         model_id = ""
     else:
         provider_name = model_name
-        model_id = PROVIDER_MODELS.get(model_name, "")
+        model_id = _model_resolver.get_model(model_name)
 
     requested_max_tokens = body.max_tokens if body.max_tokens is not None else (getattr(character, 'max_tokens', None) or 2048)
     capped_max_tokens = cap_max_tokens(requested_max_tokens, tier)
+    _resp_length = getattr(character, 'response_length', None) or "long"
 
     base_config = {
         "temperature": body.temperature if body.temperature is not None else (0.95 if content_rating == "nsfw" else 0.85),
@@ -914,13 +950,13 @@ async def send_message(
                 except ValueError:
                     continue  # provider not configured
                 use_flex = cost_mode != "economy" and pname == "groq"
-                config = LLMConfig(model="", use_flex=use_flex, **base_config)
+                config = LLMConfig(model=_model_resolver.get_model(pname), use_flex=use_flex, **base_config)
                 full_response: list[str] = []
                 buffered: list[str] = []
                 buffer_flushed = False
                 is_refusal = False
                 # Inject provider-specific hint (Grok: stay in character; Mistral: literary prose)
-                hint = _get_provider_hint(pname, content_rating, language, character.name)
+                hint = _get_provider_hint(pname, content_rating, language, character.name, _resp_length)
                 prov_msgs = messages + [LLMMessage(role="system", content=hint)] if hint else messages
                 try:
                     async for chunk in prov.generate_stream(prov_msgs, config):
@@ -1010,6 +1046,9 @@ async def send_message(
                     return
                 except Exception as e:
                     _model_cooldown.handle_402_if_applicable(pname, e)
+                    # Auto-fix model 404 in auto-mode (fire-and-forget, next provider will handle this request)
+                    if _model_resolver.is_404_error(e) and pname in _model_resolver.FIXABLE_PROVIDERS:
+                        _asyncio.create_task(_model_resolver.resolve_model_404(pname, config.model))
                     errors.append(f"{pname}: {e}")
                     continue
             full_err = 'Все провайдеры недоступны:\n' + '\n'.join(errors)
@@ -1018,7 +1057,7 @@ async def send_message(
         provider = get_provider(provider_name)
         config = LLMConfig(model=model_id, **base_config)
         # Inject provider-specific hint (Grok: stay in character; Mistral: literary prose)
-        hint = _get_provider_hint(provider_name, content_rating, language, character.name)
+        hint = _get_provider_hint(provider_name, content_rating, language, character.name, _resp_length)
         if hint:
             messages = messages + [LLMMessage(role="system", content=hint)]
 
@@ -1058,8 +1097,8 @@ async def send_message(
                             fb_prov = get_provider(fb_name)
                         except ValueError:
                             continue
-                        fb_config = LLMConfig(model="", **base_config)
-                        fb_hint = _get_provider_hint(fb_name, content_rating, language, character.name)
+                        fb_config = LLMConfig(model=_model_resolver.get_model(fb_name), **base_config)
+                        fb_hint = _get_provider_hint(fb_name, content_rating, language, character.name, _resp_length)
                         fb_msgs = messages + [LLMMessage(role="system", content=fb_hint)] if fb_hint else messages
                         try:
                             fb_response: list[str] = []
@@ -1171,6 +1210,84 @@ async def send_message(
                         pass
                 yield f"data: {json.dumps(done_data)}\n\n"
             except Exception as e:
+                # Auto-fix model 404: resolve new model and retry once
+                if _model_resolver.is_404_error(e) and provider_name in _model_resolver.FIXABLE_PROVIDERS:
+                    new_model = await _model_resolver.resolve_model_404(provider_name, config.model)
+                    if new_model:
+                        try:
+                            retry_config = LLMConfig(model=new_model, **base_config)
+                            r_response: list[str] = []
+                            r_buffered: list[str] = []
+                            r_buf_flushed = False
+                            r_refusal = False
+                            async for chunk in provider.generate_stream(messages, retry_config):
+                                r_response.append(chunk)
+                                if not r_buf_flushed:
+                                    r_buffered.append(chunk)
+                                    if len("".join(r_buffered)) >= 200:
+                                        r_buf_text = "".join(r_buffered)
+                                        if _is_refusal_response(r_buf_text) or _has_mixed_langs(r_buf_text, language):
+                                            r_refusal = True
+                                            break
+                                        for b in r_buffered:
+                                            yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
+                                        r_buf_flushed = True
+                                else:
+                                    yield f"data: {json.dumps({'type': 'token', 'content': chunk})}\n\n"
+                            r_text = "".join(r_response)
+                            if not r_buf_flushed and not r_refusal:
+                                if _is_refusal_response(r_text) or _has_mixed_langs(r_text, language):
+                                    r_refusal = True
+                            if r_refusal:
+                                raise RuntimeError("Retry model also refused")
+                            if not r_buf_flushed:
+                                for b in r_buffered:
+                                    yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
+                            r_model = f"{provider_name}:{new_model}"
+                            est_p = _estimate_prompt_tokens(messages)
+                            est_c = len(r_text) // 4
+                            r_truncated = est_c >= capped_max_tokens * 0.85
+                            if continue_msg_id:
+                                await _append_to_message(db, continue_msg_id, r_text, r_model, est_p, est_c)
+                                r_msg_id = continue_msg_id
+                            else:
+                                r_msg = await service.save_message(db, chat_id, "assistant", r_text, model_used=r_model, prompt_tokens=est_p, completion_tokens=est_c)
+                                r_msg_id = r_msg.id
+                            await service.increment_message_count(character.id, language, user_id_for_increment)
+                            _asyncio.create_task(maybe_summarize(chat_id))
+                            r_done = {'type': 'done', 'message_id': r_msg_id, 'user_message_id': user_msg.id, 'model_used': r_model, 'truncated': r_truncated}
+                            if settings.is_fiction_mode:
+                                r_choices = _parse_choices(r_text)
+                                if r_choices:
+                                    r_done['choices'] = r_choices
+                            if is_dnd:
+                                r_dice = _parse_dice_rolls(r_text)
+                                if r_dice:
+                                    r_done['dice_rolls'] = r_dice
+                                    await _save_dice_on_message(db, r_msg_id, r_dice)
+                                r_enc = _parse_encounter_state(r_text)
+                                if r_enc:
+                                    await _update_encounter_state(db, chat_id, r_enc)
+                                    r_done['encounter_state'] = r_enc
+                            if anon_session_id and anon_remaining is not None:
+                                r_done['anon_messages_left'] = anon_remaining - 1
+                            if user_id_for_increment and not anon_session_id:
+                                try:
+                                    from app.achievements.checker import check_achievements as _ach_check
+                                    _new_ach = await _ach_check(db, user_id_for_increment, trigger="message")
+                                    if _new_ach:
+                                        r_done['new_achievements'] = _new_ach
+                                except Exception:
+                                    pass
+                                try:
+                                    from app.users.xp import award_xp as _award_xp
+                                    r_done['xp'] = await _award_xp(user_id_for_increment, 10)
+                                except Exception:
+                                    pass
+                            yield f"data: {json.dumps(r_done)}\n\n"
+                            return
+                        except Exception:
+                            pass  # fall through to error below
                 _model_cooldown.handle_402_if_applicable(provider_name, e)
                 yield f"data: {json.dumps({'type': 'error', 'content': _user_error(str(e), is_admin), 'user_message_id': user_msg.id})}\n\n"
 

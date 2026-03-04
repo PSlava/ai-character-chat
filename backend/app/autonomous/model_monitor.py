@@ -48,8 +48,9 @@ async def _check_paid_health() -> dict | None:
     from app.llm.registry import get_provider
     from app.llm.base import LLMMessage, LLMConfig
 
+    from app.llm.model_resolver import get_model as _get_model
+
     test_msgs = [LLMMessage(role="user", content="Say hi")]
-    config = LLMConfig(model="", temperature=0.1, max_tokens=10)
     issues = []
 
     for name in ("openai", "claude", "gemini", "deepseek", "together", "grok", "mistral", "qwen"):
@@ -57,6 +58,7 @@ async def _check_paid_health() -> dict | None:
             prov = get_provider(name)
         except ValueError:
             continue
+        config = LLMConfig(model=_get_model(name), temperature=0.1, max_tokens=10)
         try:
             await asyncio.wait_for(prov.generate(test_msgs, config), timeout=20)
         except asyncio.TimeoutError:
@@ -69,7 +71,15 @@ async def _check_paid_health() -> dict | None:
             elif "401" in err or "invalid" in err.lower() or "API key" in err:
                 issues.append(f"{name}: INVALID KEY - {err}")
             elif "404" in err or "not_found" in err:
-                issues.append(f"{name}: MODEL NOT FOUND - {err}")
+                from app.llm.model_resolver import resolve_model_404, FIXABLE_PROVIDERS, DEFAULT_MODELS
+                if name in FIXABLE_PROVIDERS:
+                    new = await resolve_model_404(name, DEFAULT_MODELS.get(name, ""))
+                    if new:
+                        issues.append(f"{name}: MODEL RENAMED -> auto-fixed to {new}")
+                    else:
+                        issues.append(f"{name}: MODEL NOT FOUND - {err}")
+                else:
+                    issues.append(f"{name}: MODEL NOT FOUND - {err}")
             else:
                 issues.append(f"{name}: ERROR - {err}")
 

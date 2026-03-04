@@ -42,6 +42,10 @@ async def lifespan(app: FastAPI):
         proxy_url=settings.proxy_url,
     )
 
+    # Load persisted model overrides (auto-fixed 404s)
+    from app.llm.model_resolver import load_from_db as _load_model_overrides
+    await _load_model_overrides()
+
     # Install error notification handler (emails admins on ERROR/CRITICAL)
     import logging
     from app.utils.error_notifier import handler as error_handler
