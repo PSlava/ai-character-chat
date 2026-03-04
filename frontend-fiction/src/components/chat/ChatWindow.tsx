@@ -110,14 +110,15 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
   };
 
   return (
-    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-2 sm:p-4 relative">
+    <div className="flex-1 relative overflow-hidden">
       {characterAvatar && (
         <div
-          className="fixed inset-0 pointer-events-none z-0 opacity-[0.07]"
-          style={{ backgroundImage: `url(${characterAvatar})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(40px)' }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: `url(${characterAvatar})`, backgroundSize: 'cover', backgroundPosition: 'center top', filter: 'blur(15px) saturate(0.6)', opacity: 0.2 }}
         />
       )}
-      <div className="max-w-3xl mx-auto space-y-4 relative z-10">
+      <div ref={containerRef} onScroll={handleScroll} className="absolute inset-0 overflow-y-auto p-2 sm:p-4">
+      <div className="max-w-3xl mx-auto space-y-4 relative">
         {loadingMore && (
           <div className="flex justify-center py-2">
             <Loader2 className="w-5 h-5 text-neutral-500 animate-spin" />
@@ -240,12 +241,13 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
       {showScrollBtn && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-4 right-4 sm:right-6 w-10 h-10 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-full flex items-center justify-center text-neutral-300 hover:text-white shadow-lg transition-all"
+          className="absolute bottom-4 right-4 sm:right-6 w-10 h-10 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-full flex items-center justify-center text-neutral-300 hover:text-white shadow-lg transition-all z-20"
           aria-label="Scroll to bottom"
         >
           <ArrowDown size={18} />
         </button>
       )}
+      </div>
     </div>
   );
 }
