@@ -125,7 +125,7 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
           </div>
         )}
         {scenario && !hasMore && (
-          <div className="text-center px-4 py-3 mx-auto max-w-lg bg-neutral-800/50 border border-neutral-700/50 rounded-xl text-sm text-neutral-300 italic">
+          <div className="text-center px-4 py-3 bg-neutral-800/50 border border-neutral-700/50 rounded-xl text-sm text-neutral-300 italic">
             {scenario}
           </div>
         )}
