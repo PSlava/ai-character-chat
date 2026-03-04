@@ -310,6 +310,7 @@
   "settings.descGrok": "Mutig und unzensiert. Keine Grenzen, keine Filter. Spiegelt die Qualitat Ihres Schreibens wider.",
   "settings.descMistral": "Franzosische KI mit Flair. Tolles Tempo, lebhafte Actionszenen, NSFW-freundlich.",
   "settings.descGemini": "Gelehrter Erzahler mit eleganter Prosa. Reicher Wortschatz, hervorragendes Gedachtnis.",
+  "settings.descHaiku": "Schnell und ausdrucksstark. Ideal fur platonische Geschichten, Romantik und kreative Dialoge. Kein NSFW.",
   "settings.descClaude": "Menschlichstes Schreiben. Brillante Logik, tiefe Charaktere. Vermeidet explizite Szenen.",
   "settings.descOpenai": "Zuverlassiger Allrounder. Gute Prosa, stabile Qualitat, folgt Anweisungen gut.",
   "settings.nsfwBlocked": "Dieses Modell unterstützt keine NSFW-Inhalte",

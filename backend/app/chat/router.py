@@ -812,25 +812,26 @@ async def send_message(
     # Resolve provider and model ID
     PROVIDER_MODELS = {
         "openai": "gpt-4o",
-        "gemini": "gemini-2.0-flash",
+        "gemini": "gemini-3.0-flash",
         "deepseek": "deepseek-chat",
-        "qwen": "qwen3-32b",
-        "claude": "claude-sonnet-4-5-20250514",
-        "grok": "grok-3-mini",
-        "mistral": "mistral-small-latest",
+        "qwen": "qwen3-235b-a22b",
+        "claude": "claude-sonnet-4-6",
+        "haiku": "claude-haiku-4-5-20251001",
+        "grok": "grok-4.1-fast",
+        "mistral": "mistral-medium-latest",
     }
     # Claude does not allow NSFW content — block in NSFW mode
-    _NSFW_BLOCKED_PROVIDERS = {"claude"}
+    _NSFW_BLOCKED_PROVIDERS = {"claude", "haiku"}
     is_auto = model_name == "auto"
 
     if is_auto:
         provider_name = "auto"
         model_id = ""
-    elif model_name == "claude":
+    elif model_name in ("claude", "haiku"):
         if content_rating == "nsfw":
             raise HTTPException(status_code=400, detail="Claude is not available for NSFW content")
         provider_name = "claude"
-        model_id = PROVIDER_MODELS["claude"]
+        model_id = PROVIDER_MODELS[model_name]
     elif model_name.startswith("groq:"):
         provider_name = "groq"
         model_id = model_name[5:]

@@ -21,7 +21,7 @@ class GeminiProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> AsyncIterator[str]:
-        model = config.model or "gemini-2.0-flash"
+        model = config.model or "gemini-3.0-flash"
         system_instruction, contents = self._build_contents(messages)
 
         gen_config = types.GenerateContentConfig(
@@ -53,7 +53,7 @@ class GeminiProvider(BaseLLMProvider):
         messages: list[LLMMessage],
         config: LLMConfig,
     ) -> LLMResult:
-        model = config.model or "gemini-2.0-flash"
+        model = config.model or "gemini-3.0-flash"
         system_instruction, contents = self._build_contents(messages)
 
         gen_config = types.GenerateContentConfig(

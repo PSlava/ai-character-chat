@@ -28,7 +28,7 @@ class QwenProvider(BaseLLMProvider):
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         try:
             stream = await self.client.chat.completions.create(
-                model=config.model or "qwen3-32b",
+                model=config.model or "qwen3-235b-a22b",
                 messages=api_messages,
                 max_tokens=config.max_tokens,
                 temperature=config.temperature,
@@ -63,7 +63,7 @@ class QwenProvider(BaseLLMProvider):
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         try:
             response = await self.client.chat.completions.create(
-                model=config.model or "qwen3-32b",
+                model=config.model or "qwen3-235b-a22b",
                 messages=api_messages,
                 max_tokens=config.max_tokens,
                 temperature=config.temperature,
@@ -85,5 +85,5 @@ class QwenProvider(BaseLLMProvider):
             content=content,
             prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
             completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
-            model=config.model or "qwen3-32b",
+            model=config.model or "qwen3-235b-a22b",
         )

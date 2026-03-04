@@ -27,7 +27,7 @@ class MistralProvider(BaseLLMProvider):
     ) -> AsyncIterator[str]:
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         stream = await self.client.chat.completions.create(
-            model=config.model or "mistral-small-latest",
+            model=config.model or "mistral-medium-latest",
             messages=api_messages,
             max_tokens=config.max_tokens,
             temperature=config.temperature,
@@ -55,7 +55,7 @@ class MistralProvider(BaseLLMProvider):
         api_messages = [{"role": m.role, "content": m.content} for m in messages]
         response = await asyncio.wait_for(
             self.client.chat.completions.create(
-                model=config.model or "mistral-small-latest",
+                model=config.model or "mistral-medium-latest",
                 messages=api_messages,
                 max_tokens=config.max_tokens,
                 temperature=config.temperature,
@@ -72,5 +72,5 @@ class MistralProvider(BaseLLMProvider):
             content=content,
             prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
             completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
-            model=config.model or "mistral-small-latest",
+            model=config.model or "mistral-medium-latest",
         )

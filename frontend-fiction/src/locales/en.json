@@ -298,6 +298,7 @@
   "settings.descQwen": "Strong logic and long contexts, but strict content filters.",
   "settings.descGrok": "Bold and uncensored. No limits, no filters. Mirrors your writing quality.",
   "settings.descMistral": "French AI with flair. Great tempo, vivid action scenes, creative prose.",
+  "settings.descHaiku": "Fast and expressive. Great for quick adventures, creative dialogue, and vivid storytelling.",
   "settings.descGemini": "Erudite storyteller with beautiful prose. Rich vocabulary, great memory.",
   "settings.descClaude": "Most human-like writing. Brilliant logic, nuanced characters.",
   "settings.descOpenai": "Reliable all-rounder. Good prose, stable quality, follows instructions well.",

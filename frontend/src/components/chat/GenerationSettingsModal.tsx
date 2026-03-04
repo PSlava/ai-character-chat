@@ -144,6 +144,7 @@ function getProvider(modelId: string): string {
   if (modelId.startsWith('together:') || modelId === 'together') return 'together';
   if (modelId.includes('/')) return 'openrouter';
   if (modelId === 'openrouter') return 'openrouter';
+  if (modelId === 'haiku') return 'claude';
   if (['deepseek', 'qwen', 'openai', 'gemini', 'claude', 'grok', 'mistral'].includes(modelId)) return modelId;
   return 'default';
 }
@@ -179,10 +180,11 @@ function saveModelSettings(modelId: string, s: typeof GEN_DEFAULTS) {
 // User-facing model cards (visible to all users)
 const USER_MODELS = [
   { id: 'auto', label: 'Auto', nsfwOk: true },
-  { id: 'deepseek', label: 'DeepSeek V3', nsfwOk: true },
-  { id: 'grok', label: 'Grok', nsfwOk: true },
-  { id: 'mistral', label: 'Mistral', nsfwOk: true },
-  { id: 'gemini', label: 'Gemini', nsfwOk: true },
+  { id: 'deepseek', label: 'DeepSeek V3.2', nsfwOk: true },
+  { id: 'grok', label: 'Grok 4.1', nsfwOk: true },
+  { id: 'mistral', label: 'Mistral Medium', nsfwOk: true },
+  { id: 'gemini', label: 'Gemini 3 Flash', nsfwOk: true },
+  { id: 'haiku', label: 'Claude Haiku', nsfwOk: false },
 ];
 
 // Admin-only direct providers

@@ -311,6 +311,7 @@
   "settings.descQwen": "Logica fuerte y contextos largos, pero filtros de contenido estrictos.",
   "settings.descGrok": "Audaz y sin censura. Sin limites ni filtros. Refleja la calidad de tu escritura.",
   "settings.descMistral": "IA francesa con estilo. Gran ritmo, escenas de accion vividas, prosa creativa.",
+  "settings.descHaiku": "Rapida y expresiva. Ideal para aventuras dinamicas, dialogos creativos y narrativa vivida.",
   "settings.descGemini": "Narrador erudito con prosa elegante. Vocabulario rico, excelente memoria.",
   "settings.descClaude": "Escritura mas humana. Logica brillante, personajes profundos.",
   "settings.descOpenai": "Todoterreno fiable. Buena prosa, calidad estable, sigue bien las instrucciones.",

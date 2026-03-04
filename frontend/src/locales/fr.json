@@ -310,6 +310,7 @@
   "settings.descGrok": "Audacieux et sans censure. Aucune limite, aucun filtre. Reflete la qualite de votre ecriture.",
   "settings.descMistral": "IA francaise avec du style. Excellent rythme, scenes d'action intenses, compatible NSFW.",
   "settings.descGemini": "Conteur erudit a la prose elegante. Vocabulaire riche, excellente memoire.",
+  "settings.descHaiku": "Rapide et expressive. Ideale pour les histoires platoniques, la romance et les dialogues creatifs. Pas de NSFW.",
   "settings.descClaude": "L'ecriture la plus humaine. Logique brillante, personnages profonds. Evite les scenes explicites.",
   "settings.descOpenai": "Polyvalent fiable. Bonne prose, qualite stable, suit bien les instructions.",
   "settings.nsfwBlocked": "Ce modèle ne prend pas en charge le contenu NSFW",
