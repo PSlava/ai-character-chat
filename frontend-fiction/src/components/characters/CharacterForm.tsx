@@ -468,6 +468,24 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
         </div>
         )}
 
+        {isAdmin && (
+        <div>
+          <label className="block text-sm text-neutral-400 mb-1">
+            {t('form.responseLength')}
+          </label>
+          <select
+            value={form.response_length}
+            onChange={(e) => update('response_length', e.target.value)}
+            className="bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 text-white"
+          >
+            <option value="short">{t('form.lengthShort')}</option>
+            <option value="medium">{t('form.lengthMedium')}</option>
+            <option value="long">{t('form.lengthLong')}</option>
+            <option value="very_long">{t('form.lengthVeryLong')}</option>
+          </select>
+        </div>
+        )}
+
         <div className="flex items-end">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -480,6 +498,29 @@ export function CharacterForm({ initial, onSubmit, submitLabel, isAdmin }: Props
           </label>
         </div>
       </div>
+
+      {isAdmin && (
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-sm text-neutral-400">
+            {t('form.maxTokens')}
+          </label>
+          <span className="text-sm text-neutral-300">{form.max_tokens}</span>
+        </div>
+        <input
+          type="range"
+          value={form.max_tokens}
+          onChange={(e) => update('max_tokens', Number(e.target.value))}
+          min={256}
+          max={4096}
+          step={128}
+          className="w-full accent-purple-500"
+        />
+        <p className="text-xs text-neutral-500 mt-1">
+          {t('form.maxTokensHelp')}
+        </p>
+      </div>
+      )}
 
       {/* Token budget indicator */}
       {estimatedTokens > 0 && (
