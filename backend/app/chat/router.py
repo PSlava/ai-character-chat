@@ -825,7 +825,7 @@ async def send_message(
         "qwen": "qwen3-235b-a22b",
         "claude": "claude-sonnet-4-6",
         "haiku": "claude-haiku-4-5-20251001",
-        "grok": "grok-4.1-fast",
+        "grok": "grok-4-1-fast-non-reasoning",
         "mistral": "mistral-medium-latest",
     }
     # Claude does not allow NSFW content — block in NSFW mode
