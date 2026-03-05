@@ -220,6 +220,7 @@ _POST_HISTORY_CORE = {
     "ru": (
         "[Продолжай сцену как {name}. Третье лицо. Покажи, а не расскажи.\n"
         "Сохраняй текущую локацию. Продвинь сюжет.\n"
+        "НЕ вводи посторонних: никаких шагов за дверью, стуков, звонков, незнакомцев. Только присутствующие персонажи.\n"
         "ЗАПРЕЩЕНО повторять фразы, описания и СТРУКТУРУ из предыдущих ответов.\n"
         "Помни ВСЮ личность персонажа - не своди к одной доминирующей черте.\n"
         "Заверши ответ неразрешённым моментом - вопросом, неожиданным событием или выбором - который требует реакции пользователя.\n"
@@ -227,6 +228,7 @@ _POST_HISTORY_CORE = {
     "en": (
         "[Continue the scene as {name}. Third person. Show, don't tell.\n"
         "Maintain the current location. Advance the plot.\n"
+        "Do NOT introduce outsiders: no footsteps behind doors, knocking, phone calls, strangers. Only the present characters.\n"
         "FORBIDDEN to repeat phrases, descriptions, or STRUCTURES from previous responses.\n"
         "Remember the character's FULL personality - do not reduce to a single dominant trait.\n"
         "End with an unresolved moment - a question, unexpected event, or choice - that demands the user's response.\n"
@@ -234,6 +236,7 @@ _POST_HISTORY_CORE = {
     "es": (
         "[Continua la escena como {name}. Tercera persona. Muestra, no cuentes.\n"
         "Mantén la ubicación actual. Avanza la trama.\n"
+        "NO introduzcas ajenos: nada de pasos detras de puertas, golpes, llamadas, desconocidos. Solo los personajes presentes.\n"
         "PROHIBIDO repetir frases, descripciones o ESTRUCTURAS de respuestas anteriores.\n"
         "Recuerda TODA la personalidad del personaje - no la reduzcas a un solo rasgo dominante.\n"
         "Termina con un momento sin resolver - una pregunta, evento inesperado o elección - que exija la respuesta del usuario.\n"
@@ -241,6 +244,7 @@ _POST_HISTORY_CORE = {
     "fr": (
         "[Continue la scène en tant que {name}. Troisième personne. Montre, ne raconte pas.\n"
         "Maintiens le lieu actuel. Fais avancer l'intrigue.\n"
+        "N'introduis PAS d'etrangers : pas de pas derriere la porte, coups, appels, inconnus. Uniquement les personnages presents.\n"
         "INTERDIT de répéter phrases, descriptions ou STRUCTURES des réponses précédentes.\n"
         "Souviens-toi de TOUTE la personnalité du personnage - ne la réduis pas à un seul trait dominant.\n"
         "Termine par un moment non résolu - une question, un événement inattendu ou un choix - qui exige la réponse de l'utilisateur.\n"
@@ -248,6 +252,7 @@ _POST_HISTORY_CORE = {
     "de": (
         "[Setze die Szene als {name} fort. Dritte Person. Zeigen, nicht erzählen.\n"
         "Behalte den aktuellen Ort bei. Bringe die Handlung voran.\n"
+        "Fuehre KEINE Aussenstehenden ein: keine Schritte hinter Tueren, Klopfen, Anrufe, Fremde. Nur die anwesenden Figuren.\n"
         "VERBOTEN, Phrasen, Beschreibungen oder STRUKTUREN aus vorherigen Antworten zu wiederholen.\n"
         "Erinnere dich an die GESAMTE Persoenlichkeit der Figur - reduziere sie nicht auf ein einziges dominantes Merkmal.\n"
         "Ende mit einem ungelösten Moment - einer Frage, einem unerwarteten Ereignis oder einer Wahl - der die Reaktion des Benutzers erfordert.\n"
@@ -255,6 +260,7 @@ _POST_HISTORY_CORE = {
     "pt": (
         "[Continue a cena como {name}. Terceira pessoa. Mostre, não conte.\n"
         "Mantenha a localização atual. Avance a trama.\n"
+        "NAO introduza estranhos: nada de passos atras de portas, batidas, ligacoes, desconhecidos. Apenas os personagens presentes.\n"
         "PROIBIDO repetir frases, descrições ou ESTRUTURAS de respostas anteriores.\n"
         "Lembre-se de TODA a personalidade do personagem - nao reduza a um unico traco dominante.\n"
         "Termine com um momento não resolvido - uma pergunta, evento inesperado ou escolha - que exija a resposta do usuário.\n"
@@ -262,6 +268,7 @@ _POST_HISTORY_CORE = {
     "it": (
         "[Continua la scena come {name}. Terza persona. Mostra, non raccontare.\n"
         "Mantieni la posizione attuale. Fai avanzare la trama.\n"
+        "NON introdurre estranei: niente passi dietro le porte, bussare, chiamate, sconosciuti. Solo i personaggi presenti.\n"
         "VIETATO ripetere frasi, descrizioni o STRUTTURE dalle risposte precedenti.\n"
         "Ricorda TUTTA la personalità del personaggio - non ridurla a un singolo tratto dominante.\n"
         "Termina con un momento irrisolto - una domanda, un evento inaspettato o una scelta - che richieda la risposta dell'utente.\n"
