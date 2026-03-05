@@ -210,37 +210,44 @@ _PROVIDER_HINTS: dict[str, dict[str, str]] = {
         "ru": (
             "Пиши в традиции европейской литературной прозы. Каждая сцена — живая: звуки, запахи, текстуры, свет. "
             "Диалоги {name} звучат натурально — с паузами, недосказанностью, подтекстом. "
-            "Предпочитай показывать через действия и детали, а не рассказывать напрямую."
+            "Предпочитай показывать через действия и детали, а не рассказывать напрямую. "
+            "ЗАПРЕЩЕНО вводить посторонних людей (шаги за дверью, незнакомцы, прохожие, случайные звонки) — сцена только между присутствующими персонажами."
         ),
         "en": (
             "Write in the tradition of European literary prose. Every scene is alive: sounds, scents, textures, light. "
             "Dialogue of {name} sounds natural — with pauses, things left unsaid, subtext. "
-            "Prefer showing through actions and details over telling directly."
+            "Prefer showing through actions and details over telling directly. "
+            "NEVER introduce uninvolved people (footsteps behind doors, strangers, passersby, random calls) — the scene is only between the present characters."
         ),
         "es": (
             "Escribe en la tradicion de la prosa literaria europea. Cada escena vive: sonidos, olores, texturas, luz. "
             "Los dialogos de {name} suenan naturales — con pausas, cosas no dichas, subtexto. "
-            "Prefiere mostrar a traves de acciones y detalles."
+            "Prefiere mostrar a traves de acciones y detalles. "
+            "PROHIBIDO introducir personas ajenas (pasos detras de puertas, desconocidos, transeuntes) — la escena es solo entre los personajes presentes."
         ),
         "fr": (
             "Ecris dans la tradition de la prose litteraire europeenne. Chaque scene est vivante: sons, odeurs, textures, lumiere. "
             "Les dialogues de {name} sonnent naturels — avec des pauses, des non-dits, du sous-texte. "
-            "Prefere montrer a travers les actions et les details plutot que raconter."
+            "Prefere montrer a travers les actions et les details plutot que raconter. "
+            "INTERDIT d'introduire des personnes non impliquees (pas derriere la porte, inconnus, passants) — la scene est uniquement entre les personnages presents."
         ),
         "de": (
             "Schreibe in der Tradition europaeischer literarischer Prosa. Jede Szene lebt: Geraeusche, Gerueche, Texturen, Licht. "
             "Die Dialoge von {name} klingen natuerlich — mit Pausen, Ungesagtem, Subtext. "
-            "Bevorzuge Zeigen durch Handlungen und Details statt direktem Erzaehlen."
+            "Bevorzuge Zeigen durch Handlungen und Details statt direktem Erzaehlen. "
+            "VERBOTEN: unbeteiligte Personen einfuehren (Schritte hinter der Tuer, Fremde, Passanten) — die Szene spielt nur zwischen den anwesenden Figuren."
         ),
         "pt": (
             "Escreva na tradicao da prosa literaria europeia. Cada cena e viva: sons, cheiros, texturas, luz. "
             "Os dialogos de {name} soam naturais — com pausas, coisas nao ditas, subtexto. "
-            "Prefira mostrar atraves de acoes e detalhes em vez de contar diretamente."
+            "Prefira mostrar atraves de acoes e detalhes em vez de contar diretamente. "
+            "PROIBIDO introduzir pessoas nao envolvidas (passos atras da porta, estranhos, transeuntes) — a cena e apenas entre os personagens presentes."
         ),
         "it": (
             "Scrivi nella tradizione della prosa letteraria europea. Ogni scena e viva: suoni, profumi, texture, luce. "
             "I dialoghi di {name} suonano naturali — con pause, non detti, sottotesto. "
-            "Preferisci mostrare attraverso azioni e dettagli piuttosto che raccontare direttamente."
+            "Preferisci mostrare attraverso azioni e dettagli piuttosto che raccontare direttamente. "
+            "VIETATO introdurre persone non coinvolte (passi dietro la porta, sconosciuti, passanti) — la scena e solo tra i personaggi presenti."
         ),
     },
     "mistral_nsfw": {
