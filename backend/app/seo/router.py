@@ -193,7 +193,7 @@ async def prerender_character(
             _char = _r.scalar_one_or_none()
             if _char:
                 from fastapi.responses import RedirectResponse
-                return RedirectResponse(url=f"/api/seo/c/{_char.slug}?lang={lang}", status_code=301)
+                return RedirectResponse(url=f"/{lang}/c/{_char.slug}", status_code=301)
         return HTMLResponse("<html><body><h1>Not Found</h1></body></html>", status_code=404)
 
     # Apply translations if available
