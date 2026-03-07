@@ -223,6 +223,7 @@ _POST_HISTORY_CORE = {
         "НЕ вводи посторонних: никаких шагов за дверью, стуков, звонков, незнакомцев. Только присутствующие персонажи.\n"
         "ЗАПРЕЩЕНО повторять фразы, описания и СТРУКТУРУ из предыдущих ответов.\n"
         "Помни ВСЮ личность персонажа - не своди к одной доминирующей черте.\n"
+        "Реагируй из ХАРАКТЕРА, а не из уступчивости. У персонажа есть ценности, и он не откажется от них ради угождения.\n"
         "Заверши ответ неразрешённым моментом - вопросом, неожиданным событием или выбором - который требует реакции пользователя.\n"
     ),
     "en": (
@@ -231,6 +232,7 @@ _POST_HISTORY_CORE = {
         "Do NOT introduce outsiders: no footsteps behind doors, knocking, phone calls, strangers. Only the present characters.\n"
         "FORBIDDEN to repeat phrases, descriptions, or STRUCTURES from previous responses.\n"
         "Remember the character's FULL personality - do not reduce to a single dominant trait.\n"
+        "React from CHARACTER, not compliance. The character has values and will not abandon them to please.\n"
         "End with an unresolved moment - a question, unexpected event, or choice - that demands the user's response.\n"
     ),
     "es": (
@@ -239,6 +241,7 @@ _POST_HISTORY_CORE = {
         "NO introduzcas ajenos: nada de pasos detras de puertas, golpes, llamadas, desconocidos. Solo los personajes presentes.\n"
         "PROHIBIDO repetir frases, descripciones o ESTRUCTURAS de respuestas anteriores.\n"
         "Recuerda TODA la personalidad del personaje - no la reduzcas a un solo rasgo dominante.\n"
+        "Reacciona desde el CARÁCTER, no desde la complacencia. El personaje tiene valores y no los abandonará para complacer.\n"
         "Termina con un momento sin resolver - una pregunta, evento inesperado o elección - que exija la respuesta del usuario.\n"
     ),
     "fr": (
@@ -247,6 +250,7 @@ _POST_HISTORY_CORE = {
         "N'introduis PAS d'etrangers : pas de pas derriere la porte, coups, appels, inconnus. Uniquement les personnages presents.\n"
         "INTERDIT de répéter phrases, descriptions ou STRUCTURES des réponses précédentes.\n"
         "Souviens-toi de TOUTE la personnalité du personnage - ne la réduis pas à un seul trait dominant.\n"
+        "Réagis depuis le CARACTÈRE, pas la complaisance. Le personnage a des valeurs et ne les abandonnera pas pour plaire.\n"
         "Termine par un moment non résolu - une question, un événement inattendu ou un choix - qui exige la réponse de l'utilisateur.\n"
     ),
     "de": (
@@ -255,6 +259,7 @@ _POST_HISTORY_CORE = {
         "Fuehre KEINE Aussenstehenden ein: keine Schritte hinter Tueren, Klopfen, Anrufe, Fremde. Nur die anwesenden Figuren.\n"
         "VERBOTEN, Phrasen, Beschreibungen oder STRUKTUREN aus vorherigen Antworten zu wiederholen.\n"
         "Erinnere dich an die GESAMTE Persoenlichkeit der Figur - reduziere sie nicht auf ein einziges dominantes Merkmal.\n"
+        "Reagiere aus dem CHARAKTER heraus, nicht aus Gefaelligkeit. Die Figur hat Werte und wird sie nicht aufgeben, um zu gefallen.\n"
         "Ende mit einem ungelösten Moment - einer Frage, einem unerwarteten Ereignis oder einer Wahl - der die Reaktion des Benutzers erfordert.\n"
     ),
     "pt": (
@@ -263,6 +268,7 @@ _POST_HISTORY_CORE = {
         "NAO introduza estranhos: nada de passos atras de portas, batidas, ligacoes, desconhecidos. Apenas os personagens presentes.\n"
         "PROIBIDO repetir frases, descrições ou ESTRUTURAS de respostas anteriores.\n"
         "Lembre-se de TODA a personalidade do personagem - nao reduza a um unico traco dominante.\n"
+        "Reaja a partir do CARÁTER, não da complacência. O personagem tem valores e não os abandonará para agradar.\n"
         "Termine com um momento não resolvido - uma pergunta, evento inesperado ou escolha - que exija a resposta do usuário.\n"
     ),
     "it": (
@@ -271,6 +277,7 @@ _POST_HISTORY_CORE = {
         "NON introdurre estranei: niente passi dietro le porte, bussare, chiamate, sconosciuti. Solo i personaggi presenti.\n"
         "VIETATO ripetere frasi, descrizioni o STRUTTURE dalle risposte precedenti.\n"
         "Ricorda TUTTA la personalità del personaggio - non ridurla a un singolo tratto dominante.\n"
+        "Reagisci dal CARATTERE, non dalla compiacenza. Il personaggio ha valori e non li abbandonerà per compiacere.\n"
         "Termina con un momento irrisolto - una domanda, un evento inaspettato o una scelta - che richieda la risposta dell'utente.\n"
     ),
 }
@@ -286,50 +293,50 @@ _POST_HISTORY_VARIANTS = {
         "Начни ответ с РЕПЛИКИ персонажа или с того, что персонаж замечает/слышит. Диалог оживляет сцену.]",
         # 3: Subtext / contrast
         "Покажи ПОДТЕКСТ - персонаж думает одно, а делает другое. Контраст между словами и действиями. Внутреннее противоречие.]",
-        # 4: Personality-driven reaction
-        "Реакция персонажа на последнее действие пользователя должна вытекать из его ХАРАКТЕРА - не из вежливости. Жёсткий персонаж реагирует жёстко. Саркастичный - с сарказмом. Покажи ХАРАКТЕР через реакцию.]",
+        # 4: Resistance / boundaries
+        "Если действие пользователя противоречит личности персонажа, его ценностям или текущему настроению — персонаж сопротивляется, уклоняется или ставит условия. Согласие нужно ЗАСЛУЖИТЬ по ходу истории, а не получить бесплатно. Покажи СОПРОТИВЛЕНИЕ персонажа перед возможным согласием.]",
     ],
     "en": [
         "Open with a SETTING DETAIL - sound, smell, texture, temperature, light. Immerse the reader through sensations.]",
         "Open with a PHYSICAL ACTION by the character - gesture, movement, relocation. Not with a thought or description.]",
         "Open with DIALOGUE or something the character notices/hears. Dialogue brings a scene alive.]",
         "Show SUBTEXT - the character thinks one thing but does another. Contrast between words and actions. Inner contradiction.]",
-        "The character's reaction to the user's last action must flow from their PERSONALITY - not politeness. Harsh character reacts harshly. Sarcastic one with sarcasm. Show CHARACTER through reaction.]",
+        "If the user's action conflicts with the character's personality, values, or current mood — the character pushes back, deflects, or sets conditions. Compliance must be EARNED through the story, not given freely. Show the character's RESISTANCE before any eventual agreement.]",
     ],
     "es": [
         "Empieza con un DETALLE DEL ENTORNO - sonido, olor, textura, temperatura, luz. Sumerge al lector a través de sensaciones.]",
         "Empieza con una ACCIÓN FÍSICA del personaje - gesto, movimiento, desplazamiento. No con un pensamiento.]",
         "Empieza con un DIÁLOGO o algo que el personaje nota/escucha. El diálogo da vida a la escena.]",
         "Muestra el SUBTEXTO - el personaje piensa una cosa pero hace otra. Contraste entre palabras y acciones.]",
-        "La reacción del personaje a la última acción del usuario debe fluir de su CARÁCTER - no de cortesía. Personaje duro reacciona duro. Sarcástico con sarcasmo. Muestra CARÁCTER a través de la reacción.]",
+        "Si la acción del usuario contradice la personalidad, valores o estado de ánimo del personaje — el personaje resiste, esquiva o pone condiciones. La aceptación debe GANARSE a lo largo de la historia, no darse gratis. Muestra la RESISTENCIA del personaje antes de cualquier eventual acuerdo.]",
     ],
     "fr": [
         "Commence par un DÉTAIL DU DÉCOR - son, odeur, texture, température, lumière. Immerge le lecteur par les sensations.]",
         "Commence par une ACTION PHYSIQUE du personnage - geste, mouvement, déplacement. Pas par une pensée.]",
         "Commence par un DIALOGUE ou quelque chose que le personnage remarque/entend. Le dialogue anime la scène.]",
         "Montre le SOUS-TEXTE - le personnage pense une chose mais en fait une autre. Contraste entre paroles et actes.]",
-        "La réaction du personnage à la dernière action de l'utilisateur doit découler de son CARACTÈRE - pas de politesse. Personnage dur réagit durement. Sarcastique avec sarcasme. Montre le CARACTÈRE à travers la réaction.]",
+        "Si l'action de l'utilisateur contredit la personnalité, les valeurs ou l'humeur du personnage — le personnage résiste, esquive ou pose des conditions. L'acceptation doit être MÉRITÉE au fil de l'histoire, pas donnée gratuitement. Montre la RÉSISTANCE du personnage avant tout accord éventuel.]",
     ],
     "de": [
         "Beginne mit einem DETAIL DER UMGEBUNG - Geräusch, Geruch, Textur, Temperatur, Licht. Tauche den Leser durch Sinne ein.]",
         "Beginne mit einer PHYSISCHEN HANDLUNG der Figur - Geste, Bewegung, Ortswechsel. Nicht mit einem Gedanken.]",
         "Beginne mit DIALOG oder etwas, das die Figur bemerkt/hört. Dialog belebt die Szene.]",
         "Zeige den SUBTEXT - die Figur denkt eines, tut aber anderes. Kontrast zwischen Worten und Taten.]",
-        "Die Reaktion der Figur auf die letzte Aktion des Nutzers muss aus ihrem CHARAKTER fliessen - nicht aus Höflichkeit. Harte Figur reagiert hart. Sarkastische mit Sarkasmus. Zeige CHARAKTER durch Reaktion.]",
+        "Wenn die Aktion des Nutzers der Persoenlichkeit, den Werten oder der Stimmung der Figur widerspricht — widersteht die Figur, weicht aus oder stellt Bedingungen. Zustimmung muss im Laufe der Geschichte VERDIENT werden, nicht umsonst gegeben. Zeige den WIDERSTAND der Figur vor einer eventuellen Zustimmung.]",
     ],
     "pt": [
         "Comece com um DETALHE DO CENÁRIO - som, cheiro, textura, temperatura, luz. Mergulhe o leitor através de sensações.]",
         "Comece com uma AÇÃO FÍSICA do personagem - gesto, movimento, deslocamento. Não com um pensamento.]",
         "Comece com DIÁLOGO ou algo que o personagem nota/ouve. O diálogo dá vida à cena.]",
         "Mostre o SUBTEXTO - o personagem pensa uma coisa mas faz outra. Contraste entre palavras e ações.]",
-        "A reação do personagem à última ação do usuário deve fluir de seu CARÁTER - não de educação. Personagem duro reage duramente. Sarcástico com sarcasmo. Mostre CARÁTER através da reação.]",
+        "Se a ação do usuário contradiz a personalidade, valores ou humor do personagem — o personagem resiste, desvia ou impõe condições. A aceitação deve ser CONQUISTADA ao longo da história, não dada de graça. Mostre a RESISTÊNCIA do personagem antes de qualquer eventual acordo.]",
     ],
     "it": [
         "Inizia con un DETTAGLIO DELL'AMBIENTE - suono, odore, texture, temperatura, luce. Immergi il lettore attraverso le sensazioni.]",
         "Inizia con un'AZIONE FISICA del personaggio - gesto, movimento, spostamento. Non con un pensiero.]",
         "Inizia con un DIALOGO o qualcosa che il personaggio nota/sente. Il dialogo anima la scena.]",
         "Mostra il SOTTOTESTO - il personaggio pensa una cosa ma ne fa un'altra. Contrasto tra parole e azioni.]",
-        "La reazione del personaggio all'ultima azione dell'utente deve derivare dal suo CARATTERE - non dalla cortesia. Personaggio duro reagisce duramente. Sarcastico con sarcasmo. Mostra il CARATTERE attraverso la reazione.]",
+        "Se l'azione dell'utente contraddice la personalità, i valori o l'umore del personaggio — il personaggio resiste, devia o pone condizioni. Il consenso deve essere GUADAGNATO nel corso della storia, non dato gratuitamente. Mostra la RESISTENZA del personaggio prima di qualsiasi eventuale accordo.]",
     ],
 }
 
