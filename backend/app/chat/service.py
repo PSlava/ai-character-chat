@@ -797,13 +797,62 @@ def _get_post_history(lang: str, chat_id: str, message_count: int,
 
     # --- Suggested replies for non-fiction mode ---
     suggest_instr = {
-        "ru": "\nВ самом конце ответа добавь ровно 5 вариантов действий для пользователя в формате: [SUGGEST: вариант1 | вариант2 | вариант3 | вариант4 | вариант5]. СТРОГО от первого лица. Варианты должны быть разнообразными: действие, диалог, эмоция, неожиданный ход. Максимум 8 слов каждый. Пример: [SUGGEST: Взять её за руку и притянуть к себе | Спросить почему она так на меня смотрит | Отвернуться делая вид что все равно | Рассмеяться и сменить тему | Молча подойти ближе]",
-        "en": "\nAt the very end of your response, add exactly 5 action options for the user in format: [SUGGEST: opt1 | opt2 | opt3 | opt4 | opt5]. STRICTLY first person. Options must be diverse: action, dialogue, emotion, unexpected move. Max 8 words each. Example: [SUGGEST: Take her hand and pull her close | Ask why she looks at me like that | Turn away pretending I don't care | Laugh it off and change the subject | Silently step closer]",
-        "es": "\nAl final de tu respuesta, agrega exactamente 5 opciones de accion para el usuario en formato: [SUGGEST: opc1 | opc2 | opc3 | opc4 | opc5]. ESTRICTAMENTE en primera persona. Opciones diversas: accion, dialogo, emocion, giro inesperado. Maximo 8 palabras cada una. Ejemplo: [SUGGEST: Tomarla de la mano | Preguntar por que me mira asi | Darme la vuelta fingiendo indiferencia | Reirme y cambiar de tema | Acercarme en silencio]",
-        "fr": "\nA la toute fin de ta reponse, ajoute exactement 5 options d'action pour l'utilisateur au format: [SUGGEST: opt1 | opt2 | opt3 | opt4 | opt5]. STRICTEMENT a la premiere personne. Options variees: action, dialogue, emotion, tournant inattendu. Max 8 mots chacune. Exemple: [SUGGEST: Lui prendre la main | Demander pourquoi elle me regarde ainsi | Me detourner en feignant l'indifference | En rire et changer de sujet | M'approcher en silence]",
-        "de": "\nAm Ende deiner Antwort fuege genau 5 Handlungsoptionen fuer den Benutzer im Format hinzu: [SUGGEST: Opt1 | Opt2 | Opt3 | Opt4 | Opt5]. STRIKT in erster Person. Optionen muessen vielfaeltig sein: Aktion, Dialog, Emotion, unerwarteter Zug. Max 8 Woerter. Beispiel: [SUGGEST: Ihre Hand nehmen | Fragen warum sie mich so ansieht | Mich abwenden und Gleichgueltigkeit vortaeuschen | Lachen und das Thema wechseln | Schweigend naeher kommen]",
-        "pt": "\nNo final da sua resposta, adicione exatamente 5 opcoes de acao para o usuario no formato: [SUGGEST: opc1 | opc2 | opc3 | opc4 | opc5]. ESTRITAMENTE em primeira pessoa. Opcoes diversas: acao, dialogo, emocao, movimento inesperado. Maximo 8 palavras cada. Exemplo: [SUGGEST: Pegar na mao dela | Perguntar por que ela me olha assim | Me virar fingindo indiferenca | Rir e mudar de assunto | Me aproximar em silencio]",
-        "it": "\nAlla fine della tua risposta, aggiungi esattamente 5 opzioni di azione per l'utente nel formato: [SUGGEST: opz1 | opz2 | opz3 | opz4 | opz5]. STRETTAMENTE in prima persona. Opzioni diverse: azione, dialogo, emozione, mossa inaspettata. Massimo 8 parole ciascuna. Esempio: [SUGGEST: Prenderle la mano | Chiedere perche mi guarda cosi | Voltarmi fingendo indifferenza | Ridere e cambiare argomento | Avvicinarmi in silenzio]",
+        "ru": (
+            "\nВ самом конце ответа добавь ровно 5 вариантов действий игрока в формате: [SUGGEST: вариант1 | вариант2 | вариант3 | вариант4 | вариант5]."
+            " СТРОГО от первого лица (я делаю/говорю). Максимум 10 слов каждый."
+            " ЗАПРЕЩЕНЫ скучные/вежливые/осторожные варианты: никаких 'спросить о прошлом', 'уважить границы', 'извиниться', 'пообещать', 'предложить помощь'."
+            " Каждый вариант ОБЯЗАН быть конкретным действием привязанным к текущей сцене. Включи:"
+            " 1) дерзкий/провокационный ход 2) физическое действие с деталью 3) фразу-реплику в кавычках 4) неожиданный поворот 5) эмоционально уязвимый жест."
+            ' Пример: [SUGGEST: Перехватить её запястье и не отпускать | "А если я не уйду?" | Забрать у неё бокал и допить | Развернуться к двери не оглядываясь | Коснуться шрама на её щеке]'
+        ),
+        "en": (
+            "\nAt the very end, add exactly 5 player action options in format: [SUGGEST: opt1 | opt2 | opt3 | opt4 | opt5]."
+            " STRICTLY first person. Max 10 words each."
+            " BANNED: boring/polite/cautious options like 'ask about past', 'respect boundaries', 'apologize', 'promise', 'offer help'."
+            " Each option MUST be a concrete action tied to the current scene. Include:"
+            " 1) bold/provocative move 2) physical action with detail 3) a spoken line in quotes 4) unexpected twist 5) emotionally vulnerable gesture."
+            ' Example: [SUGGEST: Grab her wrist and not let go | "What if I don\'t leave?" | Take her glass and finish it | Turn to the door without looking back | Touch the scar on her cheek]'
+        ),
+        "es": (
+            "\nAl final, agrega exactamente 5 opciones de accion en formato: [SUGGEST: opc1 | opc2 | opc3 | opc4 | opc5]."
+            " ESTRICTAMENTE primera persona. Max 10 palabras."
+            " PROHIBIDO: opciones aburridas/corteses como 'preguntar por su pasado', 'respetar limites', 'disculparse'."
+            " Cada opcion DEBE ser accion concreta de la escena actual. Incluir:"
+            " 1) movimiento atrevido 2) accion fisica con detalle 3) frase hablada entre comillas 4) giro inesperado 5) gesto emocionalmente vulnerable."
+            ' Ejemplo: [SUGGEST: Agarrar su muneca sin soltarla | "Y si no me voy?" | Quitarle la copa y beberla | Girarme hacia la puerta sin mirar atras | Tocar la cicatriz en su mejilla]'
+        ),
+        "fr": (
+            "\nA la fin, ajoute exactement 5 options d'action au format: [SUGGEST: opt1 | opt2 | opt3 | opt4 | opt5]."
+            " STRICTEMENT premiere personne. Max 10 mots."
+            " INTERDIT: options ennuyeuses/polies comme 'demander son passe', 'respecter ses limites', 's'excuser'."
+            " Chaque option DOIT etre une action concrete liee a la scene. Inclure:"
+            " 1) geste audacieux 2) action physique avec detail 3) replique entre guillemets 4) tournant inattendu 5) geste emotionnellement vulnerable."
+            ' Exemple: [SUGGEST: Attraper son poignet sans lacher | "Et si je ne pars pas?" | Prendre son verre et le finir | Me tourner vers la porte sans regarder | Toucher la cicatrice sur sa joue]'
+        ),
+        "de": (
+            "\nAm Ende fuege genau 5 Handlungsoptionen im Format hinzu: [SUGGEST: Opt1 | Opt2 | Opt3 | Opt4 | Opt5]."
+            " STRIKT erste Person. Max 10 Woerter."
+            " VERBOTEN: langweilige/hoefliche Optionen wie 'nach Vergangenheit fragen', 'Grenzen respektieren', 'entschuldigen'."
+            " Jede Option MUSS konkrete Aktion der aktuellen Szene sein. Enthalten:"
+            " 1) gewagter Zug 2) physische Aktion mit Detail 3) gesprochene Zeile in Anfuehrungszeichen 4) unerwartete Wendung 5) emotional verletzliche Geste."
+            ' Beispiel: [SUGGEST: Ihr Handgelenk packen und nicht loslassen | "Und wenn ich nicht gehe?" | Ihr Glas nehmen und austrinken | Mich zur Tuer drehen ohne zurueckzublicken | Die Narbe an ihrer Wange beruehren]'
+        ),
+        "pt": (
+            "\nNo final, adicione exatamente 5 opcoes de acao no formato: [SUGGEST: opc1 | opc2 | opc3 | opc4 | opc5]."
+            " ESTRITAMENTE primeira pessoa. Max 10 palavras."
+            " PROIBIDO: opcoes entediantes/educadas como 'perguntar sobre o passado', 'respeitar limites', 'pedir desculpas'."
+            " Cada opcao DEVE ser acao concreta da cena atual. Incluir:"
+            " 1) movimento ousado 2) acao fisica com detalhe 3) fala entre aspas 4) reviravolta inesperada 5) gesto emocionalmente vulneravel."
+            ' Exemplo: [SUGGEST: Agarrar seu pulso sem soltar | "E se eu nao for embora?" | Pegar seu copo e beber | Me virar para a porta sem olhar | Tocar a cicatriz em sua bochecha]'
+        ),
+        "it": (
+            "\nAlla fine, aggiungi esattamente 5 opzioni di azione nel formato: [SUGGEST: opz1 | opz2 | opz3 | opz4 | opz5]."
+            " STRETTAMENTE prima persona. Max 10 parole."
+            " VIETATO: opzioni noiose/cortesi come 'chiedere del passato', 'rispettare i limiti', 'scusarsi'."
+            " Ogni opzione DEVE essere azione concreta della scena attuale. Includere:"
+            " 1) mossa audace 2) azione fisica con dettaglio 3) battuta tra virgolette 4) svolta inaspettata 5) gesto emotivamente vulnerabile."
+            ' Esempio: [SUGGEST: Afferrarle il polso senza lasciare | "E se non me ne vado?" | Prendere il suo bicchiere e finirlo | Voltarmi verso la porta senza guardare | Toccare la cicatrice sulla sua guancia]'
+        ),
     }
     result += suggest_instr.get(lang, suggest_instr["en"])
 
