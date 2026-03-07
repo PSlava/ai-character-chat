@@ -131,6 +131,9 @@
   "chat.modeFree": "Libre",
   "chat.modeAction": "Action",
   "chat.modeDialogue": "Dialogue",
+  "chat.modeFreeTooltip": "Mode libre : le texte est envoye tel quel, sans formatage.\nExemple : Je m'approche d'elle et souris",
+  "chat.modeActionTooltip": "Mode action : entoure ton texte de *asterisques* pour les actions/emotions.\nTu ecris : s'approche\nEnvoye : *s'approche*",
+  "chat.modeDialogueTooltip": "Mode dialogue : entoure ton texte de \"guillemets\" pour parler.\nTu ecris : Bonjour, comment vas-tu ?\nEnvoye : \"Bonjour, comment vas-tu ?\"",
   "chat.generatingReply": "Génération...",
   "chat.noPersonaForGen": "Aucun persona associé à cette discussion",
 

@@ -131,6 +131,9 @@
   "chat.modeFree": "Libero",
   "chat.modeAction": "Azione",
   "chat.modeDialogue": "Dialogo",
+  "chat.modeFreeTooltip": "Modo libero: il testo viene inviato cosi com'e, senza formattazione.\nEsempio: Mi avvicino a lei e sorrido",
+  "chat.modeActionTooltip": "Modo azione: avvolge il testo con *asterischi* per azioni/emozioni.\nScrivi: si avvicina\nInviato come: *si avvicina*",
+  "chat.modeDialogueTooltip": "Modo dialogo: avvolge il testo con \"virgolette\" per il parlato.\nScrivi: Ciao, come stai?\nInviato come: \"Ciao, come stai?\"",
   "chat.generatingReply": "Generazione...",
   "chat.noPersonaForGen": "Nessuna persona associata a questa chat",
 

@@ -131,6 +131,9 @@
   "chat.modeFree": "Free",
   "chat.modeAction": "Action",
   "chat.modeDialogue": "Dialogue",
+  "chat.modeFreeTooltip": "Free mode: send text as-is, no formatting.\nExample: I walk up to her and smile",
+  "chat.modeActionTooltip": "Action mode: wraps your text in *asterisks* for actions/emotions.\nYou type: walks closer\nSent as: *walks closer*",
+  "chat.modeDialogueTooltip": "Dialogue mode: wraps your text in \"quotes\" for speech.\nYou type: Hello, how are you?\nSent as: \"Hello, how are you?\"",
   "chat.generatingReply": "Generating...",
   "chat.noPersonaForGen": "No persona attached to this chat",
 

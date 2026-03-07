@@ -131,6 +131,9 @@
   "chat.modeFree": "Libre",
   "chat.modeAction": "Accion",
   "chat.modeDialogue": "Dialogo",
+  "chat.modeFreeTooltip": "Modo libre: el texto se envia tal cual, sin formato.\nEjemplo: Me acerco a ella y sonrio",
+  "chat.modeActionTooltip": "Modo accion: envuelve tu texto en *asteriscos* para acciones/emociones.\nEscribes: se acerca\nSe envia: *se acerca*",
+  "chat.modeDialogueTooltip": "Modo dialogo: envuelve tu texto en \"comillas\" para hablar.\nEscribes: Hola, como estas?\nSe envia: \"Hola, como estas?\"",
   "chat.generatingReply": "Generando...",
   "chat.noPersonaForGen": "No hay persona vinculada a este chat",
 

@@ -91,6 +91,7 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
           <button
             key={mode}
             onClick={() => cycleMode(mode)}
+            title={t(`chat.mode${mode.charAt(0).toUpperCase() + mode.slice(1)}Tooltip`)}
             className={`px-2 py-0.5 text-xs rounded-md transition-colors ${
               inputMode === mode
                 ? 'bg-rose-600/20 text-rose-400 border border-rose-500/30'

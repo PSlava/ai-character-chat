@@ -131,6 +131,9 @@
   "chat.modeFree": "Frei",
   "chat.modeAction": "Aktion",
   "chat.modeDialogue": "Dialog",
+  "chat.modeFreeTooltip": "Freier Modus: Text wird unveraendert gesendet, ohne Formatierung.\nBeispiel: Ich gehe auf sie zu und laechle",
+  "chat.modeActionTooltip": "Aktionsmodus: umschliesst deinen Text mit *Sternchen* fuer Aktionen/Emotionen.\nDu schreibst: geht naeher\nGesendet als: *geht naeher*",
+  "chat.modeDialogueTooltip": "Dialogmodus: umschliesst deinen Text mit \"Anfuehrungszeichen\" fuer Sprache.\nDu schreibst: Hallo, wie geht es dir?\nGesendet als: \"Hallo, wie geht es dir?\"",
   "chat.generatingReply": "Generierung...",
   "chat.noPersonaForGen": "Keine Persona mit diesem Chat verknüpft",
 
