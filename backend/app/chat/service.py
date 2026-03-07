@@ -1231,64 +1231,67 @@ async def build_conversation_messages(
         dir_tpl = _DIR_TPL.get(language, _DIR_TPL["en"])
         comp_parts.append(dir_tpl.format(comp=comp_name, role=role_label, directive=directive))
 
-        # 3. Memory callbacks after 8+ messages — companion references past events
-        if msg_count >= 8 and hash(f"{chat_id}:comp:mem:{msg_count}") % 5 == 0:
-            _MEMORY_TPL = {
+        # 3-5: Fiction/DnD-only companion features (memory, approval, tone)
+        # Not injected on SweetSin (nsfw/sfw RP mode) — only on GrimQuill (fiction/dnd)
+        if site_mode == "fiction" or is_dnd:
+            # 3. Memory callbacks after 8+ messages — companion references past events
+            if msg_count >= 8 and hash(f"{chat_id}:comp:mem:{msg_count}") % 5 == 0:
+                _MEMORY_TPL = {
+                    "ru": (
+                        "ПАМЯТЬ {comp}: {comp} кратко вспоминает что-то, что произошло РАНЕЕ в этом приключении. "
+                        "Паттерн: 'Помнишь, когда мы [событие]?' или реакция на похожую ситуацию. "
+                        "Максимум 1 предложение."
+                    ),
+                    "en": (
+                        "{comp}'s MEMORY: {comp} briefly references something that happened EARLIER in this adventure. "
+                        "Pattern: 'Remember when we [past event]?' or reacting to a similar situation. "
+                        "Maximum 1 sentence."
+                    ),
+                }
+                comp_parts.append(_MEMORY_TPL.get(language, _MEMORY_TPL["en"]).format(comp=comp_name))
+
+            # 4. Approval tracking for companion attitude shifts
+            comp_approval = getattr(chat_obj, 'companion_approval', 0) if chat_obj else 0
+            _APPROVAL_TRACK = {
                 "ru": (
-                    "ПАМЯТЬ {comp}: {comp} кратко вспоминает что-то, что произошло РАНЕЕ в этом приключении. "
-                    "Паттерн: 'Помнишь, когда мы [событие]?' или реакция на похожую ситуацию. "
-                    "Максимум 1 предложение."
+                    "ОТСЛЕЖИВАНИЕ ОТНОШЕНИЯ: Если действие игрока изменило бы отношение {comp}, добавь в КОНЦЕ ответа (после всего текста) ОДИН тег:\n"
+                    "[APPROVAL +1] - игрок заслужил уважение/доверие\n"
+                    "[APPROVAL -1] - игрок потерял уважение/доверие\n"
+                    "Если нейтрально - не добавляй тег. Максимум 1 тег за ответ."
                 ),
                 "en": (
-                    "{comp}'s MEMORY: {comp} briefly references something that happened EARLIER in this adventure. "
-                    "Pattern: 'Remember when we [past event]?' or reacting to a similar situation. "
-                    "Maximum 1 sentence."
+                    "APPROVAL TRACKING: If the player's action would change {comp}'s attitude, append ONE tag at the END of your response (after all narrative):\n"
+                    "[APPROVAL +1] - player earned respect/trust\n"
+                    "[APPROVAL -1] - player lost respect/trust\n"
+                    "Omit tag if neutral. Maximum 1 tag per response."
                 ),
             }
-            comp_parts.append(_MEMORY_TPL.get(language, _MEMORY_TPL["en"]).format(comp=comp_name))
+            comp_parts.append(_APPROVAL_TRACK.get(language, _APPROVAL_TRACK["en"]).format(comp=comp_name))
 
-        # 4. Approval tracking for companion attitude shifts
-        comp_approval = getattr(chat_obj, 'companion_approval', 0) or 0 if chat_obj else 0
-        _APPROVAL_TRACK = {
-            "ru": (
-                "ОТСЛЕЖИВАНИЕ ОТНОШЕНИЯ: Если действие игрока изменило бы отношение {comp}, добавь в КОНЦЕ ответа (после всего текста) ОДИН тег:\n"
-                "[APPROVAL +1] - игрок заслужил уважение/доверие\n"
-                "[APPROVAL -1] - игрок потерял уважение/доверие\n"
-                "Если нейтрально - не добавляй тег. Максимум 1 тег за ответ."
-            ),
-            "en": (
-                "APPROVAL TRACKING: If the player's action would change {comp}'s attitude, append ONE tag at the END of your response (after all narrative):\n"
-                "[APPROVAL +1] - player earned respect/trust\n"
-                "[APPROVAL -1] - player lost respect/trust\n"
-                "Omit tag if neutral. Maximum 1 tag per response."
-            ),
-        }
-        comp_parts.append(_APPROVAL_TRACK.get(language, _APPROVAL_TRACK["en"]).format(comp=comp_name))
-
-        # 5. Approval-aware tone injection based on current approval level
-        if comp_approval != 0:
-            _APPROVAL_TONES = {
-                "en": {
-                    -3: "{comp} is openly hostile: considers leaving, minimal help, sarcastic and contemptuous.",
-                    -2: "{comp} is cold and reluctant: short responses, passive-aggressive, helps only when necessary.",
-                    -1: "{comp} is distant and skeptical: backhanded compliments, keeps guard up, minimal personal sharing.",
-                    1: "{comp} is warming up: occasional personal shares, more enthusiastic help, genuine smiles.",
-                    2: "{comp} is loyal: protective, shares secrets and inside jokes, goes the extra mile.",
-                    3: "{comp} is devoted: would sacrifice for the player, deeply emotional moments, unwavering support.",
-                },
-                "ru": {
-                    -3: "{comp} открыто враждебен: думает уйти, помогает минимально, саркастичен и презрителен.",
-                    -2: "{comp} холоден и неохотен: короткие реплики, пассивная агрессия, помогает только по необходимости.",
-                    -1: "{comp} держит дистанцию: скептичен, двусмысленные комплименты, настороже.",
-                    1: "{comp} теплеет: иногда делится личным, помогает с энтузиазмом, искренне улыбается.",
-                    2: "{comp} предан: защищает, делится секретами, шутит по-свойски, старается больше.",
-                    3: "{comp} обожает: готов пожертвовать собой, глубокие эмоциональные моменты, безусловная поддержка.",
-                },
-            }
-            tones = _APPROVAL_TONES.get(language, _APPROVAL_TONES["en"])
-            tone = tones.get(comp_approval)
-            if tone:
-                comp_parts.append(tone.format(comp=comp_name))
+            # 5. Approval-aware tone injection based on current approval level
+            if comp_approval != 0:
+                _APPROVAL_TONES = {
+                    "en": {
+                        -3: "{comp} is openly hostile: considers leaving, minimal help, sarcastic and contemptuous.",
+                        -2: "{comp} is cold and reluctant: short responses, passive-aggressive, helps only when necessary.",
+                        -1: "{comp} is distant and skeptical: backhanded compliments, keeps guard up, minimal personal sharing.",
+                        1: "{comp} is warming up: occasional personal shares, more enthusiastic help, genuine smiles.",
+                        2: "{comp} is loyal: protective, shares secrets and inside jokes, goes the extra mile.",
+                        3: "{comp} is devoted: would sacrifice for the player, deeply emotional moments, unwavering support.",
+                    },
+                    "ru": {
+                        -3: "{comp} открыто враждебен: думает уйти, помогает минимально, саркастичен и презрителен.",
+                        -2: "{comp} холоден и неохотен: короткие реплики, пассивная агрессия, помогает только по необходимости.",
+                        -1: "{comp} держит дистанцию: скептичен, двусмысленные комплименты, настороже.",
+                        1: "{comp} теплеет: иногда делится личным, помогает с энтузиазмом, искренне улыбается.",
+                        2: "{comp} предан: защищает, делится секретами, шутит по-свойски, старается больше.",
+                        3: "{comp} обожает: готов пожертвовать собой, глубокие эмоциональные моменты, безусловная поддержка.",
+                    },
+                }
+                tones = _APPROVAL_TONES.get(language, _APPROVAL_TONES["en"])
+                tone = tones.get(comp_approval)
+                if tone:
+                    comp_parts.append(tone.format(comp=comp_name))
 
         comp_system_msg = LLMMessage(role="system", content="\n".join(comp_parts))
 

@@ -1011,6 +1011,8 @@ async def send_message(
     _resp_length = getattr(character, 'response_length', None) or "long"
 
     has_companion = bool(getattr(character, 'companion_name', None))
+    # Approval tracking only for fiction/DnD (GrimQuill), not for SweetSin RP
+    companion_approval_enabled = has_companion and (settings.site_mode == "fiction" or is_dnd)
     # Companion chats get higher temperature for more varied output
     _default_temp = 0.95 if content_rating == "nsfw" else 0.85
     if has_companion:
@@ -1111,9 +1113,9 @@ async def send_message(
                         for b in buffered:
                             yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
 
-                    # Parse companion approval tags before saving
+                    # Parse companion approval tags before saving (fiction/DnD only)
                     approval_delta = 0
-                    if has_companion:
+                    if companion_approval_enabled:
                         complete_text, approval_delta = _parse_and_strip_approval(complete_text)
 
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
@@ -1137,7 +1139,7 @@ async def send_message(
                     await service.increment_message_count(character.id, language, user_id_for_increment)
                     _asyncio.create_task(maybe_summarize(chat_id))
                     done_data = {'type': 'done', 'message_id': saved_msg_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': truncated}
-                    if has_companion and approval_delta:
+                    if companion_approval_enabled and approval_delta:
                         done_data['companion_approval_delta'] = approval_delta
                     if settings.is_fiction_mode:
                         choices = _parse_choices(complete_text)
@@ -1234,9 +1236,9 @@ async def send_message(
                             fb_text = "".join(fb_response)
                             if _is_refusal_response(fb_text) or _has_mixed_langs(fb_text, language):
                                 continue
-                            # Parse companion approval tags
+                            # Parse companion approval tags (fiction/DnD only)
                             fb_approval_delta = 0
-                            if has_companion:
+                            if companion_approval_enabled:
                                 fb_text, fb_approval_delta = _parse_and_strip_approval(fb_text)
                             actual_model = f"{fb_name}:{getattr(fb_prov, 'last_model_used', '') or ''}"
                             est_prompt = _estimate_prompt_tokens(messages)
@@ -1256,7 +1258,7 @@ async def send_message(
                             await service.increment_message_count(character.id, language, user_id_for_increment)
                             _asyncio.create_task(maybe_summarize(chat_id))
                             done_data = {'type': 'done', 'message_id': fb_saved_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': fb_truncated}
-                            if has_companion and fb_approval_delta:
+                            if companion_approval_enabled and fb_approval_delta:
                                 done_data['companion_approval_delta'] = fb_approval_delta
                             if settings.is_fiction_mode:
                                 fb_choices = _parse_choices(fb_text)
@@ -1298,9 +1300,9 @@ async def send_message(
                     for b in buffered:
                         yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
 
-                # Parse companion approval tags before saving
+                # Parse companion approval tags before saving (fiction/DnD only)
                 approval_delta = 0
-                if has_companion:
+                if companion_approval_enabled:
                     complete_text, approval_delta = _parse_and_strip_approval(complete_text)
 
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
@@ -1322,7 +1324,7 @@ async def send_message(
                 await service.increment_message_count(character.id, language, user_id_for_increment)
                 _asyncio.create_task(maybe_summarize(chat_id))
                 done_data = {'type': 'done', 'message_id': saved_msg_id, 'user_message_id': user_msg.id, 'model_used': actual_model, 'truncated': truncated}
-                if has_companion and approval_delta:
+                if companion_approval_enabled and approval_delta:
                     done_data['companion_approval_delta'] = approval_delta
                 if settings.is_fiction_mode:
                     choices = _parse_choices(complete_text)
@@ -1387,9 +1389,9 @@ async def send_message(
                             if not r_buf_flushed:
                                 for b in r_buffered:
                                     yield f"data: {json.dumps({'type': 'token', 'content': b})}\n\n"
-                            # Parse companion approval tags
+                            # Parse companion approval tags (fiction/DnD only)
                             r_approval_delta = 0
-                            if has_companion:
+                            if companion_approval_enabled:
                                 r_text, r_approval_delta = _parse_and_strip_approval(r_text)
                             r_model = f"{provider_name}:{new_model}"
                             est_p = _estimate_prompt_tokens(messages)
@@ -1406,7 +1408,7 @@ async def send_message(
                             await service.increment_message_count(character.id, language, user_id_for_increment)
                             _asyncio.create_task(maybe_summarize(chat_id))
                             r_done = {'type': 'done', 'message_id': r_msg_id, 'user_message_id': user_msg.id, 'model_used': r_model, 'truncated': r_truncated}
-                            if has_companion and r_approval_delta:
+                            if companion_approval_enabled and r_approval_delta:
                                 r_done['companion_approval_delta'] = r_approval_delta
                             if settings.is_fiction_mode:
                                 r_choices = _parse_choices(r_text)
