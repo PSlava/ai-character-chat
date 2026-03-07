@@ -258,6 +258,14 @@ export function CharacterPage() {
                 src={getThumbUrl(character.companion_avatar_url)}
                 alt={character.companion_name || ''}
                 className="w-9 h-9 rounded-full object-cover border-2 border-neutral-800"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  if (img.src !== character.companion_avatar_url) {
+                    img.src = character.companion_avatar_url!;
+                  } else {
+                    img.style.display = 'none';
+                  }
+                }}
               />
             </button>
           )}

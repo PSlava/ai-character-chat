@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { CreateGroupChatModal } from '@/components/chat/CreateGroupChatModal';
-import { Home, Heart, Settings, Users, Flag, BarChart3, X, UsersRound, Sparkles } from 'lucide-react';
+import { Home, Heart, Settings, Users, Flag, BarChart3, X, UsersRound, Sparkles, ChevronDown } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -27,6 +27,18 @@ export function Sidebar({ isOpen, onClose }: Props) {
   const { chatId } = useParams();
   const location = useLocation();
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [chatsOpen, setChatsOpen] = useState(() => localStorage.getItem('sidebar.chatsOpen') !== 'false');
+  const toggleChats = () => setChatsOpen(prev => {
+    const next = !prev;
+    localStorage.setItem('sidebar.chatsOpen', String(next));
+    return next;
+  });
+  const [groupsOpen, setGroupsOpen] = useState(() => localStorage.getItem('sidebar.groupsOpen') !== 'false');
+  const toggleGroups = () => setGroupsOpen(prev => {
+    const next = !prev;
+    localStorage.setItem('sidebar.groupsOpen', String(next));
+    return next;
+  });
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -127,10 +139,11 @@ export function Sidebar({ isOpen, onClose }: Props) {
       {isAuthenticated && (chatsLoading || chats.length > 0) && (
         <div className="flex-1 overflow-y-auto border-t border-neutral-800">
           <div className="p-3">
-            <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 px-3">
-              {t('sidebar.myChats')}
-            </p>
-            {chatsLoading && chats.length === 0 ? (
+            <button onClick={toggleChats} className="flex items-center justify-between w-full px-3 mb-2 text-xs text-neutral-500 uppercase tracking-wider hover:text-neutral-300 transition-colors">
+              <span>{t('sidebar.myChats')}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${chatsOpen ? '' : '-rotate-90'}`} />
+            </button>
+            {chatsOpen && (chatsLoading && chats.length === 0 ? (
               <div className="space-y-1">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center gap-2 px-3 py-2">
@@ -165,7 +178,7 @@ export function Sidebar({ isOpen, onClose }: Props) {
                   ))
                 )}
               </div>
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -173,34 +186,37 @@ export function Sidebar({ isOpen, onClose }: Props) {
       {isAuthenticated && (groupChatsLoading || groupChats.length > 0) && (
         <div className="border-t border-neutral-800">
           <div className="p-3">
-            <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2 px-3">
-              {t('groupChat.section')}
-            </p>
-            <div className="space-y-1">
-              {groupChats.map((gc) => (
-                <Link
-                  key={gc.id}
-                  to={`/group-chat/${gc.id}`}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    chatId === gc.id
-                      ? 'bg-rose-600/20 text-rose-300'
-                      : 'hover:bg-neutral-800 text-neutral-400'
-                  }`}
-                >
-                  <div className="flex -space-x-2 shrink-0">
-                    {gc.members.slice(0, 3).map((m) => (
-                      <Avatar
-                        key={m.id}
-                        src={m.character?.avatar_url || null}
-                        name={m.character?.name || '?'}
-                        size="sm"
-                      />
-                    ))}
-                  </div>
-                  <span className="truncate">{gc.title}</span>
-                </Link>
-              ))}
-            </div>
+            <button onClick={toggleGroups} className="flex items-center justify-between w-full px-3 mb-2 text-xs text-neutral-500 uppercase tracking-wider hover:text-neutral-300 transition-colors">
+              <span>{t('groupChat.section')}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${groupsOpen ? '' : '-rotate-90'}`} />
+            </button>
+            {groupsOpen && (
+              <div className="space-y-1">
+                {groupChats.map((gc) => (
+                  <Link
+                    key={gc.id}
+                    to={`/group-chat/${gc.id}`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                      chatId === gc.id
+                        ? 'bg-rose-600/20 text-rose-300'
+                        : 'hover:bg-neutral-800 text-neutral-400'
+                    }`}
+                  >
+                    <div className="flex -space-x-2 shrink-0">
+                      {gc.members.slice(0, 3).map((m) => (
+                        <Avatar
+                          key={m.id}
+                          src={m.character?.avatar_url || null}
+                          name={m.character?.name || '?'}
+                          size="sm"
+                        />
+                      ))}
+                    </div>
+                    <span className="truncate">{gc.title}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

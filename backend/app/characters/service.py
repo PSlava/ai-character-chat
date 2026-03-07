@@ -1,6 +1,18 @@
 from datetime import datetime
+from pathlib import Path
 from sqlalchemy import select, func, text, case
 from app.utils.sanitize import strip_html_tags
+
+
+def _validate_avatar_url(url: str | None, field: str = "avatar_url") -> None:
+    """Raise ValueError if a local avatar URL points to a non-existent file."""
+    if not url or not url.startswith("/api/uploads/avatars/"):
+        return
+    from app.config import settings
+    filename = url.split("/")[-1]
+    path = Path(settings.upload_dir) / "avatars" / filename
+    if not path.exists():
+        raise ValueError(f"{field}: file not found on disk ({filename})")
 
 _TEXT_FIELDS_TO_SANITIZE = {"name", "tagline", "personality", "appearance", "speech_pattern",
                             "scenario", "greeting_message", "example_dialogues", "system_prompt_suffix",
@@ -237,6 +249,8 @@ async def get_character_by_slug(db: AsyncSession, slug: str):
 async def create_character(db: AsyncSession, creator_id: str, data: dict):
     from app.characters.slugify import generate_unique_slug
     data.pop("slug", None)  # ignore any slug from input
+    _validate_avatar_url(data.get("avatar_url"), "avatar_url")
+    _validate_avatar_url(data.get("companion_avatar_url"), "companion_avatar_url")
     # Sanitize text fields
     for field in _TEXT_FIELDS_TO_SANITIZE:
         if field in data and isinstance(data[field], str):
@@ -282,6 +296,8 @@ async def update_character(db: AsyncSession, character_id: str, creator_id: str,
                 old_file.unlink(missing_ok=True)
 
     data.pop("slug", None)  # ignore any slug from input
+    _validate_avatar_url(data.get("avatar_url"), "avatar_url")
+    _validate_avatar_url(data.get("companion_avatar_url"), "companion_avatar_url")
 
     # Sanitize text fields
     for field in _TEXT_FIELDS_TO_SANITIZE:

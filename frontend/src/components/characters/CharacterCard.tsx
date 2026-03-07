@@ -63,6 +63,14 @@ export const CharacterCard = memo(function CharacterCard({ character }: Props) {
               src={getThumbUrl(character.companion_avatar_url)}
               alt={character.companion_name || ''}
               className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full object-cover border-2 border-neutral-800"
+              onError={(e) => {
+                const img = e.currentTarget;
+                if (img.src !== character.companion_avatar_url) {
+                  img.src = character.companion_avatar_url!;
+                } else {
+                  img.style.display = 'none';
+                }
+              }}
             />
           )}
           {isCharacterOnline(character.id) && (
