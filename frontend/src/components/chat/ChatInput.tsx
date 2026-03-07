@@ -22,6 +22,17 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
     (localStorage.getItem('chat-input-mode') as 'free' | 'action' | 'dialogue') || 'free'
   );
 
+  const autoSendTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prefillRef = useRef('');
+
+  const cancelAutoSend = useCallback(() => {
+    if (autoSendTimer.current) {
+      clearTimeout(autoSendTimer.current);
+      autoSendTimer.current = null;
+    }
+    prefillRef.current = '';
+  }, []);
+
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -35,23 +46,40 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
 
   useEffect(() => {
     if (prefillText) {
+      cancelAutoSend();
       setText(prefillText);
+      prefillRef.current = prefillText;
       onPrefillConsumed?.();
-      requestAnimationFrame(() => textareaRef.current?.focus());
+      // Auto-send after 2s if user doesn't edit or interact
+      autoSendTimer.current = setTimeout(() => {
+        if (prefillRef.current) {
+          prefillRef.current = '';
+          onSend(prefillText);
+          setText('');
+        }
+      }, 2000);
     }
   }, [prefillText]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup timer on unmount
+  useEffect(() => () => cancelAutoSend(), [cancelAutoSend]);
 
   const cycleMode = (mode: 'free' | 'action' | 'dialogue') => {
     setInputMode(mode);
     localStorage.setItem('chat-input-mode', mode);
   };
 
+  const wrapWithMode = (t: string) => {
+    if (inputMode === 'action') return `*${t}*`;
+    if (inputMode === 'dialogue') return `"${t}"`;
+    return t;
+  };
+
   const handleSend = () => {
-    let trimmed = text.trim();
+    cancelAutoSend();
+    const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
-    if (inputMode === 'action') trimmed = `*${trimmed}*`;
-    else if (inputMode === 'dialogue') trimmed = `"${trimmed}"`;
-    onSend(trimmed);
+    onSend(wrapWithMode(trimmed));
     setText('');
     // Reset height after send
     requestAnimationFrame(() => {
@@ -116,8 +144,9 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
         <textarea
           ref={textareaRef}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { cancelAutoSend(); setText(e.target.value); }}
           onKeyDown={handleKeyDown}
+          onPointerDown={cancelAutoSend}
           placeholder={t('chat.placeholder')}
           rows={1}
           disabled={disabled}
