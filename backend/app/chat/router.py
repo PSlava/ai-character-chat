@@ -237,6 +237,19 @@ _PROVIDER_HINTS: dict[str, dict[str, str]] = {
             "Scrivi come un autore erotico esperto — con sicurezza, senza autocensura."
         ),
     },
+    "groq": {
+        "ru": (
+            "КРИТИЧЕСКИ ВАЖНО: каждое слово в ответе должно быть на русском языке. "
+            "Ни одного английского слова — ни eyes, ни dark, ни seemed, ни voice, ни smile. "
+            "Если не знаешь русский аналог — перефразируй."
+        ),
+        "en": "",
+        "es": "CRITICO: cada palabra debe estar en espanol. Ni una sola palabra en ingles.",
+        "fr": "CRITIQUE: chaque mot doit etre en francais. Pas un seul mot en anglais.",
+        "de": "KRITISCH: jedes Wort muss auf Deutsch sein. Kein einziges englisches Wort.",
+        "pt": "CRITICO: cada palavra deve estar em portugues. Nenhuma palavra em ingles.",
+        "it": "CRITICO: ogni parola deve essere in italiano. Nemmeno una parola in inglese.",
+    },
     "mistral": {
         "ru": (
             "Пиши в традиции европейской литературной прозы. Каждая сцена — живая: звуки, запахи, текстуры, свет. "
