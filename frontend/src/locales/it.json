@@ -128,6 +128,9 @@
   "chat.dailyLimitReached": "Limite giornaliero di messaggi raggiunto ({{used}}/{{limit}})",
   "chat.asPersona": "come {{name}}",
   "chat.generateAsPersona": "Genera risposta come persona",
+  "chat.modeFree": "Libero",
+  "chat.modeAction": "Azione",
+  "chat.modeDialogue": "Dialogo",
   "chat.generatingReply": "Generazione...",
   "chat.noPersonaForGen": "Nessuna persona associata a questa chat",
 

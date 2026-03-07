@@ -9,13 +9,18 @@ interface Props {
   disabled?: boolean;
   personaName?: string | null;
   onGeneratePersonaReply?: () => Promise<string | null>;
+  prefillText?: string;
+  onPrefillConsumed?: () => void;
 }
 
-export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, onGeneratePersonaReply }: Props) {
+export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, onGeneratePersonaReply, prefillText, onPrefillConsumed }: Props) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [generating, setGenerating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [inputMode, setInputMode] = useState<'free' | 'action' | 'dialogue'>(() =>
+    (localStorage.getItem('chat-input-mode') as 'free' | 'action' | 'dialogue') || 'free'
+  );
 
   const autoResize = useCallback(() => {
     const el = textareaRef.current;
@@ -28,9 +33,24 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
     autoResize();
   }, [text, autoResize]);
 
+  useEffect(() => {
+    if (prefillText) {
+      setText(prefillText);
+      onPrefillConsumed?.();
+      requestAnimationFrame(() => textareaRef.current?.focus());
+    }
+  }, [prefillText]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const cycleMode = (mode: 'free' | 'action' | 'dialogue') => {
+    setInputMode(mode);
+    localStorage.setItem('chat-input-mode', mode);
+  };
+
   const handleSend = () => {
-    const trimmed = text.trim();
+    let trimmed = text.trim();
     if (!trimmed || isStreaming) return;
+    if (inputMode === 'action') trimmed = `*${trimmed}*`;
+    else if (inputMode === 'dialogue') trimmed = `"${trimmed}"`;
     onSend(trimmed);
     setText('');
     // Reset height after send
@@ -66,6 +86,21 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
 
   return (
     <div className="border-t border-neutral-800 p-2 sm:p-4">
+      <div className="flex gap-1 mb-1.5 max-w-3xl mx-auto px-1">
+        {(['free', 'action', 'dialogue'] as const).map(mode => (
+          <button
+            key={mode}
+            onClick={() => cycleMode(mode)}
+            className={`px-2 py-0.5 text-xs rounded-md transition-colors ${
+              inputMode === mode
+                ? 'bg-rose-600/20 text-rose-400 border border-rose-500/30'
+                : 'text-neutral-500 hover:text-neutral-300'
+            }`}
+          >
+            {mode === 'free' ? '\u270D\uFE0F' : mode === 'action' ? '\u26A1' : '\uD83D\uDCAC'} {t(`chat.mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
+          </button>
+        ))}
+      </div>
       <div className="flex items-end gap-2 max-w-3xl mx-auto">
         {personaName && onGeneratePersonaReply && (
           <button

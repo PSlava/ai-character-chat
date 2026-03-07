@@ -20,9 +20,10 @@ interface Props {
   onContinue?: () => void;
   truncated?: boolean;
   onResendLast?: (editedContent?: string) => void;
+  onSuggestionClick?: (text: string) => void;
 }
 
-export function ChatWindow({ messages, characterName, characterAvatar, scenario, userName, isStreaming, isAdmin, hasMore, loadingMore, onLoadMore, onDeleteMessage, onRegenerate, onContinue, truncated, onResendLast }: Props) {
+export function ChatWindow({ messages, characterName, characterAvatar, scenario, userName, isStreaming, isAdmin, hasMore, loadingMore, onLoadMore, onDeleteMessage, onRegenerate, onContinue, truncated, onResendLast, onSuggestionClick }: Props) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -162,6 +163,20 @@ export function ChatWindow({ messages, characterName, characterAvatar, scenario,
                 {t('chat.continue')}
               </button>
             )}
+          </div>
+        )}
+
+        {!isStreaming && (lastAssistant?.suggestions?.length ?? 0) > 0 && (
+          <div className="flex flex-wrap gap-2 mt-1">
+            {lastAssistant!.suggestions!.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => onSuggestionClick?.(s)}
+                className="px-3 py-1.5 text-sm bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 hover:border-rose-500/50 rounded-full text-neutral-300 hover:text-white transition-colors"
+              >
+                {s}
+              </button>
+            ))}
           </div>
         )}
 

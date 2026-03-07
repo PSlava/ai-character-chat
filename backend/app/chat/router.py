@@ -144,6 +144,25 @@ def _parse_and_strip_approval(text: str) -> tuple[str, int]:
     return cleaned.rstrip(), delta
 
 
+# ── Suggested replies parsing ─────────────────────────────
+_SUGGEST_PATTERN = _re.compile(r'\[SUGGEST:\s*(.+?)\]', _re.IGNORECASE)
+
+
+def _parse_and_strip_suggestions(text: str) -> tuple[str, list[str] | None]:
+    """Parse [SUGGEST: opt1 | opt2 | opt3] from response, strip the tag.
+
+    Returns (cleaned_text, suggestions_list_or_None).
+    """
+    m = _SUGGEST_PATTERN.search(text)
+    if not m:
+        return text, None
+    suggestions = [s.strip() for s in m.group(1).split('|') if s.strip()]
+    if len(suggestions) < 2:
+        return text, None
+    cleaned = text[:m.start()].rstrip() + text[m.end():]
+    return cleaned.rstrip(), suggestions[:4]
+
+
 async def _update_companion_approval(db, chat_id: str, delta: int):
     """Update companion_approval on chat, clamped to [-3, +3]."""
     if delta == 0:
@@ -1130,6 +1149,8 @@ async def send_message(
                     approval_delta = 0
                     if companion_approval_enabled:
                         complete_text, approval_delta = _parse_and_strip_approval(complete_text)
+                    # Parse suggested replies
+                    complete_text, suggestions = _parse_and_strip_suggestions(complete_text)
 
                     actual_model = f"{pname}:{getattr(prov, 'last_model_used', '') or ''}"
                     est_prompt = _estimate_prompt_tokens(messages)
@@ -1158,6 +1179,8 @@ async def send_message(
                         choices = _parse_choices(complete_text)
                         if choices:
                             done_data['choices'] = choices
+                    if suggestions:
+                        done_data['suggestions'] = suggestions
                     # Parse dice rolls and encounter state for DnD chats
                     if is_dnd:
                         dice_rolls = _parse_dice_rolls(complete_text)
@@ -1253,6 +1276,7 @@ async def send_message(
                             fb_approval_delta = 0
                             if companion_approval_enabled:
                                 fb_text, fb_approval_delta = _parse_and_strip_approval(fb_text)
+                            fb_text, fb_suggestions = _parse_and_strip_suggestions(fb_text)
                             actual_model = f"{fb_name}:{getattr(fb_prov, 'last_model_used', '') or ''}"
                             est_prompt = _estimate_prompt_tokens(messages)
                             est_completion = len(fb_text) // 4
@@ -1277,6 +1301,8 @@ async def send_message(
                                 fb_choices = _parse_choices(fb_text)
                                 if fb_choices:
                                     done_data['choices'] = fb_choices
+                            if fb_suggestions:
+                                done_data['suggestions'] = fb_suggestions
                             if is_dnd:
                                 fb_dice = _parse_dice_rolls(fb_text)
                                 if fb_dice:
@@ -1317,6 +1343,8 @@ async def send_message(
                 approval_delta = 0
                 if companion_approval_enabled:
                     complete_text, approval_delta = _parse_and_strip_approval(complete_text)
+                # Parse suggested replies
+                complete_text, suggestions = _parse_and_strip_suggestions(complete_text)
 
                 actual_model = f"{provider_name}:{getattr(provider, 'last_model_used', model_id) or model_id}"
                 est_prompt = _estimate_prompt_tokens(messages)
@@ -1343,6 +1371,8 @@ async def send_message(
                     choices = _parse_choices(complete_text)
                     if choices:
                         done_data['choices'] = choices
+                if suggestions:
+                    done_data['suggestions'] = suggestions
                 if is_dnd:
                     dice_rolls = _parse_dice_rolls(complete_text)
                     if dice_rolls:
@@ -1406,6 +1436,7 @@ async def send_message(
                             r_approval_delta = 0
                             if companion_approval_enabled:
                                 r_text, r_approval_delta = _parse_and_strip_approval(r_text)
+                            r_text, r_suggestions = _parse_and_strip_suggestions(r_text)
                             r_model = f"{provider_name}:{new_model}"
                             est_p = _estimate_prompt_tokens(messages)
                             est_c = len(r_text) // 4
@@ -1427,6 +1458,8 @@ async def send_message(
                                 r_choices = _parse_choices(r_text)
                                 if r_choices:
                                     r_done['choices'] = r_choices
+                            if r_suggestions:
+                                r_done['suggestions'] = r_suggestions
                             if is_dnd:
                                 r_dice = _parse_dice_rolls(r_text)
                                 if r_dice:

@@ -82,6 +82,7 @@ export interface Message {
   model_used?: string;
   created_at: string;
   isError?: boolean;
+  suggestions?: string[];
 }
 
 export interface ChatDetail {

@@ -795,6 +795,18 @@ def _get_post_history(lang: str, chat_id: str, message_count: int,
         }
         result += short_input.get(lang, short_input["en"])
 
+    # --- Suggested replies for non-fiction mode ---
+    suggest_instr = {
+        "ru": "\nВ самом конце ответа добавь ровно 3 коротких варианта действий для пользователя в формате: [SUGGEST: вариант1 | вариант2 | вариант3]. Каждый вариант -- максимум 6 слов, от первого лица.",
+        "en": "\nAt the very end of your response, add exactly 3 short action options for the user in format: [SUGGEST: option1 | option2 | option3]. Each option -- max 6 words, first person.",
+        "es": "\nAl final de tu respuesta, agrega exactamente 3 opciones cortas de accion para el usuario en formato: [SUGGEST: opcion1 | opcion2 | opcion3]. Cada opcion -- maximo 6 palabras, primera persona.",
+        "fr": "\nA la toute fin de ta reponse, ajoute exactement 3 courtes options d'action pour l'utilisateur au format: [SUGGEST: option1 | option2 | option3]. Chaque option -- max 6 mots, premiere personne.",
+        "de": "\nAm Ende deiner Antwort fuege genau 3 kurze Handlungsoptionen fuer den Benutzer im Format hinzu: [SUGGEST: Option1 | Option2 | Option3]. Jede Option -- max 6 Woerter, erste Person.",
+        "pt": "\nNo final da sua resposta, adicione exatamente 3 opcoes curtas de acao para o usuario no formato: [SUGGEST: opcao1 | opcao2 | opcao3]. Cada opcao -- maximo 6 palavras, primeira pessoa.",
+        "it": "\nAlla fine della tua risposta, aggiungi esattamente 3 brevi opzioni di azione per l'utente nel formato: [SUGGEST: opzione1 | opzione2 | opzione3]. Ogni opzione -- massimo 6 parole, prima persona.",
+    }
+    result += suggest_instr.get(lang, suggest_instr["en"])
+
     return result
 
 

@@ -4,6 +4,9 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getAuthOrAnonToken, deleteChatMessage } from '@/api/chat';
 import type { Message } from '@/types';
 
+const _SUGGEST_RE = /\s*\[SUGGEST:\s*.+?\]\s*/gi;
+const stripSuggestTag = (text: string) => text.replace(_SUGGEST_RE, '').trimEnd();
+
 export interface GenerationSettings {
   model?: string;
   temperature?: number;
@@ -113,7 +116,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               // Update assistant message with real DB id
               const last = updated[updated.length - 1];
               if (last.role === 'assistant') {
-                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used };
+                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used, suggestions: data.suggestions || undefined, content: stripSuggestTag(last.content) };
               }
               // Update user message with real DB id
               if (data.user_message_id) {
@@ -340,7 +343,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               const updated = [...prev];
               const last = updated[updated.length - 1];
               if (last.role === 'assistant') {
-                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used };
+                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used, suggestions: data.suggestions || undefined, content: stripSuggestTag(last.content) };
               }
               return updated;
             });

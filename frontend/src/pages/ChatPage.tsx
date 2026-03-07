@@ -52,6 +52,7 @@ export function ChatPage() {
   );
   const [showAnonLimit, setShowAnonLimit] = useState(false);
   const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
+  const [prefillText, setPrefillText] = useState('');
   const isAnon = !isAuthenticated;
 
   useEffect(() => {
@@ -394,6 +395,7 @@ export function ChatPage() {
         onContinue={!isStreaming ? continueMessage : undefined}
         truncated={truncated}
         onResendLast={!isStreaming ? resendLast : undefined}
+        onSuggestionClick={(text) => setPrefillText(text)}
       />
 
       <ChatInput
@@ -402,6 +404,8 @@ export function ChatPage() {
         isStreaming={isStreaming}
         personaName={chatDetail?.chat.persona_name}
         onGeneratePersonaReply={isAdmin && chatDetail?.chat.persona_name ? handleGeneratePersonaReply : undefined}
+        prefillText={prefillText}
+        onPrefillConsumed={() => setPrefillText('')}
       />
 
       {showSettings && (
