@@ -160,7 +160,7 @@ def _parse_and_strip_suggestions(text: str) -> tuple[str, list[str] | None]:
     if len(suggestions) < 2:
         return text, None
     cleaned = text[:m.start()].rstrip() + text[m.end():]
-    return cleaned.rstrip(), suggestions[:4]
+    return cleaned.rstrip(), suggestions[:6]
 
 
 async def _update_companion_approval(db, chat_id: str, delta: int):
