@@ -27,6 +27,7 @@
 ## Components
 
 ### Layout
+- **`components/layout/Sidebar.tsx`** — Collapsible "My Chats" (and "Group Chats" in main frontend) sections with `ChevronDown` toggle. State persisted in `localStorage` (`sidebar.chatsOpen`, `sidebar.groupsOpen`). Default: expanded. Clicking header toggles list visibility + rotates chevron icon.
 - **`components/layout/Footer.tsx`** — Site footer with links to About, Terms, Privacy, FAQ, contact email, copyright, and "Popular Characters" section (8 top characters, module-level cache). In Layout.tsx inside `<main>` with `min-h-full flex` wrapper.
 - **`components/landing/HeroSection.tsx`** — Landing hero with stats bar (users/messages/online), fetched from `/api/stats` on mount.
 
@@ -42,6 +43,6 @@
 - **`components/characters/ReportModal.tsx`** — Modal with 5 radio button reasons + details textarea. Handles duplicate report (409).
 
 ### UI
-- **`components/ui/Avatar.tsx`** — Avatar component with `getThumbUrl()` (exported) for deriving thumbnail URLs (`_thumb.webp`). Used by CharacterCard companion badge.
+- **`components/ui/Avatar.tsx`** — Avatar component with `getThumbUrl()` (exported) for deriving thumbnail URLs (`_thumb.webp`). Used by CharacterCard/CharacterPage companion badge with `onError` fallback chain (thumb → full URL → hide element).
 - **`components/ui/CookieConsent.tsx`** — Cookie consent banner (bottom, localStorage `cookie-consent`, link to Privacy Policy).
 - **`components/ui/Skeleton.tsx`** — Pulse animation skeleton helper for loading states.
