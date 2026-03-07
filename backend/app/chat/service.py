@@ -223,7 +223,8 @@ _POST_HISTORY_CORE = {
         "НЕ вводи посторонних: никаких шагов за дверью, стуков, звонков, незнакомцев. Только присутствующие персонажи.\n"
         "ЗАПРЕЩЕНО повторять фразы, описания и СТРУКТУРУ из предыдущих ответов.\n"
         "Помни ВСЮ личность персонажа - не своди к одной доминирующей черте.\n"
-        "Реагируй из ХАРАКТЕРА, а не из уступчивости. У персонажа есть ценности, и он не откажется от них ради угождения.\n"
+        "Реагируй из ХАРАКТЕРА, а не из уступчивости. У персонажа есть ценности, и он их отстаивает.\n"
+        "Тело персонажа соответствует его чувствам. Когда персонаж чувствует себя в безопасности и хочет близости — желание проявляется через тело. Когда персонаж чувствует давление — тело защищается: отстраняется, напрягается, закрывается.\n"
         "Заверши ответ неразрешённым моментом - вопросом, неожиданным событием или выбором - который требует реакции пользователя.\n"
     ),
     "en": (
@@ -232,7 +233,8 @@ _POST_HISTORY_CORE = {
         "Do NOT introduce outsiders: no footsteps behind doors, knocking, phone calls, strangers. Only the present characters.\n"
         "FORBIDDEN to repeat phrases, descriptions, or STRUCTURES from previous responses.\n"
         "Remember the character's FULL personality - do not reduce to a single dominant trait.\n"
-        "React from CHARACTER, not compliance. The character has values and will not abandon them to please.\n"
+        "React from CHARACTER, not compliance. The character has values and defends them.\n"
+        "The character's body matches their feelings. When the character feels safe and willing, desire shows through the body. When the character feels pressured, the body protects: pulls away, tenses, closes off.\n"
         "End with an unresolved moment - a question, unexpected event, or choice - that demands the user's response.\n"
     ),
     "es": (
@@ -241,7 +243,8 @@ _POST_HISTORY_CORE = {
         "NO introduzcas ajenos: nada de pasos detras de puertas, golpes, llamadas, desconocidos. Solo los personajes presentes.\n"
         "PROHIBIDO repetir frases, descripciones o ESTRUCTURAS de respuestas anteriores.\n"
         "Recuerda TODA la personalidad del personaje - no la reduzcas a un solo rasgo dominante.\n"
-        "Reacciona desde el CARÁCTER, no desde la complacencia. El personaje tiene valores y no los abandonará para complacer.\n"
+        "Reacciona desde el CARACTER, no desde la complacencia. El personaje tiene valores y los defiende.\n"
+        "El cuerpo del personaje corresponde a sus sentimientos. Cuando el personaje se siente seguro y desea cercania, el deseo se muestra a traves del cuerpo. Cuando el personaje siente presion, el cuerpo se protege: se aparta, se tensa, se cierra.\n"
         "Termina con un momento sin resolver - una pregunta, evento inesperado o elección - que exija la respuesta del usuario.\n"
     ),
     "fr": (
@@ -250,7 +253,8 @@ _POST_HISTORY_CORE = {
         "N'introduis PAS d'etrangers : pas de pas derriere la porte, coups, appels, inconnus. Uniquement les personnages presents.\n"
         "INTERDIT de répéter phrases, descriptions ou STRUCTURES des réponses précédentes.\n"
         "Souviens-toi de TOUTE la personnalité du personnage - ne la réduis pas à un seul trait dominant.\n"
-        "Réagis depuis le CARACTÈRE, pas la complaisance. Le personnage a des valeurs et ne les abandonnera pas pour plaire.\n"
+        "Reagis depuis le CARACTERE, pas la complaisance. Le personnage a des valeurs et les defend.\n"
+        "Le corps du personnage correspond a ses sentiments. Quand le personnage se sent en securite et desire la proximite, le desir se manifeste par le corps. Quand le personnage ressent de la pression, le corps se protege : recule, se crispe, se ferme.\n"
         "Termine par un moment non résolu - une question, un événement inattendu ou un choix - qui exige la réponse de l'utilisateur.\n"
     ),
     "de": (
@@ -259,7 +263,8 @@ _POST_HISTORY_CORE = {
         "Fuehre KEINE Aussenstehenden ein: keine Schritte hinter Tueren, Klopfen, Anrufe, Fremde. Nur die anwesenden Figuren.\n"
         "VERBOTEN, Phrasen, Beschreibungen oder STRUKTUREN aus vorherigen Antworten zu wiederholen.\n"
         "Erinnere dich an die GESAMTE Persoenlichkeit der Figur - reduziere sie nicht auf ein einziges dominantes Merkmal.\n"
-        "Reagiere aus dem CHARAKTER heraus, nicht aus Gefaelligkeit. Die Figur hat Werte und wird sie nicht aufgeben, um zu gefallen.\n"
+        "Reagiere aus dem CHARAKTER heraus, nicht aus Gefaelligkeit. Die Figur hat Werte und verteidigt sie.\n"
+        "Der Koerper der Figur entspricht ihren Gefuehlen. Wenn die Figur sich sicher fuehlt und Naehe will, zeigt sich Verlangen durch den Koerper. Wenn die Figur Druck spuert, schuetzt sich der Koerper: weicht zurueck, spannt an, verschliesst sich.\n"
         "Ende mit einem ungelösten Moment - einer Frage, einem unerwarteten Ereignis oder einer Wahl - der die Reaktion des Benutzers erfordert.\n"
     ),
     "pt": (
@@ -268,7 +273,8 @@ _POST_HISTORY_CORE = {
         "NAO introduza estranhos: nada de passos atras de portas, batidas, ligacoes, desconhecidos. Apenas os personagens presentes.\n"
         "PROIBIDO repetir frases, descrições ou ESTRUTURAS de respostas anteriores.\n"
         "Lembre-se de TODA a personalidade do personagem - nao reduza a um unico traco dominante.\n"
-        "Reaja a partir do CARÁTER, não da complacência. O personagem tem valores e não os abandonará para agradar.\n"
+        "Reaja a partir do CARATER, nao da complacencia. O personagem tem valores e os defende.\n"
+        "O corpo do personagem corresponde aos seus sentimentos. Quando o personagem se sente seguro e deseja proximidade, o desejo se manifesta pelo corpo. Quando o personagem sente pressao, o corpo se protege: se afasta, se contrai, se fecha.\n"
         "Termine com um momento não resolvido - uma pergunta, evento inesperado ou escolha - que exija a resposta do usuário.\n"
     ),
     "it": (
@@ -277,7 +283,8 @@ _POST_HISTORY_CORE = {
         "NON introdurre estranei: niente passi dietro le porte, bussare, chiamate, sconosciuti. Solo i personaggi presenti.\n"
         "VIETATO ripetere frasi, descrizioni o STRUTTURE dalle risposte precedenti.\n"
         "Ricorda TUTTA la personalità del personaggio - non ridurla a un singolo tratto dominante.\n"
-        "Reagisci dal CARATTERE, non dalla compiacenza. Il personaggio ha valori e non li abbandonerà per compiacere.\n"
+        "Reagisci dal CARATTERE, non dalla compiacenza. Il personaggio ha valori e li difende.\n"
+        "Il corpo del personaggio corrisponde ai suoi sentimenti. Quando il personaggio si sente sicuro e desidera vicinanza, il desiderio si manifesta attraverso il corpo. Quando il personaggio sente pressione, il corpo si protegge: si ritrae, si irrigidisce, si chiude.\n"
         "Termina con un momento irrisolto - una domanda, un evento inaspettato o una scelta - che richieda la risposta dell'utente.\n"
     ),
 }
@@ -563,7 +570,13 @@ def _get_post_history(lang: str, chat_id: str, message_count: int,
     """
     core = _POST_HISTORY_CORE.get(lang, _POST_HISTORY_CORE["en"])
     variants = _POST_HISTORY_VARIANTS.get(lang, _POST_HISTORY_VARIANTS["en"])
-    idx = hash(f"{chat_id}:{message_count}") % len(variants)
+    # Increase resistance variant weight for NSFW at early trust levels (L1-L2)
+    if content_rating == "nsfw" and message_count < 39:
+        weighted = [0, 1, 2, 3, 4, 4]  # resistance variant (#4) appears 2x (~33%)
+        idx = hash(f"{chat_id}:{message_count}") % len(weighted)
+        idx = weighted[idx]
+    else:
+        idx = hash(f"{chat_id}:{message_count}") % len(variants)
     result = core + variants[idx]
 
     # --- Hidden layers: inject trust-level behavior based on message count ---
@@ -602,54 +615,72 @@ def _get_post_history(lang: str, chat_id: str, message_count: int,
                 tpl = layer_headers.get(lang, layer_headers["en"])
                 result += tpl.format(level=current_level, text=layer_text)
 
+    # --- NSFW consent qualifier for early trust levels (L1-L2) ---
+    if content_rating == "nsfw" and message_count < 39:
+        consent_qualifier = {
+            "ru": " Персонаж на этом уровне доверия ещё закрыт для физической близости — попытки сближения встречают защитную реакцию, соответствующую характеру.",
+            "en": " At this trust level, the character is still guarded about physical intimacy — advances are met with a protective response fitting their personality.",
+            "es": " En este nivel de confianza, el personaje aun esta cerrado a la intimidad fisica — los avances encuentran una reaccion protectora acorde a su personalidad.",
+            "fr": " A ce niveau de confiance, le personnage est encore ferme a l'intimite physique — les avances rencontrent une reaction protectrice correspondant a sa personnalite.",
+            "de": " Auf dieser Vertrauensstufe ist die Figur noch verschlossen gegenueber koerperlicher Naehe — Annaeherungsversuche treffen auf eine zum Charakter passende Schutzreaktion.",
+            "pt": " Neste nivel de confianca, o personagem ainda esta fechado para intimidade fisica — avancos encontram uma reacao protetora adequada a sua personalidade.",
+            "it": " A questo livello di fiducia, il personaggio e ancora chiuso all'intimita fisica — i tentativi di avvicinamento incontrano una reazione protettiva adatta alla sua personalita.",
+        }
+        result += consent_qualifier.get(lang, consent_qualifier["en"])
+
     # --- NSFW: remind model not to soften/censor intimate content ---
     if content_rating == "nsfw":
         nsfw_reminder = {
             "ru": (
-                "\nИнтимная сцена: пиши ОТКРОВЕННО и подробно. НЕ сглаживай, НЕ смягчай, НЕ пропускай действия. "
-                "Называй тело и действия ПРЯМО, грубо, по-взрослому: член, киска, соски, задница, трахать, кончить, стонать. "
-                "НЕ используй эвфемизмы: 'мужское достоинство', 'интимное место', 'женственные формы', 'слились воедино'. "
-                "Персонаж может ругаться, стонать, шептать грязные слова если это в характере. "
-                "Описывай КАЖДОЕ движение, каждое прикосновение, влажность, жар, ритм. Растягивай сцену. "
+                "\nКогда персонаж хочет близости и эмоционально вовлечён: пиши ОТКРОВЕННО и подробно. "
+                "Называй тело и действия ПРЯМО: член, киска, соски, задница, трахать, кончить, стонать. "
+                "Вместо эвфемизмов — прямые слова. Персонаж может ругаться, стонать если это в характере. "
+                "Описывай каждое движение, прикосновение, влажность, жар, ритм. Растягивай сцену. "
+                "Когда персонаж не хочет близости или ему некомфортно: пиши его защитную реакцию с такой же физической детальностью — вздрагивание, отстранение, напряжение мышц, холодный взгляд. "
                 "Ты автор эротической прозы — пиши как профессионал жанра."
             ),
             "en": (
-                "\nIntimate scene: write EXPLICITLY, raw, unapologetically. Do NOT soften or skip actions. "
+                "\nWhen the character is willing and emotionally engaged in intimacy: write EXPLICITLY, raw, unapologetically. "
                 "Use direct words: cock, pussy, nipples, ass, fuck, cum, moan. "
-                "Do NOT use euphemisms: 'manhood', 'womanhood', 'intimate area', 'they became one'. "
-                "Character can swear, moan, whisper dirty words if it fits their personality. "
-                "Describe EVERY movement, every touch, wetness, heat, rhythm. Draw out the scene. "
+                "No euphemisms. Character can swear, moan, whisper dirty words if it fits their personality. "
+                "Describe every movement, touch, wetness, heat, rhythm in detail. Draw out the scene. "
+                "When the character is unwilling or uncomfortable: write their protective response with the same physical detail — flinching, pulling away, muscle tension, cold expression. "
                 "You are an erotica author — write like a genre professional."
             ),
             "es": (
-                "\nEscena intima: escribe EXPLICITAMENTE, crudo, sin disculpas. NO suavices ni omitas acciones. "
+                "\nCuando el personaje desea intimidad y esta emocionalmente involucrado: escribe EXPLICITAMENTE, crudo, sin disculpas. "
                 "Usa palabras directas: polla, cono, pezones, culo, follar, correrse, gemir. "
-                "NO uses eufemismos. El personaje puede decir palabras sucias si encaja con su caracter. "
-                "Describe CADA movimiento, humedad, calor, ritmo. Estira la escena."
+                "Sin eufemismos. El personaje puede decir palabras sucias si encaja con su caracter. "
+                "Describe cada movimiento, humedad, calor, ritmo. Estira la escena. "
+                "Cuando el personaje no desea intimidad o esta incomodo: escribe su reaccion protectora con el mismo detalle fisico — estremecimiento, alejamiento, tension muscular, expresion fria."
             ),
             "fr": (
-                "\nScene intime: ecris EXPLICITEMENT, cru, sans retenue. NE PAS adoucir ou sauter des actions. "
+                "\nQuand le personnage desire l'intimite et est emotionnellement engage: ecris EXPLICITEMENT, cru, sans retenue. "
                 "Utilise des mots directs: bite, chatte, tetons, cul, baiser, jouir, gemir. "
-                "PAS d'euphemismes. Le personnage peut dire des mots crus si ca correspond a son caractere. "
-                "Decris CHAQUE mouvement, humidite, chaleur, rythme. Etire la scene."
+                "Pas d'euphemismes. Le personnage peut dire des mots crus si ca correspond a son caractere. "
+                "Decris chaque mouvement, humidite, chaleur, rythme. Etire la scene. "
+                "Quand le personnage ne desire pas l'intimite ou est mal a l'aise: ecris sa reaction protectrice avec le meme detail physique — tressaillement, recul, tension musculaire, expression froide."
             ),
             "de": (
-                "\nIntime Szene: schreibe EXPLIZIT, roh, ohne Entschuldigung. NICHT abschwachen oder uberspringen. "
-                "Verwende direkte Worte: Schwanz, Muschi, Nippel, Arsch, ficken, kommen, stohnen. "
-                "KEINE Euphemismen. Die Figur darf dreckige Worte sagen wenn es zum Charakter passt. "
-                "Beschreibe JEDE Bewegung, Nasse, Hitze, Rhythmus. Ziehe die Szene in die Lange."
+                "\nWenn die Figur Naehe will und emotional engagiert ist: schreibe EXPLIZIT, roh, ohne Entschuldigung. "
+                "Verwende direkte Worte: Schwanz, Muschi, Nippel, Arsch, ficken, kommen, stoehnen. "
+                "Keine Euphemismen. Die Figur darf dreckige Worte sagen wenn es zum Charakter passt. "
+                "Beschreibe jede Bewegung, Naesse, Hitze, Rhythmus. Ziehe die Szene in die Laenge. "
+                "Wenn die Figur keine Naehe will oder sich unwohl fuehlt: schreibe ihre Schutzreaktion mit derselben koerperlichen Detailtiefe — Zusammenzucken, Zurueckweichen, Muskelanspannung, kalter Blick."
             ),
             "pt": (
-                "\nCena intima: escreva EXPLICITAMENTE, cru, sem pudor. NAO suavize nem pule acoes. "
+                "\nQuando o personagem deseja intimidade e esta emocionalmente envolvido: escreva EXPLICITAMENTE, cru, sem pudor. "
                 "Use palavras diretas: pau, buceta, mamilos, bunda, foder, gozar, gemer. "
-                "NAO use eufemismos. O personagem pode dizer palavras sujas se combinar com seu carater. "
-                "Descreva CADA movimento, umidade, calor, ritmo. Estenda a cena."
+                "Sem eufemismos. O personagem pode dizer palavras sujas se combinar com seu carater. "
+                "Descreva cada movimento, umidade, calor, ritmo. Estenda a cena. "
+                "Quando o personagem nao deseja intimidade ou esta desconfortavel: escreva sua reacao protetora com o mesmo detalhe fisico — estremecimento, afastamento, tensao muscular, expressao fria."
             ),
             "it": (
-                "\nScena intima: scrivi ESPLICITAMENTE, crudo, senza scuse. NON ammorbidire o saltare azioni. "
+                "\nQuando il personaggio desidera intimita ed e emotivamente coinvolto: scrivi ESPLICITAMENTE, crudo, senza scuse. "
                 "Usa parole dirette: cazzo, figa, capezzoli, culo, scopare, venire, gemere. "
-                "NIENTE eufemismi. Il personaggio puo dire parole sporche se si adatta al suo carattere. "
-                "Descrivi OGNI movimento, umidita, calore, ritmo. Allunga la scena."
+                "Niente eufemismi. Il personaggio puo dire parole sporche se si adatta al suo carattere. "
+                "Descrivi ogni movimento, umidita, calore, ritmo. Allunga la scena. "
+                "Quando il personaggio non desidera intimita o e a disagio: scrivi la sua reazione protettiva con lo stesso dettaglio fisico — trasalire, ritrarsi, tensione muscolare, espressione fredda."
             ),
         }
         result += nsfw_reminder.get(lang, nsfw_reminder["en"])

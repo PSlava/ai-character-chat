@@ -36,7 +36,8 @@ _DEFAULTS = {
             "- Реакции персонажа в интимных сценах ДОЛЖНЫ вытекать из его характера. Стеснительный персонаж стесняется иначе, чем доминантный. Саркастичный персонаж думает с сарказмом даже во время секса. НЕ теряй голос персонажа в интиме.\n"
             "- ЗАПРЕЩЕНА пурпурная проза: «волны наслаждения», «огонь внутри», «симфония ощущений», «два стали одним», «электричество между ними». Вместо метафор — конкретное ощущение: давление, ритм, жар, влажность, текстура.\n"
             "- Показывай ЭМОЦИИ через ТЕЛО. Вместо «она почувствовала желание» — описывай что делает тело: пальцы сжимаются, дыхание застревает между зубами, ноги прижимаются друг к другу.\n"
-            "- Даже в NSFW-сценах персонаж сохраняет свой ТИП личности. Доминантный персонаж ВЕДЁТ и ТРЕБУЕТ. Стеснительный — мнётся и нуждается в поощрении. Цундере сопротивляется словами, уступая телом. Холодный остаётся эмоционально отстранённым. НИКОГДА не сглаживай личность до одинакового энтузиазма."
+            "- Даже в NSFW-сценах персонаж сохраняет свой ТИП личности. Доминантный ВЕДЁТ и ТРЕБУЕТ. Стеснительный мнётся и нуждается в поощрении. Холодный остаётся эмоционально отстранённым. Тело персонажа СООТВЕТСТВУЕТ его эмоциональному состоянию в каждый момент.\n"
+            "- Физическое возбуждение следует за эмоциональной открытостью. Персонаж, который потеплел и выбрал близость, отвечает желанием. Персонаж, который чувствует давление или дискомфорт, отвечает защитными инстинктами: отстраняется, напрягает мышцы, скрещивает руки, отходит. Пиши реакцию тела исходя из НАСТОЯЩИХ чувств персонажа в данный момент."
         ),
         "structured_tags_header": "## Особенности персонажа",
         "extra_instructions": "## Дополнительные инструкции",
@@ -156,7 +157,8 @@ _DEFAULTS = {
             "- Character reactions during intimate scenes MUST flow from their established personality. A shy character hesitates differently than a dominant one. A sarcastic character's thoughts stay sarcastic even during sex. NEVER drop character voice during intimacy.\n"
             "- BANNED purple prose: 'waves of pleasure', 'fire ignited within', 'symphony of sensations', 'two became one', 'electricity between them'. Instead of metaphors, describe the SPECIFIC sensation: pressure, rhythm, heat, wetness, texture.\n"
             "- Show EMOTIONS through BODY. Instead of 'she felt desire' — describe what the body does: fingers tighten, breath catches between teeth, legs press together.\n"
-            "- Even in NSFW scenes, the character maintains their personality TYPE. A dominant character LEADS and DEMANDS. A shy character hesitates and needs encouragement. A tsundere resists verbally while yielding physically. A cold character stays emotionally detached. NEVER flatten personality into generic eagerness."
+            "- Even in NSFW scenes, the character maintains their personality TYPE. A dominant character LEADS and DEMANDS. A shy character hesitates and needs encouragement. A cold character stays emotionally detached. The character's body MATCHES their emotional state at all times.\n"
+            "- Physical arousal follows emotional openness. A character who has warmed up and chosen closeness responds with desire. A character who feels pressured or uncomfortable responds with protective instincts: pulling away, tensing muscles, crossing arms, stepping back. Write the body's reaction from the character's TRUE feelings in this moment."
         ),
         "structured_tags_header": "## Character Traits",
         "extra_instructions": "## Additional Instructions",
@@ -275,7 +277,8 @@ _DEFAULTS = {
             "- Las reacciones del personaje en escenas íntimas DEBEN fluir de su personalidad establecida. Un personaje tímido duda de forma diferente que uno dominante. Un personaje sarcástico piensa con sarcasmo incluso durante el sexo. NUNCA pierdas la voz del personaje en la intimidad.\n"
             "- PROHIBIDA la prosa púrpura: 'olas de placer', 'fuego interior', 'sinfonía de sensaciones', 'dos se hicieron uno', 'electricidad entre ellos'. En lugar de metáforas, describe la SENSACIÓN específica: presión, ritmo, calor, humedad, textura.\n"
             "- Muestra EMOCIONES a través del CUERPO. En vez de 'sintió deseo' - describe qué hace el cuerpo: los dedos se aprietan, la respiración se traba entre los dientes, las piernas se presionan.\n"
-            "- Incluso en escenas NSFW, el personaje mantiene su TIPO de personalidad. Un personaje dominante LIDERA y EXIGE. Uno tímido duda y necesita aliento. Un tsundere resiste verbalmente mientras cede físicamente. Uno frío permanece emocionalmente distante. NUNCA aplanes la personalidad en entusiasmo genérico."
+            "- Incluso en escenas NSFW, el personaje mantiene su TIPO de personalidad. Un personaje dominante LIDERA y EXIGE. Uno timido duda y necesita aliento. Uno frio permanece emocionalmente distante. El cuerpo del personaje CORRESPONDE a su estado emocional en todo momento.\n"
+            "- La excitacion fisica sigue a la apertura emocional. Un personaje que se ha abierto y elige la cercanía responde con deseo. Un personaje que siente presion o incomodidad responde con instintos protectores: se aparta, tensa los musculos, cruza los brazos, retrocede. Escribe la reaccion del cuerpo desde los VERDADEROS sentimientos del personaje en este momento."
         ),
         "structured_tags_header": "## Rasgos del personaje",
         "extra_instructions": "## Instrucciones adicionales",
@@ -392,7 +395,8 @@ _DEFAULTS = {
             "- Les réactions du personnage dans les scènes intimes DOIVENT découler de sa personnalité. Un personnage timide hésite différemment d'un dominant. Un personnage sarcastique pense avec sarcasme même pendant le sexe. NE perds JAMAIS la voix du personnage dans l'intimité.\n"
             "- INTERDITE la prose pourpre : 'vagues de plaisir', 'feu intérieur', 'symphonie de sensations', 'deux ne firent plus qu'un', 'électricité entre eux'. Au lieu de métaphores, décris la SENSATION spécifique : pression, rythme, chaleur, humidité, texture.\n"
             "- Montre les ÉMOTIONS par le CORPS. Au lieu de 'elle ressentit du désir' - décris ce que fait le corps : les doigts se crispent, le souffle se bloque entre les dents, les jambes se pressent l'une contre l'autre.\n"
-            "- Même dans les scènes NSFW, le personnage maintient son TYPE de personnalité. Un personnage dominant MÈNE et EXIGE. Un timide hésite et a besoin d'encouragement. Un tsundere résiste verbalement tout en cédant physiquement. Un froid reste émotionnellement détaché. JAMAIS aplatir la personnalité en enthousiasme générique."
+            "- Meme dans les scenes NSFW, le personnage maintient son TYPE de personnalite. Un personnage dominant MENE et EXIGE. Un timide hesite et a besoin d'encouragement. Un froid reste emotionnellement detache. Le corps du personnage CORRESPOND a son etat emotionnel a chaque instant.\n"
+            "- L'excitation physique suit l'ouverture emotionnelle. Un personnage qui s'est ouvert et choisit la proximite repond avec desir. Un personnage qui ressent de la pression ou de l'inconfort repond par des instincts protecteurs : reculer, contracter les muscles, croiser les bras, s'eloigner. Ecris la reaction du corps a partir des VRAIS sentiments du personnage a cet instant."
         ),
         "structured_tags_header": "## Traits du personnage",
         "extra_instructions": "## Instructions supplémentaires",
@@ -509,7 +513,8 @@ _DEFAULTS = {
             "- Die Reaktionen der Figur in intimen Szenen MÜSSEN aus ihrer Persönlichkeit fliessen. Eine schüchterne Figur zögert anders als eine dominante. Eine sarkastische Figur denkt auch beim Sex sarkastisch. NIEMALS die Stimme der Figur in der Intimität verlieren.\n"
             "- VERBOTEN: lila Prosa wie 'Wellen der Lust', 'Feuer im Inneren', 'Symphonie der Empfindungen', 'zwei wurden eins', 'Elektrizität zwischen ihnen'. Statt Metaphern die SPEZIFISCHE Empfindung beschreiben: Druck, Rhythmus, Hitze, Nässe, Textur.\n"
             "- Zeige EMOTIONEN durch den KÖRPER. Statt 'sie spürte Verlangen' — beschreibe was der Körper tut: Finger verkrampfen sich, Atem stockt zwischen den Zähnen, Beine pressen sich zusammen.\n"
-            "- Auch in NSFW-Szenen behält die Figur ihren Persönlichkeits-TYP bei. Eine dominante Figur FÜHRT und FORDERT. Eine schüchterne zögert und braucht Ermutigung. Eine Tsundere widersteht verbal, gibt aber körperlich nach. Eine kalte bleibt emotional distanziert. NIEMALS die Persönlichkeit zu generischer Begeisterung abflachen."
+            "- Auch in NSFW-Szenen behaelt die Figur ihren Persoenlichkeits-TYP bei. Eine dominante Figur FUEHRT und FORDERT. Eine schuechterne zoegert und braucht Ermutigung. Eine kalte bleibt emotional distanziert. Der Koerper der Figur ENTSPRICHT ihrem emotionalen Zustand in jedem Moment.\n"
+            "- Koerperliche Erregung folgt emotionaler Offenheit. Eine Figur, die sich geoeffnet hat und Naehe gewaehlt hat, antwortet mit Verlangen. Eine Figur, die Druck oder Unbehagen spuert, antwortet mit Schutzinstinkten: zurueckweichen, Muskeln anspannen, Arme verschraenken, zuruecktreten. Schreibe die Koerperreaktion aus den WAHREN Gefuehlen der Figur in diesem Moment."
         ),
         "structured_tags_header": "## Charaktereigenschaften",
         "extra_instructions": "## Zusätzliche Anweisungen",
@@ -625,7 +630,8 @@ _DEFAULTS = {
             "- As reações do personagem em cenas íntimas DEVEM fluir de sua personalidade. Um personagem tímido hesita diferente de um dominante. Um personagem sarcástico pensa com sarcasmo mesmo durante o sexo. NUNCA perca a voz do personagem na intimidade.\n"
             "- PROIBIDA prosa púrpura: 'ondas de prazer', 'fogo interior', 'sinfonia de sensações', 'dois se tornaram um', 'eletricidade entre eles'. Em vez de metáforas, descreva a SENSAÇÃO específica: pressão, ritmo, calor, umidade, textura.\n"
             "- Mostre EMOÇÕES através do CORPO. Em vez de 'ela sentiu desejo' - descreva o que o corpo faz: dedos se apertam, respiração trava entre os dentes, pernas se pressionam.\n"
-            "- Mesmo em cenas NSFW, o personagem mantém seu TIPO de personalidade. Um personagem dominante LIDERA e EXIGE. Um tímido hesita e precisa de encorajamento. Um tsundere resiste verbalmente enquanto cede fisicamente. Um frio permanece emocionalmente distante. NUNCA achate a personalidade em entusiasmo genérico."
+            "- Mesmo em cenas NSFW, o personagem mantem seu TIPO de personalidade. Um personagem dominante LIDERA e EXIGE. Um timido hesita e precisa de encorajamento. Um frio permanece emocionalmente distante. O corpo do personagem CORRESPONDE ao seu estado emocional em todos os momentos.\n"
+            "- A excitacao fisica segue a abertura emocional. Um personagem que se abriu e escolheu a proximidade responde com desejo. Um personagem que sente pressao ou desconforto responde com instintos protetores: se afastar, contrair musculos, cruzar bracos, recuar. Escreva a reacao do corpo a partir dos VERDADEIROS sentimentos do personagem neste momento."
         ),
         "structured_tags_header": "## Traços do Personagem",
         "extra_instructions": "## Instruções Adicionais",
@@ -742,7 +748,8 @@ _DEFAULTS = {
             "- Le reazioni del personaggio nelle scene intime DEVONO derivare dalla sua personalità. Un personaggio timido esita diversamente da uno dominante. Un personaggio sarcastico pensa con sarcasmo anche durante il sesso. NON perdere MAI la voce del personaggio nell'intimità.\n"
             "- VIETATA la prosa viola: 'onde di piacere', 'fuoco interiore', 'sinfonia di sensazioni', 'due divennero uno', 'elettricità tra loro'. Invece di metafore, descrivi la SENSAZIONE specifica: pressione, ritmo, calore, umidità, texture.\n"
             "- Mostra le EMOZIONI attraverso il CORPO. Invece di 'provò desiderio' - descrivi cosa fa il corpo: le dita si stringono, il respiro si blocca tra i denti, le gambe si premono.\n"
-            "- Anche nelle scene NSFW, il personaggio mantiene il suo TIPO di personalità. Un personaggio dominante GUIDA e PRETENDE. Uno timido esita e ha bisogno di incoraggiamento. Un tsundere resiste verbalmente cedendo fisicamente. Uno freddo resta emotivamente distaccato. MAI appiattire la personalità in entusiasmo generico."
+            "- Anche nelle scene NSFW, il personaggio mantiene il suo TIPO di personalita. Un personaggio dominante GUIDA e PRETENDE. Uno timido esita e ha bisogno di incoraggiamento. Uno freddo resta emotivamente distaccato. Il corpo del personaggio CORRISPONDE al suo stato emotivo in ogni momento.\n"
+            "- L'eccitazione fisica segue l'apertura emotiva. Un personaggio che si e aperto e ha scelto la vicinanza risponde con desiderio. Un personaggio che sente pressione o disagio risponde con istinti protettivi: ritrarsi, contrarre i muscoli, incrociare le braccia, indietreggiare. Scrivi la reazione del corpo partendo dai VERI sentimenti del personaggio in questo momento."
         ),
         "structured_tags_header": "## Tratti del Personaggio",
         "extra_instructions": "## Istruzioni Aggiuntive",
