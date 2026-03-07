@@ -21,8 +21,18 @@ interface PlayerData {
   conditions?: string[];
 }
 
+interface CompanionData {
+  name?: string;
+  class?: string;
+  hp?: number;
+  max_hp?: number;
+  role?: string;
+  conditions?: string[];
+}
+
 interface SheetState {
   player?: PlayerData;
+  companion?: CompanionData;
   combat?: boolean;
   location?: string;
   [key: string]: unknown;
@@ -36,10 +46,11 @@ function statMod(val: number): string {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 }
 
-export function CharacterSheet({ state }: { state: SheetState }) {
+export function CharacterSheet({ state, companionApproval = 0 }: { state: SheetState; companionApproval?: number }) {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const player = state?.player;
+  const companion = state?.companion;
 
   if (!player) return null;
 
@@ -155,6 +166,64 @@ export function CharacterSheet({ state }: { state: SheetState }) {
             <div className="flex items-center gap-1.5 text-xs text-neutral-400">
               <MapPin className="w-3 h-3" />
               <span>{state.location}</span>
+            </div>
+          )}
+
+          {/* Companion Section */}
+          {companion?.name && (
+            <div className="border-t border-purple-500/10 pt-2 mt-1">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-purple-300 font-medium">{companion.name}</span>
+                  {companion.role && (
+                    <span className="text-neutral-500 capitalize">{companion.role}</span>
+                  )}
+                  {companion.class && (
+                    <span className="text-neutral-500">({companion.class})</span>
+                  )}
+                </div>
+                {companionApproval !== 0 && (
+                  <span className={`text-[10px] px-1 py-0.5 rounded ${
+                    companionApproval < 0 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'
+                  }`}>
+                    {companionApproval < 0 ? '\u2639' : '\u2665'} {companionApproval > 0 ? '+' : ''}{companionApproval}
+                  </span>
+                )}
+              </div>
+              {companion.hp != null && companion.max_hp != null && (
+                <div>
+                  <div className="flex items-center justify-between text-[10px] mb-0.5">
+                    <div className="flex items-center gap-1 text-red-400">
+                      <Heart className="w-2.5 h-2.5" />
+                      <span>HP</span>
+                    </div>
+                    <span className={`text-neutral-400 ${
+                      companion.max_hp > 0 && (companion.hp / companion.max_hp) <= 0.3 ? 'text-red-400' : ''
+                    }`}>
+                      {companion.hp}/{companion.max_hp}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        companion.max_hp > 0 && (companion.hp / companion.max_hp) > 0.6 ? 'bg-green-500'
+                          : companion.max_hp > 0 && (companion.hp / companion.max_hp) > 0.3 ? 'bg-amber-500'
+                          : 'bg-red-500'
+                      }`}
+                      style={{ width: `${companion.max_hp > 0 ? Math.max(0, Math.min(100, (companion.hp / companion.max_hp) * 100)) : 0}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              {companion.conditions && companion.conditions.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {companion.conditions.map((c) => (
+                    <span key={c} className="text-[10px] px-1 py-0.5 rounded bg-amber-500/20 text-amber-300">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

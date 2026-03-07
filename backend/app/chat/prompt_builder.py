@@ -1296,6 +1296,43 @@ def _build_companion_section(character: dict, char_name: str, lang: str) -> str 
     if character.get("companion_backstory"):
         section += f"\nBackground: {character['companion_backstory']}"
     section += "\n" + _COMP_RULES.get(lang, _COMP_RULES["en"]).format(main=char_name, comp=comp_name)
+
+    # Companion opinions on player choices
+    _COMP_OPINIONS = {
+        "ru": (
+            "\nМНЕНИЯ {comp}:"
+            "\n- Когда игрок стоит перед моральным выбором или важным решением, {comp} высказывает мнение на основе своей личности."
+            "\n- Мнение МОЖЕТ не совпадать с игроком - {comp} НЕ подхалим."
+            "\n- После решения игрока {comp} реагирует (одобрение: кивок/улыбка; несогласие: вздох/протест/молчание)."
+            "\n- Максимум 1 мнение за ответ, только на значимые выборы."
+        ),
+        "en": (
+            "\n{comp}'s OPINIONS:"
+            "\n- When the player faces a moral choice or major decision, {comp} voices their opinion based on personality."
+            "\n- Opinion may DISAGREE with the player - {comp} is not a yes-man."
+            "\n- After the player decides, {comp} reacts (approval: brief nod/smile; disapproval: sigh/protest/silence)."
+            "\n- Maximum 1 opinion per response, only on meaningful choices."
+        ),
+    }
+    section += _COMP_OPINIONS.get(lang, _COMP_OPINIONS["en"]).format(comp=comp_name)
+
+    # Anti-spotlight rule — companion must not steal the hero's moment
+    _COMP_SPOTLIGHT = {
+        "ru": (
+            "\nАНТИ-СПОТЛАЙТ:"
+            "\n- {comp} НИКОГДА не решает головоломки, не убивает боссов, не делает ключевых открытий ЗА игрока."
+            "\n- {comp} может ПОМОГАТЬ (придержать дверь, отвлечь стражу, подсказать), но ИГРОК - герой."
+            "\n- Если {comp} вот-вот перехватит инициативу, перенаправь: 'Думаю, это тебе...' / 'Твой ход.'"
+        ),
+        "en": (
+            "\nANTI-SPOTLIGHT:"
+            "\n- {comp} NEVER solves puzzles, kills bosses, or makes key discoveries FOR the player."
+            "\n- {comp} can ASSIST (hold the door, distract the guard, provide a clue) but the PLAYER is the hero."
+            "\n- If {comp} is about to steal the spotlight, redirect: 'I think YOU should...' / 'This one's yours.'"
+        ),
+    }
+    section += _COMP_SPOTLIGHT.get(lang, _COMP_SPOTLIGHT["en"]).format(comp=comp_name)
+
     return section
 
 
@@ -1361,8 +1398,26 @@ async def _build_fiction_prompt(
         parts.append(f"\n{dilemma_header.get(lang, dilemma_header['en'])}\n{character['inner_conflict']}")
 
     comp_section = _build_companion_section(character, char_name, lang)
+    comp_name = character.get("companion_name")
     if comp_section:
         parts.append(f"\n{comp_section}")
+
+        # Fiction-only: triangular banter with scenario NPCs
+        _TRIANGULAR = {
+            "ru": (
+                "\nТРЕУГОЛЬНЫЕ ДИНАМИКИ:"
+                "\n- Когда появляются NPC из сценария, {comp} имеет СОБСТВЕННУЮ реакцию на них."
+                "\n- {comp} может предупредить игрока об NPC или показать неожиданное знакомство."
+                "\n- Создавай моменты трёхстороннего диалога (игрок - {comp} - NPC)."
+            ),
+            "en": (
+                "\nTRIANGULAR DYNAMICS:"
+                "\n- When NPCs from the scenario appear, {comp} has their OWN reaction/relationship to them."
+                "\n- {comp} may warn the player about an NPC, or show unexpected familiarity."
+                "\n- Create 3-way dialogue moments (player - {comp} - NPC)."
+            ),
+        }
+        parts.append(_TRIANGULAR.get(lang, _TRIANGULAR["en"]).format(comp=comp_name))
 
     parts.append(f"\n{fp['storytelling_rules']}")
     parts.append(f"\n{fp['choices_rules']}")
@@ -1887,8 +1942,32 @@ async def _build_dnd_prompt(
         parts.append(f"\n{stakes_header.get(lang, stakes_header['en'])}\n{character['inner_conflict']}")
 
     comp_section = _build_companion_section(character, char_name, lang)
+    comp_name = character.get("companion_name")
     if comp_section:
         parts.append(f"\n{comp_section}")
+
+        # DnD-specific: companion class mapping and STATE block companion stats
+        _COMP_CLASS_MAP = {
+            "sidekick": "Warrior", "pet": "Warrior",
+            "mentor": "Expert", "guide": "Expert",
+            "rival": "Warrior", "lover": "Expert",
+            "family": "Expert", "comic_relief": "Expert",
+        }
+        comp_role = character.get("companion_role") or "sidekick"
+        comp_class = _COMP_CLASS_MAP.get(comp_role, "Expert")
+        _COMP_STATE_INST = {
+            "ru": (
+                f"\nCOMPANION В STATE: Когда {comp_name} присутствует, ДОБАВЛЯЙ в блок [STATE] поле companion:"
+                f'\n  "companion":{{"name":"{comp_name}","class":"{comp_class}","hp":25,"max_hp":25,"role":"{comp_role}","conditions":[]}}'
+                f"\n  Отслеживай HP {comp_name} отдельно от игрока. {comp_class} определяет боевой стиль {comp_name}."
+            ),
+            "en": (
+                f"\nCOMPANION IN STATE: When {comp_name} is present, ADD a companion field to [STATE]:"
+                f'\n  "companion":{{"name":"{comp_name}","class":"{comp_class}","hp":25,"max_hp":25,"role":"{comp_role}","conditions":[]}}'
+                f"\n  Track {comp_name}'s HP separately from the player. {comp_class} determines {comp_name}'s combat style."
+            ),
+        }
+        parts.append(_COMP_STATE_INST.get(lang, _COMP_STATE_INST["en"]))
 
     parts.append(f"\n{dp['rules_summary']}")
     parts.append(f"\n{dp['gm_rules']}")

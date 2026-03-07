@@ -5,6 +5,10 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { getAuthOrAnonToken, deleteChatMessage } from '@/api/chat';
 import type { Message, DiceRollResult } from '@/types';
 
+// Strip [APPROVAL +1] / [APPROVAL -1] tags from displayed text (tag is parsed server-side but streamed to client)
+const _APPROVAL_RE = /\s*\[APPROVAL\s*[+-]\d\]\s*/gi;
+const stripApprovalTag = (text: string) => text.replace(_APPROVAL_RE, '').trimEnd();
+
 export interface GenerationSettings {
   model?: string;
   temperature?: number;
@@ -23,6 +27,7 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
   const [choices, setChoices] = useState<{number: number; text: string}[] | null>(null);
   const [diceRolls, setDiceRolls] = useState<DiceRollResult[] | null>(null);
   const [encounterState, setEncounterState] = useState<Record<string, unknown> | null>(null);
+  const [companionApproval, setCompanionApproval] = useState(0);
   const [anonLimitReached, setAnonLimitReached] = useState(false);
   const [anonMessagesLeft, setAnonMessagesLeft] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -110,10 +115,10 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
           if (data.type === 'done') {
             setMessages((prev) => {
               const updated = [...prev];
-              // Update assistant message with real DB id
+              // Update assistant message with real DB id + strip approval tags
               const last = updated[updated.length - 1];
               if (last.role === 'assistant') {
-                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used };
+                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used, content: stripApprovalTag(last.content) };
               }
               // Update user message with real DB id
               if (data.user_message_id) {
@@ -138,6 +143,10 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
             // Update encounter state from GM
             if (data.encounter_state) {
               setEncounterState((prev) => ({ ...(prev || {}), ...data.encounter_state }));
+            }
+            // Update companion approval
+            if (data.companion_approval_delta) {
+              setCompanionApproval((prev) => Math.max(-3, Math.min(3, prev + data.companion_approval_delta)));
             }
             // Track anonymous messages remaining
             if (data.anon_messages_left !== undefined) {
@@ -362,11 +371,14 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
               const updated = [...prev];
               const last = updated[updated.length - 1];
               if (last.role === 'assistant') {
-                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used };
+                updated[updated.length - 1] = { ...last, id: data.message_id, model_used: data.model_used, content: stripApprovalTag(last.content) };
               }
               return updated;
             });
             setTruncated(!!data.truncated);
+            if (data.companion_approval_delta) {
+              setCompanionApproval((prev) => Math.max(-3, Math.min(3, prev + data.companion_approval_delta)));
+            }
             setIsStreaming(false);
           }
           if (data.type === 'error') {
@@ -403,5 +415,5 @@ export function useChat(chatId: string, initialMessages: Message[] = []) {
     setIsStreaming(false);
   }, []);
 
-  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, encounterState, setEncounterState, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
+  return { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, encounterState, setEncounterState, companionApproval, setCompanionApproval, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft };
 }

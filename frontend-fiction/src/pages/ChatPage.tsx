@@ -52,7 +52,7 @@ export function ChatPage() {
   const removeChat = useChatStore((s) => s.removeChat);
   const isAdmin = authUser?.role === 'admin';
 
-  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, encounterState, setEncounterState, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
+  const { messages, setMessages, sendMessage, isStreaming, stopStreaming, setGenerationSettings, regenerate, resendLast, continueMessage, truncated, choices, diceRolls, encounterState, setEncounterState, companionApproval, setCompanionApproval, anonLimitReached, anonMessagesLeft, setAnonMessagesLeft } = useChat(
     chatId || ''
   );
   const [showAnonLimit, setShowAnonLimit] = useState(false);
@@ -84,6 +84,10 @@ export function ChatPage() {
         // Load encounter state for campaign chats
         if (data.chat?.encounter_state) {
           setEncounterState(data.chat.encounter_state);
+        }
+        // Load companion approval
+        if (data.chat?.companion_approval != null) {
+          setCompanionApproval(data.chat.companion_approval);
         }
 
         // Migrate old format: chat-settings:{chatId} → chat-model:{chatId}
@@ -328,6 +332,25 @@ export function ChatPage() {
                 <Brain className="w-4 h-4" />
               </span>
             )}
+            {character?.companion_name && companionApproval !== 0 && (
+              <span
+                title={`${character.companion_name}: ${
+                  companionApproval <= -2 ? t('companion.hostile', 'Hostile')
+                    : companionApproval === -1 ? t('companion.distant', 'Distant')
+                    : companionApproval === 1 ? t('companion.friendly', 'Friendly')
+                    : companionApproval === 2 ? t('companion.loyal', 'Loyal')
+                    : companionApproval >= 3 ? t('companion.devoted', 'Devoted')
+                    : ''
+                }`}
+                className={`text-xs px-1.5 py-0.5 rounded-full ${
+                  companionApproval < 0
+                    ? 'bg-red-500/20 text-red-400'
+                    : 'bg-green-500/20 text-green-400'
+                }`}
+              >
+                {companionApproval < 0 ? '\u2639' : '\u2665'} {companionApproval > 0 ? '+' : ''}{companionApproval}
+              </span>
+            )}
           </div>
           {chatDetail?.chat.persona_name && (
             <span className="text-xs text-purple-400">
@@ -406,7 +429,7 @@ export function ChatPage() {
       {encounterState && (
         <div className="px-4 py-2 space-y-2">
           {(encounterState as any)?.player && (
-            <CharacterSheet state={encounterState as any} />
+            <CharacterSheet state={encounterState as any} companionApproval={companionApproval} />
           )}
           {!(encounterState as any)?.player && (
             <EncounterPanel state={encounterState as any} />

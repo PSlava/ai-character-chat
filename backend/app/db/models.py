@@ -157,6 +157,7 @@ class Chat(Base):
     anon_session_id: Mapped[str | None] = mapped_column(String, nullable=True)  # anonymous guest session
     campaign_id: Mapped[str | None] = mapped_column(ForeignKey("campaigns.id", ondelete="SET NULL"), nullable=True)
     encounter_state: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    companion_approval: Mapped[int | None] = mapped_column(SmallInteger, nullable=True, server_default="0")  # -3 to +3
     rating: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)  # 1-5 stars
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

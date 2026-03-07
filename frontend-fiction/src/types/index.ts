@@ -63,6 +63,7 @@ export interface Chat {
   model_used: string | null;
   has_summary?: boolean;
   rating?: number | null;
+  companion_approval?: number;
   created_at: string;
   updated_at: string;
   characters?: Character;
