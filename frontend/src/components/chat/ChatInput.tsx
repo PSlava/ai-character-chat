@@ -76,10 +76,11 @@ export function ChatInput({ onSend, onStop, isStreaming, disabled, personaName, 
   };
 
   const handleSend = () => {
+    const isSuggestion = !!(prefillRef.current && prefillRef.current === text.trim());
     cancelAutoSend();
     const trimmed = text.trim();
     if (!trimmed || isStreaming) return;
-    onSend(wrapWithMode(trimmed));
+    onSend(isSuggestion ? trimmed : wrapWithMode(trimmed));
     setText('');
     // Reset height after send
     requestAnimationFrame(() => {
